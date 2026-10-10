@@ -8,7 +8,6 @@ import { LANGUAGE_SERVER_LANGUAGES } from '../../../shared/language-server'
 import { toast } from 'sonner'
 import { translate } from '@/i18n/i18n'
 import { useAppStore } from '@/store'
-import { modelFileFor } from './diff-editor-model-files'
 import {
   builtInTypeScriptDefinition,
   builtInTypeScriptHover,
@@ -24,14 +23,14 @@ import {
 import {
   definitionOpenTarget,
   languageServerEnabled,
-  openFileContext,
   serverLanguageFor,
   targetHasDiff,
-  toEditorPosition,
-  trackedFileContext
+  toEditorPosition
 } from './language-server-editor'
+import { fileSource } from './language-server-file-source'
 import {
   definitionModelUri,
+  isWholeFileCopy,
   PREVIEW_SCHEME,
   referenceModelUri,
   wordRangeAt
@@ -40,21 +39,6 @@ import {
 const MONACO_LANGUAGE_IDS = ['python', 'typescript', 'javascript']
 const MOUSE_BACK_BUTTON = 3
 const MOUSE_FORWARD_BUTTON = 4
-
-function fileSource(uri: Monaco.Uri) {
-  const state = useAppStore.getState()
-  const tracked = modelFileFor(uri.toString())
-  if (tracked) {
-    const context = trackedFileContext(state, tracked)
-    return context ? { ...context, fromDiff: true } : null
-  }
-  // A fragment marks a remote or runtime-owned model; the servers only see local checkouts.
-  if (uri.scheme !== 'file' || uri.fragment) {
-    return null
-  }
-  const context = openFileContext(state, uri.fsPath)
-  return context ? { filePath: uri.fsPath, ...context, fromDiff: false } : null
-}
 
 function serverRequest(
   model: Monaco.editor.ITextModel,
@@ -279,8 +263,9 @@ export function installMonacoLanguageServers(
       if (!to) {
         return false
       }
-      // Why false for the same model: Monaco moves within the open editor itself.
-      if (sameModel) {
+      // Why false for the same model: Monaco moves within the open editor itself. A Peek copy is
+      // not a tab, so a jump from it opens the real file like a Cmd+click in the file does.
+      if (sameModel && !isWholeFileCopy(resource)) {
         recordCodeJump(from, to)
         return false
       }

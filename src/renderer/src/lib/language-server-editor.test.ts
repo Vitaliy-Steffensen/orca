@@ -8,7 +8,8 @@ import {
   serverLanguageFor,
   targetHasDiff,
   toEditorPosition,
-  trackedFileContext
+  trackedFileContext,
+  unopenedFileContext
 } from './language-server-editor'
 
 describe('serverLanguageFor', () => {
@@ -58,6 +59,28 @@ describe('openFileContext', () => {
     }
     expect(openFileContext(remote, '/remote/wt/a.py')).toBeNull()
     expect(openFileContext(state, '/elsewhere/b.py')).toBeNull()
+  })
+})
+
+describe('unopenedFileContext', () => {
+  it('finds the local worktree holding a file that has no tab, preferring the deepest', () => {
+    const nested = {
+      ...state,
+      worktreesByRepo: {
+        ...state.worktreesByRepo,
+        'repo-1': [
+          { id: 'wt-1', path: '/wt/e-4974', repoId: 'repo-1' },
+          { id: 'wt-2', path: '/wt/e-4974/.worktrees/x', repoId: 'repo-1' }
+        ]
+      }
+    }
+    expect(unopenedFileContext(nested, '/wt/e-4974/apps/frontend/b.ts')?.worktreeId).toBe('wt-1')
+    expect(unopenedFileContext(nested, '/wt/e-4974/.worktrees/x/c.ts')?.worktreeId).toBe('wt-2')
+  })
+
+  it('has nothing for a file outside every local worktree', () => {
+    expect(unopenedFileContext(state, '/wt/e-4974-other/b.ts')).toBeNull()
+    expect(unopenedFileContext(state, '/remote/wt/a.py')).toBeNull()
   })
 })
 

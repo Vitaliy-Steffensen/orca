@@ -70,6 +70,17 @@ export function openFileContext(
   return file ? localWorktree(state, file.worktreeId) : null
 }
 
+export function unopenedFileContext(
+  state: DefinitionState,
+  filePath: string
+): DefinitionContext | null {
+  const holders = Object.values(state.worktreesByRepo)
+    .flat()
+    .filter((worktree) => filePath.startsWith(`${worktree.path.replace(/\/+$/, '')}/`))
+    .sort((a, b) => b.path.length - a.path.length)
+  return holders[0] ? localWorktree(state, holders[0].id) : null
+}
+
 export function trackedFileContext(
   state: DefinitionState,
   file: { worktreeId: string; relativePath: string }

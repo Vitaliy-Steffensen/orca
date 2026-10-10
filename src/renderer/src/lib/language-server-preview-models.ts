@@ -9,6 +9,10 @@ const MAX_PREVIEW_MODELS = 80
 // Why: a reference copy holds the whole file, so a definition's snippet must not overwrite it.
 const wholeFileUris = new Set<string>()
 
+export function isWholeFileCopy(uri: Monaco.Uri): boolean {
+  return uri.scheme === PREVIEW_SCHEME && wholeFileUris.has(uri.toString())
+}
+
 function previewUri(monaco: typeof Monaco, filePath: string): Monaco.Uri {
   return monaco.Uri.file(filePath).with({ scheme: PREVIEW_SCHEME })
 }

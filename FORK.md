@@ -1257,6 +1257,22 @@ mostly horizontal trackpad swipe now scrolls the pane too (`diff-editor-shift-wh
 | `src/renderer/src/components/editor/diff-editor-shift-wheel-scroll.ts` | Horizontal swipes without Shift. |
 | `src/renderer/src/i18n/locales/en.json` | `agentTurns.none`. |
 
+### 34. Cmd+click inside a Peek preview
+
+Peek shows a reference in a file with no tab as a whole-file `orca-definition:` copy. Those copies
+used to get no language-server context, so Python showed no Cmd+hover underline and TypeScript fell
+back to the single-file built-in worker, which stops at the import. A whole-file copy now resolves
+to the deepest local worktree holding its path (`unopenedFileContext`), so hover, underline and
+Cmd+click go to pyrefly/tsgo like an open file, and a jump from the copy always opens the real file
+in a tab instead of moving inside the preview.
+
+| File | What is ours |
+| --- | --- |
+| `src/renderer/src/lib/language-server-file-source.ts` | `fileSource`, moved out of `monaco-language-servers.ts`, plus the whole-file-copy branch. |
+| `src/renderer/src/lib/language-server-editor.ts` | `unopenedFileContext`. |
+| `src/renderer/src/lib/language-server-preview-models.ts` | `isWholeFileCopy`. |
+| `src/renderer/src/lib/monaco-language-servers.ts` | The opener treats a same-model jump from a copy as a tab jump. |
+
 ## Verify
 
 Verify runs on GitHub, not locally: `fork-verify.yml` runs it on every pull request against `main`,
