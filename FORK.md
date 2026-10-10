@@ -1194,7 +1194,10 @@ it instead of searching for a literal colon (`src/shared/quick-open-query-target
 Every agent turn in a local git worktree gets its own diff, independent of what was committed or
 staged. Orca's hook listener (`main-window-agent-status.ts`) feeds `agent-turns/agent-turn-recorder.ts`:
 a new `turnStartedAt` snapshots the worktree, and `done` snapshots it again
-(`agent-turn-tracker.ts`). A snapshot is `git add -A` into a copy of the index under
+(`agent-turn-tracker.ts`). A turn lasts until the agent stops for good: a prompt sent while it
+works stays in the turn, and a wake-up after a stop (a background agent finishing fires
+`UserPromptSubmit` but keeps the user's latest prompt) resumes it, so the turn is recorded again
+from its first snapshot and replaces the part recorded at the earlier stop (`replaces`). A snapshot is `git add -A` into a copy of the index under
 `GIT_INDEX_FILE`, so untracked files are captured, ignored files are not, and the real index is
 never touched. The end snapshot is a commit whose parent is the start snapshot. Its message holds
 the turn as JSON (prompt, agent, pane, times, stats), and it is kept under

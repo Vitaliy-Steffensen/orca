@@ -28,15 +28,52 @@ describe('agent turn tracker', () => {
     expect(tracker.observe({ ...base, state: 'done', turnStartedAt: 10 })).toEqual([])
   })
 
-  it('closes an unfinished turn before starting the next one', () => {
+  it('keeps a prompt sent while the agent is working in the same turn', () => {
     const tracker = createAgentTurnTracker()
     tracker.observe({ ...base, state: 'working', turnStartedAt: 10, prompt: 'first' })
     expect(
-      tracker.observe({ ...base, state: 'working', turnStartedAt: 20, prompt: 'second' })
-    ).toEqual([
-      expect.objectContaining({ kind: 'end', prompt: 'first' }),
-      { kind: 'start', paneKey: 'tab:leaf', worktreePath: '/repo' }
+      tracker.observe({ ...base, state: 'working', turnStartedAt: 20, prompt: 'steer' })
+    ).toEqual([])
+    expect(tracker.observe({ ...base, state: 'done', turnStartedAt: 20 })).toEqual([
+      expect.objectContaining({ kind: 'end', prompt: 'first', startedAt: 10 })
     ])
+  })
+
+  it('resumes the finished turn when the agent wakes up again on the same prompt', () => {
+    const tracker = createAgentTurnTracker()
+    tracker.observe({ ...base, state: 'working', turnStartedAt: 10, prompt: 'fix it' })
+    tracker.observe({ ...base, state: 'done', turnStartedAt: 10 })
+    expect(
+      tracker.observe({ ...base, state: 'working', turnStartedAt: 20, prompt: 'fix it' })
+    ).toEqual([{ kind: 'resume', paneKey: 'tab:leaf', worktreePath: '/repo' }])
+    expect(tracker.observe({ ...base, state: 'done', turnStartedAt: 20 })).toEqual([
+      expect.objectContaining({ kind: 'end', prompt: 'fix it', startedAt: 10 })
+    ])
+    expect(tracker.observe({ ...base, state: 'working', turnStartedAt: 30 })).toEqual([
+      { kind: 'resume', paneKey: 'tab:leaf', worktreePath: '/repo' }
+    ])
+  })
+
+  it('resumes after a steered turn, since the wake-up carries the steering prompt', () => {
+    const tracker = createAgentTurnTracker()
+    tracker.observe({ ...base, state: 'working', turnStartedAt: 10, prompt: 'first' })
+    tracker.observe({ ...base, state: 'working', turnStartedAt: 20, prompt: 'steer' })
+    tracker.observe({ ...base, state: 'done', turnStartedAt: 20 })
+    expect(
+      tracker.observe({ ...base, state: 'working', turnStartedAt: 30, prompt: 'steer' })
+    ).toEqual([{ kind: 'resume', paneKey: 'tab:leaf', worktreePath: '/repo' }])
+    expect(tracker.observe({ ...base, state: 'done', turnStartedAt: 30 })).toEqual([
+      expect.objectContaining({ kind: 'end', prompt: 'first', startedAt: 10 })
+    ])
+  })
+
+  it('starts a new turn for a new prompt after the agent finished', () => {
+    const tracker = createAgentTurnTracker()
+    tracker.observe({ ...base, state: 'working', turnStartedAt: 10, prompt: 'first' })
+    tracker.observe({ ...base, state: 'done', turnStartedAt: 10 })
+    expect(
+      tracker.observe({ ...base, state: 'working', turnStartedAt: 20, prompt: 'second' })
+    ).toEqual([{ kind: 'start', paneKey: 'tab:leaf', worktreePath: '/repo' }])
   })
 
   it('keeps panes apart', () => {

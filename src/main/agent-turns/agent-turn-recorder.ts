@@ -20,6 +20,7 @@ export type AgentTurnRecorderDeps = {
 
 const tracker = createAgentTurnTracker()
 const startSnapshots = new Map<string, Promise<string | null>>()
+const recordedRefs = new Map<string, Promise<string | undefined>>()
 const worktreeQueues = new Map<string, Promise<unknown>>()
 
 function inWorktreeQueue<T>(worktreePath: string, task: () => Promise<T>): Promise<T> {
@@ -64,7 +65,11 @@ export function observeAgentTurn(event: AgentTurnHookEvent, deps: AgentTurnRecor
     prompt: event.payload.prompt
   })
   for (const action of actions) {
+    if (action.kind === 'resume') {
+      continue
+    }
     if (action.kind === 'start') {
+      recordedRefs.delete(action.paneKey)
       startSnapshots.set(
         action.paneKey,
         inWorktreeQueue(action.worktreePath, () => snapshotWorktree(action.worktreePath)).catch(
@@ -74,27 +79,40 @@ export function observeAgentTurn(event: AgentTurnHookEvent, deps: AgentTurnRecor
       continue
     }
     const start = startSnapshots.get(action.paneKey)
-    startSnapshots.delete(action.paneKey)
-    void start?.then(async (startOid) => {
-      if (!startOid) {
-        return
-      }
-      const turn = await inWorktreeQueue(action.worktreePath, () =>
-        recordAgentTurn({
-          worktreePath: action.worktreePath,
-          startOid,
-          prompt: action.prompt,
-          agent: action.agent,
-          paneKey: action.paneKey,
-          startedAt: action.startedAt,
-          completedAt: Date.now()
-        })
-      ).catch(() => null)
-      if (turn) {
-        for (const window of BrowserWindow.getAllWindows()) {
-          window.webContents.send('agentTurns:changed', { worktreePath: action.worktreePath })
+    if (!start) {
+      continue
+    }
+    const previous = recordedRefs.get(action.paneKey) ?? Promise.resolve(undefined)
+    // Why keep the start snapshot and the ref: a resumed turn is recorded again from its start
+    // and replaces the part recorded when the agent first stopped.
+    recordedRefs.set(
+      action.paneKey,
+      Promise.all([start, previous]).then(async ([startOid, replaces]) => {
+        if (!startOid) {
+          return replaces
         }
-      }
-    })
+        const turn = await inWorktreeQueue(action.worktreePath, () =>
+          recordAgentTurn({
+            worktreePath: action.worktreePath,
+            startOid,
+            prompt: action.prompt,
+            agent: action.agent,
+            paneKey: action.paneKey,
+            startedAt: action.startedAt,
+            completedAt: Date.now(),
+            replaces
+          })
+        ).catch(() => undefined)
+        if (turn === undefined) {
+          return replaces
+        }
+        if (turn || replaces) {
+          for (const window of BrowserWindow.getAllWindows()) {
+            window.webContents.send('agentTurns:changed', { worktreePath: action.worktreePath })
+          }
+        }
+        return turn?.ref
+      })
+    )
   }
 }

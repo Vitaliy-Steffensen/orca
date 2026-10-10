@@ -93,11 +93,15 @@ export async function recordAgentTurn(input: {
   startedAt: number
   completedAt: number
   keep?: number
+  replaces?: string
 }): Promise<AgentTurn | null> {
-  const { worktreePath, startOid } = input
+  const { worktreePath, startOid, replaces } = input
   const tree = await writeWorktreeTree(worktreePath)
   const stats = await diffStats(worktreePath, startOid, tree)
   if (stats.files === 0) {
+    if (replaces) {
+      await git(worktreePath, ['update-ref', '-d', replaces])
+    }
     return null
   }
   const details: TurnDetails = {
@@ -117,6 +121,9 @@ export async function recordAgentTurn(input: {
   )
   const ref = `${AGENT_TURN_REF_PREFIX}${String(input.completedAt).padStart(15, '0')}-${oid.slice(0, 8)}`
   await git(worktreePath, ['update-ref', ref, oid])
+  if (replaces && replaces !== ref) {
+    await git(worktreePath, ['update-ref', '-d', replaces])
+  }
   await pruneAgentTurns(worktreePath, input.keep ?? AGENT_TURNS_KEPT)
   return { ref, oid, parentOid: startOid, ...details }
 }

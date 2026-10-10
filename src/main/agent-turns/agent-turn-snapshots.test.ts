@@ -83,6 +83,35 @@ describe('agent turn snapshots', () => {
     expect(await listAgentTurns(repo)).toEqual([])
   })
 
+  it('replaces the earlier part of a resumed turn with the whole turn', async () => {
+    const repo = await createRepo()
+    const startOid = await snapshotWorktree(repo)
+    await writeFile(path.join(repo, 'a.txt'), 'first part\n')
+    const partial = await recordAgentTurn(turnInput(repo, startOid))
+    await writeFile(path.join(repo, 'b.txt'), 'second part\n')
+    const whole = await recordAgentTurn({
+      ...turnInput(repo, startOid),
+      completedAt: 3000,
+      replaces: partial!.ref
+    })
+
+    const turns = await listAgentTurns(repo)
+    expect(turns.map((turn) => turn.ref)).toEqual([whole!.ref])
+    expect(turns[0]).toMatchObject({ parentOid: startOid, startedAt: 1000, files: 2 })
+  })
+
+  it('drops the earlier part when the resumed turn undid everything', async () => {
+    const repo = await createRepo()
+    const startOid = await snapshotWorktree(repo)
+    await writeFile(path.join(repo, 'a.txt'), 'first part\n')
+    const partial = await recordAgentTurn(turnInput(repo, startOid))
+    await writeFile(path.join(repo, 'a.txt'), 'one\n')
+    expect(
+      await recordAgentTurn({ ...turnInput(repo, startOid), replaces: partial!.ref })
+    ).toBeNull()
+    expect(await listAgentTurns(repo)).toEqual([])
+  })
+
   it('lists turns newest first and keeps only the most recent ones', async () => {
     const repo = await createRepo()
     for (const n of [1, 2, 3]) {
