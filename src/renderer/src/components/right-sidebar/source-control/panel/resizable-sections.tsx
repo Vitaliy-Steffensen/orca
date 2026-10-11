@@ -1,7 +1,7 @@
 import React, { useCallback, useLayoutEffect, useRef, useState } from 'react'
 import { usePanelRef, type PanelImperativeHandle } from 'react-resizable-panels'
 import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from '@/components/ui/resizable'
-import { shelfResizeTarget } from './shelf-sizing'
+import { preferredShelfHeight, shelfResizeTarget } from './shelf-sizing'
 import { SectionDropZone } from './section-drop-zone'
 import type { MovableSourceControlSectionId } from '../../../../../../shared/source-control-sections'
 
@@ -14,6 +14,8 @@ const STORAGE_PREFIX = 'orca.sourceControl.sectionHeight.'
 export type ResizableShelf = {
   id: Exclude<MovableSourceControlSectionId, 'changes'>
   node: React.ReactNode
+  /** Opens to all of its content and grows with it until the user drags it. */
+  fullHeightByDefault?: boolean
 }
 
 function readPreferredHeight(id: string): number | null {
@@ -26,15 +28,18 @@ function readPreferredHeight(id: string): number | null {
 }
 
 // Why half the panel: until the user drags a section, it shows all of itself unless that would
-// crowd out the changed files.
-function preferredHeight(id: string, panel: PanelImperativeHandle): number {
-  const stored = readPreferredHeight(id)
-  if (stored !== null) {
-    return stored
-  }
+// crowd out the changed files — except a full-height one, which always shows all of itself.
+function preferredHeight(
+  id: string,
+  panel: PanelImperativeHandle,
+  fullHeightByDefault: boolean
+): number {
   const { inPixels, asPercentage } = panel.getSize()
-  const groupHeight = asPercentage > 0 ? (inPixels * 100) / asPercentage : 0
-  return Math.max(DEFAULT_SHELF_HEIGHT_PX, groupHeight / 2)
+  return preferredShelfHeight({
+    stored: readPreferredHeight(id),
+    groupHeight: asPercentage > 0 ? (inPixels * 100) / asPercentage : 0,
+    fullHeightByDefault
+  })
 }
 
 function writePreferredHeight(id: string, height: number): void {
@@ -48,10 +53,12 @@ function writePreferredHeight(id: string, height: number): void {
 function ShelfPanel({
   id,
   register,
+  fullHeightByDefault = false,
   children
 }: {
   id: string
   register: (id: string, panel: React.RefObject<PanelImperativeHandle | null> | null) => void
+  fullHeightByDefault?: boolean
   children: React.ReactNode
 }): React.JSX.Element {
   const panelRef = usePanelRef()
@@ -91,7 +98,7 @@ function ShelfPanel({
           size: panel.getSize().inPixels,
           natural,
           previousNatural: previousNatural.current,
-          preferred: preferredHeight(id, panel)
+          preferred: preferredHeight(id, panel, fullHeightByDefault)
         })
         previousNatural.current = natural
         if (target !== null) {
@@ -102,7 +109,7 @@ function ShelfPanel({
       }
     })
     return () => cancelAnimationFrame(frame)
-  }, [id, natural, panelRef])
+  }, [fullHeightByDefault, id, natural, panelRef])
 
   return (
     <ResizablePanel
@@ -201,7 +208,11 @@ export function SourceControlResizableSections({
               </SectionDropZone>
             </ResizablePanel>
           ) : (
-            <ShelfPanel id={id} register={register}>
+            <ShelfPanel
+              id={id}
+              register={register}
+              fullHeightByDefault={shelfById.get(id)?.fullHeightByDefault}
+            >
               <SectionDropZone id={id} order={visible} onMove={onMove} onHide={onHide}>
                 {shelfById.get(id)?.node}
               </SectionDropZone>

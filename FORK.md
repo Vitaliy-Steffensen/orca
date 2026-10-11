@@ -1344,8 +1344,11 @@ Review, Agent notes, Agent turns, Changes and Commits are sections listed in
 `src/shared/source-control-sections.ts`. Review (id `pending-review`) is one section for the
 reviewers, your drafts, the diff-base picker and the verdict form
 (`pending-review-shelf.tsx`). Its `SectionHeader` collapses all of it and always shows, and the
-drafts list is a small disclosure inside it. Agent turns is a resizable shelf like the others
-(`panel-ready.tsx`); it takes its turns as a prop (`useAgentTurns`).
+drafts list is a small disclosure inside it. Review is a full-height shelf (`fullHeightByDefault`,
+`preferredShelfHeight` in `shelf-sizing.ts`). Until the user drags it, it opens to all of its
+content and grows with it, as when the summary box grows; other shelves stop at half the panel.
+Agent turns is a resizable shelf like the others (`panel-ready.tsx`); it takes its turns as a prop
+(`useAgentTurns`).
 
 Every section but Commits, which stays docked under the files, sits in the resizable group in the
 user's order (`resizable-sections.tsx`). Dragging a section's header onto another moves it before

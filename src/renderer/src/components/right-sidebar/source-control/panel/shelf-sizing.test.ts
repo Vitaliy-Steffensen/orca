@@ -1,5 +1,44 @@
 import { describe, expect, it } from 'vitest'
-import { shelfResizeTarget } from './shelf-sizing'
+import { preferredShelfHeight, shelfResizeTarget } from './shelf-sizing'
+
+describe('preferredShelfHeight', () => {
+  it('opens to the dragged height, else to half the panel', () => {
+    expect(preferredShelfHeight({ stored: 180, groupHeight: 800 })).toBe(180)
+    expect(preferredShelfHeight({ stored: null, groupHeight: 800 })).toBe(400)
+    expect(preferredShelfHeight({ stored: null, groupHeight: 300 })).toBe(240)
+  })
+
+  it('opens a full-height shelf, like Review, to all of its content until dragged', () => {
+    expect(
+      preferredShelfHeight({ stored: null, groupHeight: 300, fullHeightByDefault: true })
+    ).toBe(Number.POSITIVE_INFINITY)
+    expect(preferredShelfHeight({ stored: 180, groupHeight: 300, fullHeightByDefault: true })).toBe(
+      180
+    )
+    expect(
+      shelfResizeTarget({
+        size: 240,
+        natural: 420,
+        previousNatural: 0,
+        preferred: Number.POSITIVE_INFINITY
+      })
+    ).toBe(420)
+  })
+
+  it('grows a full-height shelf with its content, like a growing summary box, until dragged', () => {
+    const preferred = preferredShelfHeight({
+      stored: null,
+      groupHeight: 300,
+      fullHeightByDefault: true
+    })
+    expect(shelfResizeTarget({ size: 420, natural: 480, previousNatural: 420, preferred })).toBe(
+      480
+    )
+    expect(
+      shelfResizeTarget({ size: 300, natural: 480, previousNatural: 420, preferred: 300 })
+    ).toBeNull()
+  })
+})
 
 describe('shelfResizeTarget', () => {
   it('opens a shelf to the height the user chose when its list expands', () => {

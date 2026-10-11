@@ -78,6 +78,7 @@ export function SourceControlPanelReady(props: SourceControlPanelReadyProps) {
   if (submitReviewVerdict.prNumber !== null) {
     shelves.push({
       id: 'pending-review',
+      fullHeightByDefault: true,
       node: (
         <SourceControlPendingReviewShelf
           queue={pendingReviewQueue}
