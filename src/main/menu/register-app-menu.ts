@@ -11,6 +11,8 @@ import { createAppMenuSelectionItem } from './app-menu-selection-item'
 import { createAppMenuPasteItem } from './app-menu-paste-item'
 import { createAppMenuQuitItem } from './app-menu-quit-item'
 import { createAppWindowMenu } from './app-menu-window'
+import { buildSourceControlSectionsSubmenu } from './source-control-sections-menu'
+import type { SourceControlSectionId } from '../../shared/source-control-sections'
 
 export type AppearanceMenuState = {
   showTasksButton: boolean
@@ -40,6 +42,9 @@ type RegisterAppMenuOptions = {
   onToggleRightSidebar: () => void
   onToggleAppearance: (key: AppearanceMenuKey) => void
   getAppearanceState: () => AppearanceMenuState
+  // Fork: View > Source Control Sections.
+  getHiddenSourceControlSections?: () => readonly string[]
+  onToggleSourceControlSection?: (id: SourceControlSectionId) => void
   getKeybindings?: () => KeybindingOverrides | undefined
   // Why: the macOS app-menu title. Passed the per-branch dev label since
   // app.name is now pinned to a stable value for Keychain-key stability.
@@ -62,6 +67,8 @@ function buildAndApplyMenu(options: RegisterAppMenuOptions): void {
     onToggleRightSidebar,
     onToggleAppearance,
     getAppearanceState,
+    getHiddenSourceControlSections,
+    onToggleSourceControlSection,
     getKeybindings
   } = options
 
@@ -296,7 +303,15 @@ function buildAndApplyMenu(options: RegisterAppMenuOptions): void {
       { type: 'separator' },
       { role: 'togglefullscreen' },
       { type: 'separator' },
-      appearanceSubmenu
+      appearanceSubmenu,
+      ...(getHiddenSourceControlSections && onToggleSourceControlSection
+        ? [
+            buildSourceControlSectionsSubmenu(
+              getHiddenSourceControlSections(),
+              onToggleSourceControlSection
+            )
+          ]
+        : [])
     ]
   }
 

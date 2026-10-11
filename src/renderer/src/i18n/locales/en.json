@@ -346,6 +346,7 @@
     "showAutomationsButton": "Show Automations Button",
     "showMobileButton": "Show Orca Mobile Button",
     "showTitlebarAppName": "Show Titlebar App Name",
+    "sourceControlSections": "Source Control Sections",
     "view": "View",
     "reload": "Reload",
     "forceReload": "Force Reload",
@@ -19547,6 +19548,9 @@
     "title": "Changes",
     "groupByStatus": "Group by status",
     "showOneList": "Show all changes in one list"
+  },
+  "sourceControlSections": {
+    "hide": "Hide section"
   },
   "languageServers": {
     "title": "Language Servers",

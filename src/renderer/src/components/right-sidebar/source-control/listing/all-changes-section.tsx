@@ -36,6 +36,7 @@ export function SourceControlAllChangesSection({
   activeConnectionId,
   onOpen,
   onViewAll,
+  headerActions,
   diffCommentCountByPath,
   reviewThreadCountByPath,
   pendingReviewCountByPath,
@@ -58,6 +59,7 @@ export function SourceControlAllChangesSection({
   activeConnectionId: string | null
   onOpen: (entry: GitBranchChangeEntry, event?: SourceControlRowOpenEvent) => void
   onViewAll: () => void
+  headerActions?: React.ReactNode
   diffCommentCountByPath: Map<string, number>
   reviewThreadCountByPath: Map<string, number>
   pendingReviewCountByPath: Map<string, number>
@@ -113,18 +115,21 @@ export function SourceControlAllChangesSection({
         isCollapsed={collapsed}
         onToggle={onToggle}
         actions={
-          <Button
-            type="button"
-            variant="ghost"
-            size="xs"
-            className="px-1.5 text-muted-foreground hover:text-foreground"
-            onClick={(event) => {
-              event.stopPropagation()
-              onViewAll()
-            }}
-          >
-            {translate('auto.components.right.sidebar.SourceControl.48db37cca9', 'View all')}
-          </Button>
+          <>
+            {headerActions}
+            <Button
+              type="button"
+              variant="ghost"
+              size="xs"
+              className="px-1.5 text-muted-foreground hover:text-foreground"
+              onClick={(event) => {
+                event.stopPropagation()
+                onViewAll()
+              }}
+            >
+              {translate('auto.components.right.sidebar.SourceControl.48db37cca9', 'View all')}
+            </Button>
+          </>
         }
       />
       {!collapsed &&

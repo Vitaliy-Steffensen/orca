@@ -57,12 +57,15 @@ export function SourceControlFileCategoryFilter({
   presentFileCategories,
   hiddenFileCategories,
   isCategoryFilterActive,
-  onToggleFileCategory
+  onToggleFileCategory,
+  compact = false
 }: {
   presentFileCategories: readonly SourceControlFileCategory[]
   hiddenFileCategories: ReadonlySet<SourceControlFileCategory>
   isCategoryFilterActive: boolean
   onToggleFileCategory: (category: SourceControlFileCategory) => void
+  /** An icon button for a section header instead of the full-width row. */
+  compact?: boolean
 }): React.JSX.Element {
   const shownCategories = presentFileCategories.filter(
     (category) => !hiddenFileCategories.has(category)
@@ -79,46 +82,68 @@ export function SourceControlFileCategoryFilter({
         )
       : shownCategories.map(getFileCategoryLabel).join(', ')
 
-  return (
-    <div className="px-3 pb-2">
-      <DropdownMenu>
-        <DropdownMenuTrigger asChild>
+  const ariaLabel = translate(
+    'auto.components.right.sidebar.SourceControl.fileCategory.triggerLabel',
+    'Filter changed files by type'
+  )
+  const menu = (
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        {compact ? (
+          <Button
+            type="button"
+            variant="ghost"
+            size="icon-xs"
+            title={triggerLabel}
+            aria-label={ariaLabel}
+            data-filter-active={isCategoryFilterActive ? 'true' : undefined}
+            className={
+              isCategoryFilterActive
+                ? 'text-foreground'
+                : 'text-muted-foreground hover:text-foreground'
+            }
+            onClick={(event) => event.stopPropagation()}
+          >
+            <ListFilter className="size-3.5" aria-hidden="true" />
+          </Button>
+        ) : (
           <Button
             type="button"
             variant="outline"
             size="xs"
             className="w-full justify-start"
-            aria-label={translate(
-              'auto.components.right.sidebar.SourceControl.fileCategory.triggerLabel',
-              'Filter changed files by type'
-            )}
+            aria-label={ariaLabel}
           >
             <ListFilter className="size-3.5" aria-hidden="true" />
             <span className="min-w-0 flex-1 truncate text-left">{triggerLabel}</span>
             <ChevronDown className="size-3.5" aria-hidden="true" />
           </Button>
-        </DropdownMenuTrigger>
-        <DropdownMenuContent align="start" className="w-(--radix-dropdown-menu-trigger-width)">
-          <DropdownMenuLabel>
-            {translate(
-              'auto.components.right.sidebar.SourceControl.fileCategory.menuLabel',
-              'Show file types'
-            )}
-          </DropdownMenuLabel>
-          <DropdownMenuSeparator />
-          {presentFileCategories.map((category) => (
-            <DropdownMenuCheckboxItem
-              key={category}
-              checked={!hiddenFileCategories.has(category)}
-              onCheckedChange={() => onToggleFileCategory(category)}
-              // Why: keep the menu open so several types can be toggled in one visit.
-              onSelect={(event) => event.preventDefault()}
-            >
-              {getFileCategoryLabel(category)}
-            </DropdownMenuCheckboxItem>
-          ))}
-        </DropdownMenuContent>
-      </DropdownMenu>
-    </div>
+        )}
+      </DropdownMenuTrigger>
+      <DropdownMenuContent
+        align={compact ? 'end' : 'start'}
+        className={compact ? 'w-48' : 'w-(--radix-dropdown-menu-trigger-width)'}
+      >
+        <DropdownMenuLabel>
+          {translate(
+            'auto.components.right.sidebar.SourceControl.fileCategory.menuLabel',
+            'Show file types'
+          )}
+        </DropdownMenuLabel>
+        <DropdownMenuSeparator />
+        {presentFileCategories.map((category) => (
+          <DropdownMenuCheckboxItem
+            key={category}
+            checked={!hiddenFileCategories.has(category)}
+            onCheckedChange={() => onToggleFileCategory(category)}
+            // Why: keep the menu open so several types can be toggled in one visit.
+            onSelect={(event) => event.preventDefault()}
+          >
+            {getFileCategoryLabel(category)}
+          </DropdownMenuCheckboxItem>
+        ))}
+      </DropdownMenuContent>
+    </DropdownMenu>
   )
+  return compact ? menu : <div className="px-3 pb-2">{menu}</div>
 }

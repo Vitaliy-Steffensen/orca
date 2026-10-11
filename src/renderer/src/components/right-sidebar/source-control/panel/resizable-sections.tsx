@@ -2,6 +2,8 @@ import React, { useCallback, useLayoutEffect, useRef, useState } from 'react'
 import { usePanelRef, type PanelImperativeHandle } from 'react-resizable-panels'
 import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from '@/components/ui/resizable'
 import { shelfResizeTarget } from './shelf-sizing'
+import { SectionDropZone } from './section-drop-zone'
+import type { MovableSourceControlSectionId } from '../../../../../../shared/source-control-sections'
 
 const DEFAULT_SHELF_HEIGHT_PX = 240
 // Why 28: a SectionHeader's height, so dragging can shrink a section to its header but never cut it.
@@ -9,7 +11,10 @@ const SHELF_MIN_HEIGHT_PX = 28
 const FILES_MIN_HEIGHT_PX = 120
 const STORAGE_PREFIX = 'orca.sourceControl.sectionHeight.'
 
-export type ResizableShelf = { id: string; node: React.ReactNode }
+export type ResizableShelf = {
+  id: Exclude<MovableSourceControlSectionId, 'changes'>
+  node: React.ReactNode
+}
 
 function readPreferredHeight(id: string): number | null {
   try {
@@ -100,33 +105,42 @@ function ShelfPanel({
   }, [id, natural, panelRef])
 
   return (
-    <>
-      <ResizablePanel
-        id={id}
-        panelRef={panelRef}
-        defaultSize={`${readPreferredHeight(id) ?? DEFAULT_SHELF_HEIGHT_PX}px`}
-        minSize={`${Math.min(natural || SHELF_MIN_HEIGHT_PX, SHELF_MIN_HEIGHT_PX)}px`}
-        {...(natural > 0 ? { maxSize: `${natural}px` } : {})}
-        groupResizeBehavior="preserve-pixel-size"
-      >
-        <div className="h-full overflow-y-auto scrollbar-sleek">
-          <div ref={contentRef}>{children}</div>
-        </div>
-      </ResizablePanel>
-      <ResizableHandle />
-    </>
+    <ResizablePanel
+      id={id}
+      panelRef={panelRef}
+      defaultSize={`${readPreferredHeight(id) ?? DEFAULT_SHELF_HEIGHT_PX}px`}
+      minSize={`${Math.min(natural || SHELF_MIN_HEIGHT_PX, SHELF_MIN_HEIGHT_PX)}px`}
+      {...(natural > 0 ? { maxSize: `${natural}px` } : {})}
+      groupResizeBehavior="preserve-pixel-size"
+    >
+      <div className="h-full overflow-y-auto scrollbar-sleek">
+        <div ref={contentRef}>{children}</div>
+      </div>
+    </ResizablePanel>
   )
 }
 
 // Fork: every source-control section sits in a vertical resizable group, so a long notes list can
-// be dragged short and the changed files keep their room.
+// be dragged short and the changed files keep their room. The sections follow the user's order,
+// set by dragging a section's header onto another.
 export function SourceControlResizableSections({
   shelves,
+  order,
+  onMove,
+  onHide,
   children
 }: {
   shelves: readonly ResizableShelf[]
+  order: readonly MovableSourceControlSectionId[]
+  onMove: (
+    id: MovableSourceControlSectionId,
+    beforeId: MovableSourceControlSectionId | null
+  ) => void
+  onHide: (id: MovableSourceControlSectionId) => void
   children: React.ReactNode
 }): React.JSX.Element {
+  const shelfById = new Map(shelves.map((shelf) => [shelf.id, shelf]))
+  const visible = order.filter((id) => id === 'changes' || shelfById.has(id))
   const panels = useRef(new Map<string, React.RefObject<PanelImperativeHandle | null>>())
   const register = useCallback(
     (id: string, panel: React.RefObject<PanelImperativeHandle | null> | null) => {
@@ -162,23 +176,39 @@ export function SourceControlResizableSections({
 
   return (
     <ResizablePanelGroup
-      key={shelves.map((shelf) => shelf.id).join(',')}
+      key={visible.join(',')}
       orientation="vertical"
       className="min-h-0 flex-1"
       onLayoutChanged={rememberDraggedHeights}
     >
-      {shelves.map((shelf) => (
-        <ShelfPanel key={shelf.id} id={shelf.id} register={register}>
-          {shelf.node}
-        </ShelfPanel>
+      {visible.map((id, index) => (
+        <React.Fragment key={id}>
+          {index > 0 ? <ResizableHandle /> : null}
+          {id === 'changes' ? (
+            <ResizablePanel
+              id="files"
+              minSize={`${FILES_MIN_HEIGHT_PX}px`}
+              className="flex h-full flex-col"
+            >
+              <SectionDropZone
+                id={id}
+                order={visible}
+                onMove={onMove}
+                onHide={onHide}
+                className="flex h-full min-h-0 flex-col"
+              >
+                {children}
+              </SectionDropZone>
+            </ResizablePanel>
+          ) : (
+            <ShelfPanel id={id} register={register}>
+              <SectionDropZone id={id} order={visible} onMove={onMove} onHide={onHide}>
+                {shelfById.get(id)?.node}
+              </SectionDropZone>
+            </ShelfPanel>
+          )}
+        </React.Fragment>
       ))}
-      <ResizablePanel
-        id="files"
-        minSize={`${FILES_MIN_HEIGHT_PX}px`}
-        className="flex h-full flex-col"
-      >
-        {children}
-      </ResizablePanel>
     </ResizablePanelGroup>
   )
 }

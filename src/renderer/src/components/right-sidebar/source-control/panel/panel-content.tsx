@@ -1,6 +1,9 @@
+import { useLayoutEffect, useState } from 'react'
 import { GitHistoryPanel } from '../sync/git-history-panel'
-import { AgentTurnsSection } from '../agent-turns/agent-turns-section'
 import { shouldShowSourceControlCompareUnavailableCard } from './header-toolbar'
+import { trackDockScrollPadding } from './dock-scroll-padding'
+import { HideSectionContextMenu } from '../listing/section-chrome'
+import { toggleSourceControlSectionHidden } from '../../../../../../shared/source-control-sections'
 import { shouldRenderCommitArea } from '../commit/component-gates'
 import { SourceControlBranchSection } from '../listing/branch-section'
 import { SourceControlAllChangesSection } from '../listing/all-changes-section'
@@ -19,6 +22,8 @@ import type { SourceControlPanelReadyProps } from './panel-props'
 export function SourceControlPanelContent(props: SourceControlPanelReadyProps) {
   const { activeWorktree, currentWorktreeId, model, worktreePath } = props
   const {
+    settings,
+    updateSettings,
     allChangeEntries,
     openAllChangesEntry,
     showAllChanges,
@@ -101,6 +106,26 @@ export function SourceControlPanelContent(props: SourceControlPanelReadyProps) {
   const hasFilteredBranchEntries = filteredBranchEntries.length > 0
   const showGenericEmptyState =
     !hasUncommittedEntries && branchSummary?.status === 'ready' && branchEntries.length === 0
+  const [dock, setDock] = useState<HTMLDivElement | null>(null)
+  useLayoutEffect(
+    () =>
+      fileListScrollElement && dock
+        ? trackDockScrollPadding(fileListScrollElement, dock)
+        : undefined,
+    [dock, fileListScrollElement]
+  )
+  const sectionLayout = settings?.sourceControlSectionLayout
+  const hiddenSections = sectionLayout?.hidden ?? []
+  const changesHidden = hiddenSections.includes('changes')
+  const commitsHidden = hiddenSections.includes('commits')
+  const hideCommits = (): void => {
+    void updateSettings({
+      sourceControlSectionLayout: {
+        ...sectionLayout,
+        hidden: toggleSourceControlSectionHidden(hiddenSections, 'commits')
+      }
+    })
+  }
 
   return (
     <>
@@ -134,49 +159,69 @@ export function SourceControlPanelContent(props: SourceControlPanelReadyProps) {
         isCategoryFilterActive={isCategoryFilterActive}
       />
 
-      {/* Why: keep CommitArea mounted across normal states — gating on hasUncommittedEntries (#1448) would unmount the action surface on clean worktrees and mid-commit as the staged list clears. Active merge/rebase/cherry-pick is the exception. */}
       <SourceControlForkPushNotice pushTarget={activeWorktree.pushTarget ?? null} />
 
       {shouldRenderCommitArea(unresolvedConflicts.length, conflictOperation) && (
         <SourceControlCommitSurface {...props} showGenericEmptyState={showGenericEmptyState} />
       )}
 
-      {shouldShowSourceControlFileCategoryFilter(presentFileCategories, isCategoryFilterActive) && (
-        <SourceControlFileCategoryFilter
-          presentFileCategories={presentFileCategories}
-          hiddenFileCategories={hiddenFileCategories}
-          isCategoryFilterActive={isCategoryFilterActive}
-          onToggleFileCategory={toggleFileCategory}
-        />
-      )}
+      {!showAllChanges &&
+        shouldShowSourceControlFileCategoryFilter(
+          presentFileCategories,
+          isCategoryFilterActive
+        ) && (
+          <SourceControlFileCategoryFilter
+            presentFileCategories={presentFileCategories}
+            hiddenFileCategories={hiddenFileCategories}
+            isCategoryFilterActive={isCategoryFilterActive}
+            onToggleFileCategory={toggleFileCategory}
+          />
+        )}
 
-      {showAllChanges && allChangeEntries.length > 0 && (
-        <SourceControlAllChangesSection
-          baseRef={branchSummary?.status === 'ready' ? branchSummary.baseRef : null}
-          entries={allChangeEntries}
-          totalEntryCount={totalAllChangeCount}
-          collapsed={collapsedSections.has('all-changes')}
-          onToggle={() => toggleSection('all-changes')}
-          sourceControlViewMode={sourceControlViewMode}
-          visibleTreeRows={visibleAllChangesTreeRows}
-          fileListScrollElement={fileListScrollElement}
-          collapsedTreeDirs={collapsedTreeDirs}
-          toggleTreeDir={toggleTreeDir}
-          currentWorktreeId={currentWorktreeId}
-          worktreePath={worktreePath}
-          revealInExplorer={revealInExplorer}
-          activeConnectionId={activeConnectionId}
-          onOpen={openAllChangesEntry}
-          onViewAll={() => openAllDiffs(currentWorktreeId, worktreePath)}
-          diffCommentCountByPath={diffCommentCountByPath}
-          reviewThreadCountByPath={reviewThreadCountByPath}
-          pendingReviewCountByPath={pendingReviewCountByPath}
-          activeOpenRowKeys={activeOpenRowKeys}
-          activeOpenRowKey={activeOpenRowKey}
-        />
-      )}
+      {/* Why also when empty under a type filter: the filter lives in this header, so it must stay reachable. */}
+      {showAllChanges &&
+        !changesHidden &&
+        (allChangeEntries.length > 0 || isCategoryFilterActive) && (
+          <SourceControlAllChangesSection
+            baseRef={branchSummary?.status === 'ready' ? branchSummary.baseRef : null}
+            entries={allChangeEntries}
+            totalEntryCount={totalAllChangeCount}
+            collapsed={collapsedSections.has('all-changes')}
+            onToggle={() => toggleSection('all-changes')}
+            sourceControlViewMode={sourceControlViewMode}
+            visibleTreeRows={visibleAllChangesTreeRows}
+            fileListScrollElement={fileListScrollElement}
+            collapsedTreeDirs={collapsedTreeDirs}
+            toggleTreeDir={toggleTreeDir}
+            currentWorktreeId={currentWorktreeId}
+            worktreePath={worktreePath}
+            revealInExplorer={revealInExplorer}
+            activeConnectionId={activeConnectionId}
+            onOpen={openAllChangesEntry}
+            onViewAll={() => openAllDiffs(currentWorktreeId, worktreePath)}
+            headerActions={
+              shouldShowSourceControlFileCategoryFilter(
+                presentFileCategories,
+                isCategoryFilterActive
+              ) ? (
+                <SourceControlFileCategoryFilter
+                  compact
+                  presentFileCategories={presentFileCategories}
+                  hiddenFileCategories={hiddenFileCategories}
+                  isCategoryFilterActive={isCategoryFilterActive}
+                  onToggleFileCategory={toggleFileCategory}
+                />
+              ) : null
+            }
+            diffCommentCountByPath={diffCommentCountByPath}
+            reviewThreadCountByPath={reviewThreadCountByPath}
+            pendingReviewCountByPath={pendingReviewCountByPath}
+            activeOpenRowKeys={activeOpenRowKeys}
+            activeOpenRowKey={activeOpenRowKey}
+          />
+        )}
 
-      {hasFilteredUncommittedEntries && !showAllChanges && (
+      {hasFilteredUncommittedEntries && !showAllChanges && !changesHidden && (
         <SourceControlUncommittedSections
           displaySections={displaySections}
           unfilteredDisplaySectionsById={unfilteredDisplaySectionsById}
@@ -248,44 +293,42 @@ export function SourceControlPanelContent(props: SourceControlPanelReadyProps) {
         />
       ) : null}
 
-      {branchSummary?.status === 'ready' && hasFilteredBranchEntries && !showAllChanges && (
-        <SourceControlBranchSection
-          activeOpenRowKeys={activeOpenRowKeys}
-          activeOpenRowKey={activeOpenRowKey}
-          branchSummary={branchSummary}
-          filteredBranchEntries={filteredBranchEntries}
-          totalBranchEntryCount={branchEntries.length}
-          collapsedSections={collapsedSections}
-          toggleSection={toggleSection}
-          sourceControlViewMode={sourceControlViewMode}
-          visibleBranchTreeRows={visibleBranchTreeRows}
-          fileListScrollElement={fileListScrollElement}
-          collapsedTreeDirs={collapsedTreeDirs}
-          toggleTreeDir={toggleTreeDir}
-          currentWorktreeId={currentWorktreeId}
-          worktreePath={worktreePath}
-          revealInExplorer={revealInExplorer}
-          activeConnectionId={activeConnectionId}
-          openCommittedDiff={openCommittedDiff}
-          openBranchAllDiffs={openBranchAllDiffs}
-          diffCommentCountByPath={diffCommentCountByPath}
-          reviewThreadCountByPath={reviewThreadCountByPath}
-          pendingReviewCountByPath={pendingReviewCountByPath}
-        />
-      )}
-
-      {/* Why: agent turns and the graph are reference context, so keep both docked at the bottom as the pane scrolls. */}
-      <div className="sticky bottom-0 z-10 mt-auto shrink-0 bg-sidebar/95 backdrop-blur-sm">
-        {!activeConnectionId && (
-          <AgentTurnsSection
-            worktreeId={currentWorktreeId}
+      {branchSummary?.status === 'ready' &&
+        hasFilteredBranchEntries &&
+        !showAllChanges &&
+        !changesHidden && (
+          <SourceControlBranchSection
+            activeOpenRowKeys={activeOpenRowKeys}
+            activeOpenRowKey={activeOpenRowKey}
+            branchSummary={branchSummary}
+            filteredBranchEntries={filteredBranchEntries}
+            totalBranchEntryCount={branchEntries.length}
+            collapsedSections={collapsedSections}
+            toggleSection={toggleSection}
+            sourceControlViewMode={sourceControlViewMode}
+            visibleBranchTreeRows={visibleBranchTreeRows}
+            fileListScrollElement={fileListScrollElement}
+            collapsedTreeDirs={collapsedTreeDirs}
+            toggleTreeDir={toggleTreeDir}
+            currentWorktreeId={currentWorktreeId}
             worktreePath={worktreePath}
-            collapsed={collapsedSections.has('agent-turns')}
-            onToggle={() => toggleSection('agent-turns')}
+            revealInExplorer={revealInExplorer}
+            activeConnectionId={activeConnectionId}
+            openCommittedDiff={openCommittedDiff}
+            openBranchAllDiffs={openBranchAllDiffs}
+            diffCommentCountByPath={diffCommentCountByPath}
+            reviewThreadCountByPath={reviewThreadCountByPath}
+            pendingReviewCountByPath={pendingReviewCountByPath}
           />
         )}
-        {isGitHistoryVisible && (
-          <div className="border-t border-border">
+
+      {isGitHistoryVisible && !commitsHidden && (
+        // Why: the graph is reference context, so keep it docked at the bottom as the pane scrolls.
+        <HideSectionContextMenu onHide={hideCommits}>
+          <div
+            ref={setDock}
+            className="sticky bottom-0 z-10 mt-auto shrink-0 border-t border-border bg-sidebar/95 backdrop-blur-sm"
+          >
             <GitHistoryPanel
               state={gitHistoryState}
               collapsed={collapsedSections.has('history')}
@@ -297,8 +340,8 @@ export function SourceControlPanelContent(props: SourceControlPanelReadyProps) {
               onCommitAction={handleCommitAction}
             />
           </div>
-        )}
-      </div>
+        </HideSectionContextMenu>
+      )}
     </>
   )
 }

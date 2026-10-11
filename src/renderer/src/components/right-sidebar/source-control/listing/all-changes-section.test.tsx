@@ -59,6 +59,11 @@ describe('SourceControlAllChangesSection', () => {
     expect(screen.getByText('committed.ts').closest('[data-current="true"]')).toBeNull()
   })
 
+  it('keeps extra header actions, like the file type filter, beside View all', () => {
+    renderSection({ headerActions: <button type="button">Filter</button> })
+    expect(screen.getByText('Filter')).toBeTruthy()
+  })
+
   it('opens every file together from View all', () => {
     const props = renderSection({})
     fireEvent.click(screen.getByText('View all'))

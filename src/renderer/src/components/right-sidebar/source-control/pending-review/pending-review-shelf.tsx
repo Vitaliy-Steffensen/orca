@@ -12,7 +12,6 @@ import type { PendingReviewQueue } from '@/components/pending-review/use-pending
 import type { ReviewVerdictSubmitter } from '@/components/pending-review/use-submit-review-verdict'
 import { PendingReviewCommentCard } from '@/components/pending-review/PendingReviewCommentCard'
 import { SectionHeader } from '../listing/section-header'
-import { PendingReviewReviewers } from './pending-review-reviewers'
 import { useReviewDiffBase } from '@/components/pending-review/use-review-diff-base'
 import { usePendingReviewSummary } from '@/components/pending-review/pending-review-summary-store'
 import { ReviewMarkdownComposer } from '@/components/github/ReviewMarkdownComposer'
@@ -142,32 +141,27 @@ export function SourceControlPendingReviewShelf({
 
   return (
     <div>
-      <PendingReviewReviewers reviewers={submitter.reviewers} onRerequest={submitter.rerequest} />
-      {/* Why hidden at zero: a disclosure that opens onto nothing is chrome, and the form
-          below is the part of this shelf that is always worth showing. */}
+      {/* Fork: the header shows even with no drafts — it is the section's drag handle and
+          its right-click Hide. */}
+      <SectionHeader
+        label={translate('auto.components.sourceControl.pendingReview.title', 'Pending review')}
+        count={queue.comments.length}
+        isCollapsed={!expanded}
+        onToggle={() => setExpanded((prev) => !prev)}
+      />
       {queue.comments.length > 0 ? (
-        <>
-          {/* Why the shared header: this is one more collapsible list in the same panel as
-              the changed-file sections, and it read as a different kind of thing. */}
-          <SectionHeader
-            label={translate('auto.components.sourceControl.pendingReview.title', 'Pending review')}
-            count={queue.comments.length}
-            isCollapsed={!expanded}
-            onToggle={() => setExpanded((prev) => !prev)}
-          />
-          <div className={cn('px-3 pb-2', !expanded && 'hidden')}>
-            <div className="space-y-2">
-              {queue.comments.map((comment) => (
-                <PendingReviewCommentCard
-                  key={comment.id}
-                  comment={comment}
-                  onChangeBody={(next) => queue.updateBody(comment.id, next)}
-                  onRemove={() => queue.remove(comment.id)}
-                />
-              ))}
-            </div>
+        <div className={cn('px-3 pb-2', !expanded && 'hidden')}>
+          <div className="space-y-2">
+            {queue.comments.map((comment) => (
+              <PendingReviewCommentCard
+                key={comment.id}
+                comment={comment}
+                onChangeBody={(next) => queue.updateBody(comment.id, next)}
+                onRemove={() => queue.remove(comment.id)}
+              />
+            ))}
           </div>
-        </>
+        </div>
       ) : null}
       {diffBase.available ? (
         <div className="px-3 pt-2">

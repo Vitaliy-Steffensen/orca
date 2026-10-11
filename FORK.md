@@ -195,7 +195,7 @@ Modified files, and what to re-apply:
 | `src/renderer/src/components/virtualized-list.tsx`                                                  | `scrollToRowKey`, `alignRowWithinScrollPadding`, and the flow-path wrapper — rendered **only when a caller passes `scrollToRowKey`**, so every other list keeps upstream's bare fragment. Heavily edited — merge with care.                                                                                                                                                                                                    |
 | `src/renderer/.../checks-panel/comment-row.tsx`, `comment-group.tsx`, `use-comments-list-state.tsx` | The `onOpenLocation` prop and the clickable path badge.                                                                                                                                                                                                                                                      |
 | `src/renderer/.../source-control/listing/*`                                                         | `activeOpenRowKey`, the branch-row `isOpenFile` highlight, the published review order in `use-published-review-order.ts`.                                                                                                                                                                                              |
-| `src/renderer/.../source-control/panel/panel-ready.tsx`                                             | `scroll-pb-16` on the file-list scroller — reserves the docked Agent turns and Commits headers.                                                                                                                                                                                                                                |
+| `src/renderer/.../source-control/panel/panel-ready.tsx`                                             | `scroll-pt-7` on the file-list scroller — reserves the sticky section header; the Commits dock sets the bottom padding (§35).                                                                                                                                                                                                                                |
 | `src/renderer/.../listing/active-open-file-keys.ts`                                                 | The `branch::<path>` key. Branch keys **must bypass** the availability filter.                                                                                                                                                                                                                               |
 
 Four upstream **test** files carry our additions. Take upstream's version, then re-apply:
@@ -1312,8 +1312,16 @@ resolver instead, and with no base yet the row falls back to the uncommitted dif
 highlights its one row, and file stepping walks these rows (`ChangedFileArea` `'branch-worktree'`,
 `openDiffAtLocation`). "View all" opens upstream's All Changes combined diff.
 
-Agent turns are docked at the bottom with Commits (`panel-content.tsx`). The turn list scrolls in
-place past `max-h-48`, and the file list reserves both headers with `scroll-pb-16`.
+The file-type filter is an icon popout in the Changes header, beside View all
+(`SourceControlFileCategoryFilter`'s `compact`). The section stays up while a type filter empties it,
+so the filter can be reached. Keyboard file stepping keeps the row clear of the sticky section
+header (`scroll-pt-7` on the scroller) and of the docked Commits footer, whose live height becomes
+the scroller's bottom scroll-padding (`panel/dock-scroll-padding.ts`).
+
+Upstream's commit box is gone; committing is left to the agent or the CLI. `commit-surface.tsx`
+renders only the Create review composer when that is the next step. `commit/commit-area.tsx` is
+left in place, unused, to keep upstream merges clean. The two `SourceControl.preview-open` tests of
+its Stage All button are removed.
 
 | File | What is ours |
 | --- | --- |
@@ -1325,9 +1333,38 @@ place past `max-h-48`, and the file list reserves both headers with `scroll-pb-1
 | `source-control/listing/use-file-listing.ts`, `use-row-opening.ts`, `use-published-review-order.ts` | The projection, opener, highlight and review order. Upstream's open-in path block moved to `use-open-in-selection-path.ts` for the line limit. |
 | `source-control/listing/tree-directory-rows.tsx` | The branch directory row takes only the header fields. |
 | `source-control/panel/use-panel-view-state.ts`, `use-panel-foundation.ts`, `panel-ready.tsx`, `header-toolbar.tsx`, `header-overflow-menu.tsx`, `panel-content.tsx` | The grouping toggle, the section, and the bottom dock. |
-| `source-control/agent-turns/agent-turns-section.tsx` | The capped turn list. |
-| `SourceControl.open-file-highlight.test.tsx`, `SourceControl.preview-open.test.tsx`, `SourceControl.virtual-file-list.test.tsx` | `sourceControlGrouping: 'status'`, since they cover upstream's sections. |
+| `source-control/listing/file-category-filter.tsx` | The `compact` popout. |
+| `source-control/panel/commit-surface.tsx` | No commit box. |
+| `SourceControl.open-file-highlight.test.tsx`, `SourceControl.preview-open.test.tsx`, `SourceControl.virtual-file-list.test.tsx` | `sourceControlGrouping: 'status'`, since they cover upstream's sections; the commit-box tests removed. |
 | `src/renderer/src/i18n/locales/en.json` | `allChanges.*`. |
+
+### 36. Source-control sections: their own headers, dragged order, hidden sections
+
+Reviewers, Pending review, Agent notes, Agent turns, Changes and Commits are sections listed in
+`src/shared/source-control-sections.ts`. Reviewers is now its own section
+(`pending-review-reviewers.tsx` with a `SectionHeader`), apart from the pending-review shelf, whose
+header now shows even with no drafts. Agent turns is a resizable shelf like the others
+(`panel-ready.tsx`); it takes its turns as a prop (`useAgentTurns`).
+
+Every section but Commits, which stays docked under the files, sits in the resizable group in the
+user's order (`resizable-sections.tsx`). Dragging a section's header onto another moves it before
+or after it, depending on which half it lands on (`listing/section-chrome.tsx`,
+`panel/section-drop-zone.tsx`). Right-clicking a header, or the Commits dock, offers Hide section.
+View > Source Control Sections has a visibility checkbox for each
+(`main/menu/source-control-sections-menu.ts`). Both are saved in `sourceControlSectionLayout`
+(`{ order, hidden }`). Saving it rebuilds the menu, which reads the labels' English fallbacks.
+
+| File | What is ours |
+| --- | --- |
+| `src/shared/global-settings-types.ts` | `sourceControlSectionLayout?`. |
+| `src/main/menu/register-app-menu.ts` | The optional `getHiddenSourceControlSections` / `onToggleSourceControlSection` and the submenu after Appearance. |
+| `src/main/startup/main-process-i18n-menu.ts` | Their implementation. |
+| `src/main/ipc/settings.ts` | `sourceControlSectionLayout` in `APPEARANCE_MENU_KEYS`. |
+| `source-control/listing/section-header.tsx` | Optional `count`; the header wrapped in its section's chrome. |
+| `source-control/panel/resizable-sections.tsx` | Ordered sections with drop zones; handles between panels, not after each shelf. |
+| `source-control/panel/panel-ready.tsx`, `panel-content.tsx` | The order, hiding, the Reviewers and Agent turns shelves. |
+| `source-control/pending-review/pending-review-shelf.tsx` | No reviewers; an always-shown header. |
+| `src/renderer/src/i18n/locales/en.json` | `menu.sourceControlSections`, `sourceControlSections.hide`. |
 
 ## Verify
 

@@ -2,6 +2,11 @@ import React from 'react'
 import { ChevronDown } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { translate } from '@/i18n/i18n'
+import { SectionHeaderChrome } from './section-chrome'
+
+function withSectionChrome(header: React.JSX.Element): React.JSX.Element {
+  return <SectionHeaderChrome>{header}</SectionHeaderChrome>
+}
 
 export function SectionHeader({
   label,
@@ -14,7 +19,8 @@ export function SectionHeader({
   className
 }: {
   label: string
-  count: number
+  /** Omitted while the section is still loading. */
+  count?: number
   /** Spells out what the count measures — e.g. files changed against a compare base. */
   countTitle?: string
   conflictCount?: number
@@ -25,7 +31,7 @@ export function SectionHeader({
   className?: string
 }): React.JSX.Element {
   // Fork: the Commits header's row, sticky so a long section keeps its title and actions in view.
-  return (
+  return withSectionChrome(
     <div
       className={cn(
         'sticky top-0 z-[2] h-7 shrink-0 border-t border-border bg-sidebar pl-1 pr-3',
@@ -47,9 +53,11 @@ export function SectionHeader({
           </span>
           {/* Why: no aria-label here — inside the toggle button it would rewrite the
               button's accessible name; the explanation stays a hover-only title. */}
-          <span className="shrink-0 text-[10px] font-medium tabular-nums" title={countTitle}>
-            {count}
-          </span>
+          {count !== undefined && (
+            <span className="shrink-0 text-[10px] font-medium tabular-nums" title={countTitle}>
+              {count}
+            </span>
+          )}
           {conflictCount > 0 && (
             <span className="min-w-0 truncate text-[10px] font-medium normal-case tracking-normal text-destructive/80">
               {conflictCount}{' '}

@@ -1,7 +1,9 @@
 import { BulkActionBar } from '../commit/bulk-action-bar'
 import { SourceControlHeaderToolbar } from './header-toolbar'
 import { SourceControlPendingReviewShelf } from '../pending-review/pending-review-shelf'
+import { PendingReviewReviewers } from '../pending-review/pending-review-reviewers'
 import { AgentNotesShelf } from '../notes/agent-notes-shelf'
+import { AgentTurnsSection, useAgentTurns } from '../agent-turns/agent-turns-section'
 import { useWorktreeAgentNotes } from '@/lib/agent-notes'
 import { usePendingReviewQueue } from '@/components/pending-review/use-pending-review-queue'
 import { useSubmitReviewVerdict } from '@/components/pending-review/use-submit-review-verdict'
@@ -9,6 +11,12 @@ import { SourceControlPanelContent } from './panel-content'
 import { SourceControlResizableSections, type ResizableShelf } from './resizable-sections'
 import { SourceControlPanelDialogs } from './panel-dialogs'
 import type { SourceControlPanelReadyProps } from './panel-props'
+import {
+  moveSourceControlSection,
+  orderSourceControlSections,
+  toggleSourceControlSectionHidden,
+  type MovableSourceControlSectionId
+} from '../../../../../../shared/source-control-sections'
 
 /** The panel chrome: toolbar, review and agent-notes shelves, the file surface, bulk bar and dialogs. */
 export function SourceControlPanelReady(props: SourceControlPanelReadyProps) {
@@ -19,12 +27,14 @@ export function SourceControlPanelReady(props: SourceControlPanelReadyProps) {
     pendingReviewQueue
   )
   const {
+    activeConnectionId,
     activeWorktreeId,
     branchLineTotal,
     branchSummary,
     bulkStagePaths,
     bulkUnstagePaths,
     clearSelection,
+    collapsedSections,
     compareBaseRef,
     filterExpanded,
     filterQuery,
@@ -55,13 +65,30 @@ export function SourceControlPanelReady(props: SourceControlPanelReadyProps) {
     sourceControlGrouping,
     sourceControlViewMode,
     suppressedGitHubPRState,
+    toggleSection,
+    updateSettings,
     visibleCreatePrHeaderAction
   } = model
 
   const agentNoteCount = useWorktreeAgentNotes(activeWorktreeId).length
+  const agentTurns = useAgentTurns(worktreePath ?? '')
 
   // Fork: your own notes live in the diff viewer only; agent notes keep a section here.
   const shelves: ResizableShelf[] = []
+  const reviewers = submitReviewVerdict.reviewers
+  if (submitReviewVerdict.prNumber !== null && (reviewers === null || reviewers.length > 0)) {
+    shelves.push({
+      id: 'reviewers',
+      node: (
+        <PendingReviewReviewers
+          reviewers={reviewers}
+          onRerequest={submitReviewVerdict.rerequest}
+          collapsed={collapsedSections.has('reviewers')}
+          onToggle={() => toggleSection('reviewers')}
+        />
+      )
+    })
+  }
   // Why not gated on drafts: a verdict stands on its own — an approve needs no comments.
   if (submitReviewVerdict.prNumber !== null) {
     shelves.push({
@@ -79,6 +106,44 @@ export function SourceControlPanelReady(props: SourceControlPanelReadyProps) {
     shelves.push({
       id: 'agent-notes',
       node: <AgentNotesShelf worktreeId={activeWorktreeId} onOpenNote={handleOpenComment} />
+    })
+  }
+  if (activeWorktreeId && worktreePath && !activeConnectionId && agentTurns.length > 0) {
+    shelves.push({
+      id: 'agent-turns',
+      node: (
+        <AgentTurnsSection
+          worktreeId={activeWorktreeId}
+          worktreePath={worktreePath}
+          turns={agentTurns}
+          collapsed={collapsedSections.has('agent-turns')}
+          onToggle={() => toggleSection('agent-turns')}
+        />
+      )
+    })
+  }
+  // Fork: the user's section order and hidden sections (`shared/source-control-sections.ts`).
+  const sectionLayout = settings?.sourceControlSectionLayout
+  const hiddenSections = sectionLayout?.hidden ?? []
+  const sectionOrder = orderSourceControlSections(sectionLayout?.order)
+  const visibleShelves = shelves.filter((shelf) => !hiddenSections.includes(shelf.id))
+  const moveSection = (
+    id: MovableSourceControlSectionId,
+    beforeId: MovableSourceControlSectionId | null
+  ): void => {
+    void updateSettings({
+      sourceControlSectionLayout: {
+        ...sectionLayout,
+        order: moveSourceControlSection(sectionOrder, id, beforeId)
+      }
+    })
+  }
+  const hideSection = (id: MovableSourceControlSectionId): void => {
+    void updateSettings({
+      sourceControlSectionLayout: {
+        ...sectionLayout,
+        hidden: toggleSourceControlSectionHidden(hiddenSections, id)
+      }
     })
   }
 
@@ -119,13 +184,18 @@ export function SourceControlPanelReady(props: SourceControlPanelReadyProps) {
           manualReviewUrl={manualReviewUrl}
         />
 
-        <SourceControlResizableSections shelves={shelves}>
+        <SourceControlResizableSections
+          shelves={visibleShelves}
+          order={sectionOrder}
+          onMove={moveSection}
+          onHide={hideSection}
+        >
           <div
             ref={setFileListScrollElement}
-            // Why scroll-pb-16: the Agent turns and Commits headers are sticky to the bottom of this
-            // scroller, so a row scrolled flush to the bottom edge lands underneath them. Reserving
-            // their height keeps a revealed row clear, for scrollIntoView and the virtualizer.
-            className="relative flex flex-1 flex-col overflow-auto scrollbar-sleek scroll-pb-16"
+            // Why scroll-pt-7: a section's header is sticky to the top of this scroller, so a revealed
+            // row must clear it. The docked Commits footer sets the bottom padding to its own height
+            // (dock-scroll-padding.ts), for scrollIntoView and the virtualizer alike.
+            className="relative flex flex-1 flex-col overflow-auto scrollbar-sleek scroll-pt-7"
             style={{ paddingBottom: selectedKeys.size > 0 ? 50 : undefined }}
           >
             <SourceControlPanelContent {...props} />

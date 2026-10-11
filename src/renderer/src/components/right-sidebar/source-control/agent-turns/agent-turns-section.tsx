@@ -8,7 +8,7 @@ import type { AgentTurn } from '../../../../../../shared/agent-turns'
 import { agentTurnDetail, agentTurnTitle } from './agent-turn-label'
 import { openAgentTurn } from '@/lib/agent-turn-open'
 
-function useAgentTurns(worktreePath: string): AgentTurn[] {
+export function useAgentTurns(worktreePath: string): AgentTurn[] {
   const [loaded, setLoaded] = useState<{ worktreePath: string; turns: AgentTurn[] }>({
     worktreePath: '',
     turns: []
@@ -45,15 +45,16 @@ function useAgentTurns(worktreePath: string): AgentTurn[] {
 export function AgentTurnsSection({
   worktreeId,
   worktreePath,
+  turns,
   collapsed,
   onToggle
 }: {
   worktreeId: string
   worktreePath: string
+  turns: readonly AgentTurn[]
   collapsed: boolean
   onToggle: () => void
 }): React.JSX.Element | null {
-  const turns = useAgentTurns(worktreePath)
   const openCommitAllDiffs = useAppStore((s) => s.openCommitAllDiffs)
   const [now, setNow] = useState(() => Date.now())
 
@@ -87,28 +88,24 @@ export function AgentTurnsSection({
         isCollapsed={collapsed}
         onToggle={onToggle}
       />
-      {!collapsed && (
-        // Why capped: the section is docked over the file list, so a long history scrolls in place.
-        <div className="max-h-48 overflow-y-auto scrollbar-sleek">
-          {turns.map((turn) => (
-            <button
-              key={turn.ref}
-              type="button"
-              title={turn.prompt}
-              className="flex w-full min-w-0 items-start gap-2 px-3 py-1 text-left hover:bg-accent/60"
-              onClick={() => void openTurn(turn)}
-            >
-              <Bot className="mt-0.5 size-3.5 shrink-0 text-muted-foreground" />
-              <span className="flex min-w-0 flex-col">
-                <span className="truncate text-xs text-foreground">{agentTurnTitle(turn)}</span>
-                <span className="truncate text-[10px] text-muted-foreground">
-                  {agentTurnDetail(turn, now)}
-                </span>
+      {!collapsed &&
+        turns.map((turn) => (
+          <button
+            key={turn.ref}
+            type="button"
+            title={turn.prompt}
+            className="flex w-full min-w-0 items-start gap-2 px-3 py-1 text-left hover:bg-accent/60"
+            onClick={() => void openTurn(turn)}
+          >
+            <Bot className="mt-0.5 size-3.5 shrink-0 text-muted-foreground" />
+            <span className="flex min-w-0 flex-col">
+              <span className="truncate text-xs text-foreground">{agentTurnTitle(turn)}</span>
+              <span className="truncate text-[10px] text-muted-foreground">
+                {agentTurnDetail(turn, now)}
               </span>
-            </button>
-          ))}
-        </div>
-      )}
+            </span>
+          </button>
+        ))}
     </div>
   )
 }
