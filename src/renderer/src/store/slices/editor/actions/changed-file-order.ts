@@ -18,9 +18,15 @@ export type ChangedFileStepOptions = {
  * a row in CHANGES and a row in STAGED CHANGES. Collapsing them lost which one a step landed on, so
  * the staged row always opened — and highlighted — the unstaged diff.
  */
-export type ChangedFileArea = 'branch' | 'staged' | 'unstaged' | 'untracked'
+export type ChangedFileArea = 'branch' | 'staged' | 'unstaged' | 'untracked' | 'branch-worktree'
 
-const AREAS: readonly ChangedFileArea[] = ['branch', 'staged', 'unstaged', 'untracked']
+const AREAS: readonly ChangedFileArea[] = [
+  'branch',
+  'staged',
+  'unstaged',
+  'untracked',
+  'branch-worktree'
+]
 
 function toArea(raw: string): ChangedFileArea {
   return AREAS.includes(raw as ChangedFileArea) ? (raw as ChangedFileArea) : 'unstaged'

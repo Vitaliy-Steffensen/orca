@@ -165,7 +165,8 @@ function resetState(overrides: Partial<Record<string, unknown>> = {}): void {
     remoteStatusesByWorktree: {},
     isRemoteOperationActive: false,
     inFlightRemoteOpKind: null,
-    settings: null,
+    // Fork: these cover the status sections; the all-changes list is the fork's default.
+    settings: { sourceControlGrouping: 'status' },
     hostedReviewCache: {},
     prCache: {},
     commitMessageGenerationRecords: {},
@@ -395,7 +396,10 @@ describe('SourceControl preview row opens', () => {
       gitStatusByWorktree: { [mocks.activeWorktree.id]: [gitEntry({ path: 'src/file.ts' })] }
     })
     renderSourceControl()
-    mocks.state.settings = { activeRuntimeEnvironmentId: 'runtime-remote' }
+    mocks.state.settings = {
+      activeRuntimeEnvironmentId: 'runtime-remote',
+      sourceControlGrouping: 'status'
+    }
 
     const row = container.querySelector<HTMLDivElement>('[data-source-control-path="src/file.ts"]')
     const discardButton = row?.querySelector<HTMLButtonElement>(

@@ -65,7 +65,10 @@ export function isExternalReloadableEditorTab(file: OpenFile): boolean {
   return (
     file.mode === 'edit' ||
     file.mode === 'markdown-preview' ||
-    (file.mode === 'diff' && (file.diffSource === 'unstaged' || file.diffSource === 'staged'))
+    (file.mode === 'diff' &&
+      (file.diffSource === 'unstaged' ||
+        file.diffSource === 'staged' ||
+        file.diffSource === 'branch-worktree'))
   )
 }
 
@@ -91,7 +94,11 @@ export function canAutoSaveOpenFile(file: OpenFile): boolean {
   // write target. Combined diff and conflict-review tabs can represent multiple
   // paths, so autosave must stay out of those surfaces until they have their
   // own save coordination instead of guessing which file should be written.
-  return file.mode === 'edit' || (file.mode === 'diff' && file.diffSource === 'unstaged')
+  return (
+    file.mode === 'edit' ||
+    (file.mode === 'diff' &&
+      (file.diffSource === 'unstaged' || file.diffSource === 'branch-worktree'))
+  )
 }
 
 // Why: autosave must not resolve a changed-on-disk conflict by overwriting
@@ -158,7 +165,9 @@ export function getOpenFilesForExternalFileChange(
     }
     if (file.mode === 'diff') {
       return (
-        (file.diffSource === 'unstaged' || file.diffSource === 'staged') &&
+        (file.diffSource === 'unstaged' ||
+          file.diffSource === 'staged' ||
+          file.diffSource === 'branch-worktree') &&
         file.relativePath === target.relativePath
       )
     }

@@ -19543,6 +19543,11 @@
     "title": "Agent turns",
     "none": "No agent turns in this workspace yet."
   },
+  "allChanges": {
+    "title": "Changes",
+    "groupByStatus": "Group by status",
+    "showOneList": "Show all changes in one list"
+  },
   "languageServers": {
     "title": "Language Servers",
     "description": "Cmd+click, hover and references per language. Each runs a background process per project.",

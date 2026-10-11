@@ -150,7 +150,8 @@ export function SourceControlBranchTreeDirectoryRow({
   isCollapsed,
   onToggle
 }: {
-  node: BranchSourceControlTreeDirectoryNode
+  // Fork: only the header fields, so the all-changes tree can reuse this row.
+  node: Pick<BranchSourceControlTreeDirectoryNode, 'depth' | 'name' | 'fileCount'>
   isCollapsed: boolean
   onToggle: () => void
 }): React.JSX.Element {

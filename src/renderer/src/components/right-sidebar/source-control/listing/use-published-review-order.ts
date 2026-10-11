@@ -14,14 +14,20 @@ export function usePublishedSourceControlReviewOrder({
   activeWorktreeId,
   visibleSelectionEntries,
   visibleBranchTreeRows,
-  filteredBranchEntries
+  filteredBranchEntries,
+  allChangesReviewOrder
 }: {
   activeWorktreeId: string | null
   visibleSelectionEntries: readonly FlatEntry[]
   visibleBranchTreeRows: readonly SourceControlTreeNode<GitBranchChangeEntry, 'branch'>[]
   filteredBranchEntries: readonly GitBranchChangeEntry[]
+  /** Fork: the all-changes list's rows, which replace the sections' when it is showing. */
+  allChangesReviewOrder?: readonly string[]
 }): void {
   const reviewOrder = useMemo(() => {
+    if (allChangesReviewOrder) {
+      return [...allChangesReviewOrder]
+    }
     const keys: string[] = []
     const seen = new Set<string>()
     // Why row keys (`<area>::<path>`) rather than paths: a file changed in the working tree AND on
@@ -49,7 +55,7 @@ export function usePublishedSourceControlReviewOrder({
       }
     }
     return keys
-  }, [filteredBranchEntries, visibleBranchTreeRows, visibleSelectionEntries])
+  }, [allChangesReviewOrder, filteredBranchEntries, visibleBranchTreeRows, visibleSelectionEntries])
 
   useEffect(() => {
     if (!activeWorktreeId) {

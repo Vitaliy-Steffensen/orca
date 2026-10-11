@@ -195,7 +195,7 @@ Modified files, and what to re-apply:
 | `src/renderer/src/components/virtualized-list.tsx`                                                  | `scrollToRowKey`, `alignRowWithinScrollPadding`, and the flow-path wrapper — rendered **only when a caller passes `scrollToRowKey`**, so every other list keeps upstream's bare fragment. Heavily edited — merge with care.                                                                                                                                                                                                    |
 | `src/renderer/.../checks-panel/comment-row.tsx`, `comment-group.tsx`, `use-comments-list-state.tsx` | The `onOpenLocation` prop and the clickable path badge.                                                                                                                                                                                                                                                      |
 | `src/renderer/.../source-control/listing/*`                                                         | `activeOpenRowKey`, the branch-row `isOpenFile` highlight, the published review order in `use-published-review-order.ts`.                                                                                                                                                                                              |
-| `src/renderer/.../source-control/panel/panel-ready.tsx`                                             | `scroll-pb-9` on the file-list scroller — reserves the sticky Commits header.                                                                                                                                                                                                                                |
+| `src/renderer/.../source-control/panel/panel-ready.tsx`                                             | `scroll-pb-16` on the file-list scroller — reserves the docked Agent turns and Commits headers.                                                                                                                                                                                                                                |
 | `src/renderer/.../listing/active-open-file-keys.ts`                                                 | The `branch::<path>` key. Branch keys **must bypass** the availability filter.                                                                                                                                                                                                                               |
 
 Four upstream **test** files carry our additions. Take upstream's version, then re-apply:
@@ -1292,6 +1292,42 @@ Peek shows a reference in a file with no tab as a whole-file `orca-definition:` 
 registers the worktree file it came from (see "One file per model" in 26), so hover, underline and
 Cmd+click go to the language's server like an open file. A jump from the copy always opens the real
 file in a tab instead of moving inside the preview (`isWholeFileCopy` in the opener).
+
+### 35. One list of every changed file, live against the base
+
+By default (`sourceControlGrouping`, unset = `'all'`) source control shows one **Changes** section
+in place of upstream's staged / changes / untracked / committed-on-branch sections. It lists every
+file that differs from the branch base, committed or not, once (`listing/all-changes.ts`,
+`use-all-changes-projection.ts`, `all-changes-section.tsx`). Its rows are keyed
+`branch-worktree::<path>`. A file with both a committed and an uncommitted change shows no line
+count, because per-area counts overlap. The overflow menu's "Group by status" brings back
+upstream's sections, and that choice is saved.
+
+A row opens a `branch-worktree` diff (`actions/open-branch-worktree-diff.ts`): the base side is read
+at the merge base through the branch diff, and the other side is the file on disk through the
+working-tree diff (`editor/branch-worktree-diff.ts`). The tab is treated like an unstaged diff:
+editable, autosaved, reloaded by the file watcher and on every status change. A new compare (a
+commit, a new base) retargets it (`retarget-branch-diff-files.ts`). A conflicted file opens its
+resolver instead, and with no base yet the row falls back to the uncommitted diff. Any tab of a path
+highlights its one row, and file stepping walks these rows (`ChangedFileArea` `'branch-worktree'`,
+`openDiffAtLocation`). "View all" opens upstream's All Changes combined diff.
+
+Agent turns are docked at the bottom with Commits (`panel-content.tsx`). The turn list scrolls in
+place past `max-h-48`, and the file list reserves both headers with `scroll-pb-16`.
+
+| File | What is ours |
+| --- | --- |
+| `src/shared/global-settings-types.ts` | `sourceControlGrouping?`. |
+| `src/renderer/src/store/slices/editor/types/open-file.ts`, `editor-files-slice.ts`, `create-editor-slice.ts` | `'branch-worktree'` diff source and `openBranchWorktreeDiff`. |
+| `src/renderer/src/store/slices/editor/actions/changed-file-order.ts`, `open-diff-at-location.ts` | The `'branch-worktree'` area. |
+| `src/renderer/src/components/editor/useEditorPanelDiffContentLoader.ts` | The `branch-worktree` read. |
+| `editor-autosave.ts`, `editor-panel-diff-reload.ts`, `editor-external-watch-path-index.ts`, `EditorDiffFileSurface.tsx` | `'branch-worktree'` next to `'unstaged'`. |
+| `source-control/listing/use-file-listing.ts`, `use-row-opening.ts`, `use-published-review-order.ts` | The projection, opener, highlight and review order. Upstream's open-in path block moved to `use-open-in-selection-path.ts` for the line limit. |
+| `source-control/listing/tree-directory-rows.tsx` | The branch directory row takes only the header fields. |
+| `source-control/panel/use-panel-view-state.ts`, `use-panel-foundation.ts`, `panel-ready.tsx`, `header-toolbar.tsx`, `header-overflow-menu.tsx`, `panel-content.tsx` | The grouping toggle, the section, and the bottom dock. |
+| `source-control/agent-turns/agent-turns-section.tsx` | The capped turn list. |
+| `SourceControl.open-file-highlight.test.tsx`, `SourceControl.preview-open.test.tsx`, `SourceControl.virtual-file-list.test.tsx` | `sourceControlGrouping: 'status'`, since they cover upstream's sections. |
+| `src/renderer/src/i18n/locales/en.json` | `allChanges.*`. |
 
 ## Verify
 

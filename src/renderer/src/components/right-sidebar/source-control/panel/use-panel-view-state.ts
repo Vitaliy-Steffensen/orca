@@ -60,6 +60,14 @@ export function useSourceControlPanelViewState({
     })
   }, [settings, sourceControlViewMode, updateSettings])
 
+  const sourceControlGrouping = settings?.sourceControlGrouping ?? 'all'
+  const handleToggleSourceControlGrouping = useCallback(() => {
+    if (!settings) {
+      return
+    }
+    updateSettings({ sourceControlGrouping: sourceControlGrouping === 'all' ? 'status' : 'all' })
+  }, [settings, sourceControlGrouping, updateSettings])
+
   // Why: reset during render instead of key-remounting on switch (which caused a Windows IPC storm).
   const [viewStateWorktreeId, setViewStateWorktreeId] = useState(activeWorktreeId)
   if (viewStateWorktreeId !== activeWorktreeId) {
@@ -120,6 +128,7 @@ export function useSourceControlPanelViewState({
     fileListScrollElement,
     filterExpanded,
     filterQuery,
+    handleToggleSourceControlGrouping,
     handleToggleSourceControlViewMode,
     hiddenFileCategories,
     isGitHistoryExpanded,
@@ -129,6 +138,7 @@ export function useSourceControlPanelViewState({
     setFilterExpanded,
     setFilterQuery,
     sourceControlGroupOrder,
+    sourceControlGrouping,
     sourceControlRef,
     sourceControlViewMode,
     toggleFileCategory,

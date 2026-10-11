@@ -18,6 +18,8 @@ export type DiffSource =
   | 'unstaged'
   | 'staged'
   | 'branch'
+  // Fork: branch base → the file on disk now, live and editable like 'unstaged'.
+  | 'branch-worktree'
   | 'commit'
   | 'combined-all'
   | 'combined-uncommitted'

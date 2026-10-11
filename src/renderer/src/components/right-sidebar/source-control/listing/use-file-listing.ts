@@ -12,14 +12,13 @@ import { useSourceControlFileProjection } from './use-file-projection'
 import type { SourceControlFileCategory } from './file-category'
 import { useSourceControlReviewAttributes } from './use-review-attributes'
 import { usePublishedSourceControlReviewOrder } from './use-published-review-order'
-import { clearOpenInSelection, setOpenInSelection } from '@/lib/open-in-selection'
 import { usePRCommentScope } from '@/components/pr-comments/use-pr-comment-scope'
 import { buildUnresolvedThreadCountByPath } from '@/components/pr-comments/unresolved-thread-count'
-import { parseChangedFileRowKey } from '@/store/slices/editor/actions/changed-file-order'
-import { joinPath } from '@/lib/path'
 import { useSourceControlRowOpening } from './use-row-opening'
+import { usePublishedOpenInSelectionPath } from './use-open-in-selection-path'
 import type { SourceControlWorktreeContext } from './use-worktree-context'
 import { usePendingReviewCountByPath } from '@/components/pending-review/pending-review-count'
+import { useAllChangesProjection } from './use-all-changes-projection'
 
 /**
  * Projects git status and branch compare into the rows the panel renders, and layers the
@@ -48,6 +47,7 @@ export function useSourceControlFileListing({
   repositoryHuge,
   rightSidebarTab,
   sourceControlGroupOrder,
+  sourceControlGrouping,
   sourceControlRef,
   sourceControlViewMode,
   worktreeMap,
@@ -74,6 +74,7 @@ export function useSourceControlFileListing({
   repositoryHuge: SourceControlWorktreeContext['repositoryHuge']
   rightSidebarTab: SourceControlWorktreeContext['rightSidebarTab']
   sourceControlGroupOrder: SourceControlPanelViewState['sourceControlGroupOrder']
+  sourceControlGrouping: SourceControlPanelViewState['sourceControlGrouping']
   sourceControlRef: SourceControlPanelViewState['sourceControlRef']
   sourceControlViewMode: SourceControlPanelViewState['sourceControlViewMode']
   worktreeMap: SourceControlWorktreeContext['worktreeMap']
@@ -137,26 +138,42 @@ export function useSourceControlFileListing({
     worktreeMap
   })
 
+  const allChanges = useAllChangesProjection({
+    sourceControlGrouping,
+    visibleSelectionEntries,
+    entries,
+    branchEntries,
+    filteredGrouped,
+    filteredBranchEntries,
+    sourceControlViewMode,
+    collapsedTreeDirs
+  })
+  const { selectableEntries, showAllChanges } = allChanges
+
   // Why: modifier-click keeps the current pane intact by opening the file in a fresh split to the right.
   const {
     resolveSplitTargetGroupId,
     activeOpenRowKeys,
     activeOpenRowKey,
     handleOpenDiff,
-    openCommittedDiff
+    openCommittedDiff,
+    openAllChangesEntry
   } = useSourceControlRowOpening({
     isMac,
     activeWorktreeId,
     worktreePath,
-    visibleSelectionEntries,
-    branchSummary
+    visibleSelectionEntries: selectableEntries,
+    branchSummary,
+    sourceControlGrouping,
+    statusEntries: entries
   })
 
   usePublishedSourceControlReviewOrder({
     activeWorktreeId,
     visibleSelectionEntries,
     visibleBranchTreeRows,
-    filteredBranchEntries
+    filteredBranchEntries,
+    allChangesReviewOrder: showAllChanges ? allChanges.allChangesReviewOrder : undefined
   })
 
   const shouldOpenAsSplit = useCallback(
@@ -165,7 +182,7 @@ export function useSourceControlFileListing({
   )
   const { selectedKeys, handleSelect, handleContextMenu, clearSelection } =
     useSourceControlSelection({
-      flatEntries: visibleSelectionEntries,
+      flatEntries: selectableEntries,
       onOpenDiff: handleOpenDiff,
       shouldOpenAsSplit,
       containerRef: sourceControlRef
@@ -182,8 +199,8 @@ export function useSourceControlFileListing({
   }, [activeWorktreeId, rightSidebarTab, clearSelection])
 
   const flatEntriesByKey = useMemo(
-    () => new Map(visibleSelectionEntries.map((entry) => [entry.key, entry])),
-    [visibleSelectionEntries]
+    () => new Map(selectableEntries.map((entry) => [entry.key, entry])),
+    [selectableEntries]
   )
 
   // Why here: this hook already owns what the panel renders, and the map has to be built once for
@@ -195,34 +212,12 @@ export function useSourceControlFileListing({
   )
   const pendingReviewCountByPath = usePendingReviewCountByPath(activeWorktreeId)
 
-  // Why the highlighted row rather than the clicked one: stepping with the file-navigation chord
-  // moves the highlight without touching the click selection, and the user means whichever row the
-  // panel is showing as current -- how they got there is not the point.
-  //
-  // Why published rather than lifted: the open-in chord reads this once, on a keystroke, and this
-  // changes on every step.
-  const openInPath = useMemo(() => {
-    if (!worktreePath) {
-      return null
-    }
-    const highlighted = activeOpenRowKey
-      ? parseChangedFileRowKey(activeOpenRowKey)?.relativePath
-      : null
-    if (highlighted) {
-      return joinPath(worktreePath, highlighted)
-    }
-    for (const key of selectedKeys) {
-      const entry = flatEntriesByKey.get(key)
-      if (entry) {
-        return joinPath(worktreePath, entry.entry.path)
-      }
-    }
-    return null
-  }, [activeOpenRowKey, flatEntriesByKey, selectedKeys, worktreePath])
-  useEffect(() => {
-    setOpenInSelection('source-control', openInPath)
-    return () => clearOpenInSelection('source-control')
-  }, [openInPath])
+  usePublishedOpenInSelectionPath({
+    worktreePath,
+    activeOpenRowKey,
+    selectedKeys,
+    flatEntriesByKey
+  })
   const {
     isExecutingBulk,
     setIsExecutingBulk,
@@ -270,6 +265,8 @@ export function useSourceControlFileListing({
   )
 
   return {
+    ...allChanges,
+    openAllChangesEntry,
     reviewThreadCountByPath,
     pendingReviewCountByPath,
     activeOpenRowKeys,

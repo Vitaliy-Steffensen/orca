@@ -121,6 +121,14 @@ export type EditorFilesSlice = {
     language: string,
     options?: EditorOpenTargetOptions
   ) => void
+  openBranchWorktreeDiff: (
+    worktreeId: string,
+    worktreePath: string,
+    entry: GitBranchChangeEntry,
+    compare: BranchCompareLike,
+    language: string,
+    options?: EditorOpenTargetOptions
+  ) => void
   openDiffAtLocation: (target: {
     worktreeId: string
     worktreePath: string

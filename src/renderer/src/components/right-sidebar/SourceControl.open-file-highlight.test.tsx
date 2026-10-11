@@ -113,7 +113,8 @@ function resetState(overrides: Partial<Record<string, unknown>> = {}): void {
     remoteStatusesByWorktree: {},
     isRemoteOperationActive: false,
     inFlightRemoteOpKind: null,
-    settings: null,
+    // Fork: these cover the status sections; the all-changes list is the fork's default.
+    settings: { sourceControlGrouping: 'status' },
     hostedReviewCache: {},
     prCache: {},
     commitMessageGenerationRecords: {},

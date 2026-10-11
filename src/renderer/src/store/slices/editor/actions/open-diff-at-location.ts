@@ -29,6 +29,23 @@ export function createOpenDiffAtLocation(
         state.setPendingEditorReveal({ filePath, line, column: 1, matchLength: 0 })
       }
 
+      const branchSummary = state.gitBranchCompareSummaryByWorktree[worktreeId]
+      // Fork: an all-changes row is one file from the branch base to disk, however it changed.
+      if (area === 'branch-worktree' && branchSummary?.status === 'ready') {
+        const entry = (state.gitBranchChangesByWorktree[worktreeId] ?? []).find(
+          (candidate) => candidate.path === relativePath
+        )
+        state.openBranchWorktreeDiff(
+          worktreeId,
+          worktreePath,
+          entry ?? { path: relativePath, status: 'modified' },
+          branchSummary,
+          language,
+          { preview }
+        )
+        return
+      }
+
       // Why area gates this: a path can be both a working-tree change and a branch change, and the
       // caller that named a branch row must land on the branch diff, not the uncommitted one.
       const matches =
@@ -65,7 +82,6 @@ export function createOpenDiffAtLocation(
       const branchEntry = (state.gitBranchChangesByWorktree[worktreeId] ?? []).find(
         (entry) => entry.path === relativePath
       )
-      const branchSummary = state.gitBranchCompareSummaryByWorktree[worktreeId]
       if (branchEntry && branchSummary?.status === 'ready') {
         state.openBranchDiff(worktreeId, worktreePath, branchEntry, branchSummary, language, {
           preview

@@ -25,7 +25,9 @@ export function retargetBranchDiffFiles(
       file.worktreeId !== worktreeId ||
       file.mode !== 'diff' ||
       !file.branchCompare ||
-      (file.diffSource !== 'branch' && file.diffSource !== 'combined-branch') ||
+      (file.diffSource !== 'branch' &&
+        file.diffSource !== 'combined-branch' &&
+        file.diffSource !== 'branch-worktree') ||
       file.branchCompare.compareVersion === branchCompare.compareVersion
     ) {
       return file

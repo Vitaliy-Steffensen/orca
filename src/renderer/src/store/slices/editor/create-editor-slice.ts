@@ -16,6 +16,7 @@ import { createOpenUnstagedDiff } from './actions/open-unstaged-diff'
 import { createOpenDiffAtLocation } from './actions/open-diff-at-location'
 import { createStepToChangedFile } from './actions/step-to-changed-file'
 import { createOpenHistoryDiff } from './actions/open-history-diff'
+import { createOpenBranchWorktreeDiff } from './actions/open-branch-worktree-diff'
 import { createOpenCombinedDiff } from './actions/open-combined-diff'
 import { createOpenConflictFile } from './actions/open-conflict-file'
 import { createOpenConflictReview } from './actions/open-conflict-review'
@@ -48,6 +49,7 @@ export const createEditorSlice: StateCreator<AppState, [], [], EditorSlice> = (s
   ...createOpenDiffAtLocation(set, get),
   ...createStepToChangedFile(set, get),
   ...createOpenHistoryDiff(set, get),
+  ...createOpenBranchWorktreeDiff(set, get),
   ...createOpenCombinedDiff(set, get),
   ...createOpenConflictFile(set, get),
   ...createOpenConflictReview(set, get),

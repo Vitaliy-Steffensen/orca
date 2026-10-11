@@ -123,7 +123,8 @@ function resetState(overrides: Partial<Record<string, unknown>> = {}): void {
     remoteStatusesByWorktree: {},
     isRemoteOperationActive: false,
     inFlightRemoteOpKind: null,
-    settings: null,
+    // Fork: these cover the status sections; the all-changes list is the fork's default.
+    settings: { sourceControlGrouping: 'status' },
     hostedReviewCache: {},
     prCache: {},
     commitMessageGenerationRecords: {},
@@ -400,7 +401,7 @@ describe('SourceControl virtualized changed-files list', () => {
 
   it('bounds mounted tree-view rows for large changesets', () => {
     resetState({
-      settings: { sourceControlViewMode: 'tree' },
+      settings: { sourceControlViewMode: 'tree', sourceControlGrouping: 'status' },
       gitStatusByWorktree: {
         [mocks.activeWorktree.id]: Array.from({ length: 500 }, (_, index) =>
           gitEntry({

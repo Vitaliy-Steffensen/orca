@@ -87,24 +87,28 @@ export function AgentTurnsSection({
         isCollapsed={collapsed}
         onToggle={onToggle}
       />
-      {!collapsed &&
-        turns.map((turn) => (
-          <button
-            key={turn.ref}
-            type="button"
-            title={turn.prompt}
-            className="flex w-full min-w-0 items-start gap-2 px-3 py-1 text-left hover:bg-accent/60"
-            onClick={() => void openTurn(turn)}
-          >
-            <Bot className="mt-0.5 size-3.5 shrink-0 text-muted-foreground" />
-            <span className="flex min-w-0 flex-col">
-              <span className="truncate text-xs text-foreground">{agentTurnTitle(turn)}</span>
-              <span className="truncate text-[10px] text-muted-foreground">
-                {agentTurnDetail(turn, now)}
+      {!collapsed && (
+        // Why capped: the section is docked over the file list, so a long history scrolls in place.
+        <div className="max-h-48 overflow-y-auto scrollbar-sleek">
+          {turns.map((turn) => (
+            <button
+              key={turn.ref}
+              type="button"
+              title={turn.prompt}
+              className="flex w-full min-w-0 items-start gap-2 px-3 py-1 text-left hover:bg-accent/60"
+              onClick={() => void openTurn(turn)}
+            >
+              <Bot className="mt-0.5 size-3.5 shrink-0 text-muted-foreground" />
+              <span className="flex min-w-0 flex-col">
+                <span className="truncate text-xs text-foreground">{agentTurnTitle(turn)}</span>
+                <span className="truncate text-[10px] text-muted-foreground">
+                  {agentTurnDetail(turn, now)}
+                </span>
               </span>
-            </span>
-          </button>
-        ))}
+            </button>
+          ))}
+        </div>
+      )}
     </div>
   )
 }

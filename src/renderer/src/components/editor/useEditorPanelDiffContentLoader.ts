@@ -9,6 +9,7 @@ import {
   getRuntimeGitDiff,
   getRuntimeGitScope
 } from '@/runtime/runtime-git-client'
+import { loadBranchWorktreeDiff } from './branch-worktree-diff'
 import type { DiffContent, InFlightContentRead } from './editor-panel-content-types'
 import { canUseChangesModeForFile } from './editor-panel-file-mode'
 import type { EditorPanelContentLoadOptions } from './useEditorPanelExternalContentEvents'
@@ -33,7 +34,7 @@ function inFlightDiffKey(
   compareAgainstHead = false
 ): string {
   const branch =
-    file.diffSource === 'branch' && file.branchCompare
+    (file.diffSource === 'branch' || file.diffSource === 'branch-worktree') && file.branchCompare
       ? `${file.branchCompare.baseOid ?? ''}..${file.branchCompare.headOid ?? ''}::${file.branchOldPath ?? ''}`
       : ''
   const commit =
@@ -92,8 +93,34 @@ export function useEditorPanelDiffContentLoader({
         }
         let pending = inFlightDiffReads.get(key)
         if (!pending) {
-          const promise = (
-            effectiveDiffSource === 'commit'
+          const gitContext = {
+            settings: fileSettings,
+            worktreeId: file.worktreeId,
+            worktreePath,
+            connectionId
+          }
+          // Fork: the all-changes list's base → disk diff.
+          const branchWorktreeRead =
+            effectiveDiffSource === 'branch-worktree' && branchCompare
+              ? loadBranchWorktreeDiff(
+                  {
+                    compare: {
+                      baseRef: branchCompare.baseRef,
+                      baseOid: branchCompare.baseOid!,
+                      headOid: branchCompare.headOid!,
+                      mergeBase: branchCompare.mergeBase!
+                    },
+                    filePath: file.relativePath,
+                    oldPath: file.branchOldPath
+                  },
+                  {
+                    readBranchDiff: (args) => getRuntimeGitBranchDiff(gitContext, args),
+                    readWorkingTreeDiff: (args) => getRuntimeGitDiff(gitContext, args)
+                  }
+                )
+              : null
+          const promise = (branchWorktreeRead ??
+            (effectiveDiffSource === 'commit'
               ? commitCompare
                 ? getRuntimeGitCommitDiff(
                     {
@@ -141,8 +168,7 @@ export function useEditorPanelDiffContentLoader({
                       staged: effectiveDiffSource === 'staged',
                       compareAgainstHead
                     }
-                  )
-          ) as Promise<DiffContent>
+                  ))) as Promise<DiffContent>
           pending = { externalEventGeneration: options?.externalEventGeneration, promise }
           inFlightDiffReads.set(key, pending)
           queueMicrotask(() => {

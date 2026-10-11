@@ -3,6 +3,7 @@ import { AgentTurnsSection } from '../agent-turns/agent-turns-section'
 import { shouldShowSourceControlCompareUnavailableCard } from './header-toolbar'
 import { shouldRenderCommitArea } from '../commit/component-gates'
 import { SourceControlBranchSection } from '../listing/branch-section'
+import { SourceControlAllChangesSection } from '../listing/all-changes-section'
 import { SourceControlContentStatus } from '../listing/content-status'
 import {
   SourceControlFileCategoryFilter,
@@ -18,6 +19,11 @@ import type { SourceControlPanelReadyProps } from './panel-props'
 export function SourceControlPanelContent(props: SourceControlPanelReadyProps) {
   const { activeWorktree, currentWorktreeId, model, worktreePath } = props
   const {
+    allChangeEntries,
+    openAllChangesEntry,
+    showAllChanges,
+    totalAllChangeCount,
+    visibleAllChangesTreeRows,
     activeConnectionId,
     activeOpenRowKeys,
     activeOpenRowKey,
@@ -144,7 +150,33 @@ export function SourceControlPanelContent(props: SourceControlPanelReadyProps) {
         />
       )}
 
-      {hasFilteredUncommittedEntries && (
+      {showAllChanges && allChangeEntries.length > 0 && (
+        <SourceControlAllChangesSection
+          baseRef={branchSummary?.status === 'ready' ? branchSummary.baseRef : null}
+          entries={allChangeEntries}
+          totalEntryCount={totalAllChangeCount}
+          collapsed={collapsedSections.has('all-changes')}
+          onToggle={() => toggleSection('all-changes')}
+          sourceControlViewMode={sourceControlViewMode}
+          visibleTreeRows={visibleAllChangesTreeRows}
+          fileListScrollElement={fileListScrollElement}
+          collapsedTreeDirs={collapsedTreeDirs}
+          toggleTreeDir={toggleTreeDir}
+          currentWorktreeId={currentWorktreeId}
+          worktreePath={worktreePath}
+          revealInExplorer={revealInExplorer}
+          activeConnectionId={activeConnectionId}
+          onOpen={openAllChangesEntry}
+          onViewAll={() => openAllDiffs(currentWorktreeId, worktreePath)}
+          diffCommentCountByPath={diffCommentCountByPath}
+          reviewThreadCountByPath={reviewThreadCountByPath}
+          pendingReviewCountByPath={pendingReviewCountByPath}
+          activeOpenRowKeys={activeOpenRowKeys}
+          activeOpenRowKey={activeOpenRowKey}
+        />
+      )}
+
+      {hasFilteredUncommittedEntries && !showAllChanges && (
         <SourceControlUncommittedSections
           displaySections={displaySections}
           unfilteredDisplaySectionsById={unfilteredDisplaySectionsById}
@@ -216,7 +248,7 @@ export function SourceControlPanelContent(props: SourceControlPanelReadyProps) {
         />
       ) : null}
 
-      {branchSummary?.status === 'ready' && hasFilteredBranchEntries && (
+      {branchSummary?.status === 'ready' && hasFilteredBranchEntries && !showAllChanges && (
         <SourceControlBranchSection
           activeOpenRowKeys={activeOpenRowKeys}
           activeOpenRowKey={activeOpenRowKey}
@@ -242,30 +274,31 @@ export function SourceControlPanelContent(props: SourceControlPanelReadyProps) {
         />
       )}
 
-      {!activeConnectionId && (
-        <AgentTurnsSection
-          worktreeId={currentWorktreeId}
-          worktreePath={worktreePath}
-          collapsed={collapsedSections.has('agent-turns')}
-          onToggle={() => toggleSection('agent-turns')}
-        />
-      )}
-
-      {isGitHistoryVisible && (
-        // Why: the graph is reference context, so keep it docked at the bottom as the pane scrolls.
-        <div className="sticky bottom-0 z-10 mt-auto shrink-0 border-t border-border bg-sidebar/95 backdrop-blur-sm">
-          <GitHistoryPanel
-            state={gitHistoryState}
-            collapsed={collapsedSections.has('history')}
-            onToggle={() => toggleSection('history')}
-            onRefresh={() => void refreshGitHistory()}
-            onOpenCommit={(item) => void openHistoryCommitDiff(item)}
-            onLoadCommitFiles={loadCommitFiles}
-            onOpenCommitFile={openCommitFile}
-            onCommitAction={handleCommitAction}
+      {/* Why: agent turns and the graph are reference context, so keep both docked at the bottom as the pane scrolls. */}
+      <div className="sticky bottom-0 z-10 mt-auto shrink-0 bg-sidebar/95 backdrop-blur-sm">
+        {!activeConnectionId && (
+          <AgentTurnsSection
+            worktreeId={currentWorktreeId}
+            worktreePath={worktreePath}
+            collapsed={collapsedSections.has('agent-turns')}
+            onToggle={() => toggleSection('agent-turns')}
           />
-        </div>
-      )}
+        )}
+        {isGitHistoryVisible && (
+          <div className="border-t border-border">
+            <GitHistoryPanel
+              state={gitHistoryState}
+              collapsed={collapsedSections.has('history')}
+              onToggle={() => toggleSection('history')}
+              onRefresh={() => void refreshGitHistory()}
+              onOpenCommit={(item) => void openHistoryCommitDiff(item)}
+              onLoadCommitFiles={loadCommitFiles}
+              onOpenCommitFile={openCommitFile}
+              onCommitAction={handleCommitAction}
+            />
+          </div>
+        )}
+      </div>
     </>
   )
 }

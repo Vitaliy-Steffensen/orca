@@ -133,7 +133,11 @@ class IndexedOpenFileLookup {
         continue
       }
       if (file.mode === 'diff') {
-        if (file.diffSource === 'unstaged' || file.diffSource === 'staged') {
+        if (
+          file.diffSource === 'unstaged' ||
+          file.diffSource === 'staged' ||
+          file.diffSource === 'branch-worktree'
+        ) {
           addToListMap(this.diffsByRelativePath, file.relativePath, {
             file,
             index,

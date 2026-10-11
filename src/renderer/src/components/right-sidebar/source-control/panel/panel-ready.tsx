@@ -35,6 +35,7 @@ export function SourceControlPanelReady(props: SourceControlPanelReadyProps) {
     handleOpenComment,
     handleRelinkSuppressedGitHubPR,
     handleSourceControlKeyDown,
+    handleToggleSourceControlGrouping,
     handleToggleSourceControlViewMode,
     hostedReview,
     isCreatePrIntentInFlight,
@@ -51,6 +52,7 @@ export function SourceControlPanelReady(props: SourceControlPanelReadyProps) {
     setFilterQuery,
     setSourceControlRoot,
     settings,
+    sourceControlGrouping,
     sourceControlViewMode,
     suppressedGitHubPRState,
     visibleCreatePrHeaderAction
@@ -105,6 +107,8 @@ export function SourceControlPanelReady(props: SourceControlPanelReadyProps) {
           sourceControlViewMode={sourceControlViewMode}
           viewModeToggleDisabled={settings === null}
           onToggleViewMode={handleToggleSourceControlViewMode}
+          sourceControlGrouping={sourceControlGrouping}
+          onToggleGrouping={handleToggleSourceControlGrouping}
           onChangeBaseRef={() => setBaseRefDialogOpen(true)}
           onRefreshBranchCompare={() => void refreshBranchCompare()}
           branchCompareRefreshDisabled={!branchSummary || branchSummary.status === 'loading'}
@@ -118,10 +122,10 @@ export function SourceControlPanelReady(props: SourceControlPanelReadyProps) {
         <SourceControlResizableSections shelves={shelves}>
           <div
             ref={setFileListScrollElement}
-            // Why scroll-pb-9: the Commits header is sticky to the bottom of this scroller, so a row
-            // scrolled flush to the bottom edge lands underneath it. Reserving its height keeps a
-            // revealed row clear of it, for scrollIntoView and for the virtualizer's own scrolling.
-            className="relative flex flex-1 flex-col overflow-auto scrollbar-sleek scroll-pb-9"
+            // Why scroll-pb-16: the Agent turns and Commits headers are sticky to the bottom of this
+            // scroller, so a row scrolled flush to the bottom edge lands underneath them. Reserving
+            // their height keeps a revealed row clear, for scrollIntoView and the virtualizer.
+            className="relative flex flex-1 flex-col overflow-auto scrollbar-sleek scroll-pb-16"
             style={{ paddingBottom: selectedKeys.size > 0 ? 50 : undefined }}
           >
             <SourceControlPanelContent {...props} />

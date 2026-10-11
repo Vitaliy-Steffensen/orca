@@ -52,7 +52,8 @@ export function EditorDiffFileSurface({
     )
   }
 
-  const isEditable = activeFile.diffSource === 'unstaged'
+  const isEditable =
+    activeFile.diffSource === 'unstaged' || activeFile.diffSource === 'branch-worktree'
   if (diffContent.kind === 'binary') {
     if (diffContent.isImage) {
       return (

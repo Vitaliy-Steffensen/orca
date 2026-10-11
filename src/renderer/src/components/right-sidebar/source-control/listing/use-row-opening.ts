@@ -14,20 +14,26 @@ import {
   shouldOpenSourceControlRowAsPreview,
   type SourceControlRowOpenEvent
 } from './split-open'
+import { buildAllChangesOpenRowKeys } from './all-changes'
 
 export function useSourceControlRowOpening({
   isMac,
   activeWorktreeId,
   worktreePath,
   visibleSelectionEntries,
-  branchSummary
+  branchSummary,
+  sourceControlGrouping,
+  statusEntries
 }: {
   isMac: boolean
   activeWorktreeId: string | null
   worktreePath: string | null
   visibleSelectionEntries: FlatEntry[]
   branchSummary: GitBranchCompareSummary | null
+  sourceControlGrouping: 'all' | 'status'
+  statusEntries: readonly GitStatusEntry[]
 }) {
+  const openBranchWorktreeDiff = useAppStore((s) => s.openBranchWorktreeDiff)
   const activeGroupIdByWorktree = useAppStore((s) => s.activeGroupIdByWorktree)
   const groupsByWorktree = useAppStore((s) => s.groupsByWorktree)
   const createEmptySplitGroup = useAppStore((s) => s.createEmptySplitGroup)
@@ -78,8 +84,11 @@ export function useSourceControlRowOpening({
     return keys
   }, [visibleSelectionEntries])
   const activeOpenRowKeys = useMemo(
-    () => buildActiveOpenRowKeys(activeOpenFileSignature, activeOpenAvailableRowKeys),
-    [activeOpenAvailableRowKeys, activeOpenFileSignature]
+    () =>
+      sourceControlGrouping === 'all'
+        ? buildAllChangesOpenRowKeys(activeOpenFileSignature)
+        : buildActiveOpenRowKeys(activeOpenFileSignature, activeOpenAvailableRowKeys),
+    [activeOpenAvailableRowKeys, activeOpenFileSignature, sourceControlGrouping]
   )
 
   // Why: the scroll target is a single row, while the key set can hold both working-tree variants
@@ -165,11 +174,51 @@ export function useSourceControlRowOpening({
     [activeWorktreeId, branchSummary, openBranchDiff, resolveSplitTargetGroupId, worktreePath]
   )
 
+  const openAllChangesEntry = useCallback(
+    (entry: GitBranchChangeEntry, event?: SourceControlRowOpenEvent) => {
+      if (!activeWorktreeId || !worktreePath) {
+        return
+      }
+      const local = statusEntries.filter((candidate) => candidate.path === entry.path)
+      // Why: a conflicted file opens its resolver, and with no base to compare against the plain
+      // uncommitted diff is the closest view.
+      const fallback =
+        local.find((candidate) => candidate.conflictKind && candidate.conflictStatus) ??
+        (branchSummary?.status === 'ready' ? undefined : local[0])
+      if (fallback) {
+        handleOpenDiff(fallback, event)
+        return
+      }
+      if (branchSummary?.status !== 'ready') {
+        return
+      }
+      const targetGroupId = resolveSplitTargetGroupId(event)
+      openBranchWorktreeDiff(
+        activeWorktreeId,
+        worktreePath,
+        entry,
+        branchSummary,
+        detectLanguage(entry.path),
+        { targetGroupId, preview: shouldOpenSourceControlRowAsPreview(event, targetGroupId) }
+      )
+    },
+    [
+      activeWorktreeId,
+      branchSummary,
+      handleOpenDiff,
+      openBranchWorktreeDiff,
+      resolveSplitTargetGroupId,
+      statusEntries,
+      worktreePath
+    ]
+  )
+
   return {
     resolveSplitTargetGroupId,
     activeOpenRowKeys,
     activeOpenRowKey,
     handleOpenDiff,
-    openCommittedDiff
+    openCommittedDiff,
+    openAllChangesEntry
   }
 }

@@ -45,7 +45,9 @@ export function shouldReloadDiffOnGitStatusChange(
 ): boolean {
   return (
     file.mode === 'diff' &&
-    (file.diffSource === 'unstaged' || file.diffSource === 'staged') &&
+    (file.diffSource === 'unstaged' ||
+      file.diffSource === 'staged' ||
+      file.diffSource === 'branch-worktree') &&
     hasReloadableStatusEntry(file, gitStatusEntries)
   )
 }

@@ -250,6 +250,8 @@ export type GlobalSettings = NativeChatGlobalSettings & {
   sourceControlViewMode: SourceControlViewMode
   /** Preferred Source Control group order. Per-user, not per-workspace. */
   sourceControlGroupOrder: SourceControlGroupOrder
+  /** Fork: one list of every file changed vs the base ('all', the default), or upstream's staged/changes/committed sections. */
+  sourceControlGrouping?: 'all' | 'status'
   /** Compare base defaults to the branch upstream instead of the repo default; affects only the compare/diff view, not the PR/rebase target. Per-user. */
   sourceControlCompareAgainstUpstream: boolean
   /** Whether to show the Orca app name in the titlebar. */
