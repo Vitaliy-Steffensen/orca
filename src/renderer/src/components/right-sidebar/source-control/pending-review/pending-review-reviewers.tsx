@@ -3,14 +3,11 @@ import { Check, FileDiff, LoaderCircle, MessageSquare, RefreshCw, Users, X } fro
 import { Button } from '@/components/ui/button'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
 import { GitHubUserAvatar } from '@/components/github/github-user-avatar'
-import { SectionHeader } from '../listing/section-header'
 import { translate } from '@/i18n/i18n'
 import type {
   PullRequestReviewer,
   PullRequestReviewerState
 } from '../../../../../../shared/github/pull-request-reviewers'
-
-const KEEP_EXPANDED = (): void => {}
 
 function stateLabel(state: PullRequestReviewerState): string {
   switch (state) {
@@ -51,48 +48,30 @@ function StateIcon({ state }: { state: PullRequestReviewerState }): React.JSX.El
   }
 }
 
-function ReviewersHeader({
-  count,
-  collapsed,
-  onToggle
-}: {
-  count?: number
-  collapsed: boolean
-  onToggle: () => void
-}): React.JSX.Element {
+function ReviewersHeader(): React.JSX.Element {
   return (
-    <SectionHeader
-      label={translate('auto.components.sourceControl.reviewers.title', 'Reviewers')}
-      count={count}
-      isCollapsed={collapsed}
-      onToggle={onToggle}
-    />
+    <div className="pb-1 text-[11px] font-medium uppercase tracking-wide text-muted-foreground">
+      {translate('auto.components.sourceControl.reviewers.title', 'Reviewers')}
+    </div>
   )
 }
 
-function PendingReviewReviewersLoading({
-  collapsed,
-  onToggle
-}: {
-  collapsed: boolean
-  onToggle: () => void
-}): React.JSX.Element {
+function PendingReviewReviewersLoading(): React.JSX.Element {
   return (
     <div
+      className="px-3 pt-3"
       role="status"
       aria-label={translate('auto.components.sourceControl.reviewers.loading', 'Loading reviewers')}
     >
-      <ReviewersHeader collapsed={collapsed} onToggle={onToggle} />
-      {!collapsed && (
-        <ul className="space-y-0.5 px-3 pb-2">
-          {['w-24', 'w-16'].map((width) => (
-            <li key={width} className="flex h-7 items-center gap-2">
-              <span className="size-5 shrink-0 animate-pulse rounded-full bg-muted" />
-              <span className={`h-2.5 animate-pulse rounded bg-muted ${width}`} />
-            </li>
-          ))}
-        </ul>
-      )}
+      <ReviewersHeader />
+      <ul className="space-y-0.5">
+        {['w-24', 'w-16'].map((width) => (
+          <li key={width} className="flex h-7 items-center gap-2">
+            <span className="size-5 shrink-0 animate-pulse rounded-full bg-muted" />
+            <span className={`h-2.5 animate-pulse rounded bg-muted ${width}`} />
+          </li>
+        ))}
+      </ul>
     </div>
   )
 }
@@ -103,18 +82,14 @@ function PendingReviewReviewersLoading({
  */
 export function PendingReviewReviewers({
   reviewers,
-  onRerequest,
-  collapsed = false,
-  onToggle = KEEP_EXPANDED
+  onRerequest
 }: {
   reviewers: readonly PullRequestReviewer[] | null
   onRerequest: (login: string) => Promise<boolean>
-  collapsed?: boolean
-  onToggle?: () => void
 }): React.JSX.Element | null {
   const [requesting, setRequesting] = useState<string | null>(null)
   if (reviewers === null) {
-    return <PendingReviewReviewersLoading collapsed={collapsed} onToggle={onToggle} />
+    return <PendingReviewReviewersLoading />
   }
   if (reviewers.length === 0) {
     return null
@@ -130,70 +105,68 @@ export function PendingReviewReviewers({
   }
 
   return (
-    <div>
-      <ReviewersHeader count={reviewers.length} collapsed={collapsed} onToggle={onToggle} />
-      {!collapsed && (
-        <ul className="space-y-0.5 px-3 pb-2">
-          {reviewers.map((reviewer) => (
-            <li
-              key={`${reviewer.kind}:${reviewer.login}`}
-              className="flex h-7 items-center gap-2 text-xs"
-            >
-              {reviewer.kind === 'team' ? (
-                <span className="flex size-5 items-center justify-center rounded-full bg-muted">
-                  <Users className="size-3 text-muted-foreground" />
-                </span>
-              ) : (
-                <GitHubUserAvatar
-                  login={reviewer.login}
-                  name={reviewer.name ?? undefined}
-                  avatarUrl={reviewer.avatarUrl ?? undefined}
-                  className="size-5"
-                />
-              )}
-              <span className="min-w-0 flex-1 truncate">{reviewer.name ?? reviewer.login}</span>
-              {reviewer.canRerequest ? (
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="icon-xs"
-                      aria-label={translate(
-                        'auto.components.sourceControl.reviewers.rerequest',
-                        'Re-request review from {{login}}',
-                        { login: reviewer.login }
-                      )}
-                      disabled={requesting !== null}
-                      onClick={() => void rerequest(reviewer.login)}
-                    >
-                      {requesting === reviewer.login ? (
-                        <LoaderCircle className="size-3.5 animate-spin" />
-                      ) : (
-                        <RefreshCw className="size-3.5" />
-                      )}
-                    </Button>
-                  </TooltipTrigger>
-                  <TooltipContent>
-                    {translate(
-                      'auto.components.sourceControl.reviewers.rerequestTip',
-                      'Re-request review'
-                    )}
-                  </TooltipContent>
-                </Tooltip>
-              ) : null}
+    <div className="px-3 pt-3">
+      <ReviewersHeader />
+      <ul className="space-y-0.5">
+        {reviewers.map((reviewer) => (
+          <li
+            key={`${reviewer.kind}:${reviewer.login}`}
+            className="flex h-7 items-center gap-2 text-xs"
+          >
+            {reviewer.kind === 'team' ? (
+              <span className="flex size-5 items-center justify-center rounded-full bg-muted">
+                <Users className="size-3 text-muted-foreground" />
+              </span>
+            ) : (
+              <GitHubUserAvatar
+                login={reviewer.login}
+                name={reviewer.name ?? undefined}
+                avatarUrl={reviewer.avatarUrl ?? undefined}
+                className="size-5"
+              />
+            )}
+            <span className="min-w-0 flex-1 truncate">{reviewer.name ?? reviewer.login}</span>
+            {reviewer.canRerequest ? (
               <Tooltip>
                 <TooltipTrigger asChild>
-                  <span className="flex size-5 items-center justify-center">
-                    <StateIcon state={reviewer.state} />
-                  </span>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon-xs"
+                    aria-label={translate(
+                      'auto.components.sourceControl.reviewers.rerequest',
+                      'Re-request review from {{login}}',
+                      { login: reviewer.login }
+                    )}
+                    disabled={requesting !== null}
+                    onClick={() => void rerequest(reviewer.login)}
+                  >
+                    {requesting === reviewer.login ? (
+                      <LoaderCircle className="size-3.5 animate-spin" />
+                    ) : (
+                      <RefreshCw className="size-3.5" />
+                    )}
+                  </Button>
                 </TooltipTrigger>
-                <TooltipContent>{stateLabel(reviewer.state)}</TooltipContent>
+                <TooltipContent>
+                  {translate(
+                    'auto.components.sourceControl.reviewers.rerequestTip',
+                    'Re-request review'
+                  )}
+                </TooltipContent>
               </Tooltip>
-            </li>
-          ))}
-        </ul>
-      )}
+            ) : null}
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <span className="flex size-5 items-center justify-center">
+                  <StateIcon state={reviewer.state} />
+                </span>
+              </TooltipTrigger>
+              <TooltipContent>{stateLabel(reviewer.state)}</TooltipContent>
+            </Tooltip>
+          </li>
+        ))}
+      </ul>
     </div>
   )
 }

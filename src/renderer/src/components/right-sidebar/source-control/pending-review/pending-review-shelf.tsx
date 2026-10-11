@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { Check, MessageCircle, ScanEye, X } from 'lucide-react'
+import { Check, ChevronDown, MessageCircle, ScanEye, X } from 'lucide-react'
 import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
 import { translate } from '@/i18n/i18n'
@@ -12,6 +12,7 @@ import type { PendingReviewQueue } from '@/components/pending-review/use-pending
 import type { ReviewVerdictSubmitter } from '@/components/pending-review/use-submit-review-verdict'
 import { PendingReviewCommentCard } from '@/components/pending-review/PendingReviewCommentCard'
 import { SectionHeader } from '../listing/section-header'
+import { PendingReviewReviewers } from './pending-review-reviewers'
 import { useReviewDiffBase } from '@/components/pending-review/use-review-diff-base'
 import { usePendingReviewSummary } from '@/components/pending-review/pending-review-summary-store'
 import { ReviewMarkdownComposer } from '@/components/github/ReviewMarkdownComposer'
@@ -49,11 +50,15 @@ const VERDICTS: {
 export function SourceControlPendingReviewShelf({
   queue,
   submitter,
-  worktreeId
+  worktreeId,
+  collapsed,
+  onToggle
 }: {
   queue: PendingReviewQueue
   submitter: ReviewVerdictSubmitter
   worktreeId: string | null
+  collapsed: boolean
+  onToggle: () => void
 }): React.JSX.Element | null {
   const diffBase = useReviewDiffBase(
     worktreeId,
@@ -139,19 +144,40 @@ export function SourceControlPendingReviewShelf({
               }
             : null
 
+  // Fork: one Review section — the reviewers, your drafts and the verdict form — whose header
+  // collapses it, drags it and hides it.
+  const header = (
+    <SectionHeader
+      label={translate('sourceControlSections.review', 'Review')}
+      count={queue.comments.length}
+      countTitle={translate('auto.components.sourceControl.pendingReview.title', 'Pending review')}
+      isCollapsed={collapsed}
+      onToggle={onToggle}
+    />
+  )
+  if (collapsed) {
+    return <div>{header}</div>
+  }
+
   return (
     <div>
-      {/* Fork: the header shows even with no drafts — it is the section's drag handle and
-          its right-click Hide. */}
-      <SectionHeader
-        label={translate('auto.components.sourceControl.pendingReview.title', 'Pending review')}
-        count={queue.comments.length}
-        isCollapsed={!expanded}
-        onToggle={() => setExpanded((prev) => !prev)}
-      />
+      {header}
+      <PendingReviewReviewers reviewers={submitter.reviewers} onRerequest={submitter.rerequest} />
+      {/* Why hidden at zero: a disclosure that opens onto nothing is chrome, and the form
+          below is the part of this section that is always worth showing. */}
       {queue.comments.length > 0 ? (
-        <div className={cn('px-3 pb-2', !expanded && 'hidden')}>
-          <div className="space-y-2">
+        <div className="px-3 pt-2">
+          <button
+            type="button"
+            aria-expanded={expanded}
+            className="flex items-center gap-1 pb-1 text-[11px] font-medium uppercase tracking-wide text-muted-foreground hover:text-foreground"
+            onClick={() => setExpanded((prev) => !prev)}
+          >
+            <ChevronDown className={cn('size-3 transition-transform', !expanded && '-rotate-90')} />
+            {translate('auto.components.sourceControl.pendingReview.title', 'Pending review')}
+            <span className="tabular-nums">{queue.comments.length}</span>
+          </button>
+          <div className={cn('space-y-2', !expanded && 'hidden')}>
             {queue.comments.map((comment) => (
               <PendingReviewCommentCard
                 key={comment.id}

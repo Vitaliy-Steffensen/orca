@@ -19550,7 +19550,8 @@
     "showOneList": "Show all changes in one list"
   },
   "sourceControlSections": {
-    "hide": "Hide section"
+    "hide": "Hide section",
+    "review": "Review"
   },
   "languageServers": {
     "title": "Language Servers",

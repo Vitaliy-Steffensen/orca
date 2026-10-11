@@ -1338,12 +1338,13 @@ its Stage All button are removed.
 | `SourceControl.open-file-highlight.test.tsx`, `SourceControl.preview-open.test.tsx`, `SourceControl.virtual-file-list.test.tsx` | `sourceControlGrouping: 'status'`, since they cover upstream's sections; the commit-box tests removed. |
 | `src/renderer/src/i18n/locales/en.json` | `allChanges.*`. |
 
-### 36. Source-control sections: their own headers, dragged order, hidden sections
+### 36. Source-control sections: one Review section, dragged order, hidden sections
 
-Reviewers, Pending review, Agent notes, Agent turns, Changes and Commits are sections listed in
-`src/shared/source-control-sections.ts`. Reviewers is now its own section
-(`pending-review-reviewers.tsx` with a `SectionHeader`), apart from the pending-review shelf, whose
-header now shows even with no drafts. Agent turns is a resizable shelf like the others
+Review, Agent notes, Agent turns, Changes and Commits are sections listed in
+`src/shared/source-control-sections.ts`. Review (id `pending-review`) is one section for the
+reviewers, your drafts, the diff-base picker and the verdict form
+(`pending-review-shelf.tsx`). Its `SectionHeader` collapses all of it and always shows, and the
+drafts list is a small disclosure inside it. Agent turns is a resizable shelf like the others
 (`panel-ready.tsx`); it takes its turns as a prop (`useAgentTurns`).
 
 Every section but Commits, which stays docked under the files, sits in the resizable group in the
@@ -1362,9 +1363,9 @@ View > Source Control Sections has a visibility checkbox for each
 | `src/main/ipc/settings.ts` | `sourceControlSectionLayout` in `APPEARANCE_MENU_KEYS`. |
 | `source-control/listing/section-header.tsx` | Optional `count`; the header wrapped in its section's chrome. |
 | `source-control/panel/resizable-sections.tsx` | Ordered sections with drop zones; handles between panels, not after each shelf. |
-| `source-control/panel/panel-ready.tsx`, `panel-content.tsx` | The order, hiding, the Reviewers and Agent turns shelves. |
-| `source-control/pending-review/pending-review-shelf.tsx` | No reviewers; an always-shown header. |
-| `src/renderer/src/i18n/locales/en.json` | `menu.sourceControlSections`, `sourceControlSections.hide`. |
+| `source-control/panel/panel-ready.tsx`, `panel-content.tsx` | The order, hiding, the Agent turns shelf. |
+| `source-control/pending-review/pending-review-shelf.tsx` | The Review header, `collapsed` / `onToggle`, the drafts disclosure. |
+| `src/renderer/src/i18n/locales/en.json` | `menu.sourceControlSections`, `sourceControlSections.hide`, `sourceControlSections.review`. |
 
 ## Verify
 

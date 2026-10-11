@@ -66,34 +66,4 @@ describe('PendingReviewReviewers', () => {
     )
     expect(onRerequest).toHaveBeenCalledWith('MartinBernstorff')
   })
-
-  it('is its own collapsible section, counting the reviewers', async () => {
-    const onToggle = vi.fn()
-    const { rerender } = render(
-      <TooltipProvider>
-        <PendingReviewReviewers
-          reviewers={[reviewer({ login: 'a' }), reviewer({ login: 'b' })]}
-          onRerequest={vi.fn()}
-          collapsed={false}
-          onToggle={onToggle}
-        />
-      </TooltipProvider>
-    )
-    const heading = screen.getByRole('button', { name: /Reviewers/ })
-    expect(heading).toHaveTextContent('2')
-    await userEvent.click(heading)
-    expect(onToggle).toHaveBeenCalled()
-
-    rerender(
-      <TooltipProvider>
-        <PendingReviewReviewers
-          reviewers={[reviewer({ login: 'a' })]}
-          onRerequest={vi.fn()}
-          collapsed
-          onToggle={onToggle}
-        />
-      </TooltipProvider>
-    )
-    expect(screen.queryByText('a')).toBeNull()
-  })
 })

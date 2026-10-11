@@ -8,14 +8,13 @@ describe('buildSourceControlSectionsSubmenu', () => {
     expect(menu.label).toBe('Source Control Sections')
     const items = menu.submenu as Electron.MenuItemConstructorOptions[]
     expect(items.map((item) => [item.label, item.type, item.checked])).toEqual([
-      ['Reviewers', 'checkbox', true],
-      ['Pending review', 'checkbox', true],
+      ['Review', 'checkbox', true],
       ['Agent notes', 'checkbox', true],
       ['Agent turns', 'checkbox', true],
       ['Changes', 'checkbox', true],
       ['Commits', 'checkbox', false]
     ])
-    items[5].click?.({} as never, undefined, {} as never)
+    items[4].click?.({} as never, undefined, {} as never)
     expect(onToggle).toHaveBeenCalledWith('commits')
   })
 })

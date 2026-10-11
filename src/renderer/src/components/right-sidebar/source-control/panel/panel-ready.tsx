@@ -1,7 +1,6 @@
 import { BulkActionBar } from '../commit/bulk-action-bar'
 import { SourceControlHeaderToolbar } from './header-toolbar'
 import { SourceControlPendingReviewShelf } from '../pending-review/pending-review-shelf'
-import { PendingReviewReviewers } from '../pending-review/pending-review-reviewers'
 import { AgentNotesShelf } from '../notes/agent-notes-shelf'
 import { AgentTurnsSection, useAgentTurns } from '../agent-turns/agent-turns-section'
 import { useWorktreeAgentNotes } from '@/lib/agent-notes'
@@ -75,20 +74,6 @@ export function SourceControlPanelReady(props: SourceControlPanelReadyProps) {
 
   // Fork: your own notes live in the diff viewer only; agent notes keep a section here.
   const shelves: ResizableShelf[] = []
-  const reviewers = submitReviewVerdict.reviewers
-  if (submitReviewVerdict.prNumber !== null && (reviewers === null || reviewers.length > 0)) {
-    shelves.push({
-      id: 'reviewers',
-      node: (
-        <PendingReviewReviewers
-          reviewers={reviewers}
-          onRerequest={submitReviewVerdict.rerequest}
-          collapsed={collapsedSections.has('reviewers')}
-          onToggle={() => toggleSection('reviewers')}
-        />
-      )
-    })
-  }
   // Why not gated on drafts: a verdict stands on its own — an approve needs no comments.
   if (submitReviewVerdict.prNumber !== null) {
     shelves.push({
@@ -98,6 +83,8 @@ export function SourceControlPanelReady(props: SourceControlPanelReadyProps) {
           queue={pendingReviewQueue}
           submitter={submitReviewVerdict}
           worktreeId={props.model.activeWorktreeId ?? null}
+          collapsed={collapsedSections.has('pending-review')}
+          onToggle={() => toggleSection('pending-review')}
         />
       )
     })

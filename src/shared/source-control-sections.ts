@@ -1,12 +1,8 @@
 // Fork: the source-control panel's sections, in their default order. The renderer lays them out
 // from this, and the View menu lists the same ids as visibility checkboxes.
 export const SOURCE_CONTROL_SECTIONS = [
-  { id: 'reviewers', labelKey: 'sourceControlSections.reviewers', label: 'Reviewers' },
-  {
-    id: 'pending-review',
-    labelKey: 'sourceControlSections.pendingReview',
-    label: 'Pending review'
-  },
+  // The reviewers and your pending review of the pull request.
+  { id: 'pending-review', labelKey: 'sourceControlSections.review', label: 'Review' },
   { id: 'agent-notes', labelKey: 'sourceControlSections.agentNotes', label: 'Agent notes' },
   { id: 'agent-turns', labelKey: 'sourceControlSections.agentTurns', label: 'Agent turns' },
   { id: 'changes', labelKey: 'sourceControlSections.changes', label: 'Changes' },
