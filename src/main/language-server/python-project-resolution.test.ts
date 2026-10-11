@@ -9,7 +9,7 @@ function existsIn(paths: string[]) {
 }
 
 describe('resolvePythonProject', () => {
-  it('runs the nearest project with its own .venv pyrefly', () => {
+  it('runs the nearest project in its own .venv', () => {
     const exists = existsIn([
       '/repo/apps/backend/pyrefly.toml',
       '/repo/apps/backend/.venv/bin/pyrefly',
@@ -24,8 +24,7 @@ describe('resolvePythonProject', () => {
       })
     ).toEqual({
       projectRoot: '/repo/apps/backend',
-      venvPath: '/repo/apps/backend/.venv',
-      pyrefly: '/repo/apps/backend/.venv/bin/pyrefly'
+      venvPath: '/repo/apps/backend/.venv'
     })
   })
 
@@ -44,12 +43,11 @@ describe('resolvePythonProject', () => {
       })
     ).toEqual({
       projectRoot: '/repo/apps/backend',
-      venvPath: '/repo/envs/py312',
-      pyrefly: '/repo/envs/py312/bin/pyrefly'
+      venvPath: '/repo/envs/py312'
     })
   })
 
-  it('accepts an absolute venv and falls back to pyrefly on PATH when the venv has none', () => {
+  it('accepts an absolute venv', () => {
     const exists = existsIn(['/repo/pyproject.toml', '/opt/venvs/app/bin/python'])
     expect(
       resolvePythonProject({
@@ -58,7 +56,7 @@ describe('resolvePythonProject', () => {
         venvSetting: '/opt/venvs/app',
         exists
       })
-    ).toEqual({ projectRoot: '/repo', venvPath: '/opt/venvs/app', pyrefly: 'pyrefly' })
+    ).toEqual({ projectRoot: '/repo', venvPath: '/opt/venvs/app' })
   })
 
   it("borrows the main checkout's venv when the worktree has none of its own", () => {
@@ -76,8 +74,7 @@ describe('resolvePythonProject', () => {
       })
     ).toEqual({
       projectRoot: '/wt/e-5139/apps/backend',
-      venvPath: '/repo/apps/backend/.venv',
-      pyrefly: '/repo/apps/backend/.venv/bin/pyrefly'
+      venvPath: '/repo/apps/backend/.venv'
     })
   })
 
@@ -93,8 +90,8 @@ describe('resolvePythonProject', () => {
         repoRoot: '/repo',
         venvSetting: 'apps/backend/.venv',
         exists
-      }).pyrefly
-    ).toBe('/repo/apps/backend/.venv/bin/pyrefly')
+      }).venvPath
+    ).toBe('/repo/apps/backend/.venv')
   })
 
   it('treats the worktree as the project when no config file is found', () => {
@@ -105,6 +102,6 @@ describe('resolvePythonProject', () => {
         venvSetting: null,
         exists: existsIn([])
       })
-    ).toEqual({ projectRoot: '/repo', venvPath: null, pyrefly: 'pyrefly' })
+    ).toEqual({ projectRoot: '/repo', venvPath: null })
   })
 })

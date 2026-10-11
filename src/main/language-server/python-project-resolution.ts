@@ -1,8 +1,8 @@
 import { dirname, isAbsolute, join, relative, resolve } from 'node:path'
 
-export type PythonProject = { projectRoot: string; venvPath: string | null; pyrefly: string }
+export type PythonProject = { projectRoot: string; venvPath: string | null }
 
-const PROJECT_MARKERS = ['pyrefly.toml', 'pyproject.toml']
+const PROJECT_MARKERS = ['pyrefly.toml', 'pyrightconfig.json', 'pyproject.toml']
 const VENV_DIRS = ['.venv', 'venv']
 
 function isInside(root: string, path: string): boolean {
@@ -71,10 +71,5 @@ export function resolvePythonProject({
     }
     venvPath = findVenv(roots, exists)
   }
-  const venvPyrefly = venvPath ? join(venvPath, 'bin', 'pyrefly') : null
-  return {
-    projectRoot,
-    venvPath,
-    pyrefly: venvPyrefly && exists(venvPyrefly) ? venvPyrefly : 'pyrefly'
-  }
+  return { projectRoot, venvPath }
 }

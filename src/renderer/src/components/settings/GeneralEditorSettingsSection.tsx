@@ -18,7 +18,6 @@ import {
 } from './SettingsFormControls'
 import { translate } from '@/i18n/i18n'
 import { RichMarkdownSpellcheckSetting } from './RichMarkdownSpellcheckSetting'
-import { LanguageServersSetting } from './LanguageServersSetting'
 import { GitBlameSetting } from './GitBlameSetting'
 import { FileIconsSetting } from './FileIconsSetting'
 import { DiffShowWhitespaceSetting } from './DiffShowWhitespaceSetting'
@@ -373,8 +372,6 @@ export function GeneralEditorSettingsSection({
       </SearchableSetting>
 
       <RichMarkdownSpellcheckSetting settings={settings} updateSettings={updateSettings} />
-
-      <LanguageServersSetting settings={settings} updateSettings={updateSettings} />
 
       <GitBlameSetting settings={settings} updateSettings={updateSettings} />
 

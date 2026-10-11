@@ -1,16 +1,22 @@
 import type * as Monaco from 'monaco-editor'
 import type { LanguageServerLocation } from '../../../shared/language-server'
 import { detectLanguage } from '@/lib/language-detect'
+import { trackModelFile, type TrackedModelFile } from './editor-model-files'
 import { previewModelText } from './language-server-editor'
 
 export const PREVIEW_SCHEME = 'orca-definition'
 const MAX_PREVIEW_MODELS = 80
 
 // Why: a reference copy holds the whole file, so a definition's snippet must not overwrite it.
-const wholeFileUris = new Set<string>()
+const wholeFileCopies = new Map<string, () => void>()
 
 export function isWholeFileCopy(uri: Monaco.Uri): boolean {
-  return uri.scheme === PREVIEW_SCHEME && wholeFileUris.has(uri.toString())
+  return uri.scheme === PREVIEW_SCHEME && wholeFileCopies.has(uri.toString())
+}
+
+function forgetWholeFileCopy(uri: string): void {
+  wholeFileCopies.get(uri)?.()
+  wholeFileCopies.delete(uri)
 }
 
 function previewUri(monaco: typeof Monaco, filePath: string): Monaco.Uri {
@@ -29,7 +35,7 @@ function createPreviewModel(
 ): void {
   const previews = monaco.editor.getModels().filter((model) => model.uri.scheme === PREVIEW_SCHEME)
   for (const stale of previews.slice(0, Math.max(0, previews.length - MAX_PREVIEW_MODELS + 1))) {
-    wholeFileUris.delete(stale.uri.toString())
+    forgetWholeFileCopy(stale.uri.toString())
     stale.dispose()
   }
   monaco.editor.createModel(text, language, uri)
@@ -46,7 +52,7 @@ export function definitionModelUri(
     return open.uri
   }
   const uri = previewUri(monaco, location.filePath)
-  if (wholeFileUris.has(uri.toString())) {
+  if (wholeFileCopies.has(uri.toString())) {
     return uri
   }
   const text = previewModelText(location)
@@ -59,10 +65,13 @@ export function definitionModelUri(
   return uri
 }
 
+// Why register the copy: Peek shows a file with no tab through it, and it has to answer hover,
+// Cmd+click and references the way that file would.
 export function referenceModelUri(
   monaco: typeof Monaco,
   filePath: string,
-  text: string | undefined
+  text: string | undefined,
+  file: TrackedModelFile
 ): Monaco.Uri | null {
   const open = openFileModel(monaco, filePath)
   if (open) {
@@ -84,7 +93,9 @@ export function referenceModelUri(
       monaco.editor.setModelLanguage(existing, language)
     }
   }
-  wholeFileUris.add(uri.toString())
+  const key = uri.toString()
+  forgetWholeFileCopy(key)
+  wholeFileCopies.set(key, trackModelFile(key, file))
   return uri
 }
 

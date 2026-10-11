@@ -1,0 +1,169 @@
+import { useState } from 'react'
+import type React from 'react'
+import { ExternalLink } from 'lucide-react'
+import type { GlobalSettings } from '../../../../shared/global-settings-types'
+import {
+  LANGUAGE_SERVER_LANGUAGES,
+  LANGUAGE_SERVERS,
+  languageServerOptions,
+  languageServerSettings,
+  type LanguageServerLanguage
+} from '../../../../shared/language-server'
+import { translate } from '@/i18n/i18n'
+import { RENDERER_LANGUAGE_SERVERS } from '@/lib/language-server-languages'
+import { MaterialNamedIcon } from '@/lib/material-icons/material-icon'
+import { Input } from '../ui/input'
+import { Label } from '../ui/label'
+import { SearchableSetting } from './SearchableSetting'
+import { SettingsSegmentedControl, SettingsSwitch } from './SettingsFormControls'
+import { getLanguageServersSearchEntries } from './language-servers-search'
+
+type Props = {
+  settings: Pick<GlobalSettings, 'languageServers'>
+  updateSettings: (updates: Partial<GlobalSettings>) => void
+}
+
+type Choice = { enabled: boolean; server: string; command: string | null }
+
+function CommandField({
+  language,
+  choice,
+  onCommit
+}: {
+  language: LanguageServerLanguage
+  choice: Choice
+  onCommit: (command: string | null) => void
+}): React.JSX.Element {
+  const [draft, setDraft] = useState(choice.command ?? '')
+  const server = languageServerOptions(language)[choice.server]
+  const commit = (): void => {
+    const next = draft.trim() || null
+    if (next !== choice.command) {
+      onCommit(next)
+    }
+  }
+  return (
+    <div className="flex items-center justify-between gap-4">
+      <Label className="shrink-0 text-xs text-muted-foreground">
+        {translate('languageServers.path', 'Path')}
+      </Label>
+      <Input
+        value={draft}
+        onChange={(event) => setDraft(event.target.value)}
+        onBlur={commit}
+        onKeyDown={(event) => {
+          if (event.key === 'Enter') {
+            commit()
+          }
+        }}
+        spellCheck={false}
+        placeholder={translate(
+          'languageServers.pathPlaceholder',
+          '{{command}} from the project, else PATH',
+          { command: server.command }
+        )}
+        className="h-7 w-80 font-mono text-xs md:text-xs"
+      />
+    </div>
+  )
+}
+
+function LanguageServerCard({
+  language,
+  choice,
+  onChange
+}: {
+  language: LanguageServerLanguage
+  choice: Choice
+  onChange: (next: Choice) => void
+}): React.JSX.Element {
+  const meta = RENDERER_LANGUAGE_SERVERS[language]
+  const servers = languageServerOptions(language)
+  const label = meta.label()
+  return (
+    <div
+      data-language-server={language}
+      className="rounded-lg border border-border/60 bg-card/40 px-4 py-3"
+    >
+      <div className="flex items-center gap-3">
+        <MaterialNamedIcon icon={LANGUAGE_SERVERS[language].icon} size={28} />
+        <div className="min-w-0 flex-1 space-y-0.5">
+          <Label className="text-sm">{label}</Label>
+          <p className="text-xs text-muted-foreground">{meta.description()}</p>
+        </div>
+        <SettingsSwitch
+          checked={choice.enabled}
+          ariaLabel={label}
+          onChange={() => onChange({ ...choice, enabled: !choice.enabled })}
+        />
+      </div>
+      {choice.enabled ? (
+        <div className="mt-3 space-y-2 border-t border-border/60 pt-3">
+          <div className="flex items-center justify-between gap-4">
+            <Label className="shrink-0 text-xs text-muted-foreground">
+              {translate('languageServers.server', 'Server')}
+            </Label>
+            <div className="flex items-center gap-2">
+              <SettingsSegmentedControl
+                size="sm"
+                value={choice.server}
+                ariaLabel={translate('languageServers.serverFor', '{{language}} server', {
+                  language: label
+                })}
+                options={Object.entries(servers).map(([id, server]) => ({
+                  value: id,
+                  label: server.name
+                }))}
+                onChange={(server) => onChange({ ...choice, server, command: null })}
+              />
+              <a
+                href={servers[choice.server].homepage}
+                target="_blank"
+                rel="noreferrer"
+                aria-label={translate('languageServers.docs', 'Open {{server}} docs', {
+                  server: servers[choice.server].name
+                })}
+                className="text-muted-foreground hover:text-foreground"
+              >
+                <ExternalLink className="size-3.5" />
+              </a>
+            </div>
+          </div>
+          <CommandField
+            // Why remount per server: a saved path belongs to the server it was set for.
+            key={choice.server}
+            language={language}
+            choice={choice}
+            onCommit={(command) => onChange({ ...choice, command })}
+          />
+        </div>
+      ) : null}
+    </div>
+  )
+}
+
+// Fork: one card per language in the registry (`shared/language-server.ts`), so a new language
+// shows up here without touching this pane.
+export function LanguageServersPane({ settings, updateSettings }: Props): React.JSX.Element {
+  const searchEntries = getLanguageServersSearchEntries()
+  const save = (language: LanguageServerLanguage, { enabled, server, command }: Choice): void =>
+    updateSettings({
+      languageServers: {
+        ...settings.languageServers,
+        [language]: { enabled, server, ...(command ? { command } : {}) }
+      }
+    })
+  return (
+    <div className="space-y-3">
+      {LANGUAGE_SERVER_LANGUAGES.map((language, index) => (
+        <SearchableSetting key={language} {...searchEntries[index]}>
+          <LanguageServerCard
+            language={language}
+            choice={languageServerSettings(settings, language)}
+            onChange={(next) => save(language, next)}
+          />
+        </SearchableSetting>
+      ))}
+    </div>
+  )
+}

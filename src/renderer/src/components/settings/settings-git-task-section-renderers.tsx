@@ -1,6 +1,7 @@
 import { CommitMessageAiPane } from './CommitMessageAiPane'
 import { GitPane } from './GitPane'
 import { GitProviderApiBudgetPane } from './GitProviderApiBudgetPane'
+import { LanguageServersPane } from './LanguageServersPane'
 import { TasksPane } from './TasksPane'
 import { SettingsSection } from './SettingsSection'
 import { translate } from '@/i18n/i18n'
@@ -41,6 +42,27 @@ export function renderGitSettingsSection(context: SettingsRenderContext): React.
           />
           <GitProviderApiBudgetPane settingsSearchQuery={model.settingsSearchQuery} />
         </>
+      ) : null}
+    </SettingsSection>
+  )
+}
+
+export function renderLanguageServersSettingsSection(
+  context: SettingsRenderContext
+): React.JSX.Element {
+  const { model, navigation, view } = context
+  return (
+    <SettingsSection
+      id="language-servers"
+      title={translate('languageServers.title', 'Language Servers')}
+      description={translate(
+        'languageServers.description',
+        'Cmd+click, hover and references per language. Each runs a background process per project.'
+      )}
+      searchEntries={navigation.getSectionSearchEntries('language-servers')}
+    >
+      {view.isSectionMounted('language-servers') ? (
+        <LanguageServersPane settings={model.settings} updateSettings={model.updateSettings} />
       ) : null}
     </SettingsSection>
   )

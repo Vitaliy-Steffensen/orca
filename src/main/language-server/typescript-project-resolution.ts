@@ -1,6 +1,6 @@
 import { dirname, isAbsolute, join, relative } from 'node:path'
 
-export type TypeScriptProject = { projectRoot: string; tsgo: string }
+export type TypeScriptProject = { projectRoot: string; binDirs: string[] }
 
 const PROJECT_MARKERS = ['tsconfig.json', 'jsconfig.json']
 
@@ -40,7 +40,6 @@ export function resolveTypeScriptProject({
       ...directoriesUpTo(join(repoRoot, relative(worktreeRoot, projectRoot)), repoRoot)
     )
   }
-  // Why the project's own tsgo: it matches the TypeScript version the repo builds with.
-  const tsgo = searchDirs.map((dir) => join(dir, 'node_modules', '.bin', 'tsgo')).find(exists)
-  return { projectRoot, tsgo: tsgo ?? 'tsgo' }
+  // Why the project's own server first: it matches the TypeScript version the repo builds with.
+  return { projectRoot, binDirs: searchDirs.map((dir) => join(dir, 'node_modules', '.bin')) }
 }

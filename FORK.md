@@ -992,7 +992,34 @@ turns Review / Commit & push into icon buttons with tooltips below a 560px panel
 | `src/renderer/src/components/right-sidebar/workspace-actions/WorkspaceActionButtons.tsx` | `ActionButton` with the `showLabels` prop. |
 | `src/renderer/src/components/right-sidebar/index.tsx` | Renders `PreviewDeploymentButton` and passes `showLabels`. |
 
-### 26. Language servers: Python (pyrefly) and TypeScript (tsgo)
+### 26. Language servers: a registry of languages and servers
+
+**The registry.** `src/shared/language-server.ts` (`LANGUAGE_SERVERS`) is the one list of languages:
+each has a material-icon logo, its Monaco language ids, its file extensions with the LSP language id
+each opens as, and the servers it can run (`servers`, each a name, command, args and homepage) with
+a `defaultServer`. Python offers pyrefly, Pyright, basedpyright and ty; TypeScript offers tsgo and
+typescript-language-server. Two tables keyed by that list add the rest, so a new language fails
+typecheck until it has both: main's `language-server-launchers.ts` (where a language's project
+root and tools are — Python's venv `bin/`, TypeScript's `node_modules/.bin` dirs — plus env such as
+`VIRTUAL_ENV`) and the renderer's `language-server-languages.ts` (settings label and description,
+and an optional fallback; TypeScript's is the built-in worker). The chosen server is found in the
+project's tool dirs, else on `PATH`, unless a custom path is set (`~/` expanded). Settings per
+language (`languageServers` in `GlobalSettings`, read by `languageServerSettings`, which still
+accepts the first version's plain on/off) are `{ enabled, server, command }`; any change stops that
+language's running servers. Everything that used to name a language — the file check, the LSP
+language id, the editor providers, the settings rows, the failure toast — reads the registry.
+
+**Settings → Language Servers** is its own section (`LanguageServersPane.tsx`,
+`language-servers-search.ts`, `renderLanguageServersSettingsSection`): one card per registry
+language with its logo, an on/off switch, a segmented choice of its servers with a docs link, and a
+path field saved on blur or Enter.
+
+**One file per model.** Monaco models are named by whoever creates them: a tab by its path, a diff
+side by an internal diff path, a Peek copy by `orca-definition:`. Each registers the worktree file
+it shows in `lib/editor-model-files.ts` (`trackModelFile`, `trackDiffEditorFile`), and
+`fileSource` (`language-server-file-source.ts`) resolves every kind the same way, so hover,
+Cmd+click and references behave alike in a tab, a diff and a Peek preview, and git blame reads the
+same registry.
 
 Cmd+click jumps to the definition and hover shows types in local Python and TypeScript/JavaScript
 files: same file, another file of the worktree, or installed packages. Main runs one language server
@@ -1015,23 +1042,21 @@ sets `VIRTUAL_ENV` for a venv).
   `node_modules/.bin/tsgo`, then the main checkout's, then `PATH`. `bun check` was considered: it
   is a CLI type checker with no language server, so it can't answer definitions or hovers.
 
-Settings → General → Editor → **Language Servers** has a switch per language
-(`LanguageServersSetting.tsx`, `languageServers` in `GlobalSettings`, read as on unless `false`
-because the setting is stored shallowly). Turning one off stops its servers (`languageServer:stop`).
+Turning a language off, or changing its server or path, stops its servers (`languageServer:stop`).
 Monaco's own TS hover/definition are turned off once at startup — this Monaco reads
 `modeConfiguration` only when the TS mode is first set up — and the providers call the built-in TS
 worker themselves (`built-in-typescript-fallback.ts`) when tsgo is off, can't answer, or the file
 is remote. When a server can't run, one toast per error says so instead of failing silently. Remote
 (SSH/runtime) worktrees never start a server.
 
-The renderer registers definition and hover providers for `python`, `typescript` and `javascript`
-plus an editor opener that opens a jump into another file as an Orca tab
-(`lib/monaco-language-servers.ts`, logic and tests in `lib/language-server-editor.ts`), installed
-from `monaco-setup.ts`. IPC: `languageServer:definition|hover|stop` (`ipc/language-server.ts`,
+The renderer registers definition, hover and reference providers for every registry language's
+Monaco ids (`lib/monaco-language-server-providers.ts`) plus an editor opener that opens a jump into
+another file as an Orca tab (`lib/monaco-language-servers.ts`, logic and tests in
+`lib/language-server-editor.ts`), installed from `monaco-setup.ts`. IPC: `languageServer:definition|hover|stop` (`ipc/language-server.ts`,
 `preload/api/language-server-bridge.ts`, `languageServer` in `api-types.ts`).
 Diff editors name their models with internal diff paths, so `DiffViewer.tsx` and
 `DiffSectionItem.tsx` record each side's file with `trackDiffEditorFile`
-(`lib/diff-editor-model-files.ts`); Cmd+click in either side of a diff then works too, and a
+(`lib/editor-model-files.ts`); Cmd+click in either side of a diff then works too, and a
 same-file hit stays in the diff. From a diff, a target file that has its own changes
 (`targetHasDiff`) opens in its diff via `openDiffAtLocation`, which prefers the uncommitted diff
 (the newest version) over the branch diff; an unchanged target opens in a normal tab.
@@ -1071,7 +1096,8 @@ The file editor's `smoothScrolling` is off, so a reveal is instant.
 | `src/shared/repo-types.ts`, `ipc/repos/repo-update-handler.ts`, `repo-update-operations.ts`, `repo-lifecycle-operations.ts`, `store/repos/repo-state.ts` | `pythonVenvPath` (trimmed, non-strings dropped). |
 | `src/renderer/src/components/settings/RepositoryPane.tsx`, `repository-git-worktree-search-entries.ts` | The Python Environment section (`PythonEnvironmentSection.tsx`) and its search entry. |
 | `src/shared/global-settings-types.ts` | `languageServers`. |
-| `src/renderer/src/components/settings/GeneralEditorSettingsSection.tsx`, `general-editor-search.ts` | `LanguageServersSetting` and its search entry. |
+| `src/renderer/src/lib/settings-navigation-types.ts`, `hooks/settings-navigation-workflow-sections.ts`, `components/settings/settings-git-task-section-renderers.tsx`, `settings-page-renderer.tsx` | The `language-servers` section. |
+| `src/renderer/src/lib/material-icons/material-icon.tsx` | `MaterialNamedIcon` for the language logos. |
 | `src/main/ipc/register-core-handlers/register-core-handlers.ts` (+ test mock) | `registerLanguageServerHandlers()`. |
 | `src/preload/index.ts`, `src/preload/api-types.ts` | `languageServer` API. |
 | `src/renderer/src/app-shell/TitlebarLeftControls.tsx`, `app-command-handlers.ts`, `hooks/ipc-events/workspace-shortcut-ipc-bridge.ts` | Back/Forward call `goInCodeHistory` instead of `goBackWorktree`/`goForwardWorktree`. |
@@ -1262,19 +1288,10 @@ mostly horizontal trackpad swipe now scrolls the pane too (`diff-editor-shift-wh
 
 ### 34. Cmd+click inside a Peek preview
 
-Peek shows a reference in a file with no tab as a whole-file `orca-definition:` copy. Those copies
-used to get no language-server context, so Python showed no Cmd+hover underline and TypeScript fell
-back to the single-file built-in worker, which stops at the import. A whole-file copy now resolves
-to the deepest local worktree holding its path (`unopenedFileContext`), so hover, underline and
-Cmd+click go to pyrefly/tsgo like an open file, and a jump from the copy always opens the real file
-in a tab instead of moving inside the preview.
-
-| File | What is ours |
-| --- | --- |
-| `src/renderer/src/lib/language-server-file-source.ts` | `fileSource`, moved out of `monaco-language-servers.ts`, plus the whole-file-copy branch. |
-| `src/renderer/src/lib/language-server-editor.ts` | `unopenedFileContext`. |
-| `src/renderer/src/lib/language-server-preview-models.ts` | `isWholeFileCopy`. |
-| `src/renderer/src/lib/monaco-language-servers.ts` | The opener treats a same-model jump from a copy as a tab jump. |
+Peek shows a reference in a file with no tab as a whole-file `orca-definition:` copy, which
+registers the worktree file it came from (see "One file per model" in 26), so hover, underline and
+Cmd+click go to the language's server like an open file. A jump from the copy always opens the real
+file in a tab instead of moving inside the preview (`isWholeFileCopy` in the opener).
 
 ## Verify
 

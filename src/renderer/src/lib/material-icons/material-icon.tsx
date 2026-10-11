@@ -42,6 +42,13 @@ function MaterialIconImage({
   )
 }
 
+export function MaterialNamedIcon({
+  icon,
+  ...props
+}: MaterialIconProps & { icon: string }): React.JSX.Element {
+  return <MaterialIconImage {...props} icon={icon} fallback="file" />
+}
+
 export function MaterialFileIcon({
   path,
   ...props

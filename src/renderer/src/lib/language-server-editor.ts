@@ -1,26 +1,5 @@
-import type {
-  LanguageServerLanguage,
-  LanguageServerLocation
-} from '../../../shared/language-server'
+import type { LanguageServerLocation } from '../../../shared/language-server'
 import { getRepoExecutionHostId, LOCAL_EXECUTION_HOST_ID } from '../../../shared/execution-host'
-
-const SERVER_LANGUAGE_BY_MONACO_ID: Record<string, LanguageServerLanguage> = {
-  python: 'python',
-  typescript: 'typescript',
-  javascript: 'typescript'
-}
-
-export function serverLanguageFor(monacoLanguageId: string): LanguageServerLanguage | null {
-  return SERVER_LANGUAGE_BY_MONACO_ID[monacoLanguageId] ?? null
-}
-
-// Why `!== false`: the setting is stored shallowly, so an unset language means on.
-export function languageServerEnabled(
-  settings: { languageServers?: Partial<Record<LanguageServerLanguage, boolean>> } | null,
-  language: LanguageServerLanguage
-): boolean {
-  return settings?.languageServers?.[language] !== false
-}
 
 type DefinitionState = {
   openFiles: readonly { filePath: string; worktreeId: string }[]
@@ -70,23 +49,18 @@ export function openFileContext(
   return file ? localWorktree(state, file.worktreeId) : null
 }
 
-export function unopenedFileContext(
-  state: DefinitionState,
-  filePath: string
-): DefinitionContext | null {
-  const holders = Object.values(state.worktreesByRepo)
-    .flat()
-    .filter((worktree) => filePath.startsWith(`${worktree.path.replace(/\/+$/, '')}/`))
-    .sort((a, b) => b.path.length - a.path.length)
-  return holders[0] ? localWorktree(state, holders[0].id) : null
-}
+const ABSOLUTE_PATH = /^([a-zA-Z]:)?[\\/]/
 
 export function trackedFileContext(
   state: DefinitionState,
   file: { worktreeId: string; relativePath: string }
 ): (DefinitionContext & { filePath: string }) | null {
   const context = localWorktree(state, file.worktreeId)
-  return context ? { filePath: `${context.worktreeRoot}/${file.relativePath}`, ...context } : null
+  // Why: Orca names a file outside the worktree by a relative path equal to its absolute one.
+  const filePath = ABSOLUTE_PATH.test(file.relativePath)
+    ? file.relativePath
+    : `${context?.worktreeRoot}/${file.relativePath}`
+  return context ? { filePath, ...context } : null
 }
 
 export function definitionOpenTarget(

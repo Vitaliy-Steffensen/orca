@@ -37,7 +37,7 @@ import { monacoFindOptions } from './monaco-find-options'
 import { editorThemeName, ensureCustomEditorThemes } from '@/lib/custom-editor-theme'
 import { usePendingReviewForDiff } from '@/components/pending-review/use-pending-review-for-diff'
 import { useDocumentDarkTheme } from '@/hooks/use-document-dark-theme'
-import { trackDiffEditorFile } from '@/lib/diff-editor-model-files'
+import { trackDiffEditorFile } from '@/lib/editor-model-files'
 
 export default function DiffViewer({
   modelKey,

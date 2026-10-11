@@ -1,34 +1,13 @@
 import { describe, expect, it } from 'vitest'
 import {
   definitionOpenTarget,
-  languageServerEnabled,
   openFileContext,
   previewModelText,
   replaceableTabId,
-  serverLanguageFor,
   targetHasDiff,
   toEditorPosition,
-  trackedFileContext,
-  unopenedFileContext
+  trackedFileContext
 } from './language-server-editor'
-
-describe('serverLanguageFor', () => {
-  it('sends Python to pyrefly and TypeScript or JavaScript to tsgo', () => {
-    expect(serverLanguageFor('python')).toBe('python')
-    expect(serverLanguageFor('typescript')).toBe('typescript')
-    expect(serverLanguageFor('javascript')).toBe('typescript')
-    expect(serverLanguageFor('markdown')).toBeNull()
-  })
-})
-
-describe('languageServerEnabled', () => {
-  it('is on unless the language is switched off', () => {
-    expect(languageServerEnabled(null, 'python')).toBe(true)
-    expect(languageServerEnabled({}, 'typescript')).toBe(true)
-    expect(languageServerEnabled({ languageServers: { python: false } }, 'typescript')).toBe(true)
-    expect(languageServerEnabled({ languageServers: { python: false } }, 'python')).toBe(false)
-  })
-})
 
 const state = {
   openFiles: [{ filePath: '/wt/e-4974/apps/backend/a.py', worktreeId: 'wt-1' }],
@@ -59,28 +38,6 @@ describe('openFileContext', () => {
     }
     expect(openFileContext(remote, '/remote/wt/a.py')).toBeNull()
     expect(openFileContext(state, '/elsewhere/b.py')).toBeNull()
-  })
-})
-
-describe('unopenedFileContext', () => {
-  it('finds the local worktree holding a file that has no tab, preferring the deepest', () => {
-    const nested = {
-      ...state,
-      worktreesByRepo: {
-        ...state.worktreesByRepo,
-        'repo-1': [
-          { id: 'wt-1', path: '/wt/e-4974', repoId: 'repo-1' },
-          { id: 'wt-2', path: '/wt/e-4974/.worktrees/x', repoId: 'repo-1' }
-        ]
-      }
-    }
-    expect(unopenedFileContext(nested, '/wt/e-4974/apps/frontend/b.ts')?.worktreeId).toBe('wt-1')
-    expect(unopenedFileContext(nested, '/wt/e-4974/.worktrees/x/c.ts')?.worktreeId).toBe('wt-2')
-  })
-
-  it('has nothing for a file outside every local worktree', () => {
-    expect(unopenedFileContext(state, '/wt/e-4974-other/b.ts')).toBeNull()
-    expect(unopenedFileContext(state, '/remote/wt/a.py')).toBeNull()
   })
 })
 
@@ -119,6 +76,12 @@ describe('trackedFileContext', () => {
       repoRoot: '/repo',
       venvSetting: 'apps/backend/.venv'
     })
+  })
+
+  it('keeps a file outside the worktree at its absolute path', () => {
+    expect(
+      trackedFileContext(state, { worktreeId: 'wt-1', relativePath: '/opt/typeshed/builtins.pyi' })
+    ).toMatchObject({ filePath: '/opt/typeshed/builtins.pyi', worktreeId: 'wt-1' })
   })
 
   it('has nothing for a remote worktree', () => {

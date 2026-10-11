@@ -1,32 +1,19 @@
 import { isAbsolute, relative } from 'node:path'
-import type {
-  LanguageServerDefinitionResult,
-  LanguageServerHoverResult,
-  LanguageServerLanguage,
-  LanguageServerReferencesResult,
-  LanguageServerRequest
+import {
+  languageServerForFile,
+  type LanguageServerDefinitionResult,
+  type LanguageServerHoverResult,
+  type LanguageServerLanguage,
+  type LanguageServerReferencesResult,
+  type LanguageServerRequest
 } from '../../shared/language-server'
-import { resolvePythonProject } from './python-project-resolution'
-import { resolveTypeScriptProject } from './typescript-project-resolution'
+import { resolveLaunch, type LanguageServerLaunch } from './language-server-launchers'
 import type { LspSession } from './lsp-session'
 import { createLspSessionPool } from './lsp-session-pool'
 
 const IDLE_MS = 15 * 60_000
 const MAX_SESSIONS = 4
 const MAX_REFERENCE_FILES = 50
-const FILE_PATTERNS: Record<LanguageServerLanguage, RegExp> = {
-  python: /\.pyi?$/i,
-  typescript: /\.[mc]?[jt]sx?$/i
-}
-
-export type LanguageServerLaunch = {
-  language: LanguageServerLanguage
-  serverName: string
-  projectRoot: string
-  program: string
-  args: string[]
-  venvPath: string | null
-}
 
 type Session = Pick<LspSession, 'closed' | 'definition' | 'hover' | 'references' | 'dispose'>
 
@@ -35,34 +22,8 @@ function isInside(root: string, path: string): boolean {
   return rel !== '' && !rel.startsWith('..') && !isAbsolute(rel)
 }
 
-function resolveLaunch(
-  { language, filePath, worktreeRoot, repoRoot, venvSetting }: LanguageServerRequest,
-  exists: (path: string) => boolean
-): LanguageServerLaunch {
-  if (language === 'typescript') {
-    const project = resolveTypeScriptProject({ filePath, worktreeRoot, repoRoot, exists })
-    return {
-      language,
-      serverName: 'tsgo',
-      projectRoot: project.projectRoot,
-      program: project.tsgo,
-      args: ['--lsp', '--stdio'],
-      venvPath: null
-    }
-  }
-  const project = resolvePythonProject({ filePath, worktreeRoot, repoRoot, venvSetting, exists })
-  return {
-    language,
-    serverName: 'pyrefly',
-    projectRoot: project.projectRoot,
-    program: project.pyrefly,
-    args: ['lsp'],
-    venvPath: project.venvPath
-  }
-}
-
 function sessionKey(launch: LanguageServerLaunch): string {
-  return `${launch.language}\0${JSON.stringify([launch.program, launch.projectRoot, launch.venvPath])}`
+  return `${launch.language}\0${JSON.stringify([launch.program, launch.projectRoot, launch.env, launch.pathPrefix])}`
 }
 
 export function createLanguageServerService({
@@ -101,8 +62,11 @@ export function createLanguageServerService({
     ask: (session: Session) => Promise<T>
   ): Promise<{ ok: true; value: T } | { ok: false; error: string }> => {
     const { language, filePath, worktreeRoot } = request
-    const pattern = FILE_PATTERNS[language]
-    if (!pattern || !isAbsolute(filePath) || !isAbsolute(worktreeRoot) || !pattern.test(filePath)) {
+    if (
+      languageServerForFile(filePath)?.language !== language ||
+      !isAbsolute(filePath) ||
+      !isAbsolute(worktreeRoot)
+    ) {
       return { ok: false, error: `Not a ${language} file in a local worktree.` }
     }
     // Why: a file outside the checkout (a bundled typeshed stub, a global package) has no project

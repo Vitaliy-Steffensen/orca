@@ -18,6 +18,7 @@ const SETTINGS_NAV_TARGETS = [
   'accounts',
   'browser',
   'git',
+  'language-servers',
   'tasks',
   'appearance',
   'chat',

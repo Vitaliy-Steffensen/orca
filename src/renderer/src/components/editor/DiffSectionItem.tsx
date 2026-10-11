@@ -20,7 +20,7 @@ import { useDiffSectionFallbackCleanup } from './useDiffSectionFallbackCleanup'
 import { submitDiffSectionComment } from './diff-section-comment-submit'
 import type { DiffSectionItemProps } from './diff-section-item-props'
 import { useDiffSectionModelLifecycle } from './use-diff-section-model-lifecycle'
-import { trackDiffEditorFile } from '@/lib/diff-editor-model-files'
+import { trackDiffEditorFile } from '@/lib/editor-model-files'
 
 export function DiffSectionItem({
   section,

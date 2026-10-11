@@ -8,8 +8,18 @@ function readRequest(value: unknown): LanguageServerRequest | null {
   if (typeof value !== 'object' || value === null) {
     return null
   }
-  const { language, filePath, worktreeRoot, repoRoot, venvSetting, text, line, character } =
-    value as Record<string, unknown>
+  const {
+    language,
+    server,
+    command,
+    filePath,
+    worktreeRoot,
+    repoRoot,
+    venvSetting,
+    text,
+    line,
+    character
+  } = value as Record<string, unknown>
   if (
     !isLanguageServerLanguage(language) ||
     typeof filePath !== 'string' ||
@@ -22,6 +32,8 @@ function readRequest(value: unknown): LanguageServerRequest | null {
   }
   return {
     language,
+    server: typeof server === 'string' ? server : '',
+    command: typeof command === 'string' && command.trim() ? command.trim() : null,
     filePath,
     worktreeRoot,
     repoRoot: typeof repoRoot === 'string' && repoRoot ? repoRoot : null,

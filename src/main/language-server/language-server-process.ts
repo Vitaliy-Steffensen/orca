@@ -1,21 +1,20 @@
-import { delimiter, join } from 'node:path'
+import { delimiter } from 'node:path'
 import { spawnProcess } from '../../shared/child-process/run-process'
 import { forceTerminateProcessTree } from '../../shared/child-process/process-tree-termination'
-import type { LanguageServerLaunch } from './language-server-service'
+import type { LanguageServerLaunch } from './language-server-launchers'
 import { createLspSession, type LspSession } from './lsp-session'
 
 export function languageServerEnvironment(
-  venvPath: string | null,
+  { env, pathPrefix }: Pick<LanguageServerLaunch, 'env' | 'pathPrefix'>,
   base: NodeJS.ProcessEnv
 ): NodeJS.ProcessEnv {
-  if (!venvPath) {
+  if (Object.keys(env).length === 0 && pathPrefix.length === 0) {
     return base
   }
-  // Why VIRTUAL_ENV: pyrefly picks its interpreter (and so site-packages) from the active venv.
   return {
     ...base,
-    VIRTUAL_ENV: venvPath,
-    PATH: [join(venvPath, 'bin'), base.PATH].filter(Boolean).join(delimiter)
+    ...env,
+    PATH: [...pathPrefix, base.PATH].filter(Boolean).join(delimiter)
   }
 }
 
@@ -24,7 +23,7 @@ export function startLanguageServerSession(launch: LanguageServerLaunch): LspSes
     program: launch.program,
     args: launch.args,
     cwd: launch.projectRoot,
-    env: languageServerEnvironment(launch.venvPath, process.env),
+    env: languageServerEnvironment(launch, process.env),
     detached: process.platform !== 'win32'
   })
   // Why: an unhandled stream error crashes main; a write racing the server's exit raises EPIPE.

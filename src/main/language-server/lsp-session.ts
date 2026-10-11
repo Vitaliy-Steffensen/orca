@@ -1,5 +1,5 @@
 import { fileURLToPath, pathToFileURL } from 'node:url'
-import type { LanguageServerLocation } from '../../shared/language-server'
+import { languageServerForFile, type LanguageServerLocation } from '../../shared/language-server'
 import { createLspMessageReader, encodeLspMessage, type LspMessage } from './lsp-message-framing'
 
 export type LspTransport = {
@@ -43,18 +43,6 @@ function readRange(value: unknown): Range | null {
   return typeof line === 'number' && typeof character === 'number'
     ? { start: { line, character }, end: { line, character } }
     : null
-}
-
-const LANGUAGE_IDS: readonly [RegExp, string][] = [
-  [/\.pyi?$/i, 'python'],
-  [/\.[mc]?tsx$/i, 'typescriptreact'],
-  [/\.[mc]?ts$/i, 'typescript'],
-  [/\.jsx$/i, 'javascriptreact'],
-  [/\.[mc]?js$/i, 'javascript']
-]
-
-export function languageIdForFile(filePath: string): string {
-  return LANGUAGE_IDS.find(([pattern]) => pattern.test(filePath))?.[1] ?? 'plaintext'
 }
 
 function toLocation(value: unknown): LanguageServerLocation | null {
@@ -208,7 +196,12 @@ export function createLspSession({
       send({
         method: 'textDocument/didOpen',
         params: {
-          textDocument: { uri, languageId: languageIdForFile(filePath), version: 1, text }
+          textDocument: {
+            uri,
+            languageId: languageServerForFile(filePath)?.lspLanguageId ?? 'plaintext',
+            version: 1,
+            text
+          }
         }
       })
     } else if (known.text !== text) {

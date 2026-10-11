@@ -1,5 +1,29 @@
 import { describe, expect, it } from 'vitest'
-import { isModifiedDiffSide, modelFileFor, trackDiffEditorFile } from './diff-editor-model-files'
+import {
+  isModifiedDiffSide,
+  modelFileFor,
+  trackDiffEditorFile,
+  trackModelFile
+} from './editor-model-files'
+
+describe('editor model files', () => {
+  it('knows the file behind any model that registers one, until it is released', () => {
+    const file = { worktreeId: 'wt-1', relativePath: 'apps/frontend/a.ts' }
+    const release = trackModelFile('orca-definition:/wt/apps/frontend/a.ts', file)
+    expect(modelFileFor('orca-definition:/wt/apps/frontend/a.ts')).toEqual(file)
+    expect(isModifiedDiffSide('orca-definition:/wt/apps/frontend/a.ts')).toBe(false)
+
+    release()
+    expect(modelFileFor('orca-definition:/wt/apps/frontend/a.ts')).toBeUndefined()
+  })
+
+  it('lets a newer registration of the same model win over an older release', () => {
+    const release = trackModelFile('m', { worktreeId: 'wt-1', relativePath: 'a.ts' })
+    trackModelFile('m', { worktreeId: 'wt-2', relativePath: 'a.ts' })
+    release()
+    expect(modelFileFor('m')?.worktreeId).toBe('wt-2')
+  })
+})
 
 function fakeEditor(uri: string) {
   let modelUri = uri

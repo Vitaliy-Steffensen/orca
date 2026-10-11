@@ -5,6 +5,7 @@ import { getCommitMessageAiPaneSearchEntries } from '@/components/settings/commi
 import { getFloatingWorkspaceSearchEntries } from '@/components/settings/floating-workspace-search'
 import { getGitProviderApiBudgetSearchEntries } from '@/components/settings/git-provider-api-budget-search'
 import { getGitPaneSearchEntries } from '@/components/settings/git-search'
+import { getLanguageServersSearchEntries } from '@/components/settings/language-servers-search'
 import { getMobileEmulatorSearchEntries } from '@/components/settings/mobile-emulator-search'
 import { getQuickCommandsPaneSearchEntries } from '@/components/settings/quick-commands-search'
 import { getShareSkillsSettingsSearchEntries } from '@/components/settings/share-skills-settings-search'
@@ -13,6 +14,7 @@ import { translate } from '@/i18n/i18n'
 import type { SettingsNavSection } from '@/lib/settings-navigation-types'
 import {
   BookOpen,
+  Braces,
   CalendarClock,
   Files,
   History,
@@ -106,6 +108,17 @@ export function buildWorkflowSettingsSections(
         ...getCommitMessageAiPaneSearchEntries(),
         ...getGitProviderApiBudgetSearchEntries()
       ],
+      group: 'workflows'
+    },
+    {
+      id: 'language-servers',
+      title: translate('languageServers.title', 'Language Servers'),
+      description: translate(
+        'languageServers.description',
+        'Cmd+click, hover and references per language. Each runs a background process per project.'
+      ),
+      icon: Braces,
+      searchEntries: getLanguageServersSearchEntries(),
       group: 'workflows'
     },
     {

@@ -1,0 +1,103 @@
+// @vitest-environment happy-dom
+import { act } from 'react'
+import { createRoot, type Root } from 'react-dom/client'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
+import { LANGUAGE_SERVER_LANGUAGES } from '../../../../shared/language-server'
+import type { GlobalSettings } from '../../../../shared/global-settings-types'
+import { LanguageServersPane } from './LanguageServersPane'
+import { getLanguageServersSearchEntries } from './language-servers-search'
+import { matchesSettingsSearch } from './settings-search'
+
+describe('LanguageServersPane', () => {
+  let container: HTMLDivElement
+  let root: Root
+
+  beforeEach(() => {
+    container = document.createElement('div')
+    document.body.append(container)
+    root = createRoot(container)
+  })
+
+  afterEach(() => {
+    act(() => root.unmount())
+    container.remove()
+  })
+
+  function render(
+    languageServers: GlobalSettings['languageServers'],
+    updateSettings = vi.fn()
+  ): ReturnType<typeof vi.fn> {
+    act(() =>
+      root.render(
+        <LanguageServersPane settings={{ languageServers }} updateSettings={updateSettings} />
+      )
+    )
+    return updateSettings
+  }
+
+  const card = (language: string) =>
+    container.querySelector<HTMLElement>(`[data-language-server="${language}"]`)
+
+  it('shows a card with a logo for every language in the registry', () => {
+    render(undefined)
+    for (const language of LANGUAGE_SERVER_LANGUAGES) {
+      expect(card(language)?.querySelector('img')).not.toBeNull()
+    }
+    expect(card('python')?.textContent).toContain('Python')
+    expect(card('typescript')?.textContent).toContain('TypeScript and JavaScript')
+  })
+
+  it('turns one language off and keeps the others as they were', () => {
+    const updateSettings = render({ typescript: false })
+    act(() => card('python')?.querySelector<HTMLElement>('[role="switch"]')?.click())
+    expect(updateSettings).toHaveBeenCalledWith({
+      languageServers: { typescript: false, python: { enabled: false, server: 'pyrefly' } }
+    })
+  })
+
+  it("offers the registry's servers and saves the one picked", () => {
+    const updateSettings = render(undefined)
+    const options = [...(card('python')?.querySelectorAll<HTMLElement>('[role="radio"]') ?? [])]
+    expect(options.map((option) => option.textContent)).toEqual([
+      'pyrefly',
+      'Pyright',
+      'basedpyright',
+      'ty'
+    ])
+    act(() => options[1].click())
+    expect(updateSettings).toHaveBeenCalledWith({
+      languageServers: { python: { enabled: true, server: 'pyright' } }
+    })
+  })
+
+  it('saves a custom path when the field is left, not on every keystroke', () => {
+    const updateSettings = render({ python: { server: 'pyright' } })
+    const input = card('python')?.querySelector<HTMLInputElement>('input')
+    expect(input?.placeholder).toContain('pyright-langserver')
+    act(() => {
+      const setValue = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value')?.set
+      setValue?.call(input, '/opt/pyright/bin/pyright-langserver')
+      input?.dispatchEvent(new Event('input', { bubbles: true }))
+    })
+    expect(updateSettings).not.toHaveBeenCalled()
+    act(() => input?.dispatchEvent(new FocusEvent('focusout', { bubbles: true })))
+    expect(updateSettings).toHaveBeenCalledWith({
+      languageServers: {
+        python: { enabled: true, server: 'pyright', command: '/opt/pyright/bin/pyright-langserver' }
+      }
+    })
+  })
+
+  it('hides the server options of a language that is off', () => {
+    render({ python: false })
+    expect(card('python')?.querySelector('[role="radio"]')).toBeNull()
+    expect(card('typescript')?.querySelector('[role="radio"]')).not.toBeNull()
+  })
+
+  it.each(['language server', 'pyright', 'basedpyright', 'tsgo', 'go to definition', 'python'])(
+    'can be found by searching "%s"',
+    (query) => {
+      expect(matchesSettingsSearch(query, getLanguageServersSearchEntries())).toBe(true)
+    }
+  )
+})

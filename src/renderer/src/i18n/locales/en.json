@@ -1187,10 +1187,6 @@
       "materialIcons": {
         "configErrors": "Icon settings problems: {{errors}}"
       },
-      "languageServer": {
-        "pythonUnavailable": "Python go-to-definition is unavailable ({{error}}). Set a Python Environment in the project settings.",
-        "typescriptUnavailable": "TypeScript go-to-definition is unavailable ({{error}}). Add @typescript/native-preview (tsgo) to the project."
-      },
       "previewDeployment": {
         "openOf": "Open preview of {{sha}}",
         "open": "Open preview",
@@ -10234,10 +10230,6 @@
             "confirm": "confirm",
             "close": "close",
             "omp": "OMP",
-            "languageServer": "language server",
-            "goToDefinition": "go to definition",
-            "hoverTypes": "hover",
-            "lsp": "lsp",
             "blame": "blame",
             "author": "author",
             "commit": "commit",
@@ -12777,14 +12769,6 @@
           "description": "Material Icon Theme icons in the explorer, tabs and diffs. Customize them with the VS Code extension's settings: files.associations, folders.associations, folders.theme and activeIconPack.",
           "fileHint": "Saved to ~/.orca/material-icon-theme.json and applied on save.",
           "edit": "Edit icon settings"
-        },
-        "LanguageServersSetting": {
-          "python": "Python (pyrefly)",
-          "pythonDescription": "Uses the project's venv, or the main checkout's when a worktree has none.",
-          "typescript": "TypeScript and JavaScript (tsgo)",
-          "typescriptDescription": "Uses the project's @typescript/native-preview. Off falls back to the editor's built-in, open-files-only TypeScript.",
-          "title": "Language Servers",
-          "description": "Cmd+click go-to-definition and hover types. Each runs a background process per project."
         },
         "prRules": {
           "projects": "Projects",
@@ -19558,6 +19542,31 @@
   "agentTurns": {
     "title": "Agent turns",
     "none": "No agent turns in this workspace yet."
+  },
+  "languageServers": {
+    "title": "Language Servers",
+    "description": "Cmd+click, hover and references per language. Each runs a background process per project.",
+    "server": "Server",
+    "serverFor": "{{language}} server",
+    "docs": "Open {{server}} docs",
+    "path": "Path",
+    "pathPlaceholder": "{{command}} from the project, else PATH",
+    "unavailable": "{{server}} is unavailable ({{error}}). Install it in the project, or choose another server or its path in Settings → Language Servers.",
+    "python": {
+      "label": "Python",
+      "description": "Runs in the project's venv, or the main checkout's when a worktree has none."
+    },
+    "typescript": {
+      "label": "TypeScript and JavaScript",
+      "description": "Runs from the project's node_modules. Off falls back to the editor's built-in TypeScript, which only knows open files."
+    },
+    "search": {
+      "languageServer": "language server",
+      "goToDefinition": "go to definition",
+      "hover": "hover",
+      "references": "references",
+      "lsp": "lsp"
+    }
   },
   "quickOpen": {
     "moreMatchesAvailable": "More matches may be available. Refine your search to narrow the results.",

@@ -3,6 +3,8 @@ import { createLanguageServerService } from './language-server-service'
 
 const request = {
   language: 'python' as const,
+  server: 'pyrefly',
+  command: null,
   filePath: '/repo/apps/backend/a.py',
   worktreeRoot: '/repo',
   repoRoot: '/repo',
@@ -15,6 +17,7 @@ const request = {
 const tsRequest = {
   ...request,
   language: 'typescript' as const,
+  server: 'tsgo',
   filePath: '/repo/apps/frontend/src/a.tsx'
 }
 
@@ -121,7 +124,8 @@ describe('language server service', () => {
       projectRoot: '/repo/apps/backend',
       program: '/repo/apps/backend/.venv/bin/pyrefly',
       args: ['lsp'],
-      venvPath: '/repo/apps/backend/.venv'
+      env: { VIRTUAL_ENV: '/repo/apps/backend/.venv' },
+      pathPrefix: ['/repo/apps/backend/.venv/bin']
     })
     expect(definition).toHaveBeenLastCalledWith({
       filePath: '/repo/apps/backend/c.py',
@@ -162,7 +166,8 @@ describe('language server service', () => {
       projectRoot: '/repo/apps/frontend',
       program: '/repo/apps/frontend/node_modules/.bin/tsgo',
       args: ['--lsp', '--stdio'],
-      venvPath: null
+      env: {},
+      pathPrefix: []
     })
   })
 

@@ -3,7 +3,7 @@ import { toast } from 'sonner'
 import type { GitBlameLine, GitBlameLinks } from '../../../shared/git-blame'
 import { translate } from '@/i18n/i18n'
 import { useAppStore } from '@/store'
-import { isModifiedDiffSide, modelFileFor } from './diff-editor-model-files'
+import { isModifiedDiffSide, modelFileFor } from './editor-model-files'
 import {
   blameHoverMarkdown,
   blameInlineText,

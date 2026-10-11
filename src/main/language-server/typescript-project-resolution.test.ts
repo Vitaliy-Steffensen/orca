@@ -7,13 +7,8 @@ function existsIn(paths: string[]) {
 }
 
 describe('resolveTypeScriptProject', () => {
-  it('uses the nearest tsconfig and the nearest tsgo from there up to the worktree', () => {
-    const exists = existsIn([
-      '/repo/tsconfig.json',
-      '/repo/apps/frontend/tsconfig.json',
-      '/repo/apps/frontend/node_modules/.bin/tsgo',
-      '/repo/node_modules/.bin/tsgo'
-    ])
+  it('uses the nearest tsconfig and searches node_modules from there up to the worktree', () => {
+    const exists = existsIn(['/repo/tsconfig.json', '/repo/apps/frontend/tsconfig.json'])
     expect(
       resolveTypeScriptProject({
         filePath: '/repo/apps/frontend/src/entities/editor/a.tsx',
@@ -22,18 +17,22 @@ describe('resolveTypeScriptProject', () => {
       })
     ).toEqual({
       projectRoot: '/repo/apps/frontend',
-      tsgo: '/repo/apps/frontend/node_modules/.bin/tsgo'
+      binDirs: [
+        '/repo/apps/frontend/node_modules/.bin',
+        '/repo/apps/node_modules/.bin',
+        '/repo/node_modules/.bin'
+      ]
     })
   })
 
-  it("falls back to the worktree's tsgo, then tsgo on PATH", () => {
+  it('treats a jsconfig as a project too, and the worktree as one when there is neither', () => {
     expect(
       resolveTypeScriptProject({
         filePath: '/repo/packages/lib/src/a.ts',
         worktreeRoot: '/repo',
-        exists: existsIn(['/repo/packages/lib/jsconfig.json', '/repo/node_modules/.bin/tsgo'])
-      })
-    ).toEqual({ projectRoot: '/repo/packages/lib', tsgo: '/repo/node_modules/.bin/tsgo' })
+        exists: existsIn(['/repo/packages/lib/jsconfig.json'])
+      }).projectRoot
+    ).toBe('/repo/packages/lib')
 
     expect(
       resolveTypeScriptProject({
@@ -41,23 +40,27 @@ describe('resolveTypeScriptProject', () => {
         worktreeRoot: '/repo',
         exists: existsIn([])
       })
-    ).toEqual({ projectRoot: '/repo', tsgo: 'tsgo' })
+    ).toEqual({ projectRoot: '/repo', binDirs: ['/repo/node_modules/.bin'] })
   })
 
-  it("borrows the main checkout's tsgo when the worktree has no node_modules", () => {
+  it("searches the main checkout's node_modules after the worktree's", () => {
     expect(
       resolveTypeScriptProject({
         filePath: '/wt/e-5139/apps/frontend/src/a.ts',
         worktreeRoot: '/wt/e-5139',
         repoRoot: '/repo',
-        exists: existsIn([
-          '/wt/e-5139/apps/frontend/tsconfig.json',
-          '/repo/apps/frontend/node_modules/.bin/tsgo'
-        ])
+        exists: existsIn(['/wt/e-5139/apps/frontend/tsconfig.json'])
       })
     ).toEqual({
       projectRoot: '/wt/e-5139/apps/frontend',
-      tsgo: '/repo/apps/frontend/node_modules/.bin/tsgo'
+      binDirs: [
+        '/wt/e-5139/apps/frontend/node_modules/.bin',
+        '/wt/e-5139/apps/node_modules/.bin',
+        '/wt/e-5139/node_modules/.bin',
+        '/repo/apps/frontend/node_modules/.bin',
+        '/repo/apps/node_modules/.bin',
+        '/repo/node_modules/.bin'
+      ]
     })
   })
 })
