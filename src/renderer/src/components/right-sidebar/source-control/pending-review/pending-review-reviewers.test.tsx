@@ -66,4 +66,18 @@ describe('PendingReviewReviewers', () => {
     )
     expect(onRerequest).toHaveBeenCalledWith('MartinBernstorff')
   })
+
+  it('drops its heading inside the Review section, whose header already says it', () => {
+    render(
+      <TooltipProvider>
+        <PendingReviewReviewers
+          reviewers={[reviewer({ login: 'zahlio' })]}
+          onRerequest={vi.fn()}
+          showHeading={false}
+        />
+      </TooltipProvider>
+    )
+    expect(screen.getByText('zahlio')).toBeInTheDocument()
+    expect(screen.queryByText('Reviewers')).toBeNull()
+  })
 })

@@ -162,7 +162,11 @@ export function SourceControlPendingReviewShelf({
   return (
     <div>
       {header}
-      <PendingReviewReviewers reviewers={submitter.reviewers} onRerequest={submitter.rerequest} />
+      <PendingReviewReviewers
+        reviewers={submitter.reviewers}
+        onRerequest={submitter.rerequest}
+        showHeading={false}
+      />
       {/* Why hidden at zero: a disclosure that opens onto nothing is chrome, and the form
           below is the part of this section that is always worth showing. */}
       {queue.comments.length > 0 ? (

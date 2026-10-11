@@ -56,14 +56,18 @@ function ReviewersHeader(): React.JSX.Element {
   )
 }
 
-function PendingReviewReviewersLoading(): React.JSX.Element {
+function PendingReviewReviewersLoading({
+  showHeading
+}: {
+  showHeading: boolean
+}): React.JSX.Element {
   return (
     <div
-      className="px-3 pt-3"
+      className={showHeading ? 'px-3 pt-3' : 'px-3 pt-1'}
       role="status"
       aria-label={translate('auto.components.sourceControl.reviewers.loading', 'Loading reviewers')}
     >
-      <ReviewersHeader />
+      {showHeading && <ReviewersHeader />}
       <ul className="space-y-0.5">
         {['w-24', 'w-16'].map((width) => (
           <li key={width} className="flex h-7 items-center gap-2">
@@ -82,14 +86,17 @@ function PendingReviewReviewersLoading(): React.JSX.Element {
  */
 export function PendingReviewReviewers({
   reviewers,
-  onRerequest
+  onRerequest,
+  showHeading = true
 }: {
   reviewers: readonly PullRequestReviewer[] | null
   onRerequest: (login: string) => Promise<boolean>
+  /** Fork: off inside the Review section, whose header already names it. */
+  showHeading?: boolean
 }): React.JSX.Element | null {
   const [requesting, setRequesting] = useState<string | null>(null)
   if (reviewers === null) {
-    return <PendingReviewReviewersLoading />
+    return <PendingReviewReviewersLoading showHeading={showHeading} />
   }
   if (reviewers.length === 0) {
     return null
@@ -105,8 +112,8 @@ export function PendingReviewReviewers({
   }
 
   return (
-    <div className="px-3 pt-3">
-      <ReviewersHeader />
+    <div className={showHeading ? 'px-3 pt-3' : 'px-3 pt-1'}>
+      {showHeading && <ReviewersHeader />}
       <ul className="space-y-0.5">
         {reviewers.map((reviewer) => (
           <li
