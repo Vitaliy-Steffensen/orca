@@ -1,0 +1,45 @@
+// @vitest-environment happy-dom
+import { cleanup, fireEvent, render, screen } from '@testing-library/react'
+import { afterEach, describe, expect, it, vi } from 'vitest'
+import { TooltipProvider } from '@/components/ui/tooltip'
+import type { PRComment } from '../../../../../shared/github/comment-types'
+import { clearPRCommentsListSelectionsForTests } from '../pr-comments-list-selection'
+import { PRCommentsList } from './comments-list'
+
+afterEach(() => {
+  cleanup()
+  clearPRCommentsListSelectionsForTests()
+})
+
+const comment: PRComment = {
+  id: 1,
+  author: 'alice',
+  authorAvatarUrl: '',
+  body: 'Please update this.',
+  createdAt: '2026-05-14T00:00:00Z',
+  url: 'https://github.com/acme/widgets/pull/42#discussion_r1'
+}
+
+describe('PRCommentsList as a PR panel section', () => {
+  it('heads the comments with the shared section header, the comment actions in it', () => {
+    render(
+      <TooltipProvider>
+        <PRCommentsList
+          sectionHeader
+          comments={[comment]}
+          commentsLoading={false}
+          selectionContextKey="review:42"
+          onAddComment={vi.fn()}
+        />
+      </TooltipProvider>
+    )
+    const heading = screen.getByRole('button', { name: /Comments/ })
+    expect(heading.textContent).toContain('1')
+    expect(screen.getByRole('button', { name: 'Add comment' })).toBeTruthy()
+    expect(screen.getByText('Please update this.')).toBeTruthy()
+
+    fireEvent.click(heading)
+    expect(screen.queryByText('Please update this.')).toBeNull()
+    expect(screen.getByRole('button', { name: /Comments/ })).toBeTruthy()
+  })
+})

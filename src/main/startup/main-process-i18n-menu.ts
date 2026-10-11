@@ -7,6 +7,7 @@ import {
 } from '../menu/register-app-menu'
 import { zoomDashboardPopoutIfFocused } from '../window/dashboard-popout-window'
 import { toggleSourceControlSectionHidden } from '../../shared/source-control-sections'
+import { buildPanelSectionsSubmenus } from '../menu/source-control-sections-menu'
 import { recordCrashBreadcrumb } from '../crash-reporting/crash-breadcrumb-store'
 import { mainProcessState as state } from './main-process-state'
 import {
@@ -97,21 +98,26 @@ export async function initializeMainProcessI18nAndMenu(): Promise<void> {
         statusBarVisible: ui.statusBarVisible !== false
       }
     },
-    getHiddenSourceControlSections: () =>
-      store.getSettings().sourceControlSectionLayout?.hidden ?? [],
-    onToggleSourceControlSection: (id) => {
-      const layout = store.getSettings().sourceControlSectionLayout
-      store.updateSettings(
-        {
-          sourceControlSectionLayout: {
-            ...layout,
-            hidden: toggleSourceControlSectionHidden(layout?.hidden, id)
-          }
-        },
-        { notifyListeners: true }
-      )
-      rebuildAppMenu()
-    },
+    getPanelSectionSubmenus: () =>
+      buildPanelSectionsSubmenus(store.getSettings().sourceControlSectionLayout, (panel, id) => {
+        const layout = store.getSettings().sourceControlSectionLayout
+        store.updateSettings(
+          {
+            sourceControlSectionLayout:
+              panel === 'pr'
+                ? {
+                    ...layout,
+                    pr: {
+                      ...layout?.pr,
+                      hidden: toggleSourceControlSectionHidden(layout?.pr?.hidden, id)
+                    }
+                  }
+                : { ...layout, hidden: toggleSourceControlSectionHidden(layout?.hidden, id) }
+          },
+          { notifyListeners: true }
+        )
+        rebuildAppMenu()
+      }),
     getKeybindings: () => state.keybindings?.getOverrides()
   })
 }

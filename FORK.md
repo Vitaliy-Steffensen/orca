@@ -1357,15 +1357,35 @@ View > Source Control Sections has a visibility checkbox for each
 
 | File | What is ours |
 | --- | --- |
-| `src/shared/global-settings-types.ts` | `sourceControlSectionLayout?`. |
-| `src/main/menu/register-app-menu.ts` | The optional `getHiddenSourceControlSections` / `onToggleSourceControlSection` and the submenu after Appearance. |
-| `src/main/startup/main-process-i18n-menu.ts` | Their implementation. |
+| `src/shared/global-settings-types.ts` | `GlobalSettings` extends `ForkBaseSettings` (`shared/fork-source-control-settings.ts`: `sourceControlGrouping`, `sourceControlSectionLayout`), kept out of this file for its line limit. |
+| `src/main/menu/register-app-menu.ts` | The optional `getPanelSectionSubmenus`, appended after Appearance. |
+| `src/main/startup/main-process-i18n-menu.ts` | Its implementation (`buildPanelSectionsSubmenus`). |
 | `src/main/ipc/settings.ts` | `sourceControlSectionLayout` in `APPEARANCE_MENU_KEYS`. |
 | `source-control/listing/section-header.tsx` | Optional `count`; the header wrapped in its section's chrome. |
 | `source-control/panel/resizable-sections.tsx` | Ordered sections with drop zones; handles between panels, not after each shelf. |
 | `source-control/panel/panel-ready.tsx`, `panel-content.tsx` | The order, hiding, the Agent turns shelf. |
 | `source-control/pending-review/pending-review-shelf.tsx` | The Review header, `collapsed` / `onToggle`, the drafts disclosure. |
 | `src/renderer/src/i18n/locales/en.json` | `menu.sourceControlSections`, `sourceControlSections.hide`, `sourceControlSections.review`. |
+
+### 37. PR panel sections
+
+The PR panel gets the same treatment as source control (§36). The review header (number, title,
+merge actions) stays fixed. Under it, Needs attention (the failing-check / conflict triage strip
+and conflict files, `checks-panel/attention-section.tsx`), Checks, Pending review and Comments are
+sections listed in `PR_PANEL_SECTIONS`. Each is headed by the same `SectionHeader`, so it collapses,
+drags to reorder and hides from its right-click menu or from View > PR Panel Sections
+(`checks-panel/pr-panel-sections.tsx`, reusing `SectionDropZone`, which only takes drops from its
+own panel's sections). The layout is saved under `sourceControlSectionLayout.pr`. Checks keeps its
+passing / failing / pending chips as header actions, and Comments keeps its actions there.
+Pending review shows only with drafts.
+
+| File | What is ours |
+| --- | --- |
+| `checks-panel/active-content.tsx` | The sections, built into `PrPanelSections`. |
+| `checks-panel/checks-list.tsx`, `use-checks-list-state.tsx` | The opt-in `sectionHeader` (the folder-workspace row keeps the old summary). |
+| `checks-panel/comments-list.tsx`, `use-comments-list-state.tsx` | The opt-in `sectionHeader`; the actions lifted into `headerActions`; pending review left out in that mode. |
+| `src/renderer/src/components/pending-review/PendingReviewPanelSection.tsx` | The opt-in `sectionHeader`. |
+| `src/renderer/src/i18n/locales/en.json` | `menu.prPanelSections`, `prPanelSections.*`. |
 
 ## Verify
 

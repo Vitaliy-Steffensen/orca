@@ -25,6 +25,8 @@ export type ChecksListProps = {
   detailsStickySurface?: CheckDetailsStickySurface
   getGitLabProjectRef?: () => GitLabProjectRef | null
   githubRepository?: GitHubRepositoryIdentity | null
+  /** Fork: the PR panel's Checks section, headed by the shared section header. */
+  sectionHeader?: boolean
 }
 
 export function useChecksListState({

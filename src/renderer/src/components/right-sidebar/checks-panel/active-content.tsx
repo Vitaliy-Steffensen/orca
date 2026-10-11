@@ -17,6 +17,10 @@ import { PRTriageStrip } from './triage-strip'
 import { ConflictingFilesSection, MergeConflictNotice } from './conflict-summary'
 import { ChecksList } from './checks-list'
 import { PRCommentsList } from './comments-list'
+import { PrAttentionSection } from './attention-section'
+import { PendingReviewPanelSection } from '@/components/pending-review/PendingReviewPanelSection'
+import { usePendingReviewQueue } from '@/components/pending-review/use-pending-review-queue'
+import { PrPanelSections, type PrPanelSection } from './pr-panel-sections'
 import { publishPRCommentQueueContext } from '../pr-comment-queue-context'
 import { translate } from '@/i18n/i18n'
 import type { ChecksPanelReview } from '../checks-panel-review'
@@ -111,6 +115,7 @@ export function ChecksPanelActiveContent({
       publishPRCommentQueueContext(activeWorktreeId, stateRequestKey)
     }
   }, [activeWorktreeId, stateRequestKey])
+  const pendingReviewCount = usePendingReviewQueue(activeWorktreeId).comments.length
   if (!activeReview) {
     return null
   }
@@ -121,6 +126,89 @@ export function ChecksPanelActiveContent({
     settings,
     Boolean(activeWorktreeId)
   )
+  const showTriageStrip = shouldShowReviewTriageStrip && sourceControlAiActionsVisible
+  // Fork: the sections under the review header, laid out in the user's order (`PrPanelSections`).
+  const prSections: PrPanelSection[] = []
+  if (showTriageStrip || activeConflictReview) {
+    prSections.push({
+      id: 'pr-attention',
+      node: (
+        <PrAttentionSection>
+          {showTriageStrip && (
+            <PRTriageStrip
+              review={activeConflictReview ?? activeReview}
+              reviewKind={reviewShortLabel}
+              checks={checks}
+              isResolvingConflictsWithAI={isResolvingConflictsWithAI}
+              onResolveConflictsWithAI={() => void handleResolveConflictsWithAI()}
+              resolveConflictsDisabled={Boolean(aiActionDisabledReason)}
+              resolveConflictsDisabledReason={aiActionDisabledReason}
+              isFixingChecksWithAI={isFixingChecksWithAI}
+              onFixChecksWithAI={() => void handleFixChecksWithAI()}
+              fixChecksDisabled={Boolean(aiActionDisabledReason)}
+              fixChecksDisabledReason={aiActionDisabledReason}
+            />
+          )}
+          {activeConflictReview && (
+            <>
+              {/* Why: the triage strip owns the single Resolve action; the file list and fallback notice are informational. */}
+              <ConflictingFilesSection pr={activeConflictReview} />
+              <MergeConflictNotice
+                pr={activeConflictReview}
+                isRefreshingConflictDetails={isRefreshing || conflictDetailsRefreshing}
+              />
+            </>
+          )}
+        </PrAttentionSection>
+      )
+    })
+  }
+  // Why: with merge conflicts and no checks fetched, "No checks configured" is misleading — checks can't run until conflicts resolve.
+  if (!(activeConflictReview && checks.length === 0 && !checksLoading)) {
+    prSections.push({
+      id: 'pr-checks',
+      node: (
+        <ChecksList
+          sectionHeader
+          checks={checks}
+          checksLoading={checksLoading}
+          checkDetailsContextKey={stateRequestKey}
+          onLoadCheckDetails={handleLoadCheckDetails}
+          githubRepository={pr?.prRepo ?? null}
+          getGitLabProjectRef={getGitLabProjectRef}
+        />
+      )
+    })
+  }
+  if (pendingReviewCount > 0) {
+    prSections.push({ id: 'pr-pending-review', node: <PendingReviewPanelSection sectionHeader /> })
+  }
+  prSections.push({
+    id: 'pr-comments',
+    node: (
+      <PRCommentsList
+        sectionHeader
+        comments={comments}
+        commentsLoading={commentsLoading}
+        reviewKind={reviewShortLabel}
+        commentsDisabled={!canTargetPRComments}
+        commentsDisabledReason={commentsDisabledReason}
+        selectionContextKey={stateRequestKey}
+        selectionClearRequest={commentsSelectionClearRequest}
+        resolveCommentsWithAIDisabled={Boolean(resolveCommentsWithAIDisabledReason)}
+        resolveCommentsWithAIDisabledReason={resolveCommentsWithAIDisabledReason}
+        onAddComment={pr ? handleAddPRComment : undefined}
+        onResolveSelectedCommentsWithAI={
+          sourceControlAiActionsVisible ? handleResolveCommentsWithAI : undefined
+        }
+        onReply={pr ? handleReplyToComment : undefined}
+        onResolve={pr || activeGitLabReview ? handleResolve : undefined}
+        onEditComment={pr ? handleEditComment : undefined}
+        onDeleteComment={pr ? handleDeleteComment : undefined}
+        onSetReaction={canTargetPRComments ? handleSetReaction : undefined}
+      />
+    )
+  })
   return (
     <div ref={setChecksPanelContentRef} className="flex-1 overflow-auto scrollbar-sleek">
       {/* Why: surface a background-refresh failure over stale cached PR data so a GitHub outage doesn't look like a normal panel. GitHub-only. */}
@@ -219,62 +307,7 @@ export function ChecksPanelActiveContent({
         )}
       </div>
 
-      {shouldShowReviewTriageStrip && sourceControlAiActionsVisible && (
-        <PRTriageStrip
-          review={activeConflictReview ?? activeReview}
-          reviewKind={reviewShortLabel}
-          checks={checks}
-          isResolvingConflictsWithAI={isResolvingConflictsWithAI}
-          onResolveConflictsWithAI={() => void handleResolveConflictsWithAI()}
-          resolveConflictsDisabled={Boolean(aiActionDisabledReason)}
-          resolveConflictsDisabledReason={aiActionDisabledReason}
-          isFixingChecksWithAI={isFixingChecksWithAI}
-          onFixChecksWithAI={() => void handleFixChecksWithAI()}
-          fixChecksDisabled={Boolean(aiActionDisabledReason)}
-          fixChecksDisabledReason={aiActionDisabledReason}
-        />
-      )}
-      {activeConflictReview && (
-        <>
-          {/* Why: the triage strip owns the single Resolve action; the file list and fallback notice are informational. */}
-          <ConflictingFilesSection pr={activeConflictReview} />
-          <MergeConflictNotice
-            pr={activeConflictReview}
-            isRefreshingConflictDetails={isRefreshing || conflictDetailsRefreshing}
-          />
-        </>
-      )}
-      {/* Why: with merge conflicts and no checks fetched, "No checks configured" is misleading — checks can't run until conflicts resolve. */}
-      {!(activeConflictReview && checks.length === 0 && !checksLoading) && (
-        <ChecksList
-          checks={checks}
-          checksLoading={checksLoading}
-          checkDetailsContextKey={stateRequestKey}
-          onLoadCheckDetails={handleLoadCheckDetails}
-          githubRepository={pr?.prRepo ?? null}
-          getGitLabProjectRef={getGitLabProjectRef}
-        />
-      )}
-      <PRCommentsList
-        comments={comments}
-        commentsLoading={commentsLoading}
-        reviewKind={reviewShortLabel}
-        commentsDisabled={!canTargetPRComments}
-        commentsDisabledReason={commentsDisabledReason}
-        selectionContextKey={stateRequestKey}
-        selectionClearRequest={commentsSelectionClearRequest}
-        resolveCommentsWithAIDisabled={Boolean(resolveCommentsWithAIDisabledReason)}
-        resolveCommentsWithAIDisabledReason={resolveCommentsWithAIDisabledReason}
-        onAddComment={pr ? handleAddPRComment : undefined}
-        onResolveSelectedCommentsWithAI={
-          sourceControlAiActionsVisible ? handleResolveCommentsWithAI : undefined
-        }
-        onReply={pr ? handleReplyToComment : undefined}
-        onResolve={pr || activeGitLabReview ? handleResolve : undefined}
-        onEditComment={pr ? handleEditComment : undefined}
-        onDeleteComment={pr ? handleDeleteComment : undefined}
-        onSetReaction={canTargetPRComments ? handleSetReaction : undefined}
-      />
+      <PrPanelSections sections={prSections} />
       <SourceControlAgentActionDialog
         open={sourceControlAiActionsVisible && agentComposerState !== null}
         onOpenChange={(open) => {

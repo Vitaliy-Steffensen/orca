@@ -1,4 +1,4 @@
-import type { NativeChatGlobalSettings } from './native-chat-appearance-settings'
+import type { ForkBaseSettings } from './fork-source-control-settings'
 import type { ExecutionHostId } from './execution-host'
 import type { LanguageServerSettingsMap } from './language-server'
 import type { OrcaWorkspaceLayout } from './orca-workspace-layout'
@@ -48,7 +48,7 @@ export type { WorktreeVisibilityDefaults } from './repo-types'
 /** MiniMax account region used to select the quota endpoint. */
 export type MiniMaxEndpoint = 'overseas' | 'cn'
 
-export type GlobalSettings = NativeChatGlobalSettings & {
+export type GlobalSettings = ForkBaseSettings & {
   workspaceDir: string
   /** Host-owned defaults used when a repository has no explicit visibility override. */
   worktreeVisibilityDefaults?: WorktreeVisibilityDefaults
@@ -250,10 +250,6 @@ export type GlobalSettings = NativeChatGlobalSettings & {
   sourceControlViewMode: SourceControlViewMode
   /** Preferred Source Control group order. Per-user, not per-workspace. */
   sourceControlGroupOrder: SourceControlGroupOrder
-  /** Fork: one list of every file changed vs the base ('all', the default), or upstream's staged/changes/committed sections. */
-  sourceControlGrouping?: 'all' | 'status'
-  /** Fork: the source-control sections' dragged order and the ones hidden (`shared/source-control-sections.ts`). */
-  sourceControlSectionLayout?: { order?: string[]; hidden?: string[] }
   /** Compare base defaults to the branch upstream instead of the repo default; affects only the compare/diff view, not the PR/rebase target. Per-user. */
   sourceControlCompareAgainstUpstream: boolean
   /** Whether to show the Orca app name in the titlebar. */

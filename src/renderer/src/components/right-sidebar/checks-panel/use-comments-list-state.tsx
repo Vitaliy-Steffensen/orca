@@ -44,6 +44,8 @@ export function getPRCommentsListDisplayModeLabel(mode: PRCommentsListDisplayMod
 export type PRCommentsListProps = {
   comments: PRComment[]
   commentsLoading: boolean
+  /** Fork: the PR panel's Comments section, headed by the shared section header. */
+  sectionHeader?: boolean
   reviewKind?: 'PR' | 'MR'
   commentsDisabled?: boolean
   commentsDisabledReason?: string

@@ -347,6 +347,7 @@
     "showMobileButton": "Show Orca Mobile Button",
     "showTitlebarAppName": "Show Titlebar App Name",
     "sourceControlSections": "Source Control Sections",
+    "prPanelSections": "PR Panel Sections",
     "view": "View",
     "reload": "Reload",
     "forceReload": "Force Reload",
@@ -19552,6 +19553,12 @@
   "sourceControlSections": {
     "hide": "Hide section",
     "review": "Review"
+  },
+  "prPanelSections": {
+    "attention": "Needs attention",
+    "checks": "Checks",
+    "pendingReview": "Pending review",
+    "comments": "Comments"
   },
   "languageServers": {
     "title": "Language Servers",

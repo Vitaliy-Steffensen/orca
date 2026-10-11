@@ -1,5 +1,5 @@
-// Fork: the source-control panel's sections, in their default order. The renderer lays them out
-// from this, and the View menu lists the same ids as visibility checkboxes.
+// Fork: the sections of the source-control panel and of the PR panel, in their default order. The
+// renderer lays each panel out from its list, and the View menu lists the same ids as checkboxes.
 export const SOURCE_CONTROL_SECTIONS = [
   // The reviewers and your pending review of the pull request.
   { id: 'pending-review', labelKey: 'sourceControlSections.review', label: 'Review' },
@@ -9,38 +9,62 @@ export const SOURCE_CONTROL_SECTIONS = [
   { id: 'commits', labelKey: 'sourceControlSections.commits', label: 'Commits' }
 ] as const
 
+/** Under the PR panel's fixed review header (number, title, merge actions). */
+export const PR_PANEL_SECTIONS = [
+  // Failing checks, merge conflicts and the AI fix for them.
+  { id: 'pr-attention', labelKey: 'prPanelSections.attention', label: 'Needs attention' },
+  { id: 'pr-checks', labelKey: 'prPanelSections.checks', label: 'Checks' },
+  // Your review comments not yet submitted.
+  { id: 'pr-pending-review', labelKey: 'prPanelSections.pendingReview', label: 'Pending review' },
+  { id: 'pr-comments', labelKey: 'prPanelSections.comments', label: 'Comments' }
+] as const
+
+export type PanelSection = { id: string; labelKey: string; label: string }
+
 export type SourceControlSectionId = (typeof SOURCE_CONTROL_SECTIONS)[number]['id']
+export type PrPanelSectionId = (typeof PR_PANEL_SECTIONS)[number]['id']
 
 /** Commits stays docked under the file list, so it can be hidden but not moved. */
 export type MovableSourceControlSectionId = Exclude<SourceControlSectionId, 'commits'>
 
-const MOVABLE_SECTION_IDS: readonly MovableSourceControlSectionId[] = SOURCE_CONTROL_SECTIONS.map(
+const MOVABLE_SOURCE_CONTROL_SECTION_IDS: readonly MovableSourceControlSectionId[] =
+  SOURCE_CONTROL_SECTIONS.map((section) => section.id).filter(
+    (id): id is MovableSourceControlSectionId => id !== 'commits'
+  )
+const PR_PANEL_SECTION_IDS: readonly PrPanelSectionId[] = PR_PANEL_SECTIONS.map(
   (section) => section.id
-).filter((id): id is MovableSourceControlSectionId => id !== 'commits')
-
-function isMovableSectionId(id: string): id is MovableSourceControlSectionId {
-  return (MOVABLE_SECTION_IDS as readonly string[]).includes(id)
-}
+)
 
 /** The saved order with unknown ids dropped, and sections it does not name appended. */
-export function orderSourceControlSections(
+function orderSections<Id extends string>(
+  ids: readonly Id[],
   saved: readonly string[] | undefined
-): MovableSourceControlSectionId[] {
-  const order: MovableSourceControlSectionId[] = []
-  for (const id of [...(saved ?? []), ...MOVABLE_SECTION_IDS]) {
-    if (isMovableSectionId(id) && !order.includes(id)) {
-      order.push(id)
+): Id[] {
+  const order: Id[] = []
+  for (const id of [...(saved ?? []), ...ids]) {
+    if ((ids as readonly string[]).includes(id) && !order.includes(id as Id)) {
+      order.push(id as Id)
     }
   }
   return order
 }
 
-/** `id` placed just before `beforeId`, or last when `beforeId` is null. */
-export function moveSourceControlSection(
-  order: readonly MovableSourceControlSectionId[],
-  id: MovableSourceControlSectionId,
-  beforeId: MovableSourceControlSectionId | null
+export function orderSourceControlSections(
+  saved: readonly string[] | undefined
 ): MovableSourceControlSectionId[] {
+  return orderSections(MOVABLE_SOURCE_CONTROL_SECTION_IDS, saved)
+}
+
+export function orderPrPanelSections(saved: readonly string[] | undefined): PrPanelSectionId[] {
+  return orderSections(PR_PANEL_SECTION_IDS, saved)
+}
+
+/** `id` placed just before `beforeId`, or last when `beforeId` is null. */
+export function moveSourceControlSection<Id extends string>(
+  order: readonly Id[],
+  id: Id,
+  beforeId: Id | null
+): Id[] {
   if (id === beforeId) {
     return [...order]
   }
@@ -51,7 +75,7 @@ export function moveSourceControlSection(
 
 export function toggleSourceControlSectionHidden(
   hidden: readonly string[] | undefined,
-  id: SourceControlSectionId
+  id: string
 ): string[] {
   const current = hidden ?? []
   return current.includes(id) ? current.filter((candidate) => candidate !== id) : [...current, id]

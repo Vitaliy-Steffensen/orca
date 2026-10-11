@@ -16,6 +16,7 @@ import { CHECK_COLOR, CHECK_ICON } from './check-presentation'
 import { CheckRunDetails } from './check-run-details'
 import { getCheckStatusLabel } from './check-details-model'
 import { type ChecksListProps, useChecksListState } from './use-checks-list-state'
+import { SectionHeader } from '../source-control/listing/section-header'
 
 export function ChecksList(props: ChecksListProps): React.JSX.Element {
   const {
@@ -43,68 +44,86 @@ export function ChecksList(props: ChecksListProps): React.JSX.Element {
     toggleCheckExpanded,
     requestCheckDetails
   } = useChecksListState(props)
+  const summaryChips = (
+    <>
+      {passingCount > 0 && (
+        <span className="flex items-center gap-1">
+          <CircleCheck className="size-3 text-emerald-500" />
+          {passingCount}{' '}
+          {translate('auto.components.right.sidebar.checks.panel.content.02ca4f9074', 'passing')}
+        </span>
+      )}
+      {failingCount > 0 && (
+        <span className="flex items-center gap-1">
+          <CircleX className="size-3 text-rose-500" />
+          {failingCount}{' '}
+          {translate('auto.components.right.sidebar.checks.panel.content.5e52f4ef7f', 'failing')}
+        </span>
+      )}
+      {pendingCount > 0 && (
+        <span className="flex items-center gap-1">
+          <LoaderCircle className="size-3 text-amber-500" />
+          {pendingCount}{' '}
+          {translate('auto.components.right.sidebar.checks.panel.content.9ad98f2a17', 'pending')}
+        </span>
+      )}
+      {/* Why: without this chip a list of only unresolved checks rendered a header with no
+          counts at all, so nothing said why the pill was grey. */}
+      {neutralCount > 0 && (
+        <span className="flex items-center gap-1">
+          <CircleDashed className="size-3 text-muted-foreground" />
+          {neutralCount}{' '}
+          {translate(
+            'auto.components.right.sidebar.checks.panel.content.checksUnresolvedChip',
+            'unresolved'
+          )}
+        </span>
+      )}
+    </>
+  )
+  const loadingIcon = checksLoading ? (
+    <LoaderCircle className="size-3 animate-spin text-muted-foreground" />
+  ) : null
   return (
     <>
-      {/* Checks Summary */}
-      {checks.length > 0 && (
-        <button
-          type="button"
-          className="flex w-full items-center gap-3 border-b border-border px-3 py-2 text-left text-[10px] text-muted-foreground transition-colors hover:bg-accent/40 hover:text-foreground"
-          onClick={() => setChecksExpanded((expanded) => !expanded)}
-          aria-expanded={checksExpanded}
-        >
-          <ChevronDown
-            className={cn('size-3 shrink-0 transition-transform', !checksExpanded && '-rotate-90')}
-          />
-          {passingCount > 0 && (
-            <span className="flex items-center gap-1">
-              <CircleCheck className="size-3 text-emerald-500" />
-              {passingCount}{' '}
-              {translate(
-                'auto.components.right.sidebar.checks.panel.content.02ca4f9074',
-                'passing'
-              )}
+      {/* Fork: in the PR panel the list is a section, so it takes the shared header, kept even
+          with no checks so the section can still be dragged and hidden. */}
+      {props.sectionHeader ? (
+        <SectionHeader
+          label={translate('prPanelSections.checks', 'Checks')}
+          count={checks.length}
+          isCollapsed={!checksExpanded}
+          onToggle={() => setChecksExpanded((expanded) => !expanded)}
+          actions={
+            <span className="flex items-center gap-3 text-[10px] text-muted-foreground">
+              {summaryChips}
+              {loadingIcon}
             </span>
-          )}
-          {failingCount > 0 && (
-            <span className="flex items-center gap-1">
-              <CircleX className="size-3 text-rose-500" />
-              {failingCount}{' '}
-              {translate(
-                'auto.components.right.sidebar.checks.panel.content.5e52f4ef7f',
-                'failing'
+          }
+        />
+      ) : (
+        checks.length > 0 && (
+          <button
+            type="button"
+            className="flex w-full items-center gap-3 border-b border-border px-3 py-2 text-left text-[10px] text-muted-foreground transition-colors hover:bg-accent/40 hover:text-foreground"
+            onClick={() => setChecksExpanded((expanded) => !expanded)}
+            aria-expanded={checksExpanded}
+          >
+            <ChevronDown
+              className={cn(
+                'size-3 shrink-0 transition-transform',
+                !checksExpanded && '-rotate-90'
               )}
-            </span>
-          )}
-          {pendingCount > 0 && (
-            <span className="flex items-center gap-1">
-              <LoaderCircle className="size-3 text-amber-500" />
-              {pendingCount}{' '}
-              {translate(
-                'auto.components.right.sidebar.checks.panel.content.9ad98f2a17',
-                'pending'
-              )}
-            </span>
-          )}
-          {/* Why: without this chip a list of only unresolved checks rendered a header with no
-              counts at all, so nothing said why the pill was grey. */}
-          {neutralCount > 0 && (
-            <span className="flex items-center gap-1">
-              <CircleDashed className="size-3 text-muted-foreground" />
-              {neutralCount}{' '}
-              {translate(
-                'auto.components.right.sidebar.checks.panel.content.checksUnresolvedChip',
-                'unresolved'
-              )}
-            </span>
-          )}
-          <span className="flex-1" />
-          {checksLoading && <LoaderCircle className="size-3 animate-spin text-muted-foreground" />}
-        </button>
+            />
+            {summaryChips}
+            <span className="flex-1" />
+            {loadingIcon}
+          </button>
+        )
       )}
 
       {/* Checks List */}
-      {checksLoading && checks.length === 0 ? (
+      {props.sectionHeader && !checksExpanded ? null : checksLoading && checks.length === 0 ? (
         <div className="flex items-center justify-center py-8">
           <LoaderCircle className="size-5 animate-spin text-muted-foreground" />
         </div>

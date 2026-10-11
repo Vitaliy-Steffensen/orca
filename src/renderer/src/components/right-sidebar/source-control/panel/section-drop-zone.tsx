@@ -1,9 +1,5 @@
 import React, { useState } from 'react'
 import { cn } from '@/lib/utils'
-import {
-  orderSourceControlSections,
-  type MovableSourceControlSectionId
-} from '../../../../../../shared/source-control-sections'
 import { SECTION_DRAG_MIME, SectionChromeProvider, dropBeforeId } from '../listing/section-chrome'
 
 type Half = 'top' | 'bottom'
@@ -13,15 +9,17 @@ function halfOf(event: React.DragEvent<HTMLElement>): Half {
   return event.clientY <= rect.top + rect.height / 2 ? 'top' : 'bottom'
 }
 
-function draggedSectionId(
-  event: React.DragEvent<HTMLElement>
-): MovableSourceControlSectionId | null {
+/** The dragged section, if it belongs to this panel; a section from another panel is ignored. */
+function draggedSectionId<Id extends string>(
+  event: React.DragEvent<HTMLElement>,
+  order: readonly Id[]
+): Id | null {
   const id = event.dataTransfer.getData(SECTION_DRAG_MIME)
-  return orderSourceControlSections([]).find((candidate) => candidate === id) ?? null
+  return order.find((candidate) => candidate === id) ?? null
 }
 
-// Fork: one section of the source-control panel, as a drop target for reordering by its header.
-export function SectionDropZone({
+// Fork: one section of a panel (source control, PR), as a drop target for reordering by its header.
+export function SectionDropZone<Id extends string>({
   id,
   order,
   onMove,
@@ -29,13 +27,10 @@ export function SectionDropZone({
   className,
   children
 }: {
-  id: MovableSourceControlSectionId
-  order: readonly MovableSourceControlSectionId[]
-  onMove: (
-    id: MovableSourceControlSectionId,
-    beforeId: MovableSourceControlSectionId | null
-  ) => void
-  onHide: (id: MovableSourceControlSectionId) => void
+  id: Id
+  order: readonly Id[]
+  onMove: (id: Id, beforeId: Id | null) => void
+  onHide: (id: Id) => void
   className?: string
   children: React.ReactNode
 }): React.JSX.Element {
@@ -62,7 +57,7 @@ export function SectionDropZone({
       }}
       onDrop={(event) => {
         setOver(null)
-        const dragged = draggedSectionId(event)
+        const dragged = draggedSectionId(event, order)
         if (!dragged) {
           return
         }

@@ -1,10 +1,35 @@
 import { describe, expect, it } from 'vitest'
 import {
+  PR_PANEL_SECTIONS,
   SOURCE_CONTROL_SECTIONS,
   moveSourceControlSection,
+  orderPrPanelSections,
   orderSourceControlSections,
   toggleSourceControlSectionHidden
 } from './source-control-sections'
+
+describe('PR panel sections', () => {
+  it('lists the sections under the review header, all movable, in their default order', () => {
+    expect(PR_PANEL_SECTIONS.map((section) => [section.id, section.label])).toEqual([
+      ['pr-attention', 'Needs attention'],
+      ['pr-checks', 'Checks'],
+      ['pr-pending-review', 'Pending review'],
+      ['pr-comments', 'Comments']
+    ])
+    expect(orderPrPanelSections(['pr-comments', 'changes'])).toEqual([
+      'pr-comments',
+      'pr-attention',
+      'pr-checks',
+      'pr-pending-review'
+    ])
+    expect(moveSourceControlSection(orderPrPanelSections(undefined), 'pr-checks', null)).toEqual([
+      'pr-attention',
+      'pr-pending-review',
+      'pr-comments',
+      'pr-checks'
+    ])
+  })
+})
 
 describe('source control sections', () => {
   it('keeps reviewers and the pending review in one Review section', () => {
