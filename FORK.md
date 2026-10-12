@@ -1797,7 +1797,22 @@ sync hit exactly that (#23062 landed two commits later) and was fixed by merging
   the language-server process and the self-installer import. The rule in AGENTS.md still names
   the old path.
 - Upstream added four pull-request workflows (`preflight-benchmark.yml` and three
-  `zcode-*-contract.yml`); the disable script turns them off once they are on GitHub.
+  `zcode-*-contract.yml`); the disable script turns them off once they are on GitHub; their four
+  runs on the PR were cancelled.
+- Verify round 1: `handler-group-manifest.ts` and `comments-list.tsx` were over their line caps, so
+  the fork's `notes` CLI group rides on upstream's browser spread from `cli/fork-handler-groups.ts`
+  and the comment View menu moved to `comment-display-mode-menu.tsx`; upstream's new chat prompt
+  pill typed its icon as a Lucide icon, so it now takes any component (the fork's Material file
+  icons are `<img>`s); `create-review-workspace.ts` passes the repo owner's `target` to
+  `resolveGitHubPrStartPointForRepo`.
+- Verify round 2: two new upstream ratchets in `pnpm lint`. The focus-read ratchet counts
+  `getRuntimeEnvironmentIdForWorktree` as a read of the focused server, so new code routes by
+  `runtimeTargetForWorkspaceOwner` / `useWorktreeGitOwnerTarget` instead. The renderer
+  layout-writer ratchet (#27431) baselined every existing writer of `openFiles` and friends but the
+  fork's `open-branch-worktree-diff.ts` and `git-branch-compare-actions.ts`; both joined
+  `config/renderer-layout-writer-baseline.txt` at one write each. A fork change that adds a layout
+  write must go through that baseline too, or better, through upstream's layout commands.
+  `pnpm lint` stops at its first failing step, so a red lint can hide later ones.
 
 **1.4.214 → 1.4.214** (`cc6006779f..e72044a936`, 387 upstream commits, twenty-three conflicts)
 
