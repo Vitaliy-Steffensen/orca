@@ -23,6 +23,10 @@ vi.mock('@/store', () => ({
   useAppStore: { getState: () => ({ addDiffComment }) }
 }))
 
+vi.mock('@/lib/send-notes-to-best-agent', () => ({
+  sendNotesToBestAgent: vi.fn(async () => 'sent')
+}))
+
 const agentNote: DiffComment = {
   id: 'agent-1',
   worktreeId: 'wt-1',
