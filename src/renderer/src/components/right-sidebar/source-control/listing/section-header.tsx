@@ -30,14 +30,10 @@ export function SectionHeader({
   /** Overrides the outer spacing for a section that sits in a differently padded shelf. */
   className?: string
 }): React.JSX.Element {
-  // Fork: the Commits header's row, sticky so a long section keeps its title and actions in view.
+  // Fork: the Commits header's row. Not sticky: the sections stack in one scroller, each header
+  // scrolling with its own section.
   return withSectionChrome(
-    <div
-      className={cn(
-        'sticky top-0 z-[2] h-7 shrink-0 border-t border-border bg-sidebar pl-1 pr-3',
-        className
-      )}
-    >
+    <div className={cn('h-7 shrink-0 border-t border-border bg-sidebar pl-1 pr-3', className)}>
       <div className="group/section flex h-full items-stretch rounded-md pr-1">
         <button
           type="button"

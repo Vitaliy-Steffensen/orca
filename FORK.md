@@ -1622,6 +1622,24 @@ and tests.
 | --- | --- |
 | `source-control/panel/panel-ready.tsx` | `visibleCreatePrHeaderAction={null}`. |
 
+### 52. Source Control as one scroll
+
+The sections no longer share the panel's height. Opening one took height from another, so the
+resizable group (`resizable-sections.tsx`, `shelf-sizing.ts`, §35–§36, §48) is replaced by one
+scroller in which every section stacks at its natural height, in the user's order, still dragged and
+hidden from its header (`panel/stacked-sections.tsx`). Section headers are no longer sticky, Commits
+is no longer docked: it closes the list as its last section (`panel/commits-section.tsx`), so its
+bottom scroll-padding tracking (`dock-scroll-padding.ts`) is gone. The Changes list still virtualizes
+against that scroller, measuring its offset inside it. The "New pull request" composer
+(`commit-surface.tsx`) is removed too: PRs are opened by the agent or the CLI (§51).
+
+| File | What is ours |
+| --- | --- |
+| `source-control/panel/stacked-sections.tsx` | The single scroller and its ordered, droppable sections. |
+| `source-control/panel/commits-section.tsx` | Commits as the last section. |
+| `source-control/panel/panel-ready.tsx`, `panel-content.tsx` | Using them; no composer. |
+| `source-control/listing/section-header.tsx` | Not sticky. |
+
 ## Verify
 
 Verify runs on GitHub, not locally: `fork-verify.yml` runs it on every pull request against `main`,

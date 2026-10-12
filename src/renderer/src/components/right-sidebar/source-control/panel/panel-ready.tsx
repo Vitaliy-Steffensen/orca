@@ -10,7 +10,8 @@ import { useWorktreeAgentNotes } from '@/lib/agent-notes'
 import { usePendingReviewQueue } from '@/components/pending-review/use-pending-review-queue'
 import { useSubmitReviewVerdict } from '@/components/pending-review/use-submit-review-verdict'
 import { SourceControlPanelContent } from './panel-content'
-import { SourceControlResizableSections, type ResizableShelf } from './resizable-sections'
+import { SourceControlStackedSections, type StackedSection } from './stacked-sections'
+import { SourceControlCommitsSection } from './commits-section'
 import { SourceControlPanelDialogs } from './panel-dialogs'
 import type { SourceControlPanelReadyProps } from './panel-props'
 import {
@@ -82,12 +83,11 @@ export function SourceControlPanelReady(props: SourceControlPanelReadyProps) {
   }, [activeWorktreeId, latestTurnOid])
 
   // Fork: your own notes live in the diff viewer only; agent notes keep a section here.
-  const shelves: ResizableShelf[] = []
+  const shelves: StackedSection[] = []
   // Why not gated on drafts: a verdict stands on its own — an approve needs no comments.
   if (submitReviewVerdict.prNumber !== null) {
     shelves.push({
       id: 'pending-review',
-      fullHeightByDefault: true,
       node: (
         <SourceControlPendingReviewShelf
           queue={pendingReviewQueue}
@@ -194,23 +194,17 @@ export function SourceControlPanelReady(props: SourceControlPanelReadyProps) {
           manualReviewUrl={manualReviewUrl}
         />
 
-        <SourceControlResizableSections
+        <SourceControlStackedSections
           shelves={visibleShelves}
           order={sectionOrder}
           onMove={moveSection}
           onHide={hideSection}
+          scrollRef={setFileListScrollElement}
+          scrollStyle={{ paddingBottom: selectedKeys.size > 0 ? 50 : undefined }}
+          footer={<SourceControlCommitsSection model={model} />}
         >
-          <div
-            ref={setFileListScrollElement}
-            // Why scroll-pt-7: a section's header is sticky to the top of this scroller, so a revealed
-            // row must clear it. The docked Commits footer sets the bottom padding to its own height
-            // (dock-scroll-padding.ts), for scrollIntoView and the virtualizer alike.
-            className="relative flex flex-1 flex-col overflow-auto scrollbar-sleek scroll-pt-7"
-            style={{ paddingBottom: selectedKeys.size > 0 ? 50 : undefined }}
-          >
-            <SourceControlPanelContent {...props} />
-          </div>
-        </SourceControlResizableSections>
+          <SourceControlPanelContent {...props} />
+        </SourceControlStackedSections>
 
         {selectedKeys.size > 0 && (
           <BulkActionBar

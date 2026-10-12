@@ -35,7 +35,7 @@ describe('SectionHeader', () => {
     expect(labelSpan.className).toContain('truncate')
   })
 
-  it('is a sticky 28px row styled like the Commits header', () => {
+  it('is a 28px row styled like the Commits header, scrolling with its section', () => {
     const { container } = render(
       <SectionHeader
         label="Changes"
@@ -46,8 +46,7 @@ describe('SectionHeader', () => {
       />
     )
     const root = container.firstElementChild
-    expect(root?.className).toContain('sticky')
-    expect(root?.className).toContain('top-0')
+    expect(root?.className).not.toContain('sticky')
     expect(root?.className).toContain('h-7')
     expect(root?.className).toContain('bg-sidebar')
     const toggle = within(container as HTMLElement).getByRole('button', { name: /Changes/i })

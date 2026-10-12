@@ -2,13 +2,14 @@
 import { cleanup, createEvent, fireEvent, render, screen } from '@testing-library/react'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { SECTION_DRAG_MIME } from '../listing/section-chrome'
-import { SourceControlResizableSections } from './resizable-sections'
+import { SourceControlStackedSections } from './stacked-sections'
 
 afterEach(cleanup)
 
 function renderSections(onMove = vi.fn()) {
-  render(
-    <SourceControlResizableSections
+  const scrollRef = vi.fn()
+  const { container } = render(
+    <SourceControlStackedSections
       shelves={[
         { id: 'pending-review', node: <div>Review body</div> },
         { id: 'agent-turns', node: <div>Turns body</div> }
@@ -16,23 +17,33 @@ function renderSections(onMove = vi.fn()) {
       order={['agent-turns', 'changes', 'pending-review']}
       onMove={onMove}
       onHide={vi.fn()}
+      scrollRef={scrollRef}
+      footer={<div>Commits body</div>}
     >
       <div>Files body</div>
-    </SourceControlResizableSections>
+    </SourceControlStackedSections>
   )
-  return onMove
+  return { onMove, scrollRef, container }
 }
 
-describe('SourceControlResizableSections order', () => {
-  it('lays the sections out in the saved order, changed files included', () => {
-    renderSections()
-    const text = document.body.textContent ?? ''
+describe('SourceControlStackedSections', () => {
+  it('stacks every section at its own height in one scroller, Commits last', () => {
+    const { scrollRef, container } = renderSections()
+    const scroller = scrollRef.mock.calls.find(([node]) => node)?.[0] as HTMLElement
+    expect(scroller).toBeTruthy()
+    for (const body of ['Turns body', 'Files body', 'Review body', 'Commits body']) {
+      expect(scroller.contains(screen.getByText(body))).toBe(true)
+    }
+    const text = scroller.textContent ?? ''
     expect(text.indexOf('Turns body')).toBeLessThan(text.indexOf('Files body'))
     expect(text.indexOf('Files body')).toBeLessThan(text.indexOf('Review body'))
+    expect(text.indexOf('Review body')).toBeLessThan(text.indexOf('Commits body'))
+    // No resize handles: opening one section never takes height from another.
+    expect(container.querySelector('[role="separator"]')).toBeNull()
   })
 
   it('moves a dragged section to where it is dropped', () => {
-    const onMove = renderSections()
+    const { onMove } = renderSections()
     const target = screen.getByText('Turns body').closest('[data-section-drop]')!
     const dataTransfer = {
       types: [SECTION_DRAG_MIME],

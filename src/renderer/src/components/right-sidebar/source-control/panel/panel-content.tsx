@@ -1,10 +1,4 @@
-import { useLayoutEffect, useState } from 'react'
-import { GitHistoryPanel } from '../sync/git-history-panel'
 import { shouldShowSourceControlCompareUnavailableCard } from './header-toolbar'
-import { trackDockScrollPadding } from './dock-scroll-padding'
-import { HideSectionContextMenu } from '../listing/section-chrome'
-import { toggleSourceControlSectionHidden } from '../../../../../../shared/source-control-sections'
-import { shouldRenderCommitArea } from '../commit/component-gates'
 import { SourceControlBranchSection } from '../listing/branch-section'
 import { SourceControlAllChangesSection } from '../listing/all-changes-section'
 import { changesFilterBadge, clearChangesFilter } from '@/lib/changes-filter'
@@ -15,16 +9,14 @@ import {
 } from '../listing/file-category-filter'
 import { SourceControlUncommittedSections } from '../listing/uncommitted-sections'
 import { CompareUnavailable } from '../sync/compare-summary'
-import { SourceControlCommitSurface } from './commit-surface'
 import { SourceControlForkPushNotice } from './fork-push-notice'
 import type { SourceControlPanelReadyProps } from './panel-props'
 
-/** The scrolling surface: status, commit affordances, the file sections and the history dock. */
+/** The Changes section: status, commit affordances and the file sections. */
 export function SourceControlPanelContent(props: SourceControlPanelReadyProps) {
   const { activeWorktree, currentWorktreeId, model, worktreePath } = props
   const {
     settings,
-    updateSettings,
     allChangeEntries,
     changesFilter,
     openAllChangesEntry,
@@ -49,9 +41,7 @@ export function SourceControlPanelContent(props: SourceControlPanelReadyProps) {
     filterQuery,
     filteredBranchEntries,
     filteredGrouped,
-    gitHistoryState,
     handleAbortOperationForConflict,
-    handleCommitAction,
     handleContextMenu,
     handleOpenDiff,
     handleResolveConflictsWithAI,
@@ -67,19 +57,14 @@ export function SourceControlPanelContent(props: SourceControlPanelReadyProps) {
     isAbortingOperation,
     isCategoryFilterActive,
     isExecutingBulk,
-    isGitHistoryVisible,
-    loadCommitFiles,
     normalizedFilter,
     openAllDiffs,
     openBranchAllDiffs,
-    openCommitFile,
     openCommittedDiff,
     openConflictReview,
-    openHistoryCommitDiff,
     presentFileCategories,
     refreshActiveGitStatus,
     refreshBranchCompare,
-    refreshGitHistory,
     repositoryHuge,
     requestDiscardAllInArea,
     requestDiscardEntry,
@@ -94,7 +79,6 @@ export function SourceControlPanelContent(props: SourceControlPanelReadyProps) {
     toggleSubmodule,
     toggleTreeDir,
     unresolvedConflictReviewEntries,
-    unresolvedConflicts,
     unfilteredDisplaySectionsById,
     visibleBranchTreeRows,
     visibleListRowsBySection,
@@ -108,26 +92,9 @@ export function SourceControlPanelContent(props: SourceControlPanelReadyProps) {
   const hasFilteredBranchEntries = filteredBranchEntries.length > 0
   const showGenericEmptyState =
     !hasUncommittedEntries && branchSummary?.status === 'ready' && branchEntries.length === 0
-  const [dock, setDock] = useState<HTMLDivElement | null>(null)
-  useLayoutEffect(
-    () =>
-      fileListScrollElement && dock
-        ? trackDockScrollPadding(fileListScrollElement, dock)
-        : undefined,
-    [dock, fileListScrollElement]
-  )
   const sectionLayout = settings?.sourceControlSectionLayout
   const hiddenSections = sectionLayout?.hidden ?? []
   const changesHidden = hiddenSections.includes('changes')
-  const commitsHidden = hiddenSections.includes('commits')
-  const hideCommits = (): void => {
-    void updateSettings({
-      sourceControlSectionLayout: {
-        ...sectionLayout,
-        hidden: toggleSourceControlSectionHidden(hiddenSections, 'commits')
-      }
-    })
-  }
 
   return (
     <>
@@ -162,10 +129,6 @@ export function SourceControlPanelContent(props: SourceControlPanelReadyProps) {
       />
 
       <SourceControlForkPushNotice pushTarget={activeWorktree.pushTarget ?? null} />
-
-      {shouldRenderCommitArea(unresolvedConflicts.length, conflictOperation) && (
-        <SourceControlCommitSurface {...props} showGenericEmptyState={showGenericEmptyState} />
-      )}
 
       {!showAllChanges &&
         shouldShowSourceControlFileCategoryFilter(
@@ -329,27 +292,6 @@ export function SourceControlPanelContent(props: SourceControlPanelReadyProps) {
             pendingReviewCountByPath={pendingReviewCountByPath}
           />
         )}
-
-      {isGitHistoryVisible && !commitsHidden && (
-        // Why: the graph is reference context, so keep it docked at the bottom as the pane scrolls.
-        <HideSectionContextMenu onHide={hideCommits}>
-          <div
-            ref={setDock}
-            className="sticky bottom-0 z-10 mt-auto shrink-0 border-t border-border bg-sidebar/95 backdrop-blur-sm"
-          >
-            <GitHistoryPanel
-              state={gitHistoryState}
-              collapsed={collapsedSections.has('history')}
-              onToggle={() => toggleSection('history')}
-              onRefresh={() => void refreshGitHistory()}
-              onOpenCommit={(item) => void openHistoryCommitDiff(item)}
-              onLoadCommitFiles={loadCommitFiles}
-              onOpenCommitFile={openCommitFile}
-              onCommitAction={handleCommitAction}
-            />
-          </div>
-        </HideSectionContextMenu>
-      )}
     </>
   )
 }
