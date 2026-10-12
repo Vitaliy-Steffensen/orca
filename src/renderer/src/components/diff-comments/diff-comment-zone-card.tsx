@@ -158,6 +158,7 @@ export function renderDiffCommentZoneCard(
               root={comment}
               replies={comment.threadReplies ?? []}
               worktreeId={worktreeId}
+              groupId={activeGroupId}
               onDelete={(noteId) => onDeleteCommentRef.current(noteId)}
             />
           ) : undefined

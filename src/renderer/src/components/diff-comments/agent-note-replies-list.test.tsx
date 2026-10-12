@@ -4,7 +4,14 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import type { DiffComment } from '../../../../shared/diff-comment-types'
 import { NoteThread } from './agent-note-replies-list'
 
-vi.mock('@/store', () => ({ useAppStore: { getState: () => ({ addDiffComment: vi.fn() }) } }))
+const mocks = vi.hoisted(() => ({ addDiffComment: vi.fn(), sendNotesToBestAgent: vi.fn() }))
+
+vi.mock('@/store', () => ({
+  useAppStore: { getState: () => ({ addDiffComment: mocks.addDiffComment }) }
+}))
+vi.mock('@/lib/send-notes-to-best-agent', () => ({
+  sendNotesToBestAgent: mocks.sendNotesToBestAgent
+}))
 
 const root: DiffComment = {
   id: 'a1',
@@ -44,5 +51,39 @@ describe('NoteThread reply box', () => {
     scrollHeight = 900
     fireEvent.change(textarea, { target: { value: 'a very long follow-up' } })
     expect(textarea.style.height).toBe('240px')
+  })
+
+  it('sends a submitted follow-up straight to an agent, with the unsent ones before it', async () => {
+    const earlier: DiffComment = {
+      ...root,
+      id: 'u1',
+      body: 'Why?',
+      agentAuthor: undefined,
+      replyToNoteId: 'a1'
+    }
+    const saved: DiffComment = { ...earlier, id: 'u2', body: 'And the tests?' }
+    mocks.addDiffComment.mockResolvedValue(saved)
+    render(
+      <NoteThread
+        root={root}
+        replies={[earlier]}
+        worktreeId="wt-1"
+        groupId="g-1"
+        onDelete={vi.fn()}
+      />
+    )
+    fireEvent.click(screen.getByRole('button', { name: 'Reply' }))
+    fireEvent.change(screen.getByPlaceholderText('Ask a follow-up…'), {
+      target: { value: 'And the tests?' }
+    })
+    fireEvent.click(screen.getByRole('button', { name: 'Add reply' }))
+
+    await vi.waitFor(() =>
+      expect(mocks.sendNotesToBestAgent).toHaveBeenCalledWith({
+        worktreeId: 'wt-1',
+        notes: [earlier, saved],
+        groupId: 'g-1'
+      })
+    )
   })
 })

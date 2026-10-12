@@ -19554,6 +19554,10 @@
     "commit": "Commit {{ref}}",
     "showCommitInChanges": "Show in Changes"
   },
+  "notesFollowUp": {
+    "sent": "Sent to {{agent}}",
+    "noAgent": "No agent is running here and none is set up to start. Send it from the note instead."
+  },
   "queuedComments": {
     "none": "No comments are queued.",
     "send": "Send {{count}} queued comments",

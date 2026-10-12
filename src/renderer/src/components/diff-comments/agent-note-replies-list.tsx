@@ -5,6 +5,7 @@ import type { DiffComment } from '../../../../shared/diff-comment-types'
 import { ImeTextarea } from '@/lib/ime-text-field'
 import { useAppStore } from '@/store'
 import { translate } from '@/i18n/i18n'
+import { sendNotesToBestAgent } from '@/lib/send-notes-to-best-agent'
 
 const MAX_REPLY_HEIGHT_PX = 240
 
@@ -18,11 +19,14 @@ export function NoteThread({
   root,
   replies,
   worktreeId,
+  groupId,
   onDelete
 }: {
   root: DiffComment
   replies: readonly DiffComment[]
   worktreeId: string
+  /** Where a newly started agent opens, when the follow-up has none running to go to. */
+  groupId?: string
   onDelete: (noteId: string) => void
 }): React.JSX.Element {
   const [composing, setComposing] = useState(false)
@@ -55,6 +59,14 @@ export function NoteThread({
     if (saved) {
       setDraft('')
       setComposing(false)
+      // Fork: a follow-up is a question for an agent, so it goes to one at once, with the thread's
+      // other unsent messages, instead of waiting to be sent from the note's menu.
+      const unsent = [
+        ...(root.agentAuthor || root.sentAt ? [] : [root]),
+        ...replies.filter((reply) => !reply.agentAuthor && !reply.sentAt),
+        saved
+      ]
+      void sendNotesToBestAgent({ worktreeId, notes: unsent, ...(groupId ? { groupId } : {}) })
     }
   }
 

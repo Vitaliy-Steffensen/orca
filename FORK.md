@@ -1640,6 +1640,21 @@ against that scroller, measuring its offset inside it. The "New pull request" co
 | `source-control/panel/panel-ready.tsx`, `panel-content.tsx` | Using them; no composer. |
 | `source-control/listing/section-header.tsx` | Not sticky. |
 
+### 53. A follow-up on a note goes straight to an agent
+
+Submitting a reply under a note ("Ask a follow-up…") saves it and sends it at once, with the
+thread's other unsent messages and the same context prompt as the note's send menu
+(`formatDiffCommentsForAgent`), to the agent that menu auto-picks; when no agent is eligible it
+starts the default agent in the card's group with that prompt (`lib/send-notes-to-best-agent.ts`).
+The sent notes are marked sent once delivered. A failed send keeps them pending and says why.
+
+| File | What is ours |
+| --- | --- |
+| `src/renderer/src/lib/send-notes-to-best-agent.ts` | Pick or start the agent, send, mark sent. |
+| `diff-comments/agent-note-replies-list.tsx` | Sending on submit. |
+| `diff-comments/diff-comment-zone-card.tsx` | The group a new agent opens in. |
+| `src/renderer/src/i18n/locales/en.json` | `notesFollowUp.*`. |
+
 ## Verify
 
 Verify runs on GitHub, not locally: `fork-verify.yml` runs it on every pull request against `main`,
