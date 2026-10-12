@@ -1567,6 +1567,22 @@ when there is only one.
 | --- | --- |
 | `src/main/claude/claude-web-guest-shortcuts.ts` | The directional chord forwarded first. |
 
+### 48. Keeping the Claude web view in step with delivered prompts
+
+Orca delivers prompts to Claude Code through its terminal (a launch prompt, or notes and comments
+sent to a running agent). claude.ai's live view of the session does not always pick a locally typed
+message up: it shows the agent working without the prompt until a reload. Each delivered prompt is
+noted for its tab (`terminal-pane/claude-web-prompt-sync.ts`); that tab's Claude web view waits until
+its page has loaded and four seconds have passed since delivery, reads the page text, and reloads
+once if the prompt's opening line is not there, or if the page cannot be read.
+
+| File | What is ours |
+| --- | --- |
+| `terminal-pane/claude-web-prompt-sync.ts` | The noted prompts, the check and the watcher. |
+| `terminal-pane/ClaudeWebView.tsx` | The watcher per page. |
+| `src/renderer/src/lib/agent-launch-prompt-delivery.ts` | Noting a submitted launch prompt. |
+| `src/renderer/src/lib/active-agent-note-send.ts` | Noting a prompt sent to a running agent. |
+
 ## Verify
 
 Verify runs on GitHub, not locally: `fork-verify.yml` runs it on every pull request against `main`,
