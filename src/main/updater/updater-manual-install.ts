@@ -2,7 +2,7 @@ import { shell } from 'electron'
 import { recordUpdaterLifecycle } from '../updater-lifecycle-diagnostics'
 import { setMainReleaseRepoOverride } from '../../shared/release-channel'
 
-const FORK_REPO_URL = 'https://github.com/frbarbre/orca'
+const FORK_REPO_URL = 'https://github.com/Vitaliy-Steffensen/orca'
 
 /**
  * Whether this build can only be updated by hand.

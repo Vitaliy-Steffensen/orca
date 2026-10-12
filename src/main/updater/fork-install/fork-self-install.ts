@@ -8,7 +8,7 @@ import { downloadForkUpdateArchive, fetchForkUpdateText } from './fork-update-do
 import { parseForkUpdateManifest, selectForkUpdateAsset } from './fork-update-manifest'
 import { buildForkUpdateSwapScript } from './fork-update-swap-script'
 
-const FORK_REPO_URL = 'https://github.com/frbarbre/orca'
+const FORK_REPO_URL = 'https://github.com/Vitaliy-Steffensen/orca'
 
 /**
  * Whether this build installs its own updates rather than sending the user to the release page.

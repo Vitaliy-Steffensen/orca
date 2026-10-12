@@ -734,7 +734,7 @@ module.exports = {
   publish: {
     provider: 'github',
     // Fork: publish to this fork's own releases, never upstream's.
-    owner: process.env.ORCA_PUBLISH_OWNER ?? 'frbarbre',
+    owner: process.env.ORCA_PUBLISH_OWNER ?? 'Vitaliy-Steffensen',
     repo: devChannelRepo ?? 'orca',
     // Why draft on the main repo: `--publish always` otherwise creates a
     // public GitHub release as soon as the first platform uploads, and

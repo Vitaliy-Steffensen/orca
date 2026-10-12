@@ -13,7 +13,7 @@ import { execFileSync } from 'node:child_process'
 import { readdirSync, readFileSync } from 'node:fs'
 import { parse } from 'yaml'
 
-const REPO = 'frbarbre/orca'
+const REPO = 'Vitaliy-Steffensen/orca'
 const FORK_WORKFLOWS = new Set(['fork-verify.yml', 'fork-preview-release.yml', 'fork-release.yml'])
 const PR_EVENTS = ['pull_request', 'pull_request_target']
 const dryRun = process.argv.includes('--dry-run')
