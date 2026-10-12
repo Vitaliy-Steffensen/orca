@@ -1443,6 +1443,20 @@ PR panel, `PRCommentsList` keeps the accordion.
 | `src/shared/source-control-sections.ts` | `pr-resolved`. |
 | `src/renderer/src/i18n/locales/en.json` | `prPanelSections.resolved`. |
 
+### 41. The new-comment box opens a gap instead of covering code
+
+The diff viewer's Agent / Comment / Review box stays an overlay, but an empty Monaco view zone
+as tall as the box opens under its line (`diff-comments/diff-comment-popover-spacer.ts`), so the
+lines and saved comment cards below move down rather than sit under it. The zone has `ordinal: 0`
+so it sorts ahead of saved comment zones on the same line, right where the box draws. The box no
+longer flips above its line near the bottom, since that would cover the code above.
+
+| File | What is ours |
+| --- | --- |
+| `diff-comments/DiffLineCommentPopoverHost.tsx` | The spacer, sized from the box. |
+| `diff-comments/DiffCommentPopover.tsx` | `onHeightChange`; inline placement when it is passed. |
+| `diff-comments/diff-comment-popover-position.ts` | The `inline` option. |
+
 ## Verify
 
 Verify runs on GitHub, not locally: `fork-verify.yml` runs it on every pull request against `main`,

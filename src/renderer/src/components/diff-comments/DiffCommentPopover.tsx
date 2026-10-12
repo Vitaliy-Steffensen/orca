@@ -59,6 +59,8 @@ type Props = {
   submittingLabel?: string
   onCancel: () => void
   onSubmit: (body: string) => Promise<void>
+  /** Fork: reports the box's height so the caller can open a gap that tall under the line. */
+  onHeightChange?: (height: number) => void
 }
 
 function hasDraftText(body: string): boolean {
@@ -79,7 +81,8 @@ export function DiffCommentPopover({
   submitLabel = 'Add note',
   submittingLabel = 'Saving…',
   onCancel,
-  onSubmit
+  onSubmit,
+  onHeightChange
 }: Props): React.JSX.Element {
   const [body, setBody] = useState('')
   // Why: mirror the draft into a ref so the mousedown listener reads it fresh without re-registering each keystroke.
@@ -102,6 +105,8 @@ export function DiffCommentPopover({
   topRef.current = top
   const lineHeightRef = useRef(lineHeight)
   lineHeightRef.current = lineHeight
+  const onHeightChangeRef = useRef(onHeightChange)
+  onHeightChangeRef.current = onHeightChange
 
   const measureResolvedTop = useCallback((): void => {
     const popover = popoverRef.current
@@ -110,12 +115,14 @@ export function DiffCommentPopover({
       setResolvedTop(topRef.current)
       return
     }
+    onHeightChangeRef.current?.(popover.offsetHeight)
     setResolvedTop(
       resolveDiffCommentPopoverTop({
         belowTop: topRef.current,
         lineHeight: lineHeightRef.current,
         popoverHeight: popover.offsetHeight,
-        viewportHeight: container.clientHeight
+        viewportHeight: container.clientHeight,
+        inline: onHeightChangeRef.current !== undefined
       })
     )
   }, [])

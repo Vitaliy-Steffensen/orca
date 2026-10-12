@@ -1,6 +1,7 @@
-import React from 'react'
+import React, { useState } from 'react'
 import type { editor as monacoEditor } from 'monaco-editor'
 import { DiffCommentPopover } from './DiffCommentPopover'
+import { useDiffCommentPopoverSpacer } from './diff-comment-popover-spacer'
 import { useDiffReviewComment } from './use-diff-review-comment'
 import type { PRComment } from '../../../../shared/github/comment-types'
 import { translate } from '@/i18n/i18n'
@@ -57,6 +58,12 @@ export function DiffLineCommentPopoverHost({
     relativePath,
     worktreeId
   })
+  const [popoverHeight, setPopoverHeight] = useState(0)
+  useDiffCommentPopoverSpacer({
+    editor: diffEditor?.getModifiedEditor() ?? null,
+    lineNumber: anchor.lineNumber,
+    height: popoverHeight
+  })
   const effectiveMode = review.resolveMode(anchor.lineNumber)
   const disabledReason = review.reviewDisabledReason(anchor.lineNumber)
 
@@ -87,6 +94,7 @@ export function DiffLineCommentPopoverHost({
             : 'Add to review'
       }
       submittingLabel="Posting…"
+      onHeightChange={setPopoverHeight}
       onCancel={onCancel}
       onSubmit={async (body) => {
         if (effectiveMode === 'note') {

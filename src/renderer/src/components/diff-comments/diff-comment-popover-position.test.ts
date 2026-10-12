@@ -145,6 +145,18 @@ describe('resolveDiffCommentPopoverTop', () => {
     ).toBe(120)
   })
 
+  it('stays in the gap opened under its line rather than flipping over the code above', () => {
+    expect(
+      resolveDiffCommentPopoverTop({
+        belowTop: 380,
+        lineHeight: 20,
+        popoverHeight: 150,
+        viewportHeight: 400,
+        inline: true
+      })
+    ).toBe(380)
+  })
+
   it('honors a custom margin when deciding whether the popover fits below', () => {
     const top = resolveDiffCommentPopoverTop({
       belowTop: 300,

@@ -38,6 +38,8 @@ export type ResolveDiffCommentPopoverTopArgs = {
   // the region an overflow ancestor clips the popover against.
   viewportHeight: number
   margin?: number
+  // Fork: the popover sits in a gap opened under its line, so flipping would cover code.
+  inline?: boolean
 }
 
 // Why: the popover anchors below the selected line by default, but near the
@@ -50,10 +52,11 @@ export function resolveDiffCommentPopoverTop({
   lineHeight,
   popoverHeight,
   viewportHeight,
-  margin = POPOVER_VIEWPORT_MARGIN_PX
+  margin = POPOVER_VIEWPORT_MARGIN_PX,
+  inline = false
 }: ResolveDiffCommentPopoverTopArgs): number {
   // Geometry not measured yet (first paint): keep the default below position.
-  if (popoverHeight <= 0 || viewportHeight <= 0) {
+  if (inline || popoverHeight <= 0 || viewportHeight <= 0) {
     return belowTop
   }
   if (belowTop + popoverHeight + margin <= viewportHeight) {
