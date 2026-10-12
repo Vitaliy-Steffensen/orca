@@ -73,6 +73,18 @@ describe('installClaudeWebGuestShortcuts', () => {
     ])
   })
 
+  it('hands the group-focus arrows to the renderer, which moves focus off the page', () => {
+    const { send, replayed, windowActions } = install()
+
+    expect(send({ key: 'ArrowLeft', code: 'ArrowLeft', meta: true, alt: true })).toBe(true)
+    expect(send({ key: 'ArrowDown', code: 'ArrowDown', meta: true, alt: true })).toBe(true)
+    expect(windowActions).toEqual([])
+    expect(replayed.map((key) => [key.code, key.metaKey, key.altKey])).toEqual([
+      ['ArrowLeft', true, true],
+      ['ArrowDown', true, true]
+    ])
+  })
+
   it('runs window-level shortcuts like tab and workspace number jumps the way the main window does', () => {
     const { send, replayed, windowActions } = install()
 

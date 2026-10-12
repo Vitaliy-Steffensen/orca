@@ -1555,6 +1555,18 @@ code for the "Group by status" sections' view buttons.
 | `src/renderer/src/lib/agent-turn-open.ts`, `agent-turns/agent-turns-section.tsx`, `sync/use-git-history-commit-actions.ts`, `sync/git-history-commit-files.tsx`, `src/renderer/src/lib/monaco-git-blame.ts`, `src/renderer/src/app-shell/source-control-shortcuts.ts` | The entry points. |
 | `src/renderer/src/i18n/locales/*.json` | `allChanges.*`; the old "Open all changes together" key removed. |
 
+### 47. Group-focus arrows from the Claude web view
+
+The Claude page forwards Orca's shortcuts from main (`src/main/claude/claude-web-guest-shortcuts.ts`),
+but ⌥⌘+arrow (`tabGroup.focus*`) matched the worktree-history window action first, so it ran history
+in main and focus never left the page. Like the main window's routing, the directional chord now
+goes to the renderer ahead of window actions; it moves to the next group, or falls back to history
+when there is only one.
+
+| File | What is ours |
+| --- | --- |
+| `src/main/claude/claude-web-guest-shortcuts.ts` | The directional chord forwarded first. |
+
 ## Verify
 
 Verify runs on GitHub, not locally: `fork-verify.yml` runs it on every pull request against `main`,

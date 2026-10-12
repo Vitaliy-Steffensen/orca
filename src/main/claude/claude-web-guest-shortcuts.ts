@@ -5,6 +5,7 @@ import {
   type KeybindingScope
 } from '../../shared/keybindings'
 import type { ClaudeWebReplayedKey } from '../../shared/claude-remote-session'
+import { resolveDirectionalGroupFocus } from '../../shared/keybindings/directional-group-focus'
 import {
   resolveWindowShortcutAction,
   type WindowShortcutAction
@@ -84,6 +85,14 @@ export function installClaudeWebGuestShortcuts(
     if (keybindingMatchesAction('browser.reload', input, platform, keybindings)) {
       event.preventDefault()
       guest.reload()
+      return
+    }
+    // Why ahead of window actions: like the main window, only the renderer knows whether there is
+    // a group to move to, and it falls back to worktree history itself.
+    if (resolveDirectionalGroupFocus(input, platform, keybindings)) {
+      event.preventDefault()
+      forwardingModifierReleases = true
+      replayInRenderer(toReplayedKey(input, 'keydown'))
       return
     }
     // Why: the main window runs these in main (number jumps never reach the renderer's DOM), so a replayed key would do nothing.
