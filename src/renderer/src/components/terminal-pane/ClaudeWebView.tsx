@@ -9,6 +9,7 @@ import { pollClaudeRemoteSessionUrl } from './claude-remote-session-poll'
 import { ensureClaudeWebKeyReplay } from './claude-web-key-replay'
 import { FOCUS_CLAUDE_PROMPT_SCRIPT } from './claude-web-prompt-focus'
 import { claudeWebView } from './claude-web-view-state'
+import { enrolClaudeWebviewInDragPassthrough } from './claude-web-drag-passthrough'
 
 type PageState = 'loading' | 'ready' | 'failed'
 
@@ -71,9 +72,11 @@ function attachClaudeWebview(
   webview.addEventListener('did-stop-loading', onStop)
   webview.addEventListener('did-fail-load', onFail)
   webview.addEventListener('dom-ready', onDomReady)
+  const unenrolDragPassthrough = enrolClaudeWebviewInDragPassthrough(webview)
   container.appendChild(webview)
   webview.setAttribute('src', url)
   return () => {
+    unenrolDragPassthrough()
     webview.removeEventListener('did-start-loading', onStart)
     webview.removeEventListener('did-stop-loading', onStop)
     webview.removeEventListener('did-fail-load', onFail)

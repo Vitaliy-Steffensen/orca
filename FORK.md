@@ -1505,6 +1505,19 @@ top while the combined diff is the active tab, instead of opening that file in i
 | `combined-diff/CombinedDiffViewer.tsx` | The hook. |
 | `src/renderer/src/store/slices/editor/actions/step-to-changed-file.ts` | Asking the combined diff first. |
 
+### 45. Tab drags over the Claude web view
+
+The Claude web view's `<webview>` (`terminal-pane/ClaudeWebView.tsx`) is created outside the
+browser-tab webview registry, so tab drags never made it click-through. A drag over it lost the
+pointer to the guest page, and the window blur that followed tripped the missed-end fallback
+(`tab-group/tab-drag-missed-end-listeners.ts`), dropping the tab nowhere. It now enrols in the
+same drag passthrough (`terminal-pane/claude-web-drag-passthrough.ts`).
+
+| File | What is ours |
+| --- | --- |
+| `terminal-pane/claude-web-drag-passthrough.ts` | The enrolment. |
+| `terminal-pane/ClaudeWebView.tsx` | Enrolling on attach, leaving on detach. |
+
 ## Verify
 
 Verify runs on GitHub, not locally: `fork-verify.yml` runs it on every pull request against `main`,
