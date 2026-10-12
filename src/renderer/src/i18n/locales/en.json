@@ -18149,7 +18149,6 @@
           "standingChanges": "You requested changes",
           "standingApproved": "You approved the changes",
           "standingRequested": "Your review was requested",
-          "title": "Pending review",
           "bodyPlaceholder": "Add review summary…",
           "submitting": "Sending…"
         },
