@@ -90,7 +90,7 @@ export function useSourceControlFileListing({
   const reviewAttributes = useSourceControlReviewAttributes({
     activeWorktreeId,
     worktreePath,
-    activeRepoSettings,
+    activeRepoTarget,
     isFolder,
     entries,
     branchEntries

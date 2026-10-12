@@ -3,9 +3,10 @@ import type { DiffComment } from '../../../shared/diff-comment-types'
 import { useAppStore } from '@/store'
 import type { AppState } from '@/store/types'
 import { getIndexedWorktreeById } from '@/store/worktree-repo-index'
-import { callRuntimeRpc, getActiveRuntimeTarget } from '@/runtime/runtime-rpc-client'
+import { callRuntimeRpc } from '@/runtime/runtime-rpc-client'
+import { runtimeTargetForOwnerEnvironment } from '@/runtime/runtime-client-target'
 import { toRuntimeWorktreeSelector } from '@/runtime/runtime-worktree-selector'
-import { getSettingsForWorktreeRuntimeOwner } from '@/lib/worktree-runtime-owner'
+import { getRuntimeEnvironmentIdForWorktree } from '@/lib/worktree-runtime-owner'
 import { requestPRCommentReveal } from '@/lib/pr-comment-reveal'
 import { selectWorktreeDiffComments } from '@/store/worktree-diff-comments-selector'
 
@@ -71,7 +72,9 @@ export function revealGitHubComment(url: string): void {
 
 export async function removeAgentNote(worktreeId: string, id: string): Promise<void> {
   const state = useAppStore.getState()
-  const target = getActiveRuntimeTarget(getSettingsForWorktreeRuntimeOwner(state, worktreeId))
+  const target = runtimeTargetForOwnerEnvironment(
+    getRuntimeEnvironmentIdForWorktree(state, worktreeId)
+  )
   await callRuntimeRpc(
     target,
     'agentNote.remove',

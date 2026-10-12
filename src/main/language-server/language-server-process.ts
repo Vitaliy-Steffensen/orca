@@ -1,6 +1,6 @@
 import { delimiter } from 'node:path'
-import { spawnProcess } from '../../shared/child-process/run-process'
-import { forceTerminateProcessTree } from '../../shared/child-process/process-tree-termination'
+import { spawnProcess } from '@orca/process-host'
+import { forceTerminateProcessTree } from '@orca/process-host/process-tree-termination'
 import type { LanguageServerLaunch } from './language-server-launchers'
 import { createLspSession, type LspSession } from './lsp-session'
 

@@ -21,12 +21,11 @@ import type {
   SourceControlLaunchActionId
 } from '../../../../../shared/source-control-ai-actions'
 import type { PRCheckDetail } from '../../../../../shared/github/check-types'
-import type { PRComment } from '../../../../../shared/github/comment-types'
 import type { PRRefreshErrorType } from '../../../../../shared/github/pull-request-refresh-types'
 import type { GitLabProjectRef } from '../../../../../shared/gitlab-types'
 import type { PRCommentsListSelectionClearRequest } from '../pr-comments-list-selection'
 import { getGitHubPRCacheKey } from '@/store/slices/github-cache-key'
-import { usePRCommentsState } from '@/components/pr-comments/pr-comments-store'
+import { useChecksPanelCommentsState } from './use-checks-panel-comments-state'
 import {
   buildChecksPanelGitStatusContextKey,
   type ChecksPanelGitStatusSnapshot
@@ -226,20 +225,13 @@ export function useChecksPanelControllerState() {
       : ''
   const {
     comments,
-    setComments: setCommentsState,
+    setComments,
     commentsRef,
     commentsLoading,
-    setCommentsLoading
-  } = usePRCommentsState(prCommentScopeKey)
-  // Why: a failed read keeps its own state so the list says so instead of "No comments".
-  const [commentsError, setCommentsError] = useState<string | null>(null)
-  const setComments = useCallback(
-    (next: SetStateAction<PRComment[]>) => {
-      setCommentsError(null)
-      setCommentsState(next)
-    },
-    [setCommentsState]
-  )
+    setCommentsLoading,
+    commentsError,
+    setCommentsError
+  } = useChecksPanelCommentsState(prCommentScopeKey)
   const activeWorktreePath = activeWorktree?.path ?? null
   const activeWorktreePushTarget = activeWorktree?.pushTarget ?? null
   const activeSourceControlLaunchPlatform = resolveSourceControlLaunchPlatform({

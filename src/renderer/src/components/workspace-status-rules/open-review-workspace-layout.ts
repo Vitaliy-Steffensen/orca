@@ -1,12 +1,12 @@
 import { useAppStore } from '@/store'
 import { detectLanguage } from '@/lib/language-detect'
 import { getRuntimeGitBranchCompare } from '@/runtime/runtime-git-diff-client'
+import { getWorktreeGitOwnerTarget } from '@/components/right-sidebar/worktree-git-owner-target'
 import { compareFileNames } from '../../../../shared/file-name-sort'
 import type { AppState } from '@/store'
 
 type LayoutState = Pick<
   AppState,
-  | 'settings'
   | 'unifiedTabsByWorktree'
   | 'ensureWorktreeRootGroup'
   | 'createEmptySplitGroup'
@@ -23,8 +23,15 @@ type LayoutTarget = {
   baseRef: string
 }
 
-const defaultDeps = {
+type LayoutDeps = {
+  getState: () => LayoutState
+  resolveTarget: typeof getWorktreeGitOwnerTarget
+  branchCompare: typeof getRuntimeGitBranchCompare
+}
+
+const defaultDeps: LayoutDeps = {
   getState: (): LayoutState => useAppStore.getState(),
+  resolveTarget: getWorktreeGitOwnerTarget,
   branchCompare: getRuntimeGitBranchCompare
 }
 
@@ -32,10 +39,7 @@ const defaultDeps = {
 // split to the right, so the review and the code it is about are both on screen.
 export async function openReviewWorkspaceLayout(
   target: LayoutTarget,
-  deps: {
-    getState: () => LayoutState
-    branchCompare: typeof getRuntimeGitBranchCompare
-  } = defaultDeps
+  deps: LayoutDeps = defaultDeps
 ): Promise<void> {
   try {
     await openFirstFileBesideAgent(target, deps)
@@ -50,15 +54,16 @@ export async function openReviewWorkspaceLayout(
 
 async function openFirstFileBesideAgent(
   { worktreeId, worktreePath, agentTabId, baseRef }: LayoutTarget,
-  deps: {
-    getState: () => LayoutState
-    branchCompare: typeof getRuntimeGitBranchCompare
-  }
+  deps: LayoutDeps
 ): Promise<void> {
+  const ownerTarget = deps.resolveTarget(worktreeId)
+  if (!ownerTarget) {
+    return
+  }
   let result: Awaited<ReturnType<typeof getRuntimeGitBranchCompare>>
   try {
     result = await deps.branchCompare(
-      { settings: deps.getState().settings, worktreeId, worktreePath },
+      { target: ownerTarget, worktreeId, worktreePath },
       baseRef,
       'background'
     )

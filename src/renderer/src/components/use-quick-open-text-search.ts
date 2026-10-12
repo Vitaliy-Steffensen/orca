@@ -3,7 +3,8 @@ import { useAppStore } from '@/store'
 import { getConnectionId } from '@/lib/connection-context'
 import { readIpcErrorDetail } from '@/lib/ipc-error'
 import { getRuntimeEnvironmentIdForWorktree } from '@/lib/worktree-runtime-owner'
-import { searchRuntimeFiles } from '@/runtime/runtime-file-client'
+import { searchRuntimeFiles } from '@/runtime/runtime-file-search-client'
+import { runtimeTargetForOwnerEnvironment } from '@/runtime/runtime-client-target'
 import type { SearchResult } from '../../../shared/code-search-types'
 
 const TEXT_SEARCH_DEBOUNCE_MS = 150
@@ -42,7 +43,7 @@ export function useQuickOpenTextSearch(
     const timer = window.setTimeout(() => {
       searchRuntimeFiles(
         {
-          settings: { activeRuntimeEnvironmentId: runtimeEnvironmentId },
+          target: runtimeTargetForOwnerEnvironment(runtimeEnvironmentId),
           worktreeId,
           worktreePath,
           connectionId: getConnectionId(worktreeId) ?? undefined

@@ -170,7 +170,7 @@ export async function getRuntimeGitReviewAttributes(
   context: RuntimeGitContext,
   paths: string[]
 ): Promise<GitPathReviewAttributes> {
-  const target = getActiveRuntimeTarget(context.settings)
+  const target = context.target
   if (paths.length === 0) {
     return {}
   }

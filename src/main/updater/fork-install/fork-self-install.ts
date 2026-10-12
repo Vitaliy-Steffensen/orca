@@ -1,7 +1,7 @@
 import { chmod, mkdir, writeFile } from 'node:fs/promises'
 import { join } from 'node:path'
 import { app } from 'electron'
-import { spawnProcess } from '../../../shared/child-process/run-process'
+import { spawnProcess } from '@orca/process-host'
 import { recordUpdaterLifecycle } from '../../updater-lifecycle-diagnostics'
 import { backupUserSettings } from './fork-update-backup'
 import { downloadForkUpdateArchive, fetchForkUpdateText } from './fork-update-download'

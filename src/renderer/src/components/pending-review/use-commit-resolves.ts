@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useAppStore } from '@/store'
-import { getRepoOwnerRoutedSettings } from '@/lib/repo-runtime-owner'
+import { useWorktreeGitOwnerTarget } from '@/components/right-sidebar/worktree-git-owner-target'
 import { getRuntimeGitBranchCompare } from '@/runtime/runtime-git-diff-client'
 import { getIndexedRepoMap } from '@/store/worktree-repo-index'
 import { readCommitResolution, type CommitResolution } from './commit-resolution'
@@ -24,7 +24,7 @@ export function useCommitResolves(
   const repo = useAppStore((state) =>
     worktree ? (getIndexedRepoMap(state.repos).get(worktree.repoId) ?? null) : null
   )
-  const settings = useAppStore((state) => state.settings)
+  const target = useWorktreeGitOwnerTarget(worktreeId)
   const key = worktreeId && commit ? `${worktreeId}:${commit}` : null
   const [resolution, setResolution] = useState<CommitResolution>(() =>
     key ? (cache.get(key) ?? 'unknown') : 'unknown'
@@ -32,7 +32,7 @@ export function useCommitResolves(
   const worktreePath = worktree?.path ?? null
 
   useEffect(() => {
-    if (!key || !commit || !worktreeId || !worktreePath) {
+    if (!key || !commit || !worktreeId || !worktreePath || !target) {
       setResolution('unknown')
       return
     }
@@ -44,7 +44,7 @@ export function useCommitResolves(
     let active = true
     void getRuntimeGitBranchCompare(
       {
-        settings: getRepoOwnerRoutedSettings(settings, repo),
+        target,
         worktreeId,
         worktreePath,
         connectionId: repo?.connectionId ?? undefined
@@ -71,7 +71,7 @@ export function useCommitResolves(
     return () => {
       active = false
     }
-  }, [commit, key, repo, settings, worktreeId, worktreePath])
+  }, [commit, key, repo, target, worktreeId, worktreePath])
 
   return resolution
 }

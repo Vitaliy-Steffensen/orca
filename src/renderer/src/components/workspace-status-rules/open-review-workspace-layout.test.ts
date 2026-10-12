@@ -20,7 +20,6 @@ const TARGET = {
 
 function fakeStore() {
   return {
-    settings: null,
     unifiedTabsByWorktree: { 'wt-1': [{ id: 'agent-tab', groupId: 'group-left' }] },
     ensureWorktreeRootGroup: vi.fn(() => 'group-root'),
     createEmptySplitGroup: vi.fn(() => 'group-right'),
@@ -30,6 +29,8 @@ function fakeStore() {
     activateTab: vi.fn()
   }
 }
+
+const LOCAL_TARGET = { kind: 'local' as const }
 
 const AGENT_TAB_SELECTED = ['agent-tab', { worktreeId: 'wt-1', recordFocus: false }]
 
@@ -44,7 +45,11 @@ describe('openReviewWorkspaceLayout', () => {
       ]
     }))
 
-    await openReviewWorkspaceLayout(TARGET, { getState: () => store as never, branchCompare })
+    await openReviewWorkspaceLayout(TARGET, {
+      getState: () => store as never,
+      resolveTarget: () => LOCAL_TARGET,
+      branchCompare
+    })
 
     expect(branchCompare).toHaveBeenCalledWith(
       expect.objectContaining({ worktreeId: 'wt-1', worktreePath: '/work/review' }),
@@ -74,10 +79,12 @@ describe('openReviewWorkspaceLayout', () => {
     const store = fakeStore()
     await openReviewWorkspaceLayout(TARGET, {
       getState: () => store as never,
+      resolveTarget: () => LOCAL_TARGET,
       branchCompare: async () => ({ summary: SUMMARY, entries: [] })
     })
     await openReviewWorkspaceLayout(TARGET, {
       getState: () => store as never,
+      resolveTarget: () => LOCAL_TARGET,
       branchCompare: async () => {
         throw new Error('no base')
       }

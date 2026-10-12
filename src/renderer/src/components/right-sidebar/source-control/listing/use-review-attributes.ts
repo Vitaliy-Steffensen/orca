@@ -7,7 +7,7 @@ import {
 } from '../../../../../../shared/git-review-attributes'
 import { getConnectionId } from '@/lib/connection-context'
 import { getRuntimeGitReviewAttributes } from '@/runtime/runtime-git-status-client'
-import type { RuntimeGitContext } from '@/runtime/runtime-git-client-context'
+import type { RuntimeClientTarget } from '../../../../../../shared/runtime-client-target'
 
 const NO_ATTRIBUTES: GitPathReviewAttributes = Object.freeze({})
 
@@ -19,14 +19,14 @@ function isGitAttributesPath(path: string): boolean {
 export function useSourceControlReviewAttributes({
   activeWorktreeId,
   worktreePath,
-  activeRepoSettings,
+  activeRepoTarget,
   isFolder,
   entries,
   branchEntries
 }: {
   activeWorktreeId: string | null
   worktreePath: string | null
-  activeRepoSettings: RuntimeGitContext['settings']
+  activeRepoTarget: RuntimeClientTarget | null
   isFolder: boolean
   entries: readonly GitStatusEntry[]
   branchEntries: readonly GitBranchChangeEntry[]
@@ -45,20 +45,20 @@ export function useSourceControlReviewAttributes({
   // Why: editing .gitattributes changes no path, so only then does every status refresh re-read the rules.
   const gitAttributesRefreshToken = paths.some(isGitAttributesPath) ? entries : null
   const scope = `${activeWorktreeId ?? ''}\0${worktreePath ?? ''}`
-  const enabled = Boolean(worktreePath) && !isFolder && paths.length > 0
+  const enabled = Boolean(worktreePath && activeRepoTarget) && !isFolder && paths.length > 0
   const [store, setStore] = useState<{ scope: string; attributes: GitPathReviewAttributes }>({
     scope,
     attributes: NO_ATTRIBUTES
   })
 
   useEffect(() => {
-    if (!enabled || !worktreePath) {
+    if (!enabled || !worktreePath || !activeRepoTarget) {
       return
     }
     let cancelled = false
     const connectionId = getConnectionId(activeWorktreeId ?? null) ?? undefined
     getRuntimeGitReviewAttributes(
-      { settings: activeRepoSettings, worktreeId: activeWorktreeId, worktreePath, connectionId },
+      { target: activeRepoTarget, worktreeId: activeWorktreeId, worktreePath, connectionId },
       pathsKey.split('\0')
     )
       .catch(() => NO_ATTRIBUTES)
@@ -71,7 +71,7 @@ export function useSourceControlReviewAttributes({
       cancelled = true
     }
   }, [
-    activeRepoSettings,
+    activeRepoTarget,
     activeWorktreeId,
     enabled,
     gitAttributesRefreshToken,
