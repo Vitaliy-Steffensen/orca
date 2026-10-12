@@ -14,18 +14,21 @@ describe('PR panel sections', () => {
       ['pr-attention', 'Needs attention'],
       ['pr-checks', 'Checks'],
       ['pr-pending-review', 'Pending review'],
-      ['pr-comments', 'Comments']
+      ['pr-comments', 'Comments'],
+      ['pr-resolved', 'Resolved']
     ])
     expect(orderPrPanelSections(['pr-comments', 'changes'])).toEqual([
       'pr-comments',
       'pr-attention',
       'pr-checks',
-      'pr-pending-review'
+      'pr-pending-review',
+      'pr-resolved'
     ])
     expect(moveSourceControlSection(orderPrPanelSections(undefined), 'pr-checks', null)).toEqual([
       'pr-attention',
       'pr-pending-review',
       'pr-comments',
+      'pr-resolved',
       'pr-checks'
     ])
   })

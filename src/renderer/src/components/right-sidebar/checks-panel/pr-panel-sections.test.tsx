@@ -56,7 +56,7 @@ describe('PrPanelSections', () => {
       sourceControlSectionLayout: {
         order: ['changes'],
         pr: {
-          order: ['pr-checks', 'pr-comments', 'pr-attention', 'pr-pending-review'],
+          order: ['pr-checks', 'pr-comments', 'pr-attention', 'pr-pending-review', 'pr-resolved'],
           hidden: ['pr-attention']
         }
       }

@@ -16,7 +16,8 @@ export const PR_PANEL_SECTIONS = [
   { id: 'pr-checks', labelKey: 'prPanelSections.checks', label: 'Checks' },
   // Your review comments not yet submitted.
   { id: 'pr-pending-review', labelKey: 'prPanelSections.pendingReview', label: 'Pending review' },
-  { id: 'pr-comments', labelKey: 'prPanelSections.comments', label: 'Comments' }
+  { id: 'pr-comments', labelKey: 'prPanelSections.comments', label: 'Comments' },
+  { id: 'pr-resolved', labelKey: 'prPanelSections.resolved', label: 'Resolved' }
 ] as const
 
 export type PanelSection = { id: string; labelKey: string; label: string }

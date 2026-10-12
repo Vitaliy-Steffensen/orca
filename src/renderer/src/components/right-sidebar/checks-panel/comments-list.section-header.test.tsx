@@ -42,4 +42,22 @@ describe('PRCommentsList as a PR panel section', () => {
     expect(screen.queryByText('Please update this.')).toBeNull()
     expect(screen.getByRole('button', { name: /Comments/ })).toBeTruthy()
   })
+
+  it('leaves resolved threads to their own Resolved section', () => {
+    render(
+      <TooltipProvider>
+        <PRCommentsList
+          sectionHeader
+          comments={[
+            comment,
+            { ...comment, id: 2, body: 'Done already.', threadId: 'T2', isResolved: true }
+          ]}
+          commentsLoading={false}
+          selectionContextKey="review:42"
+        />
+      </TooltipProvider>
+    )
+    expect(screen.getByText('Please update this.')).toBeTruthy()
+    expect(screen.queryByText(/Resolved ·/)).toBeNull()
+  })
 })

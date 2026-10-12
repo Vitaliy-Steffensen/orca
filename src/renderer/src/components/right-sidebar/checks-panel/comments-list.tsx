@@ -376,8 +376,9 @@ export function PRCommentsList(props: PRCommentsListProps): React.JSX.Element {
                 </>
               ) : null}
               {triageGroups.conversation.map(renderCommentGroup)}
+              {/* Fork: in the PR panel, resolved threads are a section of their own. */}
               <ResolvedCommentGroupsSection
-                groups={triageGroups.resolved}
+                groups={sectionHeader ? [] : triageGroups.resolved}
                 botAuthorOverrides={botAuthorOverrides}
                 replyingCommentId={replyingCommentId}
                 now={now}

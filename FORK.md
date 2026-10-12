@@ -1428,6 +1428,21 @@ queue the inline cards and the Comments list write.
 | `status-bar/StatusBarSurface.tsx` | The segment, first among the attention segments. |
 | `src/renderer/src/i18n/locales/en.json` | `queuedComments.*`. |
 
+### 40. Resolved comments as their own PR panel section
+
+Resolved threads leave the Comments section for a Resolved section (`pr-resolved` in
+`PR_PANEL_SECTIONS`) under the shared section header, so it collapses, drags and hides like the
+others (§37). It opens closed, like the accordion it replaces, and lists every resolved thread
+whatever the Comments audience filter (`checks-panel/resolved-comments-section.tsx`). Outside the
+PR panel, `PRCommentsList` keeps the accordion.
+
+| File | What is ours |
+| --- | --- |
+| `checks-panel/comment-sections.tsx` | The Comments and Resolved sections, built for `active-content.tsx`. |
+| `checks-panel/comments-list.tsx` | No resolved accordion in section mode. |
+| `src/shared/source-control-sections.ts` | `pr-resolved`. |
+| `src/renderer/src/i18n/locales/en.json` | `prPanelSections.resolved`. |
+
 ## Verify
 
 Verify runs on GitHub, not locally: `fork-verify.yml` runs it on every pull request against `main`,

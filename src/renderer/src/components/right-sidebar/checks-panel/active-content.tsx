@@ -16,7 +16,7 @@ import { getBrokenChecks } from '../../pr-checks-fix-prompt'
 import { PRTriageStrip } from './triage-strip'
 import { ConflictingFilesSection, MergeConflictNotice } from './conflict-summary'
 import { ChecksList } from './checks-list'
-import { PRCommentsList } from './comments-list'
+import { buildCommentSections } from './comment-sections'
 import { PrAttentionSection } from './attention-section'
 import { PendingReviewPanelSection } from '@/components/pending-review/PendingReviewPanelSection'
 import { usePendingReviewQueue } from '@/components/pending-review/use-pending-review-queue'
@@ -47,31 +47,24 @@ export function ChecksPanelActiveContent({
   const {
     activeConnectionId,
     activeConflictReview,
-    activeGitLabReview,
     activeReview,
     activeSourceControlLaunchPlatform,
     activeWorktree,
     activeWorktreeId,
     agentComposerState,
     aiActionDisabledReason,
-    canTargetPRComments,
     checks,
     checksLoading,
     claimedCommentResolutionRef,
     commentResolutionLaunchAcceptedRef,
     comments,
-    commentsDisabledReason,
     commentsLoading,
-    commentsSelectionClearRequest,
     conflictDetailsRefreshing,
     consumeClaimedCommentResolutionAfterDeliveryRef,
     detachedHeadDisplay,
     editingTitle,
     getGitLabProjectRef,
-    handleAddPRComment,
     handleCancelEdit,
-    handleDeleteComment,
-    handleEditComment,
     handleFixChecksWithAI,
     handleLaunchAborted,
     handleLaunchAccepted,
@@ -80,12 +73,9 @@ export function ChecksPanelActiveContent({
     handleOpenPR,
     handleOpenStackPR,
     handleRefresh,
-    handleReplyToComment,
-    handleResolve,
     handleResolveCommentsWithAI,
     handleResolveConflictsWithAI,
     handleSaveTitle,
-    handleSetReaction,
     handleStartEdit,
     handleTitleKeyDown,
     handleUnlinkReview,
@@ -98,7 +88,6 @@ export function ChecksPanelActiveContent({
     prRefreshState,
     refreshHostedReviewAfterMutation,
     repo,
-    resolveCommentsWithAIDisabledReason,
     saveLaunchActionDefault,
     setAgentComposerState,
     setChecksPanelContentRef,
@@ -185,32 +174,7 @@ export function ChecksPanelActiveContent({
   if (pendingReviewCount > 0) {
     prSections.push({ id: 'pr-pending-review', node: <PendingReviewPanelSection sectionHeader /> })
   }
-  prSections.push({
-    id: 'pr-comments',
-    node: (
-      <PRCommentsList
-        sectionHeader
-        comments={comments}
-        commentsLoading={commentsLoading}
-        reviewKind={reviewShortLabel}
-        commentsDisabled={!canTargetPRComments}
-        commentsDisabledReason={commentsDisabledReason}
-        selectionContextKey={stateRequestKey}
-        selectionClearRequest={commentsSelectionClearRequest}
-        resolveCommentsWithAIDisabled={Boolean(resolveCommentsWithAIDisabledReason)}
-        resolveCommentsWithAIDisabledReason={resolveCommentsWithAIDisabledReason}
-        onAddComment={pr ? handleAddPRComment : undefined}
-        onResolveSelectedCommentsWithAI={
-          sourceControlAiActionsVisible ? handleResolveCommentsWithAI : undefined
-        }
-        onReply={pr ? handleReplyToComment : undefined}
-        onResolve={pr || activeGitLabReview ? handleResolve : undefined}
-        onEditComment={pr ? handleEditComment : undefined}
-        onDeleteComment={pr ? handleDeleteComment : undefined}
-        onSetReaction={canTargetPRComments ? handleSetReaction : undefined}
-      />
-    )
-  })
+  prSections.push(...buildCommentSections(model, reviewShortLabel))
   return (
     <div ref={setChecksPanelContentRef} className="flex-1 overflow-auto scrollbar-sleek">
       {/* Why: surface a background-refresh failure over stale cached PR data so a GitHub outage doesn't look like a normal panel. GitHub-only. */}

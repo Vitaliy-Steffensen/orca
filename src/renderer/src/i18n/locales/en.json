@@ -19565,7 +19565,8 @@
     "attention": "Needs attention",
     "checks": "Checks",
     "pendingReview": "Pending review",
-    "comments": "Comments"
+    "comments": "Comments",
+    "resolved": "Resolved"
   },
   "languageServers": {
     "title": "Language Servers",

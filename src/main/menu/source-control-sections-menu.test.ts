@@ -27,7 +27,8 @@ describe('buildPanelSectionsSubmenus', () => {
       ['Needs attention', 'checkbox', true],
       ['Checks', 'checkbox', false],
       ['Pending review', 'checkbox', true],
-      ['Comments', 'checkbox', true]
+      ['Comments', 'checkbox', true],
+      ['Resolved', 'checkbox', true]
     ])
 
     const items = prPanel.submenu as Electron.MenuItemConstructorOptions[]
