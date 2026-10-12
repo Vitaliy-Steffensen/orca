@@ -1744,6 +1744,61 @@ sync hit exactly that (#23062 landed two commits later) and was fixed by merging
 
 ### Sync log
 
+**1.4.214 → 1.4.214** (`e72044a936..9c1d5d2fb7`, 532 upstream commits, twenty-three conflicts)
+
+- `package.json` still says 1.4.214, so the branch name repeats a sixth time.
+- Generated files — `bundled-skill-guides.ts`, `rpc-params-catalog.generated.ts`, `en.json`: took
+  upstream's and regenerated (`generate:bundled-skill-guides`, `generate:rpc-params-catalog`,
+  `sync:localization-catalog`, `sync:localization-runtime-catalog`). This needed `pnpm install`.
+- **Upstream deleted the SSH relay** (#27215, #27644): `src/relay/` is now `src/wsl-guest/` with no
+  git handlers, and `ssh-git-working-tree-provider.ts` / `ssh-git-dispatch` are gone. Took every
+  deletion, so the fork's relay `git.checkReviewAttributes` handler (`git-handler-check-attr.ts`,
+  its registration and read-operation), the SSH provider's `checkReviewAttributes`, and the two
+  relay branch-line-total tests went with it. The fork's `git:checkReviewAttributes` IPC now uses
+  upstream's `requireReachableGitRoute`, as `git:checkIgnored` does; remote hosts answer through the
+  runtime RPC (`git.checkReviewAttributes`), which is unchanged.
+- `runtime-git-client.ts` — upstream removed the barrel (#27977). Took the deletion; the fork's
+  importers now import from `runtime-git-diff-client`, `runtime-git-status-client` and
+  `runtime-git-client-context` directly.
+- `runtime-git-status-commands.ts` — upstream moved the provider types to
+  `providers/git-provider-contract.ts`; took it beside the fork's `GitPathReviewAttributes` import.
+- `open-file.ts` — upstream moved `DiffSource` and the snapshot types to
+  `src/shared/editor-tab-view-types.ts`. Took the move and re-added the fork's `'branch-worktree'`
+  to `DiffSource` there.
+- `useEditorPanelDiffContentLoader.ts` — upstream's git contexts now carry `target: fileTarget`
+  instead of `settings`. Kept the fork's `loadBranchWorktreeDiff` branch on that context, plus
+  upstream's SAFETY comment and split imports.
+- `active-content.tsx`, `use-checks-panel-controller-state.tsx` — upstream added `checksError` and
+  `commentsError` (a failed read says so instead of "No checks"/"No comments"). Kept the fork's
+  `PrPanelSections` layout and passed `checksError` to the Checks section and `commentsError`
+  through `comment-sections.tsx`. The fork's comment list stays in the shared PR comments store;
+  the error state and its clearing `setComments` wrapper now live in
+  `use-checks-panel-comments-state.ts` (the controller sat at its line cap).
+- `NativeChatExperimentalSetting.tsx` — upstream moved resume, queue-follow-ups and shell
+  environment into `ChatBehaviorSetting`. Took upstream's file and kept only the fork's
+  `ClaudeWebDefaultViewSetting` under the Chat UI switch.
+- `CommentMarkdown.tsx` — upstream wraps each block in `CommentMarkdownBlockLineContext`. Took it
+  inside the fork's `MediaGalleryProvider`.
+- `SourceControl.preview-open.test.tsx` — upstream now stamps the repo's owner and focuses
+  `runtime-other`; kept the fork's `sourceControlGrouping: 'status'` beside it.
+- Import-only conflicts, kept both sides: `cli/specs/index.ts` (fork `notes` beside upstream's
+  `reference`), `rich-markdown-extensions.ts` (`RuntimeFileOperationArgs` now from
+  `runtime-file-client-types`), `SortableTabContextMenu.tsx` (`CopyTabIdMenuItem`),
+  `TerminalPaneSurface.tsx` (`TerminalPaneSleepingPortals`), `active-agent-note-send.ts`
+  (`noteClaudePromptDelivered` beside upstream's owner-environment target).
+- Fork fix commit, for upstream API removals that merged without conflict: `@/lib/repo-runtime-owner`
+  lost `getRepoOwnerRoutedSettings` and `worktree-runtime-owner` lost
+  `getSettingsForWorktreeRuntimeOwner` (#27430), and `RuntimeGitContext` / `RuntimeFileOperationArgs`
+  now take the owner's `target`. `use-commit-resolves.ts`, `use-review-attributes.ts`,
+  `open-review-workspace-layout.ts` (now takes a `resolveTarget` dep), `agent-notes.ts`,
+  `use-quick-open-text-search.ts` (`searchRuntimeFiles` is now in `runtime-file-search-client`) and
+  `review-comment-create-action.ts` (`getGitHubSourceTarget`) moved over. `src/shared/child-process/`
+  is now the `@orca/process-host` package (`spawnProcess`, `.../process-tree-termination`), which
+  the language-server process and the self-installer import. The rule in AGENTS.md still names
+  the old path.
+- Upstream added four pull-request workflows (`preflight-benchmark.yml` and three
+  `zcode-*-contract.yml`); the disable script turns them off once they are on GitHub.
+
 **1.4.214 → 1.4.214** (`cc6006779f..e72044a936`, 387 upstream commits, twenty-three conflicts)
 
 - `package.json` still says 1.4.214, so the branch name repeats a fifth time.
