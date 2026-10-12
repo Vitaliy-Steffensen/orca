@@ -11,6 +11,7 @@ import {
   PASTE_END,
   type NoteSendAppState
 } from './active-agent-note-send-test-harness'
+import { takeDeliveredClaudePrompt } from '@/components/terminal-pane/claude-web-prompt-sync'
 
 const testState = vi.hoisted(() => ({
   appState: null as unknown as NoteSendAppState,
@@ -131,6 +132,8 @@ describe('active agent note send', () => {
       },
       { timeoutMs: 15000 }
     )
+    // The tab's Claude web view checks a sent prompt reached its page.
+    expect(takeDeliveredClaudePrompt('tab-9')).toMatchObject({ prompt: 'notes' })
   })
 
   it('refuses explicit targets when an older runtime cannot verify agent status', async () => {

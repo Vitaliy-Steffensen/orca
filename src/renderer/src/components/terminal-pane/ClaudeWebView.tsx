@@ -13,6 +13,7 @@ import {
   enrolClaudeWebviewInDragPassthrough,
   focusClaudeWebview
 } from './claude-web-drag-passthrough'
+import { watchClaudeWebPromptSync } from './claude-web-prompt-sync'
 
 type PageState = 'loading' | 'ready' | 'failed'
 
@@ -21,7 +22,8 @@ function attachClaudeWebview(
   partition: string,
   url: string,
   onState: (state: PageState) => void,
-  takePromptFocusRequest: () => boolean
+  takePromptFocusRequest: () => boolean,
+  tabId: string
 ): () => void {
   // oxlint-disable-next-line typescript/consistent-type-assertions -- SAFETY: Electron's renderer creates a WebviewTag for the 'webview' tag, which DOM typings do not know.
   const webview = document.createElement('webview') as Electron.WebviewTag
@@ -33,6 +35,11 @@ function attachClaudeWebview(
     translate('auto.components.terminal.pane.ClaudeWebView.pageLabel', 'Claude Code on the web')
   )
   webview.className = 'flex h-full w-full border-none'
+  const promptSync = watchClaudeWebPromptSync({
+    tabId,
+    readPageText: () => webview.executeJavaScript('document.body.innerText') as Promise<string>,
+    reload: () => webview.reload()
+  })
   let loadedOnce = false
   // Why: claude.ai redirects and re-navigates after its first load; covering it each time flickers.
   const onStart = (): void => {
@@ -43,6 +50,7 @@ function attachClaudeWebview(
   const onStop = (): void => {
     loadedOnce = true
     onState('ready')
+    promptSync.pageReady()
   }
   const onFail = (event: Electron.DidFailLoadEvent): void => {
     // -3 is ERR_ABORTED: a navigation superseded by another, not a failure.
@@ -79,6 +87,7 @@ function attachClaudeWebview(
   container.appendChild(webview)
   webview.setAttribute('src', url)
   return () => {
+    promptSync.dispose()
     unenrolDragPassthrough()
     webview.removeEventListener('did-start-loading', onStart)
     webview.removeEventListener('did-stop-loading', onStop)
@@ -152,7 +161,8 @@ export function ClaudeWebView({
               setPageState(next)
             }
           },
-          () => claudeWebView.takePromptFocusRequest(tabId)
+          () => claudeWebView.takePromptFocusRequest(tabId),
+          tabId
         )
       })
       .catch(() => {

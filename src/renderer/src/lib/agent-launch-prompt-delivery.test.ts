@@ -25,6 +25,40 @@ import {
   deliverLaunchPromptToAgentTab,
   seedNativeChatLaunchDraftForAgentTab
 } from './agent-launch-prompt-delivery'
+import { takeDeliveredClaudePrompt } from '@/components/terminal-pane/claude-web-prompt-sync'
+
+describe('deliverLaunchPromptToAgentTab and the Claude web view', () => {
+  beforeEach(() => {
+    vi.clearAllMocks()
+    takeDeliveredClaudePrompt('web-tab')
+  })
+
+  it("notes a submitted prompt for the tab's web view to check, Claude's launch prefill included", async () => {
+    mocks.pasteDraftWhenAgentReady.mockResolvedValue(false)
+    await deliverLaunchPromptToAgentTab({
+      tabId: 'web-tab',
+      agent: 'claude',
+      content: 'Resolve the review comments',
+      submit: true,
+      forcePaste: false
+    })
+    expect(takeDeliveredClaudePrompt('web-tab')).toMatchObject({
+      prompt: 'Resolve the review comments'
+    })
+  })
+
+  it('notes nothing for an unsubmitted draft', async () => {
+    mocks.pasteDraftWhenAgentReady.mockResolvedValue(true)
+    await deliverLaunchPromptToAgentTab({
+      tabId: 'web-tab',
+      agent: 'claude',
+      content: 'Half a thought',
+      submit: false,
+      forcePaste: false
+    })
+    expect(takeDeliveredClaudePrompt('web-tab')).toBeNull()
+  })
+})
 
 describe('seedNativeChatLaunchDraftForAgentTab', () => {
   beforeEach(() => {

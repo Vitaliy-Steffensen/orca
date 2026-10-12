@@ -3,6 +3,7 @@ import { pasteDraftWhenAgentReady } from '@/lib/agent-paste-draft'
 import { canMirrorLaunchDraftToNativeChat } from '@/lib/native-chat-launch-draft-mirrorability'
 import { isNativeChatSupportedAgent } from '@/lib/native-chat-supported-agent'
 import { useAppStore } from '@/store'
+import { noteClaudePromptDelivered } from '@/components/terminal-pane/claude-web-prompt-sync'
 import type { TuiAgent } from '../../../shared/tui-agent'
 
 /** Seed the chat-composer copy of launch context that reaches only the TUI
@@ -89,7 +90,11 @@ export function deliverLaunchPromptToAgentTab(args: {
       if (seeded && !delivered && !deliversViaNativePrefill) {
         useAppStore.getState().markNativeChatLaunchPromptFailed(tabId)
       }
-      return delivered || deliversViaNativePrefill
+      const reached = delivered || deliversViaNativePrefill
+      if (reached && submit) {
+        noteClaudePromptDelivered(tabId, content)
+      }
+      return reached
     },
     (error) => {
       if (seeded && !deliversViaNativePrefill) {

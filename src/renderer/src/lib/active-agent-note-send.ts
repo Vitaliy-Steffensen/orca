@@ -1,5 +1,6 @@
 import type { RuntimeTerminalWait } from '../../../shared/runtime-types'
 import { useAppStore } from '@/store'
+import { noteClaudePromptDelivered } from '@/components/terminal-pane/claude-web-prompt-sync'
 import { callRuntimeRpc, getActiveRuntimeTarget } from '@/runtime/runtime-rpc-client'
 import { getSettingsForWorktreeRuntimeOwner } from '@/lib/worktree-runtime-owner'
 import { findActiveRuntimeTerminal, getActiveTerminalNoteTarget } from './active-agent-note-target'
@@ -89,14 +90,15 @@ async function sendNotesToActiveAgentSessionInternal({
   if (explicitNoteTarget) {
     const paneAgentType =
       state.agentStatusByPaneKey[`${noteTarget.tabId}:${noteTarget.leafId}`]?.agentType
-    return reportNoteSendFailure(
+    return reportSendResult(
       await sendPromptToExplicitAgentTarget(
         runtimeTarget,
         terminal.handle,
         trimmedPrompt,
         paneAgentType === 'claude'
       ),
-      noteTarget
+      noteTarget,
+      trimmedPrompt
     )
   }
   const effectiveTimeoutMs = timeoutMs ?? ACTIVE_AGENT_SEND_TIMEOUT_MS
@@ -166,18 +168,31 @@ async function sendNotesToActiveAgentSessionInternal({
   }
 
   if (finalAgentStatus.supportsGuardedSend) {
-    return reportNoteSendFailure(
+    return reportSendResult(
       await sendPromptWithGuardedPasteAndEnter(runtimeTarget, terminal.handle, trimmedPrompt, {
         allowLegacyFallback: false
       }),
-      noteTarget
+      noteTarget,
+      trimmedPrompt
     )
   }
 
-  return reportNoteSendFailure(
+  return reportSendResult(
     await sendPromptWithLegacyCombinedSend(runtimeTarget, terminal.handle, trimmedPrompt),
-    noteTarget
+    noteTarget,
+    trimmedPrompt
   )
+}
+
+function reportSendResult(
+  result: ActiveAgentNotesSendResult,
+  noteTarget: ActiveTerminalNoteTarget,
+  prompt: string
+): ActiveAgentNotesSendResult {
+  if (result.status === 'sent') {
+    noteClaudePromptDelivered(noteTarget.tabId, prompt)
+  }
+  return reportNoteSendFailure(result, noteTarget)
 }
 
 async function sendPromptToExplicitAgentTarget(
