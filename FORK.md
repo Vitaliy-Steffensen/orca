@@ -1583,6 +1583,19 @@ once if the prompt's opening line is not there, or if the page cannot be read.
 | `src/renderer/src/lib/agent-launch-prompt-delivery.ts` | Noting a submitted launch prompt. |
 | `src/renderer/src/lib/active-agent-note-send.ts` | Noting a prompt sent to a running agent. |
 
+### 49. Agent notes read as markdown
+
+Agent notes (`orca notes add` / `reply`) render through `CommentMarkdown`, like PR comments, so code
+spans, paragraphs and lists show as such; the user's own notes stay the text they typed. The CLI
+turns a literal `\n` in `--body` into a line break (agents pass paragraphs that way inside one quoted
+argument; `\\n` stays literal), and its help tells agents to lead with the point and use short
+paragraphs or a list.
+
+| File | What is ours |
+| --- | --- |
+| `src/renderer/src/components/diff-comments/DiffCommentCard.tsx`, `src/renderer/src/assets/main.css` | Markdown for agent notes. |
+| `src/cli/handlers/notes.ts`, `src/cli/specs/notes.ts` | `\n` in the body; the formatting guidance. |
+
 ## Verify
 
 Verify runs on GitHub, not locally: `fork-verify.yml` runs it on every pull request against `main`,
