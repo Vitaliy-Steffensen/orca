@@ -1655,6 +1655,20 @@ The sent notes are marked sent once delivered. A failed send keeps them pending 
 | `diff-comments/diff-comment-zone-card.tsx` | The group a new agent opens in. |
 | `src/renderer/src/i18n/locales/en.json` | `notesFollowUp.*`. |
 
+### 54. A shortcut to the review summary
+
+⇧⌥⌘R (`sourceControl.focusReviewSummary`, macOS only, rebindable) focuses the Review section's
+summary box while the Source Control panel is showing one, opening the section first when it is
+collapsed. It is a request the section takes up (`pending-review/review-summary-focus.ts`), since a
+collapsed section has no editor yet; elsewhere the chord is left to whatever else is bound to it.
+
+| File | What is ours |
+| --- | --- |
+| `src/shared/keybindings/definitions-core-4.ts`, `types.ts` | The binding. |
+| `src/renderer/src/components/pending-review/review-summary-focus.ts` | The request and focusing the editor once it mounts. |
+| `app-shell/source-control-shortcuts.ts` | Taking the chord only with the panel showing a Review section. |
+| `source-control/pending-review/pending-review-shelf.tsx` | Expanding and focusing on request. |
+
 ## Verify
 
 Verify runs on GitHub, not locally: `fork-verify.yml` runs it on every pull request against `main`,

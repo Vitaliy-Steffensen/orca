@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useRef, useState } from 'react'
 import { Check, MessageCircle, ScanEye, X } from 'lucide-react'
 import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
@@ -14,6 +14,7 @@ import { SectionHeader } from '../listing/section-header'
 import { PendingReviewReviewers } from './pending-review-reviewers'
 import { useReviewDiffBase } from '@/components/pending-review/use-review-diff-base'
 import { usePendingReviewSummary } from '@/components/pending-review/pending-review-summary-store'
+import { useReviewSummaryFocus } from '@/components/pending-review/review-summary-focus'
 import { ReviewMarkdownComposer } from '@/components/github/ReviewMarkdownComposer'
 import { PendingReviewDiffBaseSelect } from './pending-review-diff-base-select'
 
@@ -67,6 +68,13 @@ export function SourceControlPendingReviewShelf({
   const [body, setBody] = usePendingReviewSummary(worktreeId)
   const [uploading, setUploading] = useState(false)
   const [submitting, setSubmitting] = useState<ReviewVerdict | null>(null)
+  const composerRef = useRef<HTMLDivElement | null>(null)
+  useReviewSummaryFocus({
+    worktreeId: submitter.prNumber === null ? null : worktreeId,
+    collapsed,
+    onExpand: onToggle,
+    composerRef
+  })
 
   const submit = async (verdict: ReviewVerdict): Promise<void> => {
     if (uploading) {
@@ -188,7 +196,10 @@ export function SourceControlPendingReviewShelf({
         </div>
       ) : null}
       <div className="px-3 pt-2 pb-2">
-        <div className="relative rounded-md border border-input bg-background shadow-xs dark:bg-input/30">
+        <div
+          ref={composerRef}
+          className="relative rounded-md border border-input bg-background shadow-xs dark:bg-input/30"
+        >
           <ReviewMarkdownComposer
             value={body}
             onChange={(next) => setBody(next)}

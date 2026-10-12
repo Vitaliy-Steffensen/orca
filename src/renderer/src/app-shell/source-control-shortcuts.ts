@@ -4,6 +4,10 @@ import { openLatestAgentTurn } from '@/lib/agent-turn-open'
 import { toggleUncommittedOnly } from '@/lib/changes-filter'
 import { showInChanges } from '@/lib/show-in-changes'
 import { sendQueuedPRCommentsForActiveWorktree } from '@/components/right-sidebar/queued-pr-comments-send'
+import {
+  hasReviewSummary,
+  requestReviewSummaryFocus
+} from '@/components/pending-review/review-summary-focus'
 import { useAppStore } from '../store'
 import type { KeybindingActionId } from '../../../shared/keybindings/types'
 
@@ -12,6 +16,21 @@ type SourceControlShortcutId =
   | 'sourceControl.openLatestAgentTurn'
   | 'sourceControl.toggleUncommittedOnly'
   | 'sourceControl.sendQueuedComments'
+  | 'sourceControl.focusReviewSummary'
+
+function focusReviewSummaryInOpenPanel(): boolean {
+  const { activeWorktreeId, rightSidebarOpen, rightSidebarTab } = useAppStore.getState()
+  if (
+    !activeWorktreeId ||
+    !rightSidebarOpen ||
+    rightSidebarTab !== 'source-control' ||
+    !hasReviewSummary(activeWorktreeId)
+  ) {
+    return false
+  }
+  requestReviewSummaryFocus(activeWorktreeId)
+  return true
+}
 
 function startOpenLatestAgentTurn(): boolean {
   const store = useAppStore.getState()
@@ -64,6 +83,9 @@ export function takeSourceControlShortcut(
     sendQueuedPRCommentsForActiveWorktree()
   ) {
     return 'sourceControl.sendQueuedComments'
+  }
+  if (matchShortcut('sourceControl.focusReviewSummary') && focusReviewSummaryInOpenPanel()) {
+    return 'sourceControl.focusReviewSummary'
   }
   return null
 }
