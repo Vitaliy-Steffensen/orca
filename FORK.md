@@ -1409,6 +1409,25 @@ saved across restarts.
 | `source-control/listing/all-changes-section.tsx`, `panel/panel-content.tsx` | The badge; the section stays up while the filter empties it. |
 | `src/renderer/src/i18n/locales/en.json` | `allChanges.uncommittedOnly`, `allChanges.showAllChanges`. |
 
+### 39. Send queued comments from anywhere (⌥⌘S)
+
+While PR comments are queued for an agent, the status bar shows "N queued"
+(`status-bar/QueuedCommentsStatusSegment.tsx`), whichever panel is open. Clicking it, or
+`sourceControl.sendQueuedComments` (⌥⌘S, macOS only), opens the PR panel and leaves it a send
+request (`right-sidebar/queued-pr-comments-send.ts`). The panel runs its usual send once its
+comments have loaded (`checks-panel/use-pr-comment-queue-panel.ts`), because the send dialog and
+its acknowledgement live there and the panel is unmounted on other tabs. The count reads the same
+queue the inline cards and the Comments list write.
+
+| File | What is ours |
+| --- | --- |
+| `src/shared/keybindings/definitions-core-4.ts`, `types.ts` | The action and its default chord. |
+| `src/renderer/src/app-shell/source-control-shortcuts.ts` | Sending from the shortcut. |
+| `right-sidebar/pr-comment-queue-context.ts` | `readPRCommentQueueContextKey`, `subscribePRCommentQueue` exported. |
+| `checks-panel/active-content.tsx` | The queue context publish moved into `usePRCommentQueuePanel`. |
+| `status-bar/StatusBarSurface.tsx` | The segment, first among the attention segments. |
+| `src/renderer/src/i18n/locales/en.json` | `queuedComments.*`. |
+
 ## Verify
 
 Verify runs on GitHub, not locally: `fork-verify.yml` runs it on every pull request against `main`,

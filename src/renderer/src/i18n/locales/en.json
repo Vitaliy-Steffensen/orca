@@ -19552,6 +19552,11 @@
     "uncommittedOnly": "Uncommitted",
     "showAllChanges": "Show all changes"
   },
+  "queuedComments": {
+    "none": "No comments are queued.",
+    "send": "Send {{count}} queued comments",
+    "badge": "{{count}} queued"
+  },
   "sourceControlSections": {
     "hide": "Hide section",
     "review": "Review"

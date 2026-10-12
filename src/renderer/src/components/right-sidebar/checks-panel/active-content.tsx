@@ -1,5 +1,5 @@
 import { ImeInput } from '@/lib/ime-text-field'
-import React, { useEffect } from 'react'
+import React from 'react'
 import { Check, LoaderCircle, Pencil, X } from 'lucide-react'
 import { toast } from 'sonner'
 import { DetachedHeadBadge } from '@/components/DetachedHeadBadge'
@@ -21,7 +21,7 @@ import { PrAttentionSection } from './attention-section'
 import { PendingReviewPanelSection } from '@/components/pending-review/PendingReviewPanelSection'
 import { usePendingReviewQueue } from '@/components/pending-review/use-pending-review-queue'
 import { PrPanelSections, type PrPanelSection } from './pr-panel-sections'
-import { publishPRCommentQueueContext } from '../pr-comment-queue-context'
+import { usePRCommentQueuePanel } from './use-pr-comment-queue-panel'
 import { translate } from '@/i18n/i18n'
 import type { ChecksPanelReview } from '../checks-panel-review'
 import type { ChecksPanelHostedReviewModifierDestination } from '../checks-panel-hosted-review-click-routing'
@@ -110,11 +110,13 @@ export function ChecksPanelActiveContent({
     titleSaving,
     setTitleDraft
   } = model
-  useEffect(() => {
-    if (activeWorktreeId && stateRequestKey) {
-      publishPRCommentQueueContext(activeWorktreeId, stateRequestKey)
-    }
-  }, [activeWorktreeId, stateRequestKey])
+  usePRCommentQueuePanel({
+    worktreeId: activeWorktreeId,
+    contextKey: stateRequestKey,
+    comments,
+    commentsLoading,
+    onSend: sourceControlAiActionsVisible ? handleResolveCommentsWithAI : undefined
+  })
   const pendingReviewCount = usePendingReviewQueue(activeWorktreeId).comments.length
   if (!activeReview) {
     return null

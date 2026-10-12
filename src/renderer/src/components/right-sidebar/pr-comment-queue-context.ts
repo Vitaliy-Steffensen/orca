@@ -21,7 +21,11 @@ export function publishPRCommentQueueContext(worktreeId: string, contextKey: str
   }
 }
 
-function subscribe(listener: () => void): () => void {
+export function readPRCommentQueueContextKey(worktreeId: string): string | undefined {
+  return contextKeyByWorktree.get(worktreeId)
+}
+
+export function subscribePRCommentQueue(listener: () => void): () => void {
   contextListeners.add(listener)
   const unsubscribeSelection = subscribePRCommentsListSelection(listener)
   return () => {
@@ -40,7 +44,7 @@ export function usePRCommentQueueToggle(
     const queued = contextKey ? readPRCommentsListSelectedGroupIds(contextKey).has(groupId) : false
     return `${contextKey}\u0000${queued ? '1' : '0'}`
   }
-  const snapshot = useSyncExternalStore(subscribe, read, read)
+  const snapshot = useSyncExternalStore(subscribePRCommentQueue, read, read)
   const [contextKey, flag] = snapshot.split('\u0000')
   const queued = flag === '1'
   const toggle = useCallback(() => {
