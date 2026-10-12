@@ -15,6 +15,7 @@ import {
   type SourceControlRowOpenEvent
 } from './split-open'
 import { buildAllChangesOpenRowKeys } from './all-changes'
+import { openChangesFilterEntry } from '@/store/slices/editor/actions/open-changes-filter-entry'
 
 export function useSourceControlRowOpening({
   isMac,
@@ -177,6 +178,22 @@ export function useSourceControlRowOpening({
   const openAllChangesEntry = useCallback(
     (entry: GitBranchChangeEntry, event?: SourceControlRowOpenEvent) => {
       if (!activeWorktreeId || !worktreePath) {
+        return
+      }
+      const filterTargetGroupId = resolveSplitTargetGroupId(event)
+      if (
+        openChangesFilterEntry(
+          useAppStore.getState(),
+          activeWorktreeId,
+          worktreePath,
+          entry.path,
+          detectLanguage(entry.path),
+          {
+            targetGroupId: filterTargetGroupId,
+            preview: shouldOpenSourceControlRowAsPreview(event, filterTargetGroupId)
+          }
+        )
+      ) {
         return
       }
       const local = statusEntries.filter((candidate) => candidate.path === entry.path)

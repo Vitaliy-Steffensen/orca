@@ -26,7 +26,6 @@ function renderSection(overrides: Partial<Parameters<typeof SourceControlAllChan
     revealInExplorer: vi.fn(),
     activeConnectionId: null,
     onOpen: vi.fn(),
-    onViewAll: vi.fn(),
     diffCommentCountByPath: new Map(),
     reviewThreadCountByPath: new Map(),
     pendingReviewCountByPath: new Map(),
@@ -59,27 +58,25 @@ describe('SourceControlAllChangesSection', () => {
     expect(screen.getByText('committed.ts').closest('[data-current="true"]')).toBeNull()
   })
 
-  it('keeps extra header actions, like the file type filter, beside View all', () => {
+  it('keeps extra header actions, like the file type filter', () => {
     renderSection({ headerActions: <button type="button">Filter</button> })
     expect(screen.getByText('Filter')).toBeTruthy()
   })
 
-  it('shows a removable Uncommitted badge while only uncommitted files are listed', () => {
-    const props = renderSection({ uncommittedOnly: true, onClearUncommittedOnly: vi.fn() })
-    expect(screen.getByText('Uncommitted')).toBeTruthy()
+  it('names the active filter in a removable badge, like Latest turn', () => {
+    const props = renderSection({
+      filterBadge: { label: 'Latest turn', title: 'Do the thing' },
+      onClearFilter: vi.fn()
+    })
+    expect(screen.getByText('Latest turn')).toBeTruthy()
     fireEvent.click(screen.getByRole('button', { name: 'Show all changes' }))
-    expect(props.onClearUncommittedOnly).toHaveBeenCalled()
+    expect(props.onClearFilter).toHaveBeenCalled()
     expect(props.onToggle).not.toHaveBeenCalled()
   })
 
-  it('shows no badge while every change is listed', () => {
+  it('shows no badge, and no View all, while every change is listed', () => {
     renderSection({})
-    expect(screen.queryByText('Uncommitted')).toBeNull()
-  })
-
-  it('opens every file together from View all', () => {
-    const props = renderSection({})
-    fireEvent.click(screen.getByText('View all'))
-    expect(props.onViewAll).toHaveBeenCalled()
+    expect(screen.queryByRole('button', { name: 'Show all changes' })).toBeNull()
+    expect(screen.queryByText('View all')).toBeNull()
   })
 })

@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest'
-import { isUncommittedOnly } from '@/components/right-sidebar/source-control/listing/uncommitted-only-store'
+import { isUncommittedOnly } from '@/lib/changes-filter'
 import { publishPRCommentQueueContext } from '@/components/right-sidebar/pr-comment-queue-context'
 import { setPRCommentsListGroupQueued } from '@/components/right-sidebar/pr-comments-list-selection'
 import { consumeSendQueuedPRCommentsRequest } from '@/components/right-sidebar/queued-pr-comments-send'

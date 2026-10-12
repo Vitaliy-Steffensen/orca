@@ -1,3 +1,5 @@
+import { useEffect } from 'react'
+import { syncLatestAgentTurn } from '@/lib/changes-filter'
 import { BulkActionBar } from '../commit/bulk-action-bar'
 import { SourceControlHeaderToolbar } from './header-toolbar'
 import { SourceControlPendingReviewShelf } from '../pending-review/pending-review-shelf'
@@ -72,6 +74,13 @@ export function SourceControlPanelReady(props: SourceControlPanelReadyProps) {
 
   const agentNoteCount = useWorktreeAgentNotes(activeWorktreeId).length
   const agentTurns = useAgentTurns(worktreePath ?? '')
+  const latestTurnOid = agentTurns[0]?.oid ?? null
+  useEffect(() => {
+    // Why only with a turn in hand: the list is empty while it loads, which says nothing about latest.
+    if (activeWorktreeId && latestTurnOid) {
+      syncLatestAgentTurn(activeWorktreeId, latestTurnOid)
+    }
+  }, [activeWorktreeId, latestTurnOid])
 
   // Fork: your own notes live in the diff viewer only; agent notes keep a section here.
   const shelves: ResizableShelf[] = []

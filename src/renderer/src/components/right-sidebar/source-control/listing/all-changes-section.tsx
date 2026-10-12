@@ -1,6 +1,5 @@
 import React from 'react'
 import { X } from 'lucide-react'
-import { Button } from '@/components/ui/button'
 import { translate } from '@/i18n/i18n'
 import type { GitBranchChangeEntry } from '../../../../../../shared/git-diff-compare-types'
 import type { SourceControlViewMode } from '../../../../../../shared/ui-chrome-types'
@@ -36,10 +35,9 @@ export function SourceControlAllChangesSection({
   revealInExplorer,
   activeConnectionId,
   onOpen,
-  onViewAll,
   headerActions,
-  uncommittedOnly = false,
-  onClearUncommittedOnly,
+  filterBadge,
+  onClearFilter,
   diffCommentCountByPath,
   reviewThreadCountByPath,
   pendingReviewCountByPath,
@@ -61,10 +59,10 @@ export function SourceControlAllChangesSection({
   revealInExplorer: (worktreeId: string, absolutePath: string) => void
   activeConnectionId: string | null
   onOpen: (entry: GitBranchChangeEntry, event?: SourceControlRowOpenEvent) => void
-  onViewAll: () => void
   headerActions?: React.ReactNode
-  uncommittedOnly?: boolean
-  onClearUncommittedOnly?: () => void
+  /** Fork: the active Changes filter (Uncommitted, a turn, a commit), removable from the header. */
+  filterBadge?: { label: string; title?: string } | null
+  onClearFilter?: () => void
   diffCommentCountByPath: Map<string, number>
   reviewThreadCountByPath: Map<string, number>
   pendingReviewCountByPath: Map<string, number>
@@ -121,16 +119,19 @@ export function SourceControlAllChangesSection({
         onToggle={onToggle}
         actions={
           <>
-            {uncommittedOnly && (
-              <span className="flex h-5 items-center gap-0.5 rounded-full border border-border bg-muted pl-2 pr-0.5 text-[11px] text-foreground">
-                {translate('allChanges.uncommittedOnly', 'Uncommitted')}
+            {filterBadge && (
+              <span
+                title={filterBadge.title}
+                className="flex h-5 min-w-0 items-center gap-0.5 rounded-full border border-border bg-muted pl-2 pr-0.5 text-[11px] text-foreground"
+              >
+                <span className="truncate">{filterBadge.label}</span>
                 <button
                   type="button"
                   aria-label={translate('allChanges.showAllChanges', 'Show all changes')}
                   className="flex size-4 items-center justify-center rounded-full text-muted-foreground hover:bg-accent hover:text-foreground"
                   onClick={(event) => {
                     event.stopPropagation()
-                    onClearUncommittedOnly?.()
+                    onClearFilter?.()
                   }}
                 >
                   <X className="size-3" />
@@ -138,18 +139,6 @@ export function SourceControlAllChangesSection({
               </span>
             )}
             {headerActions}
-            <Button
-              type="button"
-              variant="ghost"
-              size="xs"
-              className="px-1.5 text-muted-foreground hover:text-foreground"
-              onClick={(event) => {
-                event.stopPropagation()
-                onViewAll()
-              }}
-            >
-              {translate('auto.components.right.sidebar.SourceControl.48db37cca9', 'View all')}
-            </Button>
           </>
         }
       />

@@ -3,7 +3,7 @@ import { act, renderHook } from '@testing-library/react'
 import { describe, expect, it } from 'vitest'
 import type { GitStatusEntry } from '../../../../../../shared/git-status-types'
 import { useAllChangesProjection } from './use-all-changes-projection'
-import { toggleUncommittedOnly } from './uncommitted-only-store'
+import { clearChangesFilter, setChangesFilter, toggleUncommittedOnly } from '@/lib/changes-filter'
 
 const unstaged: GitStatusEntry = { path: 'src/ui/b.ts', status: 'modified', area: 'unstaged' }
 const untracked: GitStatusEntry = { path: 'README.md', status: 'untracked', area: 'untracked' }
@@ -34,6 +34,33 @@ function project(sourceControlViewMode: 'list' | 'tree', collapsedTreeDirs = new
 }
 
 describe('useAllChangesProjection', () => {
+  it("lists a previewed turn's or commit's files instead of the branch's, counted on their own", () => {
+    const { result } = renderProjection('list', new Set(), 'wt-turn')
+    act(() =>
+      setChangesFilter('wt-turn', {
+        kind: 'turn',
+        compare: {
+          commitOid: 'e'.repeat(40),
+          parentOid: 's'.repeat(40),
+          compareRef: 'e',
+          baseRef: 's'
+        },
+        entries: [
+          { path: 'z.ts', status: 'added' },
+          { path: 'src/ui/b.ts', status: 'modified' }
+        ],
+        prompt: 'Do the thing',
+        latest: true
+      })
+    )
+    expect(result.current.allChangeEntries.map((entry) => entry.path)).toEqual([
+      'src/ui/b.ts',
+      'z.ts'
+    ])
+    expect(result.current.totalAllChangeCount).toBe(2)
+    act(() => clearChangesFilter('wt-turn'))
+  })
+
   it('lists the files the filter keeps, and counts every changed file for the heading', () => {
     const { allChangeEntries, totalAllChangeCount, allChangesReviewOrder } = project('list')
     expect(allChangeEntries.map((entry) => entry.path)).toEqual([
@@ -52,7 +79,7 @@ describe('useAllChangesProjection', () => {
   it('narrows to uncommitted files when the workspace toggles that filter on', () => {
     const { result } = renderProjection('list', new Set(), 'wt-uncommitted')
     act(() => toggleUncommittedOnly('wt-uncommitted'))
-    expect(result.current.uncommittedOnly).toBe(true)
+    expect(result.current.changesFilter).toEqual({ kind: 'uncommitted' })
     expect(result.current.allChangeEntries.map((entry) => entry.path)).toEqual([
       'README.md',
       'src/ui/b.ts'

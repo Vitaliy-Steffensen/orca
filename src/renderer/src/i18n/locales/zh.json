@@ -13801,8 +13801,7 @@
           },
           "GitHistoryCommitFiles": {
             "a1b2c3d4e5": "正在加载文件…",
-            "b2c3d4e5f6": "此提交没有文件更改",
-            "c3d4e5f6a7": "一起打开所有更改"
+            "b2c3d4e5f6": "此提交没有文件更改"
           },
           "GitHistoryRow": {
             "2f9c41ab07": "显示提交{{value0}}中的文件：{{value1}}",

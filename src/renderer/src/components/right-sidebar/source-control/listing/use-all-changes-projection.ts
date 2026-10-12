@@ -11,7 +11,8 @@ import { ALL_CHANGES_AREA, buildAllChangeEntries } from './all-changes'
 import type { AllChangesTreeNode } from './all-changes-section'
 import type { SourceControlEntryGroups } from './section-order'
 import type { FlatEntry } from './use-selection'
-import { useUncommittedOnly } from './uncommitted-only-store'
+import { useChangesFilter } from '@/lib/changes-filter'
+import { compareFileNames } from '../../../../../../shared/file-name-sort'
 
 const NO_ENTRIES: GitBranchChangeEntry[] = []
 const NO_TREE_ROWS: AllChangesTreeNode[] = []
@@ -40,22 +41,32 @@ export function useAllChangesProjection({
   collapsedTreeDirs: ReadonlySet<string>
 }) {
   const enabled = sourceControlGrouping === 'all'
-  const uncommittedOnly = useUncommittedOnly(activeWorktreeId)
-  const allChangeEntries = useMemo(
-    () =>
-      enabled
-        ? buildAllChangeEntries(
-            [...filteredGrouped.staged, ...filteredGrouped.unstaged, ...filteredGrouped.untracked],
-            filteredBranchEntries,
-            { uncommittedOnly }
-          )
-        : NO_ENTRIES,
-    [enabled, filteredBranchEntries, filteredGrouped, uncommittedOnly]
-  )
-  const totalAllChangeCount = useMemo(
-    () => (enabled ? buildAllChangeEntries(entries, branchEntries).length : 0),
-    [branchEntries, enabled, entries]
-  )
+  const changesFilter = useChangesFilter(activeWorktreeId)
+  const uncommittedOnly = changesFilter?.kind === 'uncommitted'
+  // Fork: a previewed turn or commit lists its own files in place of the branch's.
+  const sourceEntries =
+    changesFilter && changesFilter.kind !== 'uncommitted' ? changesFilter.entries : null
+  const allChangeEntries = useMemo(() => {
+    if (!enabled) {
+      return NO_ENTRIES
+    }
+    if (sourceEntries) {
+      return [...sourceEntries].sort((a, b) => compareFileNames(a.path, b.path))
+    }
+    return buildAllChangeEntries(
+      [...filteredGrouped.staged, ...filteredGrouped.unstaged, ...filteredGrouped.untracked],
+      filteredBranchEntries,
+      { uncommittedOnly }
+    )
+  }, [enabled, filteredBranchEntries, filteredGrouped, sourceEntries, uncommittedOnly])
+  const totalAllChangeCount = useMemo(() => {
+    if (!enabled) {
+      return 0
+    }
+    return sourceEntries
+      ? sourceEntries.length
+      : buildAllChangeEntries(entries, branchEntries).length
+  }, [branchEntries, enabled, entries, sourceEntries])
   const visibleAllChangesTreeRows = useMemo(
     () =>
       enabled && sourceControlViewMode === 'tree'
@@ -77,7 +88,7 @@ export function useAllChangesProjection({
     showAllChanges: enabled,
     // Why: the all-changes rows have no staging, so nothing is selectable while they show.
     selectableEntries: enabled ? NO_SELECTABLE_ENTRIES : visibleSelectionEntries,
-    uncommittedOnly,
+    changesFilter,
     allChangeEntries,
     totalAllChangeCount,
     visibleAllChangesTreeRows,

@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useState } from 'react'
 import { Bot } from 'lucide-react'
 import { toast } from 'sonner'
-import { useAppStore } from '@/store'
+import { showInChanges } from '@/lib/show-in-changes'
 import { SectionHeader } from '../listing/section-header'
 import { translate } from '@/i18n/i18n'
 import type { AgentTurn } from '../../../../../../shared/agent-turns'
@@ -55,7 +55,6 @@ export function AgentTurnsSection({
   collapsed: boolean
   onToggle: () => void
 }): React.JSX.Element | null {
-  const openCommitAllDiffs = useAppStore((s) => s.openCommitAllDiffs)
   const [now, setNow] = useState(() => Date.now())
 
   useEffect(() => {
@@ -66,15 +65,15 @@ export function AgentTurnsSection({
   const openTurn = useCallback(
     async (turn: AgentTurn) => {
       try {
-        await openAgentTurn(worktreeId, worktreePath, turn, {
+        await openAgentTurn(worktreeId, worktreePath, turn, turn.oid === turns[0]?.oid, {
           commitCompare: window.api.git.commitCompare,
-          openCommitAllDiffs
+          showInChanges
         })
       } catch (error) {
         toast.error(error instanceof Error ? error.message : String(error))
       }
     },
-    [openCommitAllDiffs, worktreeId, worktreePath]
+    [turns, worktreeId, worktreePath]
   )
 
   if (turns.length === 0) {

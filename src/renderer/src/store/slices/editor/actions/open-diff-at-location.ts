@@ -2,6 +2,7 @@ import { detectLanguage } from '@/lib/language-detect'
 import { joinPath } from '@/lib/path'
 import type { EditorGet, EditorSet } from '../types/editor-set-get'
 import type { EditorSlice } from '../types/editor-slice'
+import { openChangesFilterEntry } from './open-changes-filter-entry'
 
 export function createOpenDiffAtLocation(
   _set: EditorSet,
@@ -29,6 +30,12 @@ export function createOpenDiffAtLocation(
         state.setPendingEditorReveal({ filePath, line, column: 1, matchLength: 0 })
       }
 
+      if (
+        area === 'branch-worktree' &&
+        openChangesFilterEntry(state, worktreeId, worktreePath, relativePath, language, { preview })
+      ) {
+        return
+      }
       const branchSummary = state.gitBranchCompareSummaryByWorktree[worktreeId]
       // Fork: an all-changes row is one file from the branch base to disk, however it changed.
       if (area === 'branch-worktree' && branchSummary?.status === 'ready') {

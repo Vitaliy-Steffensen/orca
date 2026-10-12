@@ -8,7 +8,14 @@ import type {
 export const ALL_CHANGES_AREA = 'branch-worktree'
 
 const NO_ROW_KEYS: ReadonlySet<string> = new Set()
-const ONE_ROW_PER_FILE_SOURCES = new Set(['edit', 'unstaged', 'staged', 'branch', ALL_CHANGES_AREA])
+const ONE_ROW_PER_FILE_SOURCES = new Set([
+  'edit',
+  'unstaged',
+  'staged',
+  'branch',
+  'commit',
+  ALL_CHANGES_AREA
+])
 
 /** The all-changes list has one row per file, so any single-file tab of that path is that row. */
 export function buildAllChangesOpenRowKeys(signature: string | null): ReadonlySet<string> {

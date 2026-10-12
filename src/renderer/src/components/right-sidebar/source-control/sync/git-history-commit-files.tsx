@@ -115,12 +115,7 @@ function CommitFilesBody({
           onClick={onOpenAll}
         >
           <ArrowUpRight className="size-3 shrink-0" />
-          <span>
-            {translate(
-              'auto.components.right.sidebar.GitHistoryCommitFiles.c3d4e5f6a7',
-              'Open all changes together'
-            )}
-          </span>
+          <span>{translate('allChanges.showCommitInChanges', 'Show in Changes')}</span>
         </button>
       )}
     </>

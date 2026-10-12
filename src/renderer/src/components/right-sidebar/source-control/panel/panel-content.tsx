@@ -7,7 +7,7 @@ import { toggleSourceControlSectionHidden } from '../../../../../../shared/sourc
 import { shouldRenderCommitArea } from '../commit/component-gates'
 import { SourceControlBranchSection } from '../listing/branch-section'
 import { SourceControlAllChangesSection } from '../listing/all-changes-section'
-import { clearUncommittedOnly } from '../listing/uncommitted-only-store'
+import { changesFilterBadge, clearChangesFilter } from '@/lib/changes-filter'
 import { SourceControlContentStatus } from '../listing/content-status'
 import {
   SourceControlFileCategoryFilter,
@@ -26,7 +26,7 @@ export function SourceControlPanelContent(props: SourceControlPanelReadyProps) {
     settings,
     updateSettings,
     allChangeEntries,
-    uncommittedOnly,
+    changesFilter,
     openAllChangesEntry,
     showAllChanges,
     totalAllChangeCount,
@@ -183,9 +183,14 @@ export function SourceControlPanelContent(props: SourceControlPanelReadyProps) {
       {/* Why also when empty under a filter: the filters live in this header, so they must stay reachable. */}
       {showAllChanges &&
         !changesHidden &&
-        (allChangeEntries.length > 0 || isCategoryFilterActive || uncommittedOnly) && (
+        (allChangeEntries.length > 0 || isCategoryFilterActive || changesFilter) && (
           <SourceControlAllChangesSection
-            baseRef={branchSummary?.status === 'ready' ? branchSummary.baseRef : null}
+            baseRef={
+              branchSummary?.status === 'ready' &&
+              (!changesFilter || changesFilter.kind === 'uncommitted')
+                ? branchSummary.baseRef
+                : null
+            }
             entries={allChangeEntries}
             totalEntryCount={totalAllChangeCount}
             collapsed={collapsedSections.has('all-changes')}
@@ -200,7 +205,6 @@ export function SourceControlPanelContent(props: SourceControlPanelReadyProps) {
             revealInExplorer={revealInExplorer}
             activeConnectionId={activeConnectionId}
             onOpen={openAllChangesEntry}
-            onViewAll={() => openAllDiffs(currentWorktreeId, worktreePath)}
             headerActions={
               shouldShowSourceControlFileCategoryFilter(
                 presentFileCategories,
@@ -215,8 +219,8 @@ export function SourceControlPanelContent(props: SourceControlPanelReadyProps) {
                 />
               ) : null
             }
-            uncommittedOnly={uncommittedOnly}
-            onClearUncommittedOnly={() => clearUncommittedOnly(currentWorktreeId)}
+            filterBadge={changesFilterBadge(changesFilter)}
+            onClearFilter={() => clearChangesFilter(currentWorktreeId)}
             diffCommentCountByPath={diffCommentCountByPath}
             reviewThreadCountByPath={reviewThreadCountByPath}
             pendingReviewCountByPath={pendingReviewCountByPath}

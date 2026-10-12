@@ -30,28 +30,27 @@ function deps(turns: AgentTurn[]) {
   return {
     listTurns: vi.fn(async () => turns),
     commitCompare: vi.fn(async () => ({ summary, entries: [] })),
-    openCommitAllDiffs: vi.fn()
+    showInChanges: vi.fn()
   }
 }
 
 describe('openLatestAgentTurn', () => {
-  it('opens the newest turn of the workspace in the commit diff view', async () => {
+  it('shows the newest turn of the workspace in Changes as the latest turn', async () => {
     const d = deps([turn('new', 'Second prompt\nmore'), turn('old', 'First prompt')])
     await expect(openLatestAgentTurn('wt', '/repo', d)).resolves.toBe(true)
     expect(d.commitCompare).toHaveBeenCalledWith({ worktreePath: '/repo', commitId: 'new' })
-    expect(d.openCommitAllDiffs).toHaveBeenCalledWith(
+    expect(d.showInChanges).toHaveBeenCalledWith(
       'wt',
       '/repo',
       expect.objectContaining({ status: 'ready' }),
       [],
-      'Second prompt',
-      'Second prompt\nmore'
+      { kind: 'turn', prompt: 'Second prompt\nmore', latest: true }
     )
   })
 
   it('reports false when the workspace has no turns yet', async () => {
     const d = deps([])
     await expect(openLatestAgentTurn('wt', '/repo', d)).resolves.toBe(false)
-    expect(d.openCommitAllDiffs).not.toHaveBeenCalled()
+    expect(d.showInChanges).not.toHaveBeenCalled()
   })
 })

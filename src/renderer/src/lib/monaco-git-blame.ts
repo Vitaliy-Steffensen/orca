@@ -11,6 +11,7 @@ import {
   gitBlameSettings
 } from './git-blame-text'
 import { openFileContext, trackedFileContext } from './language-server-editor'
+import { showInChanges } from './show-in-changes'
 
 const BLAME_DELAY_MS = 250
 const MAX_BLAMED_LINES = 16_384
@@ -34,15 +35,10 @@ async function showCommit(sha: string): Promise<void> {
       toast.error(result.summary.errorMessage ?? failed)
       return
     }
-    useAppStore
-      .getState()
-      .openCommitAllDiffs(
-        source.worktreeId,
-        source.worktreeRoot,
-        result.summary,
-        result.entries,
-        source.summary
-      )
+    showInChanges(source.worktreeId, source.worktreeRoot, result.summary, result.entries, {
+      kind: 'commit',
+      subject: source.summary
+    })
   } catch (error) {
     toast.error(error instanceof Error ? error.message : failed)
   }

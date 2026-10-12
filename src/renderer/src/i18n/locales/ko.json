@@ -13801,8 +13801,7 @@
           },
           "GitHistoryCommitFiles": {
             "a1b2c3d4e5": "파일 로드 중…",
-            "b2c3d4e5f6": "이 commit에는 파일 변경 사항이 없습니다",
-            "c3d4e5f6a7": "모든 변경 사항을 함께 열기"
+            "b2c3d4e5f6": "이 commit에는 파일 변경 사항이 없습니다"
           },
           "GitHistoryRow": {
             "2f9c41ab07": "commit {{value0}}의 파일 표시: {{value1}}",

@@ -1397,7 +1397,7 @@ Ctrl+Alt+letter is AltGr text on Windows and Linux) narrows the Changes list (§
 workspace to files with staged, unstaged or untracked changes. Rows still read against the base.
 While it is on, an Uncommitted badge sits beside the file type filter; its × shows every change
 again. The flag is per workspace and kept outside the panel
-(`listing/uncommitted-only-store.ts`), so the shortcut works while the panel is closed. It is not
+(`lib/changes-filter.ts`, see §46), so the shortcut works while the panel is closed. It is not
 saved across restarts.
 
 | File | What is ours |
@@ -1517,6 +1517,36 @@ same drag passthrough (`terminal-pane/claude-web-drag-passthrough.ts`).
 | --- | --- |
 | `terminal-pane/claude-web-drag-passthrough.ts` | The enrolment. |
 | `terminal-pane/ClaudeWebView.tsx` | Enrolling on attach, leaving on detach. |
+
+### 46. Turns and commits preview as a Changes filter
+
+Clicking an agent turn, the Open Latest Agent Turn shortcut, Show in Changes on an expanded commit,
+and showing a commit from git blame no longer open the combined all-files view. Each sets a filter
+on the Changes list (`lib/changes-filter.ts`, via `lib/show-in-changes.ts`): the list shows that
+turn's or commit's files under a removable badge — "Latest turn", "Historical changes" or
+"Commit abc1234" — opens the first, and every file opens in the normal diff viewer
+(`store/slices/editor/actions/open-changes-filter-entry.ts`, used by row clicks and keyboard steps):
+
+- The latest turn opens live, from its start snapshot to disk: a `branch-worktree` tab whose base is
+  pinned (`OpenFile.branchBasePinned`) so the branch compare refresh does not move it back. Opening
+  the same file without the filter unpins it.
+- An older turn and a commit open their frozen `commit` diff.
+
+Uncommitted (§38) is the same filter, so turning it on clears a turn or commit and the reverse.
+A previewed turn turns "Historical changes" once a newer turn lands (`syncLatestAgentTurn`, from
+`panel-ready.tsx`). The Changes header's View all button is gone. The combined view stays in the
+code for the "Group by status" sections' view buttons.
+
+| File | What is ours |
+| --- | --- |
+| `src/renderer/src/lib/changes-filter.ts` | The filter, replacing `uncommitted-only-store.ts`; badge labels. |
+| `src/renderer/src/lib/show-in-changes.ts` | Setting a turn or commit filter and opening its first file. |
+| `store/slices/editor/actions/open-changes-filter-entry.ts` | Which diff a row opens under the filter. |
+| `store/slices/editor/actions/open-diff-at-location.ts`, `source-control/listing/use-row-opening.ts` | Asking it first. |
+| `store/slices/editor/actions/open-branch-worktree-diff.ts`, `git/retarget-branch-diff-files.ts`, `types/open-file.ts` | `pinBranchBase` / `branchBasePinned`. |
+| `source-control/listing/use-all-changes-projection.ts`, `all-changes-section.tsx`, `all-changes.ts`, `panel/panel-content.tsx` | The filtered list, the badge, commit-tab row highlight, no View all. |
+| `src/renderer/src/lib/agent-turn-open.ts`, `agent-turns/agent-turns-section.tsx`, `sync/use-git-history-commit-actions.ts`, `sync/git-history-commit-files.tsx`, `src/renderer/src/lib/monaco-git-blame.ts`, `src/renderer/src/app-shell/source-control-shortcuts.ts` | The entry points. |
+| `src/renderer/src/i18n/locales/*.json` | `allChanges.*`; the old "Open all changes together" key removed. |
 
 ## Verify
 

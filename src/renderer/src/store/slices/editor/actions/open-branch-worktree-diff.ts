@@ -47,8 +47,10 @@ export function createOpenBranchWorktreeDiff(
         const activeResult = buildEditorActiveResult(s, worktreeId, id)
         const existing = s.openFiles.find((f) => f.id === id)
         if (existing) {
+          const { branchBasePinned: _wasPinned, ...unpinned } = existing
           const reopened = withDiffContentReloadRequest({
-            ...existing,
+            ...unpinned,
+            ...(options?.pinBranchBase ? { branchBasePinned: true } : {}),
             branchCompare,
             branchOldPath: entry.oldPath,
             isPreview: isPreview ? existing.isPreview : false,
@@ -69,6 +71,7 @@ export function createOpenBranchWorktreeDiff(
           mode: 'diff',
           diffSource: 'branch-worktree',
           branchCompare,
+          ...(options?.pinBranchBase ? { branchBasePinned: true } : {}),
           branchOldPath: entry.oldPath,
           isPreview: isPreview || undefined,
           runtimeEnvironmentId

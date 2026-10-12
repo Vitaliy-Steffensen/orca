@@ -92,15 +92,19 @@ describe('buildAllChangeEntries', () => {
     })
   })
 
-  it("highlights a file's one row whichever kind of tab has it open", () => {
-    for (const source of [undefined, 'unstaged', 'staged', 'branch', 'branch-worktree'] as const) {
+  it("highlights a file's one row whichever kind of tab has it open, a previewed commit's too", () => {
+    for (const source of [
+      undefined,
+      'unstaged',
+      'staged',
+      'branch',
+      'branch-worktree',
+      'commit'
+    ] as const) {
       expect([
         ...buildAllChangesOpenRowKeys(buildActiveOpenFileSignature(source, 'src/a.ts'))
       ]).toEqual(['branch-worktree::src/a.ts'])
     }
-    expect(
-      buildAllChangesOpenRowKeys(buildActiveOpenFileSignature('commit', 'src/a.ts')).size
-    ).toBe(0)
     expect(buildAllChangesOpenRowKeys(null).size).toBe(0)
   })
 

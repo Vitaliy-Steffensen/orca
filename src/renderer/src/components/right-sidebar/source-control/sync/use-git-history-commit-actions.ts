@@ -23,6 +23,7 @@ import {
 } from '../listing/split-open'
 import type { GitHistoryCommitAction } from './git-history-commit-context-menu'
 import { openWorkspaceBrowserTab } from '@/lib/workspace-browser-tab-open'
+import { showInChanges } from '@/lib/show-in-changes'
 
 const EMPTY_BRANCH_CHANGE_ENTRIES: GitBranchChangeEntry[] = []
 
@@ -50,7 +51,6 @@ export function useGitHistoryCommitActions({
   activeRepoSettings: RuntimeGitContext['settings']
   resolveSplitTargetGroupId: (event?: SourceControlRowOpenEvent) => string | undefined
 }): GitHistoryCommitActions {
-  const openCommitAllDiffs = useAppStore((s) => s.openCommitAllDiffs)
   const openCommitDiff = useAppStore((s) => s.openCommitDiff)
 
   // Caches each commit's compare result so expanding a commit fetches its files
@@ -112,14 +112,11 @@ export function useGitHistoryCommitActions({
         if (!cached) {
           return
         }
-        openCommitAllDiffs(
-          activeWorktreeId,
-          worktreePath,
-          cached.summary,
-          cached.entries,
-          item.subject,
-          item.message
-        )
+        showInChanges(activeWorktreeId, worktreePath, cached.summary, cached.entries, {
+          kind: 'commit',
+          subject: item.subject,
+          message: item.message
+        })
       } catch (error) {
         toast.error(
           error instanceof Error
@@ -131,7 +128,7 @@ export function useGitHistoryCommitActions({
         )
       }
     },
-    [activeWorktreeId, loadCommitFiles, openCommitAllDiffs, worktreePath]
+    [activeWorktreeId, loadCommitFiles, worktreePath]
   )
 
   const openCommitFile = useCallback(

@@ -13801,8 +13801,7 @@
           },
           "GitHistoryCommitFiles": {
             "a1b2c3d4e5": "Cargando archivos…",
-            "b2c3d4e5f6": "No hay cambios de archivos en este commit",
-            "c3d4e5f6a7": "Abrir todos los cambios juntos"
+            "b2c3d4e5f6": "No hay cambios de archivos en este commit"
           },
           "GitHistoryRow": {
             "2f9c41ab07": "Mostrar archivos del commit {{value0}}: {{value1}}",
