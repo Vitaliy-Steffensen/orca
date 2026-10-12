@@ -1,6 +1,6 @@
 // @vitest-environment happy-dom
 import '@testing-library/jest-dom/vitest'
-import { act, cleanup, render, screen } from '@testing-library/react'
+import { act, cleanup, fireEvent, render, screen } from '@testing-library/react'
 import { useState } from 'react'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import {
@@ -19,8 +19,21 @@ vi.mock('@/components/pending-review/pending-review-summary-store', () => ({
   usePendingReviewSummary: () => ['', vi.fn()]
 }))
 vi.mock('@/components/github/ReviewMarkdownComposer', () => ({
-  ReviewMarkdownComposer: ({ placeholder }: { placeholder: string }) => (
-    <textarea placeholder={placeholder} />
+  ReviewMarkdownComposer: ({
+    placeholder,
+    onEscape
+  }: {
+    placeholder: string
+    onEscape?: () => void
+  }) => (
+    <textarea
+      placeholder={placeholder}
+      onKeyDown={(event) => {
+        if (event.key === 'Escape') {
+          onEscape?.()
+        }
+      }}
+    />
   )
 }))
 
@@ -109,6 +122,14 @@ describe('SourceControlPendingReviewShelf', () => {
     act(() => requestReviewSummaryFocus('wt'))
     expect(screen.getByPlaceholderText('Add review summary…')).toHaveFocus()
     expect(consumeReviewSummaryFocusRequest('wt')).toBe(false)
+  })
+
+  it('lets go of the review summary on Escape', () => {
+    renderShelf(false)
+    const summary = screen.getByPlaceholderText('Add review summary…')
+    act(() => summary.focus())
+    fireEvent.keyDown(summary, { key: 'Escape' })
+    expect(summary).not.toHaveFocus()
   })
 
   it('opens a collapsed Review section to focus its summary', () => {

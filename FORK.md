@@ -1661,6 +1661,7 @@ The sent notes are marked sent once delivered. A failed send keeps them pending 
 summary box while the Source Control panel is showing one, opening the section first when it is
 collapsed. It is a request the section takes up (`pending-review/review-summary-focus.ts`), since a
 collapsed section has no editor yet; elsewhere the chord is left to whatever else is bound to it.
+Escape in the box lets go of it.
 
 | File | What is ours |
 | --- | --- |
