@@ -68,8 +68,7 @@ export function SourceControlPanelReady(props: SourceControlPanelReadyProps) {
     sourceControlViewMode,
     suppressedGitHubPRState,
     toggleSection,
-    updateSettings,
-    visibleCreatePrHeaderAction
+    updateSettings
   } = model
 
   const agentNoteCount = useWorktreeAgentNotes(activeWorktreeId).length
@@ -169,7 +168,8 @@ export function SourceControlPanelReady(props: SourceControlPanelReadyProps) {
           filterExpanded={filterExpanded}
           onFilterQueryChange={setFilterQuery}
           onFilterExpandedChange={setFilterExpanded}
-          visibleCreatePrHeaderAction={visibleCreatePrHeaderAction}
+          // Fork: PRs are opened by the agent or the CLI, so the header offers no Create PR.
+          visibleCreatePrHeaderAction={null}
           hostedReview={hostedReview}
           isCreatePrIntentInFlight={isCreatePrIntentInFlight}
           isCreatingPr={isCreatingPr || prGenerating}

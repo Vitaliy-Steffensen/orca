@@ -218,6 +218,13 @@ function loadingChip(): HTMLElement | null {
 }
 
 describe('SourceControl branch line total request gate', () => {
+  it('has no Create PR button in its header; agents and the CLI open PRs', () => {
+    renderSourceControl()
+
+    expect(container.textContent).toContain('feature')
+    expect(container.textContent).not.toContain('Create PR')
+  })
+
   it('asks for a total when the panel is visible and compare is ready', () => {
     renderSourceControl()
 

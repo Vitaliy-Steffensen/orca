@@ -1610,6 +1610,16 @@ that fails, leaves the agent on its own.
 | `workspace-status-rules/open-review-workspace-layout.ts` | The split and the first file. |
 | `workspace-status-rules/create-review-workspace.ts` | Running it after the agent launches. |
 
+### 51. No Create PR in the Source Control header
+
+Like the commit box (§35), the header's Create PR button is gone: PRs are opened by the agent or the
+CLI. The panel passes the header no create-PR action, so the upstream header keeps its own behaviour
+and tests.
+
+| File | What is ours |
+| --- | --- |
+| `source-control/panel/panel-ready.tsx` | `visibleCreatePrHeaderAction={null}`. |
+
 ## Verify
 
 Verify runs on GitHub, not locally: `fork-verify.yml` runs it on every pull request against `main`,
