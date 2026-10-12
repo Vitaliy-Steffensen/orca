@@ -40,7 +40,10 @@ export function renderGitSettingsSection(context: SettingsRenderContext): React.
             customPromptDiscardSignal={model.sourceControlAiPromptDiscardSignal}
             settingsSearchQuery={model.settingsSearchQuery}
           />
-          <GitProviderApiBudgetPane settingsSearchQuery={model.settingsSearchQuery} />
+          <GitProviderApiBudgetPane
+            settingsSearchQuery={model.settingsSearchQuery}
+            target={model.settingsHostScope.target}
+          />
         </>
       ) : null}
     </SettingsSection>

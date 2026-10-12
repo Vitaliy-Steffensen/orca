@@ -6,7 +6,7 @@ import type {
 } from '../../shared/git-status-types'
 import type { RuntimeGitCheckoutResult, RuntimeGitLocalBranches } from '../../shared/runtime-types'
 import type { GitPathReviewAttributes } from '../../shared/git-review-attributes'
-import type { GitProviderStatusOptions } from '../providers/types'
+import type { GitProviderStatusOptions } from '../providers/git-provider-contract'
 import { requireRuntimeGitProvider, type RuntimeGitCommandHost } from './runtime-git-command-target'
 
 export class RuntimeGitStatusCommands {

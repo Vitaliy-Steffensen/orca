@@ -1,6 +1,6 @@
 import { useAppStore } from '@/store'
 import { detectLanguage } from '@/lib/language-detect'
-import { getRuntimeGitBranchCompare } from '@/runtime/runtime-git-client'
+import { getRuntimeGitBranchCompare } from '@/runtime/runtime-git-diff-client'
 import { compareFileNames } from '../../../../shared/file-name-sort'
 import type { AppState } from '@/store'
 

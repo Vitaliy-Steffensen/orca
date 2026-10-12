@@ -124,6 +124,9 @@
         "e6996f4024": "· updated",
         "ff84e1f54c": "{{value0}} {{value1}} as viewed"
       },
+      "QuickOpen": {
+        "1cb6ef47b7": "Go to file..."
+      },
       "StarNagCard": {
         "68a41bc3aa": "Could not star with",
         "73dfd4eb8d": "Don't ask again",
@@ -802,6 +805,9 @@
           "FileExplorerToolbar": {
             "693cbeadd0": "Search"
           },
+          "GitHistoryCommitFiles": {
+            "c3d4e5f6a7": "Open all changes together"
+          },
           "GitHistoryGraphSvg": {
             "47eff48230": "HEAD"
           },
@@ -826,19 +832,23 @@
             "1ec640c9c7": "match"
           },
           "SourceControl": {
+            "1406954883": "Clear all notes...",
             "03d238218c": "Details",
             "04832d8047": "rebase",
             "0fad573938": "Uncommitted",
             "15b7f210d7": "Review the prompt before starting an agent.",
             "1f7119f604": "Base",
             "2830dd64a2": "deleted",
+            "2fe2a67580": "More note actions",
             "3636d0f686": "ready",
             "383cf92c73": "tree",
             "3a231c845b": "unknown",
+            "3baf6c77b4": "Copy all notes to clipboard",
             "424ee0e5bf": "error",
             "48a003c1b1": "Staged Changes",
             "522f44dce5": "Untracked Files",
             "527e130b6f": "Stop generating",
+            "72f2bea3f4": "Expand notes",
             "77afaa8152": "All",
             "783a808870": "Close",
             "7a09d7f9d2": "base",
@@ -847,13 +857,16 @@
             "9febd8ab5f": "create_pr",
             "a0cc0e6b4e": "loading",
             "c105a61960": "merge",
+            "cc474e0b8c": "Notes",
             "conflictsSection": "Conflicts",
             "createPrIntentConfigureAi": "Add a commit message or configure Source Control AI settings.",
             "createPrIntentGenerateFailed": "Could not generate a commit message. Add one and retry.",
+            "d13edef890": "Collapse notes",
             "d2e9189866": "all",
             "d4ef4bafc5": "Changes",
             "d62bc0c7d8": "untracked",
             "e59bca888a": "markdown",
+            "eae2d051af": "Copy all notes",
             "f3a1b8c204": "upstream",
             "f62ce91ade": "origin",
             "tooManyChanges": "Too many changes detected. Only the first {{value0}} changes are shown."
@@ -1106,7 +1119,8 @@
           "b2b1aa936d": "Paste your opencode.ai session cookie for rate limit fetching.",
           "b43e761fe5": "MiniMax cookie update failed.",
           "b8c2905c2b": "Could not load Codex accounts.",
-          "f5d8d2a6a1": "Open platform.minimax.io/console/usage in your browser and sign in."
+          "f5d8d2a6a1": "Open platform.minimax.io/console/usage in your browser and sign in.",
+          "remoteScopeLocalAccountsKept": "Accounts managed on this desktop are unchanged. Switch the default runtime back to Local desktop to view them."
         },
         "AdvancedNetworkSettingsSection": {
           "d93c7cd531": "Configure app-level network routing.",
@@ -1470,7 +1484,6 @@
           "1826bd0608": "Saved Servers",
           "54ebacc600": "Server name",
           "55fcc964cd": "on the server and paste the printed pairing URL.",
-          "7b5986c8df": "Saved {{value0}}. Use Active Server to switch when ready.",
           "8cf8790697": "Saved servers route this browser through a paired Orca runtime.",
           "960e901ae4": "orca serve --pairing-address <host>",
           "9bc9b83474": "Pairing code",
@@ -1719,7 +1732,8 @@
             "fa72e71f05": "agents",
             "fe5688b761": "sidebar",
             "nativeChat": {
-              "description": "Open supported new agents in Chat UI."
+              "description": "Open supported new agents in Chat UI.",
+              "queue": "queue"
             }
           }
         },
@@ -1802,14 +1816,6 @@
             "vm": "vm"
           }
         },
-        "runtime": {
-          "environments": {
-            "search": {
-              "3517fb2ec0": "Active Server",
-              "4575341c77": "Choose local desktop, add a saved remote Orca server, or generate a pairing URL."
-            }
-          }
-        },
         "settingOwnership": {
           "clientDefaultProjectScopes": "Client default + project scopes",
           "terminalQuickCommands": "Commands are saved on this client, then scoped globally or to a project setup so they run from the selected terminal context."
@@ -1825,10 +1831,8 @@
           }
         },
         "sshHostServer": {
-          "terminalsElsewhere_one": "Runs the relay while {{count}} terminal another Orca desktop or session opened on this host is running.",
-          "terminalsElsewhere_other": "Runs the relay while {{count}} terminals another Orca desktop or session opened on this host are running.",
-          "terminalsLive_one": "Runs the relay until its {{count}} open terminal is closed, then moves to a managed server.",
-          "terminalsLive_other": "Runs the relay until its {{count}} open terminals are closed, then moves to a managed server."
+          "olderTerminals_one": "{{count}} terminal started by an older version of Orca is still running on this host, and it doesn’t stop on its own. Close it in that version of Orca or end it on the host, then reconnect.",
+          "olderTerminals_other": "{{count}} terminals started by an older version of Orca are still running on this host, and they don’t stop on their own. Close them in that version of Orca or end them on the host, then reconnect."
         },
         "terminal": {
           "windows": {
@@ -2581,6 +2585,7 @@
             "3eed73394f": "Your keyboard is paused"
           },
           "TerminalErrorToast": {
+            "hostTerminalCap": "The host is already running as many terminals as Orca allows. Close a terminal you no longer need, then try again.",
             "ptyAllocationLimit": "Your system cannot allocate any more pty devices. Close some terminals you are not using, in Orca or another program, then try again.",
             "terminalProcessLimit": "Your system cannot start another terminal process. Close unused terminals or quit unused processes, then try again."
           },
@@ -2764,16 +2769,6 @@
         "timedOut": "Timed out loading check details."
       }
     },
-    "ssh": {
-      "managedServerMove": {
-        "offer_one": "Move {{host}} to a managed Orca server for more reliable connections. Its {{count}} open terminal will restart.",
-        "offer_other": "Move {{host}} to a managed Orca server for more reliable connections. Its {{count}} open terminals will restart.",
-        "refusedLive_one": "Not moved: {{count}} terminal on {{host}} is still running.",
-        "refusedLive_other": "Not moved: {{count}} terminals on {{host}} are still running.",
-        "refusedUnverifiable_one": "Not moved: Orca couldn’t confirm that {{count}} terminal on {{host}} stopped.",
-        "refusedUnverifiable_other": "Not moved: Orca couldn’t confirm that {{count}} terminals on {{host}} stopped."
-      }
-    },
     "store": {
       "slices": {
         "settings": {
@@ -2896,6 +2891,7 @@
         "claudeManagedNotSignedIn": "This Claude account isn't signed in. Sign in again in Claude Accounts settings.",
         "claudeSystemNotSignedIn": "Claude isn't signed in. Run `{{loginCommand}}`, or choose an account in Claude Accounts settings.",
         "cliMissing": "{{agent}} wasn't found on the computer running this chat. Install it, or check its Command in Settings → Agents.",
+        "codexCliTooOld": "Codex {{installedVersion}} is too old for chats. Update to {{minimumVersion}} or newer.",
         "codexManagedNotSignedIn": "This Codex account isn't signed in. Sign in again in Codex Accounts settings.",
         "codexSystemNotSignedIn": "Codex isn't signed in. Run `{{loginCommand}}`.",
         "commandAfterAnswer": "Answer the agent's question or approval, then run /{{command}}.",
@@ -2926,8 +2922,8 @@
         "providerExitedRejection": "{{agent}} stopped before this message was sent.",
         "providerExitedRow": "{{agent}} stopped while this response was in progress. You can continue in this conversation.",
         "providerRateLimited": "{{agent}} is rate-limited and retrying.",
-        "providerRejected": "The provider did not accept this message.",
-        "providerRejectedQuoted": "The provider did not accept this message: {{detail}}.",
+        "providerRejected": "{{agent}} didn't accept this message.",
+        "providerRejectedQuoted": "{{agent}} didn't accept this message: {{detail}}.",
         "providerRetryLastError": "Last error: {{detail}}.",
         "providerRetryNumber": "Retry {{attempt}}.",
         "providerRetryNumberOf": "Retry {{attempt}} of {{maxRetries}}.",
@@ -3198,6 +3194,16 @@
     "findPath": "Find a folder…",
     "finishEditing": "Save or cancel the preset to continue creating your workspace.",
     "pathHelp": "One repository-relative directory per line. Spaces within a path are preserved."
+  },
+  "terminal": {
+    "newerDaemonBanner": {
+      "reopenTerminal_one": "Reopen terminal",
+      "reopenTerminal_other": "Reopen {{count}} terminals",
+      "reopened_one": "Reopened {{count}} terminal",
+      "reopened_other": "Reopened {{count}} terminals",
+      "resumed_one": "{{count}} agent session resumed.",
+      "resumed_other": "{{count}} agent sessions resumed."
+    }
   },
   "worktreeJumpPalette": {
     "filter": {

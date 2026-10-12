@@ -21,6 +21,7 @@ import { SectionHeader } from '../source-control/listing/section-header'
 export function ChecksList(props: ChecksListProps): React.JSX.Element {
   const {
     checks,
+    checksError,
     checksLoading,
     checkDetailsContextKey,
     detailsStickySurface = 'sidebar',
@@ -126,6 +127,10 @@ export function ChecksList(props: ChecksListProps): React.JSX.Element {
       {props.sectionHeader && !checksExpanded ? null : checksLoading && checks.length === 0 ? (
         <div className="flex items-center justify-center py-8">
           <LoaderCircle className="size-5 animate-spin text-muted-foreground" />
+        </div>
+      ) : checks.length === 0 && checksError ? (
+        <div role="alert" className="px-4 py-8 text-[11px] break-words text-destructive">
+          {checksError}
         </div>
       ) : checks.length === 0 ? (
         <div className="px-4 py-8 text-[11px] text-muted-foreground">

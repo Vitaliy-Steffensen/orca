@@ -9,6 +9,7 @@ type CommentSectionsModel = Pick<
   | 'canTargetPRComments'
   | 'comments'
   | 'commentsDisabledReason'
+  | 'commentsError'
   | 'commentsLoading'
   | 'commentsSelectionClearRequest'
   | 'handleAddPRComment'
@@ -42,6 +43,7 @@ export function buildCommentSections(
         <PRCommentsList
           sectionHeader
           comments={comments}
+          commentsError={model.commentsError}
           commentsLoading={model.commentsLoading}
           reviewKind={reviewKind}
           commentsDisabled={!canTargetPRComments}

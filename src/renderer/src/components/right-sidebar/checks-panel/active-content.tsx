@@ -54,6 +54,7 @@ export function ChecksPanelActiveContent({
     agentComposerState,
     aiActionDisabledReason,
     checks,
+    checksError,
     checksLoading,
     claimedCommentResolutionRef,
     commentResolutionLaunchAcceptedRef,
@@ -162,6 +163,7 @@ export function ChecksPanelActiveContent({
         <ChecksList
           sectionHeader
           checks={checks}
+          checksError={checksError}
           checksLoading={checksLoading}
           checkDetailsContextKey={stateRequestKey}
           onLoadCheckDetails={handleLoadCheckDetails}

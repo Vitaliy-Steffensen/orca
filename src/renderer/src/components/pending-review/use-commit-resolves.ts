@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useAppStore } from '@/store'
 import { getRepoOwnerRoutedSettings } from '@/lib/repo-runtime-owner'
-import { getRuntimeGitBranchCompare } from '@/runtime/runtime-git-client'
+import { getRuntimeGitBranchCompare } from '@/runtime/runtime-git-diff-client'
 import { getIndexedRepoMap } from '@/store/worktree-repo-index'
 import { readCommitResolution, type CommitResolution } from './commit-resolution'
 

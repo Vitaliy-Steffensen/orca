@@ -18,7 +18,7 @@ import type {
 import type { ClaudeStructuredLaunch } from './claude-structured-launch-resolution'
 import type { ClaudeJournalTranslator } from './claude-journal-translator-contract'
 import type { ClaudePendingPrompt, ClaudePromptRegistry } from './claude-structured-prompt-replies'
-import { cancelProcessAcquisition } from '../../shared/child-process/cancel-process-acquisition'
+import { cancelProcessAcquisition } from '@orca/process-host/cancel-process-acquisition'
 import { randomUUID } from 'node:crypto'
 import type { AgentSessionFastModeState } from '../../shared/agent-session-wire'
 import type { AgentChildWorkEvidence } from '../../shared/agent-status-child-work-evidence'
@@ -100,6 +100,7 @@ export type ClaudeStructuredSessionAdapterDeps = {
   atRestCommands?: ClaudeAtRestCommandCatalog
   resolveLaunch: (input: {
     identity: AgentSessionJournalIdentity
+    spawnToken: string
   }) => Promise<ClaudeStructuredLaunch>
   onEvent?: (event: ClaudeStructuredSessionEvent) => void
   /** Direct settlement path for provider-proven late dispatch outcomes. */

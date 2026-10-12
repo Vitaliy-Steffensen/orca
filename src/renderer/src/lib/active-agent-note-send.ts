@@ -1,8 +1,10 @@
 import type { RuntimeTerminalWait } from '../../../shared/runtime-types'
+import { runtimeTargetForOwnerEnvironment } from '@/runtime/runtime-client-target'
+import type { RuntimeClientTarget } from '../../../shared/runtime-client-target'
 import { useAppStore } from '@/store'
 import { noteClaudePromptDelivered } from '@/components/terminal-pane/claude-web-prompt-sync'
-import { callRuntimeRpc, getActiveRuntimeTarget } from '@/runtime/runtime-rpc-client'
-import { getSettingsForWorktreeRuntimeOwner } from '@/lib/worktree-runtime-owner'
+import { callRuntimeRpc } from '@/runtime/runtime-rpc-client'
+import { getRuntimeEnvironmentIdForWorktree } from '@/lib/worktree-runtime-owner'
 import { findActiveRuntimeTerminal, getActiveTerminalNoteTarget } from './active-agent-note-target'
 import type { ActiveTerminalNoteTarget } from './active-agent-note-target'
 import type { ActiveAgentNotesSendResult } from './active-agent-note-send-result'
@@ -72,8 +74,8 @@ async function sendNotesToActiveAgentSessionInternal({
   if (!noteTarget) {
     return reportNoteSendFailure({ status: 'no-active-terminal', code: 'no-note-target' }, null)
   }
-  const runtimeTarget = getActiveRuntimeTarget(
-    getSettingsForWorktreeRuntimeOwner(state, worktreeId)
+  const runtimeTarget = runtimeTargetForOwnerEnvironment(
+    getRuntimeEnvironmentIdForWorktree(state, worktreeId)
   )
   const terminal = await findActiveRuntimeTerminal(
     runtimeTarget,
@@ -196,7 +198,7 @@ function reportSendResult(
 }
 
 async function sendPromptToExplicitAgentTarget(
-  runtimeTarget: ReturnType<typeof getActiveRuntimeTarget>,
+  runtimeTarget: RuntimeClientTarget,
   terminalHandle: string,
   prompt: string,
   sendNowWhenWorking: boolean

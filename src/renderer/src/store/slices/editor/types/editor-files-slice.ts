@@ -4,11 +4,14 @@ import type {
   ChangedFileStepOptions
 } from '../actions/changed-file-order'
 import type { HttpLinkSourceOwner } from '@/lib/http-link-routing'
+import type { CheckRunDetailsTabPatch } from '@/components/editor/check-run-details-tab'
 import type {
-  CheckRunDetailsTabPatch,
-  OpenCheckRunDetailsState
-} from '@/components/editor/check-run-details-tab'
-import type { OpenChatVisualTabState } from '@/components/native-chat/native-chat-visual-tab'
+  CombinedDiffAlternate,
+  ConflictReviewEntry,
+  ConflictReviewState,
+  OpenCheckRunDetailsState,
+  OpenChatVisualTabState
+} from '../../../../../../shared/editor-tab-view-types'
 import type {
   GitBranchChangeEntry,
   GitBranchCompareSummary,
@@ -19,10 +22,7 @@ import type { WorkspaceVisibleTabType } from '../../../../../../shared/tab-types
 import type {
   BranchCompareLike,
   ClosedEditorTabSnapshot,
-  CombinedDiffAlternate,
   CommitCompareLike,
-  ConflictReviewEntry,
-  ConflictReviewState,
   EditorOpenTargetOptions,
   EditorTabSelection,
   OpenFile

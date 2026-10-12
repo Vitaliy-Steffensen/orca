@@ -6,7 +6,8 @@ import {
   type GitPathReviewAttributes
 } from '../../../../../../shared/git-review-attributes'
 import { getConnectionId } from '@/lib/connection-context'
-import { getRuntimeGitReviewAttributes, type RuntimeGitContext } from '@/runtime/runtime-git-client'
+import { getRuntimeGitReviewAttributes } from '@/runtime/runtime-git-status-client'
+import type { RuntimeGitContext } from '@/runtime/runtime-git-client-context'
 
 const NO_ATTRIBUTES: GitPathReviewAttributes = Object.freeze({})
 

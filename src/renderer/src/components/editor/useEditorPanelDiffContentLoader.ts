@@ -1,14 +1,14 @@
 import { useCallback, type Dispatch, type MutableRefObject, type SetStateAction } from 'react'
+import { requireRuntimeTargetForFileOwner } from '@/lib/file-owner-runtime-target'
 import type { OpenFile } from '@/store/slices/editor'
 import { getConnectionIdForFile } from '@/lib/connection-context'
 import { useAppStore } from '@/store'
-import { settingsForRuntimeOwner } from '@/runtime/runtime-rpc-client'
 import {
   getRuntimeGitBranchDiff,
   getRuntimeGitCommitDiff,
-  getRuntimeGitDiff,
-  getRuntimeGitScope
-} from '@/runtime/runtime-git-client'
+  getRuntimeGitDiff
+} from '@/runtime/runtime-git-diff-client'
+import { getRuntimeGitScope } from '@/runtime/runtime-git-client-context'
 import { loadBranchWorktreeDiff } from './branch-worktree-diff'
 import type { DiffContent, InFlightContentRead } from './editor-panel-content-types'
 import { canUseChangesModeForFile } from './editor-panel-file-mode'
@@ -70,9 +70,12 @@ export function useEditorPanelDiffContentLoader({
             : null
         const commitCompare = file.commitCompare?.commitOid ? file.commitCompare : null
         const connectionId = getConnectionIdForFile(file.worktreeId, file.filePath) ?? undefined
-        const activeSettings = useAppStore.getState().settings
-        const fileSettings = settingsForRuntimeOwner(activeSettings, file.runtimeEnvironmentId)
-        const gitScope = getRuntimeGitScope(fileSettings, connectionId)
+        const fileTarget = requireRuntimeTargetForFileOwner(
+          useAppStore.getState(),
+          file.worktreeId,
+          file.runtimeEnvironmentId
+        )
+        const gitScope = getRuntimeGitScope(fileTarget, connectionId)
         const effectiveDiffSource: typeof file.diffSource =
           file.mode === 'edit' ? 'unstaged' : file.diffSource
         const compareAgainstHead = file.mode === 'edit'
@@ -94,7 +97,7 @@ export function useEditorPanelDiffContentLoader({
         let pending = inFlightDiffReads.get(key)
         if (!pending) {
           const gitContext = {
-            settings: fileSettings,
+            target: fileTarget,
             worktreeId: file.worktreeId,
             worktreePath,
             connectionId
@@ -119,12 +122,13 @@ export function useEditorPanelDiffContentLoader({
                   }
                 )
               : null
+          // oxlint-disable-next-line typescript/consistent-type-assertions -- SAFETY: every branch resolves a git diff result, which DiffContent mirrors.
           const promise = (branchWorktreeRead ??
             (effectiveDiffSource === 'commit'
               ? commitCompare
                 ? getRuntimeGitCommitDiff(
                     {
-                      settings: fileSettings,
+                      target: fileTarget,
                       worktreeId: file.worktreeId,
                       worktreePath,
                       connectionId
@@ -140,7 +144,7 @@ export function useEditorPanelDiffContentLoader({
               : effectiveDiffSource === 'branch' && branchCompare
                 ? getRuntimeGitBranchDiff(
                     {
-                      settings: fileSettings,
+                      target: fileTarget,
                       worktreeId: file.worktreeId,
                       worktreePath,
                       connectionId
@@ -158,7 +162,7 @@ export function useEditorPanelDiffContentLoader({
                   )
                 : getRuntimeGitDiff(
                     {
-                      settings: fileSettings,
+                      target: fileTarget,
                       worktreeId: file.worktreeId,
                       worktreePath,
                       connectionId
