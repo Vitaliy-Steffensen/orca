@@ -1,6 +1,7 @@
 import { BulkActionBar } from '../commit/bulk-action-bar'
 import { SourceControlHeaderToolbar } from './header-toolbar'
 import { SourceControlPendingReviewShelf } from '../pending-review/pending-review-shelf'
+import { SourceControlPendingCommentsSection } from '../pending-review/pending-comments-section'
 import { AgentNotesShelf } from '../notes/agent-notes-shelf'
 import { AgentTurnsSection, useAgentTurns } from '../agent-turns/agent-turns-section'
 import { useWorktreeAgentNotes } from '@/lib/agent-notes'
@@ -86,6 +87,18 @@ export function SourceControlPanelReady(props: SourceControlPanelReadyProps) {
           worktreeId={props.model.activeWorktreeId ?? null}
           collapsed={collapsedSections.has('pending-review')}
           onToggle={() => toggleSection('pending-review')}
+        />
+      )
+    })
+  }
+  if (pendingReviewQueue.comments.length > 0) {
+    shelves.push({
+      id: 'pending-comments',
+      node: (
+        <SourceControlPendingCommentsSection
+          queue={pendingReviewQueue}
+          collapsed={collapsedSections.has('pending-comments')}
+          onToggle={() => toggleSection('pending-comments')}
         />
       )
     })

@@ -1473,6 +1473,21 @@ reaction chip's tooltip reads "alice, bob and 2 others reacted with 👍"
 | `src/renderer/src/components/github/CommentReactions.tsx` | The tooltip on each chip. |
 | `src/renderer/src/i18n/locales/en.json` | `commentReactors.*`. |
 
+### 43. Pending review as its own Source Control section
+
+Your unsent review comments leave the Review section (§36) for a Pending review section
+(`pending-comments` in `SOURCE_CONTROL_SECTIONS`), under the shared section header so it
+collapses, drags and hides like the others. It shows only while drafts are queued. Review keeps
+the reviewers, diff base, standing and verdict form, and its header no longer counts drafts.
+
+| File | What is ours |
+| --- | --- |
+| `source-control/pending-review/pending-comments-section.tsx` | The section. |
+| `source-control/pending-review/pending-review-shelf.tsx` | The drafts disclosure removed. |
+| `source-control/panel/panel-ready.tsx` | The section's shelf. |
+| `src/shared/source-control-sections.ts` | `pending-comments`. |
+| `src/renderer/src/i18n/locales/en.json` | `sourceControlSections.pendingComments`. |
+
 ## Verify
 
 Verify runs on GitHub, not locally: `fork-verify.yml` runs it on every pull request against `main`,

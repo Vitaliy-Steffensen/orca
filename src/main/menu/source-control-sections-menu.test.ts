@@ -17,6 +17,7 @@ describe('buildPanelSectionsSubmenus', () => {
     expect(sourceControl.label).toBe('Source Control Sections')
     expect(rows(sourceControl)).toEqual([
       ['Review', 'checkbox', true],
+      ['Pending review', 'checkbox', true],
       ['Agent notes', 'checkbox', true],
       ['Agent turns', 'checkbox', true],
       ['Changes', 'checkbox', true],

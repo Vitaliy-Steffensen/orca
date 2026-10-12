@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { Check, ChevronDown, MessageCircle, ScanEye, X } from 'lucide-react'
+import { Check, MessageCircle, ScanEye, X } from 'lucide-react'
 import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
 import { translate } from '@/i18n/i18n'
@@ -10,7 +10,6 @@ import {
 } from '../../../../../../shared/github/pending-review-comment'
 import type { PendingReviewQueue } from '@/components/pending-review/use-pending-review-queue'
 import type { ReviewVerdictSubmitter } from '@/components/pending-review/use-submit-review-verdict'
-import { PendingReviewCommentCard } from '@/components/pending-review/PendingReviewCommentCard'
 import { SectionHeader } from '../listing/section-header'
 import { PendingReviewReviewers } from './pending-review-reviewers'
 import { useReviewDiffBase } from '@/components/pending-review/use-review-diff-base'
@@ -65,9 +64,6 @@ export function SourceControlPendingReviewShelf({
     submitter.viewerLatestReviewCommit,
     submitter.baseRefName
   )
-  // Why closed by default: the drafts are a reference you open when you want them, while
-  // the form below is the thing a reviewer comes here to use.
-  const [expanded, setExpanded] = useState(false)
   const [body, setBody] = usePendingReviewSummary(worktreeId)
   const [uploading, setUploading] = useState(false)
   const [submitting, setSubmitting] = useState<ReviewVerdict | null>(null)
@@ -81,7 +77,6 @@ export function SourceControlPendingReviewShelf({
     setSubmitting(null)
     if (result.ok) {
       setBody('', true)
-      setExpanded(false)
       return
     }
     // Why the queue is untouched: a rejected verdict must not cost the reviewer their comments.
@@ -144,13 +139,11 @@ export function SourceControlPendingReviewShelf({
               }
             : null
 
-  // Fork: one Review section — the reviewers, your drafts and the verdict form — whose header
-  // collapses it, drags it and hides it.
+  // Fork: one Review section — the reviewers and the verdict form — whose header collapses it,
+  // drags it and hides it. Your drafts are the Pending review section beside it.
   const header = (
     <SectionHeader
       label={translate('sourceControlSections.review', 'Review')}
-      count={queue.comments.length}
-      countTitle={translate('auto.components.sourceControl.pendingReview.title', 'Pending review')}
       isCollapsed={collapsed}
       onToggle={onToggle}
     />
@@ -167,32 +160,6 @@ export function SourceControlPendingReviewShelf({
         onRerequest={submitter.rerequest}
         showHeading={false}
       />
-      {/* Why hidden at zero: a disclosure that opens onto nothing is chrome, and the form
-          below is the part of this section that is always worth showing. */}
-      {queue.comments.length > 0 ? (
-        <div className="px-3 pt-2">
-          <button
-            type="button"
-            aria-expanded={expanded}
-            className="flex items-center gap-1 pb-1 text-[11px] font-medium uppercase tracking-wide text-muted-foreground hover:text-foreground"
-            onClick={() => setExpanded((prev) => !prev)}
-          >
-            <ChevronDown className={cn('size-3 transition-transform', !expanded && '-rotate-90')} />
-            {translate('auto.components.sourceControl.pendingReview.title', 'Pending review')}
-            <span className="tabular-nums">{queue.comments.length}</span>
-          </button>
-          <div className={cn('space-y-2', !expanded && 'hidden')}>
-            {queue.comments.map((comment) => (
-              <PendingReviewCommentCard
-                key={comment.id}
-                comment={comment}
-                onChangeBody={(next) => queue.updateBody(comment.id, next)}
-                onRemove={() => queue.remove(comment.id)}
-              />
-            ))}
-          </div>
-        </div>
-      ) : null}
       {diffBase.available ? (
         <div className="px-3 pt-2">
           {/* Why here and not in the base-ref dialog: this is a reading choice a reviewer

@@ -19564,7 +19564,8 @@
   },
   "sourceControlSections": {
     "hide": "Hide section",
-    "review": "Review"
+    "review": "Review",
+    "pendingComments": "Pending review"
   },
   "prPanelSections": {
     "attention": "Needs attention",

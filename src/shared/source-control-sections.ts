@@ -1,8 +1,14 @@
 // Fork: the sections of the source-control panel and of the PR panel, in their default order. The
 // renderer lays each panel out from its list, and the View menu lists the same ids as checkboxes.
 export const SOURCE_CONTROL_SECTIONS = [
-  // The reviewers and your pending review of the pull request.
+  // The reviewers and your verdict on the pull request.
   { id: 'pending-review', labelKey: 'sourceControlSections.review', label: 'Review' },
+  // Your review comments not yet submitted.
+  {
+    id: 'pending-comments',
+    labelKey: 'sourceControlSections.pendingComments',
+    label: 'Pending review'
+  },
   { id: 'agent-notes', labelKey: 'sourceControlSections.agentNotes', label: 'Agent notes' },
   { id: 'agent-turns', labelKey: 'sourceControlSections.agentTurns', label: 'Agent turns' },
   { id: 'changes', labelKey: 'sourceControlSections.changes', label: 'Changes' },

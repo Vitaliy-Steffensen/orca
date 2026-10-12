@@ -35,9 +35,10 @@ describe('PR panel sections', () => {
 })
 
 describe('source control sections', () => {
-  it('keeps reviewers and the pending review in one Review section', () => {
+  it('keeps the review form in Review and your unsent review comments in their own section', () => {
     expect(SOURCE_CONTROL_SECTIONS.map((section) => [section.id, section.label])).toEqual([
       ['pending-review', 'Review'],
+      ['pending-comments', 'Pending review'],
       ['agent-notes', 'Agent notes'],
       ['agent-turns', 'Agent turns'],
       ['changes', 'Changes'],
@@ -48,6 +49,7 @@ describe('source control sections', () => {
   it('keeps a saved order, drops unknown ids and adds new sections where they belong by default', () => {
     expect(orderSourceControlSections(undefined)).toEqual([
       'pending-review',
+      'pending-comments',
       'agent-notes',
       'agent-turns',
       'changes'
@@ -56,6 +58,7 @@ describe('source control sections', () => {
       'changes',
       'agent-turns',
       'pending-review',
+      'pending-comments',
       'agent-notes'
     ])
   })
@@ -65,10 +68,12 @@ describe('source control sections', () => {
     expect(moveSourceControlSection(order, 'changes', 'pending-review')).toEqual([
       'changes',
       'pending-review',
+      'pending-comments',
       'agent-notes',
       'agent-turns'
     ])
     expect(moveSourceControlSection(order, 'pending-review', null)).toEqual([
+      'pending-comments',
       'agent-notes',
       'agent-turns',
       'changes',

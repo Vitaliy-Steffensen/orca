@@ -21,9 +21,9 @@ vi.mock('@/components/github/ReviewMarkdownComposer', () => ({
 
 afterEach(cleanup)
 
-function renderShelf(collapsed: boolean) {
+function renderShelf(collapsed: boolean, comments: PendingReviewQueue['comments'] = []) {
   const queue = {
-    comments: [],
+    comments,
     updateBody: vi.fn(),
     remove: vi.fn()
   } as unknown as PendingReviewQueue
@@ -67,6 +67,11 @@ describe('SourceControlPendingReviewShelf', () => {
     expect(screen.getByRole('button', { name: /Review/ })).toBeInTheDocument()
     expect(screen.getByText('MartinBernstorff')).toBeInTheDocument()
     expect(screen.getByPlaceholderText('Add review summary…')).toBeInTheDocument()
+  })
+
+  it('leaves your unsent review comments to their own Pending review section', () => {
+    renderShelf(false, [{ id: 'd1', path: 'a.ts', line: 3, body: 'Rename this', createdAt: 1 }])
+    expect(screen.queryByRole('button', { name: /Pending review/ })).toBeNull()
   })
 
   it('collapses to its header', () => {
