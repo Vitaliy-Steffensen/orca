@@ -7,6 +7,7 @@ import { toggleSourceControlSectionHidden } from '../../../../../../shared/sourc
 import { shouldRenderCommitArea } from '../commit/component-gates'
 import { SourceControlBranchSection } from '../listing/branch-section'
 import { SourceControlAllChangesSection } from '../listing/all-changes-section'
+import { clearUncommittedOnly } from '../listing/uncommitted-only-store'
 import { SourceControlContentStatus } from '../listing/content-status'
 import {
   SourceControlFileCategoryFilter,
@@ -25,6 +26,7 @@ export function SourceControlPanelContent(props: SourceControlPanelReadyProps) {
     settings,
     updateSettings,
     allChangeEntries,
+    uncommittedOnly,
     openAllChangesEntry,
     showAllChanges,
     totalAllChangeCount,
@@ -178,10 +180,10 @@ export function SourceControlPanelContent(props: SourceControlPanelReadyProps) {
           />
         )}
 
-      {/* Why also when empty under a type filter: the filter lives in this header, so it must stay reachable. */}
+      {/* Why also when empty under a filter: the filters live in this header, so they must stay reachable. */}
       {showAllChanges &&
         !changesHidden &&
-        (allChangeEntries.length > 0 || isCategoryFilterActive) && (
+        (allChangeEntries.length > 0 || isCategoryFilterActive || uncommittedOnly) && (
           <SourceControlAllChangesSection
             baseRef={branchSummary?.status === 'ready' ? branchSummary.baseRef : null}
             entries={allChangeEntries}
@@ -213,6 +215,8 @@ export function SourceControlPanelContent(props: SourceControlPanelReadyProps) {
                 />
               ) : null
             }
+            uncommittedOnly={uncommittedOnly}
+            onClearUncommittedOnly={() => clearUncommittedOnly(currentWorktreeId)}
             diffCommentCountByPath={diffCommentCountByPath}
             reviewThreadCountByPath={reviewThreadCountByPath}
             pendingReviewCountByPath={pendingReviewCountByPath}

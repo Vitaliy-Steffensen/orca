@@ -19548,7 +19548,9 @@
   "allChanges": {
     "title": "Changes",
     "groupByStatus": "Group by status",
-    "showOneList": "Show all changes in one list"
+    "showOneList": "Show all changes in one list",
+    "uncommittedOnly": "Uncommitted",
+    "showAllChanges": "Show all changes"
   },
   "sourceControlSections": {
     "hide": "Hide section",

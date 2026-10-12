@@ -1,16 +1,22 @@
 // @vitest-environment happy-dom
-import { renderHook } from '@testing-library/react'
+import { act, renderHook } from '@testing-library/react'
 import { describe, expect, it } from 'vitest'
 import type { GitStatusEntry } from '../../../../../../shared/git-status-types'
 import { useAllChangesProjection } from './use-all-changes-projection'
+import { toggleUncommittedOnly } from './uncommitted-only-store'
 
 const unstaged: GitStatusEntry = { path: 'src/ui/b.ts', status: 'modified', area: 'unstaged' }
 const untracked: GitStatusEntry = { path: 'README.md', status: 'untracked', area: 'untracked' }
 const committed = { path: 'src/ui/a.ts', status: 'modified' as const }
 
-function project(sourceControlViewMode: 'list' | 'tree', collapsedTreeDirs = new Set<string>()) {
+function renderProjection(
+  sourceControlViewMode: 'list' | 'tree',
+  collapsedTreeDirs = new Set<string>(),
+  activeWorktreeId = 'wt'
+) {
   return renderHook(() =>
     useAllChangesProjection({
+      activeWorktreeId,
       sourceControlGrouping: 'all',
       visibleSelectionEntries: [],
       entries: [unstaged, untracked],
@@ -20,7 +26,11 @@ function project(sourceControlViewMode: 'list' | 'tree', collapsedTreeDirs = new
       sourceControlViewMode,
       collapsedTreeDirs
     })
-  ).result.current
+  )
+}
+
+function project(sourceControlViewMode: 'list' | 'tree', collapsedTreeDirs = new Set<string>()) {
+  return renderProjection(sourceControlViewMode, collapsedTreeDirs).result.current
 }
 
 describe('useAllChangesProjection', () => {
@@ -37,6 +47,17 @@ describe('useAllChangesProjection', () => {
       'branch-worktree::src/ui/a.ts',
       'branch-worktree::src/ui/b.ts'
     ])
+  })
+
+  it('narrows to uncommitted files when the workspace toggles that filter on', () => {
+    const { result } = renderProjection('list', new Set(), 'wt-uncommitted')
+    act(() => toggleUncommittedOnly('wt-uncommitted'))
+    expect(result.current.uncommittedOnly).toBe(true)
+    expect(result.current.allChangeEntries.map((entry) => entry.path)).toEqual([
+      'README.md',
+      'src/ui/b.ts'
+    ])
+    expect(result.current.totalAllChangeCount).toBe(4)
   })
 
   it('groups the files by folder in tree view, honouring collapsed folders', () => {

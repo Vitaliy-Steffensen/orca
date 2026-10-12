@@ -11,6 +11,7 @@ import { ALL_CHANGES_AREA, buildAllChangeEntries } from './all-changes'
 import type { AllChangesTreeNode } from './all-changes-section'
 import type { SourceControlEntryGroups } from './section-order'
 import type { FlatEntry } from './use-selection'
+import { useUncommittedOnly } from './uncommitted-only-store'
 
 const NO_ENTRIES: GitBranchChangeEntry[] = []
 const NO_TREE_ROWS: AllChangesTreeNode[] = []
@@ -18,6 +19,7 @@ const NO_SELECTABLE_ENTRIES: FlatEntry[] = []
 
 /** The all-changes rows, built from the same filtered status and branch entries the sections use. */
 export function useAllChangesProjection({
+  activeWorktreeId,
   sourceControlGrouping,
   visibleSelectionEntries,
   entries,
@@ -27,6 +29,7 @@ export function useAllChangesProjection({
   sourceControlViewMode,
   collapsedTreeDirs
 }: {
+  activeWorktreeId: string | null
   sourceControlGrouping: 'all' | 'status'
   visibleSelectionEntries: FlatEntry[]
   entries: readonly GitStatusEntry[]
@@ -37,15 +40,17 @@ export function useAllChangesProjection({
   collapsedTreeDirs: ReadonlySet<string>
 }) {
   const enabled = sourceControlGrouping === 'all'
+  const uncommittedOnly = useUncommittedOnly(activeWorktreeId)
   const allChangeEntries = useMemo(
     () =>
       enabled
         ? buildAllChangeEntries(
             [...filteredGrouped.staged, ...filteredGrouped.unstaged, ...filteredGrouped.untracked],
-            filteredBranchEntries
+            filteredBranchEntries,
+            { uncommittedOnly }
           )
         : NO_ENTRIES,
-    [enabled, filteredBranchEntries, filteredGrouped]
+    [enabled, filteredBranchEntries, filteredGrouped, uncommittedOnly]
   )
   const totalAllChangeCount = useMemo(
     () => (enabled ? buildAllChangeEntries(entries, branchEntries).length : 0),
@@ -72,6 +77,7 @@ export function useAllChangesProjection({
     showAllChanges: enabled,
     // Why: the all-changes rows have no staging, so nothing is selectable while they show.
     selectableEntries: enabled ? NO_SELECTABLE_ENTRIES : visibleSelectionEntries,
+    uncommittedOnly,
     allChangeEntries,
     totalAllChangeCount,
     visibleAllChangesTreeRows,

@@ -1,4 +1,5 @@
 import React from 'react'
+import { X } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { translate } from '@/i18n/i18n'
 import type { GitBranchChangeEntry } from '../../../../../../shared/git-diff-compare-types'
@@ -37,6 +38,8 @@ export function SourceControlAllChangesSection({
   onOpen,
   onViewAll,
   headerActions,
+  uncommittedOnly = false,
+  onClearUncommittedOnly,
   diffCommentCountByPath,
   reviewThreadCountByPath,
   pendingReviewCountByPath,
@@ -60,6 +63,8 @@ export function SourceControlAllChangesSection({
   onOpen: (entry: GitBranchChangeEntry, event?: SourceControlRowOpenEvent) => void
   onViewAll: () => void
   headerActions?: React.ReactNode
+  uncommittedOnly?: boolean
+  onClearUncommittedOnly?: () => void
   diffCommentCountByPath: Map<string, number>
   reviewThreadCountByPath: Map<string, number>
   pendingReviewCountByPath: Map<string, number>
@@ -116,6 +121,22 @@ export function SourceControlAllChangesSection({
         onToggle={onToggle}
         actions={
           <>
+            {uncommittedOnly && (
+              <span className="flex h-5 items-center gap-0.5 rounded-full border border-border bg-muted pl-2 pr-0.5 text-[11px] text-foreground">
+                {translate('allChanges.uncommittedOnly', 'Uncommitted')}
+                <button
+                  type="button"
+                  aria-label={translate('allChanges.showAllChanges', 'Show all changes')}
+                  className="flex size-4 items-center justify-center rounded-full text-muted-foreground hover:bg-accent hover:text-foreground"
+                  onClick={(event) => {
+                    event.stopPropagation()
+                    onClearUncommittedOnly?.()
+                  }}
+                >
+                  <X className="size-3" />
+                </button>
+              </span>
+            )}
             {headerActions}
             <Button
               type="button"

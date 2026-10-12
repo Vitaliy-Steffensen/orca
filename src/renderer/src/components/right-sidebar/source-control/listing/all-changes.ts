@@ -42,7 +42,8 @@ function localStatus(local: readonly GitStatusEntry[]): {
  */
 export function buildAllChangeEntries(
   statusEntries: readonly GitStatusEntry[],
-  branchEntries: readonly GitBranchChangeEntry[]
+  branchEntries: readonly GitBranchChangeEntry[],
+  { uncommittedOnly = false }: { uncommittedOnly?: boolean } = {}
 ): GitBranchChangeEntry[] {
   const byPath = new Map<string, { branch?: GitBranchChangeEntry; local: GitStatusEntry[] }>()
   for (const entry of branchEntries) {
@@ -59,6 +60,9 @@ export function buildAllChangeEntries(
 
   const entries: GitBranchChangeEntry[] = []
   for (const [path, { branch, local }] of byPath) {
+    if (uncommittedOnly && local.length === 0) {
+      continue
+    }
     const deletedLocally =
       local.some((entry) => entry.status === 'deleted') &&
       !local.some((entry) => entry.status === 'untracked')

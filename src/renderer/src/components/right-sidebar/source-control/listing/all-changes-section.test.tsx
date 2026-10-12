@@ -64,6 +64,19 @@ describe('SourceControlAllChangesSection', () => {
     expect(screen.getByText('Filter')).toBeTruthy()
   })
 
+  it('shows a removable Uncommitted badge while only uncommitted files are listed', () => {
+    const props = renderSection({ uncommittedOnly: true, onClearUncommittedOnly: vi.fn() })
+    expect(screen.getByText('Uncommitted')).toBeTruthy()
+    fireEvent.click(screen.getByRole('button', { name: 'Show all changes' }))
+    expect(props.onClearUncommittedOnly).toHaveBeenCalled()
+    expect(props.onToggle).not.toHaveBeenCalled()
+  })
+
+  it('shows no badge while every change is listed', () => {
+    renderSection({})
+    expect(screen.queryByText('Uncommitted')).toBeNull()
+  })
+
   it('opens every file together from View all', () => {
     const props = renderSection({})
     fireEvent.click(screen.getByText('View all'))

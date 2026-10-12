@@ -1,10 +1,14 @@
 import { toast } from 'sonner'
 import { translate } from '@/i18n/i18n'
 import { openLatestAgentTurn } from '@/lib/agent-turn-open'
+import { toggleUncommittedOnly } from '@/components/right-sidebar/source-control/listing/uncommitted-only-store'
 import { useAppStore } from '../store'
 import type { KeybindingActionId } from '../../../shared/keybindings/types'
 
-type SourceControlShortcutId = 'sourceControl.sendReviewNotes' | 'sourceControl.openLatestAgentTurn'
+type SourceControlShortcutId =
+  | 'sourceControl.sendReviewNotes'
+  | 'sourceControl.openLatestAgentTurn'
+  | 'sourceControl.toggleUncommittedOnly'
 
 function startOpenLatestAgentTurn(): boolean {
   const store = useAppStore.getState()
@@ -46,6 +50,11 @@ export function takeSourceControlShortcut(
   // Fork: open the active workspace's newest agent turn.
   if (matchShortcut('sourceControl.openLatestAgentTurn') && startOpenLatestAgentTurn()) {
     return 'sourceControl.openLatestAgentTurn'
+  }
+  const activeWorktreeId = useAppStore.getState().activeWorktreeId
+  if (matchShortcut('sourceControl.toggleUncommittedOnly') && activeWorktreeId) {
+    toggleUncommittedOnly(activeWorktreeId)
+    return 'sourceControl.toggleUncommittedOnly'
   }
   return null
 }

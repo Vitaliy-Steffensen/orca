@@ -29,6 +29,20 @@ describe('buildAllChangeEntries', () => {
     ).toEqual(['docs/readme.md', 'src/a.ts', 'src/b.ts', 'src/new.ts'])
   })
 
+  it('keeps only files with uncommitted changes when asked, still reported against the base', () => {
+    const entries = buildAllChangeEntries(
+      [
+        status({ path: 'src/b.ts', area: 'staged' }),
+        status({ path: 'src/new.ts', status: 'untracked', area: 'untracked' }),
+        status({ path: 'src/a.ts' })
+      ],
+      [branch({ path: 'src/a.ts', status: 'added' }), branch({ path: 'docs/readme.md' })],
+      { uncommittedOnly: true }
+    )
+    expect(entries.map((entry) => entry.path)).toEqual(['src/a.ts', 'src/b.ts', 'src/new.ts'])
+    expect(entries[0].status).toBe('added')
+  })
+
   it('reports each file as it stands against the branch base', () => {
     const entries = buildAllChangeEntries(
       [

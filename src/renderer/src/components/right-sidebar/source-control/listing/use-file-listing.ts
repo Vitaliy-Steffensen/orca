@@ -139,6 +139,7 @@ export function useSourceControlFileListing({
   })
 
   const allChanges = useAllChangesProjection({
+    activeWorktreeId,
     sourceControlGrouping,
     visibleSelectionEntries,
     entries,

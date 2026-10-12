@@ -1390,6 +1390,25 @@ Pending review shows only with drafts.
 | `src/renderer/src/components/pending-review/PendingReviewPanelSection.tsx` | The opt-in `sectionHeader`. |
 | `src/renderer/src/i18n/locales/en.json` | `menu.prPanelSections`, `prPanelSections.*`. |
 
+### 38. Only uncommitted changes (⌥⌘U)
+
+`sourceControl.toggleUncommittedOnly` (⌥⌘U, macOS only like Open Latest Agent Turn, since
+Ctrl+Alt+letter is AltGr text on Windows and Linux) narrows the Changes list (§35) of the active
+workspace to files with staged, unstaged or untracked changes. Rows still read against the base.
+While it is on, an Uncommitted badge sits beside the file type filter; its × shows every change
+again. The flag is per workspace and kept outside the panel
+(`listing/uncommitted-only-store.ts`), so the shortcut works while the panel is closed. It is not
+saved across restarts.
+
+| File | What is ours |
+| --- | --- |
+| `src/shared/keybindings/definitions-core-4.ts`, `types.ts` | The action and its default chord. |
+| `src/renderer/src/app-shell/source-control-shortcuts.ts` | Toggling the active workspace's flag. |
+| `source-control/listing/all-changes.ts` | `buildAllChangeEntries`' `uncommittedOnly` option. |
+| `source-control/listing/use-all-changes-projection.ts`, `use-file-listing.ts` | Reading the flag. |
+| `source-control/listing/all-changes-section.tsx`, `panel/panel-content.tsx` | The badge; the section stays up while the filter empties it. |
+| `src/renderer/src/i18n/locales/en.json` | `allChanges.uncommittedOnly`, `allChanges.showAllChanges`. |
+
 ## Verify
 
 Verify runs on GitHub, not locally: `fork-verify.yml` runs it on every pull request against `main`,
