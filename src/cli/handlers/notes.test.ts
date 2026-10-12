@@ -125,6 +125,36 @@ describe('orca notes CLI handlers', () => {
     })
   })
 
+  it('turns a typed \\n in the body into a line break, the way agents pass paragraphs', async () => {
+    queueFixtures(
+      callMock,
+      worktreeListFixture([WORKTREE]),
+      okFixture('req_show', { worktree: WORKTREE }),
+      okFixture('req_add', { note: { id: 'note-4', filePath: 'README.md', lineNumber: 3 } })
+    )
+
+    await main(
+      [
+        'notes',
+        'add',
+        '--file',
+        'README.md',
+        '--line',
+        '3',
+        '--body',
+        'Dedupe by value.\\n\\n- Weak point: no test.\\n- Keep `\\\\n` literal.'
+      ],
+      '/tmp/repo'
+    )
+
+    expect(callMock).toHaveBeenLastCalledWith(
+      'agentNote.add',
+      expect.objectContaining({
+        body: 'Dedupe by value.\n\n- Weak point: no test.\n- Keep `\\n` literal.'
+      })
+    )
+  })
+
   it('passes the GitHub comment the note answers', async () => {
     queueFixtures(
       callMock,

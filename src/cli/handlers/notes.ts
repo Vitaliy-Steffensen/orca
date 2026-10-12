@@ -61,6 +61,14 @@ function defaultAgentName(): string {
   return process.env.CLAUDECODE === '1' ? 'Claude Code' : 'Agent'
 }
 
+// Why: agents pass paragraphs as `\n` inside one quoted argument, which the shell keeps as two
+// characters; `\\n` stays a literal `\n` for a note that is about the escape itself.
+function noteBody(ctx: Parameters<CommandHandler>[0]): string {
+  return getRequiredStringFlag(ctx.flags, 'body').replace(/\\\\n|\\n/g, (match) =>
+    match === '\\n' ? '\n' : '\\n'
+  )
+}
+
 function lineLabel(note: Pick<DiffComment, 'startLine' | 'lineNumber'>): string {
   return note.startLine !== undefined && note.startLine !== note.lineNumber
     ? `${note.startLine}-${note.lineNumber}`
@@ -89,7 +97,7 @@ export const NOTES_HANDLERS: Record<string, CommandHandler> = {
     if (endLine !== undefined && endLine < startLine) {
       throw new RuntimeClientError('invalid_argument', '--end-line must not be before --line.')
     }
-    const body = getRequiredStringFlag(ctx.flags, 'body')
+    const body = noteBody(ctx)
     const agent = getOptionalStringFlag(ctx.flags, 'agent') ?? defaultAgentName()
     const githubCommentUrl = getOptionalStringFlag(ctx.flags, 'github-comment')
     const filePath = await resolveNoteFilePath(
@@ -119,7 +127,7 @@ export const NOTES_HANDLERS: Record<string, CommandHandler> = {
     const response = await ctx.client.call<{ note: DiffComment }>('agentNote.reply', {
       worktree,
       noteId,
-      body: getRequiredStringFlag(ctx.flags, 'body'),
+      body: noteBody(ctx),
       agent: getOptionalStringFlag(ctx.flags, 'agent') ?? defaultAgentName()
     })
     printResult(

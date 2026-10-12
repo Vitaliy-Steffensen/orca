@@ -3338,6 +3338,15 @@ html.native-shell .app-layout {
   margin-top: 2px;
 }
 
+/* Fork: an agent note is markdown; its paragraphs and lists set the spacing, not raw newlines. */
+.orca-diff-comment-body-markdown {
+  white-space: normal;
+}
+
+.orca-diff-comment-body-markdown > * + * {
+  margin-top: 0.6em;
+}
+
 /* Popover for adding new comment */
 .orca-diff-comment-popover {
   position: absolute;

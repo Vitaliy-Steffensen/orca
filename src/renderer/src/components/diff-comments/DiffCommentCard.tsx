@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button'
 import { getDiffCommentLineLabel } from '@/lib/diff-comment-compat'
 import { useMountedRef } from '@/hooks/useMountedRef'
 import { translate } from '@/i18n/i18n'
+import CommentMarkdown from '@/components/sidebar/CommentMarkdown'
 
 // Why: the saved-note card lives inside a Monaco view zone's DOM node.
 // useDiffCommentDecorator creates a React root per zone and renders this
@@ -359,6 +360,13 @@ export function DiffCommentCard({
               </Button>
             </div>
           </div>
+        ) : agentName ? (
+          // Fork: agents write their notes in markdown; the user's own notes stay the text they typed.
+          <CommentMarkdown
+            content={body}
+            variant="compact"
+            className="orca-diff-comment-body orca-diff-comment-body-markdown"
+          />
         ) : (
           <div className="orca-diff-comment-body">{body}</div>
         )}

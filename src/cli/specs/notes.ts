@@ -20,10 +20,12 @@ export const NOTES_COMMAND_SPECS: CommandSpec[] = [
     notes: [
       'Use it to tell the user what you reviewed or how you resolved one of their notes, on the lines you changed. It is shown apart from the user notes and is never sent back to an agent.',
       'Line numbers are in the current version of the file. --file may be relative to cwd or absolute inside the worktree. --agent names you (for example "Claude Code" or "Codex"); it defaults to Claude Code inside Claude Code, else "Agent".',
-      'When the note answers a GitHub review comment, pass its link with --github-comment so the note links back to it.'
+      'When the note answers a GitHub review comment, pass its link with --github-comment so the note links back to it.',
+      'The body is markdown shown in a narrow card: lead with the point in one sentence, put a blank line (\\n\\n) between paragraphs, use a "- " list for several findings, and `backticks` for code. A literal \\n in --body becomes a line break.'
     ],
     examples: [
       'orca notes add --file src/api.ts --line 42 --body "Renamed fetchUser and updated both callers."',
+      'orca notes add --file src/color.ts --line 3 --end-line 20 --body "Dedupes by exact `value` string.\\n\\n- Safe only because the backend always serialises to rgba().\\n- No unit test yet."',
       'orca notes add --file src/api.ts --line 40 --end-line 58 --agent Codex --body "Review: this retry loop never backs off."'
     ]
   },
