@@ -1,5 +1,5 @@
 import type { CommandHandler } from './dispatch'
-import { BROWSER_HANDLER_GROUPS } from './browser-handler-groups'
+import { BROWSER_AND_FORK_HANDLER_GROUPS } from './fork-handler-groups'
 
 export type HandlerGroup = {
   name: string
@@ -100,11 +100,6 @@ export const HANDLER_GROUPS: readonly HandlerGroup[] = [
     load: async () => (await import('./handlers/worktree.js')).WORKTREE_HANDLERS
   },
   {
-    name: 'notes',
-    keys: ['notes add', 'notes reply', 'notes list', 'notes rm'],
-    load: async () => (await import('./handlers/notes.js')).NOTES_HANDLERS
-  },
-  {
     name: 'file',
     keys: ['file open', 'file diff', 'file open-changed'],
     load: async () => (await import('./handlers/file.js')).FILE_HANDLERS
@@ -126,7 +121,7 @@ export const HANDLER_GROUPS: readonly HandlerGroup[] = [
     ],
     load: async () => (await import('./handlers/terminal.js')).TERMINAL_HANDLERS
   },
-  ...BROWSER_HANDLER_GROUPS,
+  ...BROWSER_AND_FORK_HANDLER_GROUPS,
   {
     name: 'orchestration',
     keys: [

@@ -1,4 +1,5 @@
 import { useAppStore } from '@/store'
+import { runtimeTargetForRepoOwner } from '@/lib/repo-runtime-owner'
 import { resolveGitHubPrStartPointForRepo } from '@/lib/github-pr-start-point'
 import { launchAgentBackgroundSession } from '@/lib/launch-agent-background-session'
 import { ensureHooksConfirmed } from '@/lib/ensure-hooks-confirmed'
@@ -61,7 +62,7 @@ export async function createReviewWorkspace(
     const startPoint = await resolveGitHubPrStartPointForRepo({
       repoId,
       prNumber: pr.number,
-      settings: store.settings,
+      target: runtimeTargetForRepoOwner(store, repoId),
       headRefName: pr.headRefName,
       baseRefName: pr.baseRefName
     })
