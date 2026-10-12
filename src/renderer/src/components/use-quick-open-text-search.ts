@@ -1,10 +1,8 @@
 import { useEffect, useState } from 'react'
-import { useAppStore } from '@/store'
 import { getConnectionId } from '@/lib/connection-context'
 import { readIpcErrorDetail } from '@/lib/ipc-error'
-import { getRuntimeEnvironmentIdForWorktree } from '@/lib/worktree-runtime-owner'
+import { useWorktreeGitOwnerTarget } from '@/components/right-sidebar/worktree-git-owner-target'
 import { searchRuntimeFiles } from '@/runtime/runtime-file-search-client'
-import { runtimeTargetForOwnerEnvironment } from '@/runtime/runtime-client-target'
 import type { SearchResult } from '../../../shared/code-search-types'
 
 const TEXT_SEARCH_DEBOUNCE_MS = 150
@@ -22,9 +20,8 @@ export function useQuickOpenTextSearch(
   worktreePath: string | null,
   query: string | null
 ): { result: SearchResult | null; error: string | null; loading: boolean } {
-  const runtimeEnvironmentId = useAppStore((state) =>
-    getRuntimeEnvironmentIdForWorktree(state, worktreeId)
-  )
+  // Why the owner's target: the worktree's host runs the search, never the focused server.
+  const target = useWorktreeGitOwnerTarget(worktreeId)
   const key = `${worktreeId}\n${worktreePath}\n${query}`
   const [state, setState] = useState<TextSearchState>({
     key: '',
@@ -32,10 +29,10 @@ export function useQuickOpenTextSearch(
     error: null,
     loading: false
   })
-  const active = Boolean(worktreeId && worktreePath && query?.trim())
+  const active = Boolean(target && worktreeId && worktreePath && query?.trim())
 
   useEffect(() => {
-    if (!worktreeId || !worktreePath || !query?.trim()) {
+    if (!target || !worktreeId || !worktreePath || !query?.trim()) {
       return
     }
     const controller = new AbortController()
@@ -43,7 +40,7 @@ export function useQuickOpenTextSearch(
     const timer = window.setTimeout(() => {
       searchRuntimeFiles(
         {
-          target: runtimeTargetForOwnerEnvironment(runtimeEnvironmentId),
+          target,
           worktreeId,
           worktreePath,
           connectionId: getConnectionId(worktreeId) ?? undefined
@@ -71,7 +68,7 @@ export function useQuickOpenTextSearch(
       window.clearTimeout(timer)
       controller.abort()
     }
-  }, [key, query, runtimeEnvironmentId, worktreeId, worktreePath])
+  }, [key, query, target, worktreeId, worktreePath])
 
   if (!active) {
     return { result: null, error: null, loading: false }

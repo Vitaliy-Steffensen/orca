@@ -4,9 +4,9 @@ import { useAppStore } from '@/store'
 import type { AppState } from '@/store/types'
 import { getIndexedWorktreeById } from '@/store/worktree-repo-index'
 import { callRuntimeRpc } from '@/runtime/runtime-rpc-client'
-import { runtimeTargetForOwnerEnvironment } from '@/runtime/runtime-client-target'
 import { toRuntimeWorktreeSelector } from '@/runtime/runtime-worktree-selector'
-import { getRuntimeEnvironmentIdForWorktree } from '@/lib/worktree-runtime-owner'
+import { runtimeTargetForWorkspaceOwner } from '@/lib/resolve-owner'
+import { UNRESOLVED_GIT_HOST_ERROR } from '@/store/slices/editor/actions/git-operation-target'
 import { requestPRCommentReveal } from '@/lib/pr-comment-reveal'
 import { selectWorktreeDiffComments } from '@/store/worktree-diff-comments-selector'
 
@@ -72,9 +72,10 @@ export function revealGitHubComment(url: string): void {
 
 export async function removeAgentNote(worktreeId: string, id: string): Promise<void> {
   const state = useAppStore.getState()
-  const target = runtimeTargetForOwnerEnvironment(
-    getRuntimeEnvironmentIdForWorktree(state, worktreeId)
-  )
+  const target = runtimeTargetForWorkspaceOwner(state, { workspaceId: worktreeId })
+  if (!target) {
+    throw new Error(UNRESOLVED_GIT_HOST_ERROR)
+  }
   await callRuntimeRpc(
     target,
     'agentNote.remove',
