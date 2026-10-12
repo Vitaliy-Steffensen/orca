@@ -1457,6 +1457,22 @@ longer flips above its line near the bottom, since that would cover the code abo
 | `diff-comments/DiffCommentPopover.tsx` | `onHeightChange`; inline placement when it is passed. |
 | `diff-comments/diff-comment-popover-position.ts` | The `inline` option. |
 
+### 42. Who reacted, on hover
+
+The review threads query asks each reaction group for its first 3 reactors' logins
+(`reactors(first: 3) { nodes { ... on Actor { login } } }`); `reactors` was already requested for
+its total, so this adds nodes, not connections. `GitHubReaction.reactors` carries them, and a
+reaction chip's tooltip reads "alice, bob and 2 others reacted with 👍"
+(`github/comment-reactors-label.ts`).
+
+| File | What is ours |
+| --- | --- |
+| `src/main/github/client/fetch/pr-review-threads-query.ts` | The reactor logins. |
+| `src/main/github/comment-reactions.ts` | Mapping them onto `reactors`. |
+| `src/shared/github/comment-types.ts` | `GitHubReaction.reactors`. |
+| `src/renderer/src/components/github/CommentReactions.tsx` | The tooltip on each chip. |
+| `src/renderer/src/i18n/locales/en.json` | `commentReactors.*`. |
+
 ## Verify
 
 Verify runs on GitHub, not locally: `fork-verify.yml` runs it on every pull request against `main`,

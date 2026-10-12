@@ -25,8 +25,9 @@ query($owner: String!, $repo: String!, $pr: Int!) {
               reactionGroups {
                 content
                 viewerHasReacted
-                reactors {
+                reactors(first: 3) {
                   totalCount
+                  nodes { ... on Actor { login } }
                 }
               }
             }
@@ -46,8 +47,9 @@ query($owner: String!, $repo: String!, $pr: Int!) {
           reactionGroups {
             content
             viewerHasReacted
-            reactors {
+            reactors(first: 3) {
               totalCount
+              nodes { ... on Actor { login } }
             }
           }
         }
@@ -65,8 +67,9 @@ query($owner: String!, $repo: String!, $pr: Int!) {
           reactionGroups {
             content
             viewerHasReacted
-            reactors {
+            reactors(first: 3) {
               totalCount
+              nodes { ... on Actor { login } }
             }
           }
         }

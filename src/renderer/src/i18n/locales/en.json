@@ -19557,6 +19557,11 @@
     "send": "Send {{count}} queued comments",
     "badge": "{{count}} queued"
   },
+  "commentReactors": {
+    "one": "{{name}} reacted with {{emoji}}",
+    "many": "{{names}} and {{last}} reacted with {{emoji}}",
+    "withOthers": "{{names}} and {{others}} others reacted with {{emoji}}"
+  },
   "sourceControlSections": {
     "hide": "Hide section",
     "review": "Review"

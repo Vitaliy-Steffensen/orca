@@ -12,7 +12,10 @@ type GitHubGraphQLReactionContent =
 
 export type GitHubGraphQLReactionGroup = {
   content?: string | null
-  reactors?: { totalCount?: number | null } | null
+  reactors?: {
+    totalCount?: number | null
+    nodes?: ({ login?: string | null } | null)[] | null
+  } | null
   viewerHasReacted?: boolean | null
 }
 
@@ -70,12 +73,17 @@ export function mapGraphQLReactionGroups(
     }
     const existing = reactionsByContent.get(content)
     const viewerHasReacted = Boolean(existing?.viewerHasReacted || group.viewerHasReacted)
+    const reactors = [
+      ...(existing?.reactors ?? []),
+      ...(group.reactors?.nodes ?? []).flatMap((node) => (node?.login ? [node.login] : []))
+    ]
     reactionsByContent.set(content, {
       content,
       count: (existing?.count ?? 0) + count,
       ...(existing?.viewerHasReacted !== undefined || group.viewerHasReacted != null
         ? { viewerHasReacted }
-        : {})
+        : {}),
+      ...(reactors.length > 0 ? { reactors } : {})
     })
   }
 

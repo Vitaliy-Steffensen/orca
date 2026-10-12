@@ -14,6 +14,8 @@ export type GitHubReaction = {
   content: GitHubReactionContent
   count: number
   viewerHasReacted?: boolean
+  /** Fork: the first few reactors' logins; `count` still holds the total. */
+  reactors?: string[]
 }
 
 export type PRComment = {

@@ -7,16 +7,27 @@ import { translate } from '@/i18n/i18n'
 import { cn } from '@/lib/utils'
 import { GITHUB_REACTION_ORDER } from '@/lib/pr-comment-reactions'
 import type { GitHubReaction, GitHubReactionContent } from '../../../../shared/github/comment-types'
+import { REACTION_EMOJI, formatCommentReactors } from './comment-reactors-label'
 
-const REACTION_EMOJI: Record<GitHubReaction['content'], string> = {
-  '+1': '👍',
-  '-1': '👎',
-  laugh: '😄',
-  confused: '😕',
-  heart: '❤️',
-  hooray: '🎉',
-  rocket: '🚀',
-  eyes: '👀'
+function ReactorsTooltip({
+  reaction,
+  children
+}: {
+  reaction: GitHubReaction
+  children: React.ReactElement
+}): React.JSX.Element {
+  const label = formatCommentReactors(reaction)
+  if (!label) {
+    return children
+  }
+  return (
+    <Tooltip>
+      <TooltipTrigger asChild>{children}</TooltipTrigger>
+      <TooltipContent side="top" sideOffset={4}>
+        {label}
+      </TooltipContent>
+    </Tooltip>
+  )
 }
 
 const REACTION_LABEL: Record<GitHubReactionContent, string> = {
@@ -85,7 +96,7 @@ export function CommentReactions({
   return (
     <div className={cn('mt-2 flex flex-wrap items-center gap-1.5', className)}>
       {visibleReactions.map((reaction) => (
-        <React.Fragment key={reaction.content}>
+        <ReactorsTooltip key={reaction.content} reaction={reaction}>
           {onReactionChange ? (
             <Button
               type="button"
@@ -135,7 +146,7 @@ export function CommentReactions({
               <span className="tabular-nums">{reaction.count}</span>
             </span>
           )}
-        </React.Fragment>
+        </ReactorsTooltip>
       ))}
       {onReactionChange ? (
         <Popover open={open} onOpenChange={(nextOpen) => !pendingContent && setOpen(nextOpen)}>
