@@ -13,7 +13,15 @@ type LayoutState = Pick<
   | 'beginGitBranchCompareRequest'
   | 'setGitBranchCompareResult'
   | 'openBranchWorktreeDiff'
+  | 'activateTab'
 >
+
+type LayoutTarget = {
+  worktreeId: string
+  worktreePath: string
+  agentTabId: string
+  baseRef: string
+}
 
 const defaultDeps = {
   getState: (): LayoutState => useAppStore.getState(),
@@ -23,16 +31,29 @@ const defaultDeps = {
 // Fork: a review workspace opens as the review agent with the PR's first changed file beside it,
 // split to the right, so the review and the code it is about are both on screen.
 export async function openReviewWorkspaceLayout(
-  {
-    worktreeId,
-    worktreePath,
-    agentTabId,
-    baseRef
-  }: { worktreeId: string; worktreePath: string; agentTabId: string; baseRef: string },
+  target: LayoutTarget,
   deps: {
     getState: () => LayoutState
     branchCompare: typeof getRuntimeGitBranchCompare
   } = defaultDeps
+): Promise<void> {
+  try {
+    await openFirstFileBesideAgent(target, deps)
+  } finally {
+    // Why: the setup and default tabs open in the agent's group alongside it, so whichever of
+    // them landed last would otherwise be the one shown there. Scoped, so it never steals focus.
+    deps
+      .getState()
+      .activateTab(target.agentTabId, { worktreeId: target.worktreeId, recordFocus: false })
+  }
+}
+
+async function openFirstFileBesideAgent(
+  { worktreeId, worktreePath, agentTabId, baseRef }: LayoutTarget,
+  deps: {
+    getState: () => LayoutState
+    branchCompare: typeof getRuntimeGitBranchCompare
+  }
 ): Promise<void> {
   let result: Awaited<ReturnType<typeof getRuntimeGitBranchCompare>>
   try {

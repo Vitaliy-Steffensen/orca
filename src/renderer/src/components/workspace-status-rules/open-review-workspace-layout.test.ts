@@ -26,9 +26,12 @@ function fakeStore() {
     createEmptySplitGroup: vi.fn(() => 'group-right'),
     beginGitBranchCompareRequest: vi.fn(),
     setGitBranchCompareResult: vi.fn(),
-    openBranchWorktreeDiff: vi.fn()
+    openBranchWorktreeDiff: vi.fn(),
+    activateTab: vi.fn()
   }
 }
+
+const AGENT_TAB_SELECTED = ['agent-tab', { worktreeId: 'wt-1', recordFocus: false }]
 
 describe('openReviewWorkspaceLayout', () => {
   it("opens the PR's first file beside the review agent, split to its right", async () => {
@@ -60,9 +63,14 @@ describe('openReviewWorkspaceLayout', () => {
       'typescript',
       { targetGroupId: 'group-right', preview: false }
     )
+    // The setup and default tabs open in the agent's group too; the agent is the one shown there.
+    expect(store.activateTab).toHaveBeenLastCalledWith(...AGENT_TAB_SELECTED)
+    expect(store.activateTab.mock.invocationCallOrder[0]).toBeGreaterThan(
+      store.openBranchWorktreeDiff.mock.invocationCallOrder[0]
+    )
   })
 
-  it('leaves the agent alone when the PR has no changed files or the compare fails', async () => {
+  it('still shows the agent, on its own, when the PR has no changed files or the compare fails', async () => {
     const store = fakeStore()
     await openReviewWorkspaceLayout(TARGET, {
       getState: () => store as never,
@@ -76,5 +84,7 @@ describe('openReviewWorkspaceLayout', () => {
     })
     expect(store.createEmptySplitGroup).not.toHaveBeenCalled()
     expect(store.openBranchWorktreeDiff).not.toHaveBeenCalled()
+    expect(store.activateTab).toHaveBeenCalledTimes(2)
+    expect(store.activateTab).toHaveBeenLastCalledWith(...AGENT_TAB_SELECTED)
   })
 })

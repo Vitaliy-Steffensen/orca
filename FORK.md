@@ -1603,7 +1603,9 @@ after the review agent launches it fetches the PR's changed files against the wo
 background, since the Source Control panel only loads the compare for the active worktree), seeds the
 store with them, splits the agent's group to the right and opens the first file's diff there
 (`workspace-status-rules/open-review-workspace-layout.ts`). A PR with no changed files, or a compare
-that fails, leaves the agent on its own.
+that fails, leaves the agent on its own. Either way it ends by selecting the agent's tab in its group
+(scoped to the review worktree), since the setup and default tabs open in that group too and would
+otherwise be the one shown.
 
 | File | What is ours |
 | --- | --- |
