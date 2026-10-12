@@ -21,6 +21,7 @@ import { useCombinedDiffViewPersist } from './remember-view/use-combined-diff-vi
 import { useCombinedDiffViewRestore } from './remember-view/use-combined-diff-view-restore'
 import { useCombinedDiffDirectScrollInput } from './scroll-viewport/use-combined-diff-direct-scroll-input'
 import { useCombinedDiffScrollAnchors } from './scroll-viewport/use-combined-diff-scroll-anchors'
+import { useCombinedDiffKeyboardScroll } from './scroll-viewport/use-combined-diff-keyboard-scroll'
 import { useCombinedDiffScrollPersistence } from './scroll-viewport/use-combined-diff-scroll-persistence'
 import { useCombinedDiffScrollbar } from './scroll-viewport/use-combined-diff-scrollbar'
 import { useCombinedDiffVirtualizer } from './scroll-viewport/use-combined-diff-virtualizer'
@@ -159,6 +160,13 @@ export default function CombinedDiffViewer({
     totalSize: virtualizer.getTotalSize(),
     viewStateKey,
     virtualizer
+  })
+  useCombinedDiffKeyboardScroll({
+    fileId: file.id,
+    scrollContainerRef,
+    virtualizer,
+    scrollToSectionIndex: anchors.scrollToSectionIndex,
+    markDirectScrollInput
   })
 
   const toggleSection = useCallback(

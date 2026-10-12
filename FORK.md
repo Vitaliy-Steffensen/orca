@@ -1488,6 +1488,23 @@ the reviewers, diff base, standing and verdict form, and its header no longer co
 | `src/shared/source-control-sections.ts` | `pending-comments`. |
 | `src/renderer/src/i18n/locales/en.json` | `sourceControlSections.pendingComments`. |
 
+### 44. Keyboard scrolling in the combined diff
+
+In View all and an agent turn's combined diff, the bare ↑/↓ keys scroll the view 40px, unless
+focus is in something you type into (a text field, or an editable diff — Monaco marks a read-only
+editor's input `aria-autocomplete="none"`). They are taken in the capture phase so a read-only
+editor's hidden caret does not swallow them. The next/previous-file step (`editor.nextFile` /
+`editor.previousFile`, whatever it is bound to) snaps the next or previous file's header to the
+top while the combined diff is the active tab, instead of opening that file in its own tab:
+`stepToChangedFile` asks `lib/combined-diff-file-stepper.ts` first.
+
+| File | What is ours |
+| --- | --- |
+| `combined-diff/scroll-viewport/combined-diff-keyboard-scroll.ts` | Which keys scroll; which file comes next. |
+| `combined-diff/scroll-viewport/use-combined-diff-keyboard-scroll.ts` | The listener and the file stepper. |
+| `combined-diff/CombinedDiffViewer.tsx` | The hook. |
+| `src/renderer/src/store/slices/editor/actions/step-to-changed-file.ts` | Asking the combined diff first. |
+
 ## Verify
 
 Verify runs on GitHub, not locally: `fork-verify.yml` runs it on every pull request against `main`,

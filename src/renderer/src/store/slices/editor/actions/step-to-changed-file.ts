@@ -1,6 +1,7 @@
 import type { EditorGet, EditorSet } from '../types/editor-set-get'
 import type { EditorSlice } from '../types/editor-slice'
 import { getSourceControlReviewOrder } from '@/lib/source-control-review-order'
+import { stepCombinedDiffFile } from '@/lib/combined-diff-file-stepper'
 import {
   buildChangedFileOrder,
   parseChangedFileRowKey,
@@ -17,6 +18,9 @@ export function createStepToChangedFile(
     // reach the next file. Steps the same sequence the source-control panel lists, relative to the
     // file currently open.
     stepToChangedFile: (direction, options) => {
+      if (stepCombinedDiffFile(direction)) {
+        return
+      }
       const state = get()
       const activeFile = state.openFiles.find((file) => file.id === state.activeFileId)
       const worktreeId = activeFile?.worktreeId ?? state.activeWorktreeId
