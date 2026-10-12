@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest'
-import { isUncommittedOnly } from '@/lib/changes-filter'
+import { getChangesFilter, isUncommittedOnly, setChangesFilter } from '@/lib/changes-filter'
 import { publishPRCommentQueueContext } from '@/components/right-sidebar/pr-comment-queue-context'
 import { setPRCommentsListGroupQueued } from '@/components/right-sidebar/pr-comments-list-selection'
 import { consumeSendQueuedPRCommentsRequest } from '@/components/right-sidebar/queued-pr-comments-send'
@@ -13,6 +13,7 @@ const store = vi.hoisted(() => ({
   activeWorktreeId: 'wt-shortcut',
   rightSidebarOpen: true,
   rightSidebarTab: 'source-control',
+  getKnownWorktreeById: () => ({ path: '/repo/wt-shortcut' }),
   setRightSidebarOpen: vi.fn(),
   setRightSidebarTab: vi.fn()
 }))
@@ -34,6 +35,24 @@ describe('takeSourceControlShortcut', () => {
     expect(isUncommittedOnly('wt-shortcut')).toBe(true)
     takeSourceControlShortcut(match, true, actions)
     expect(isUncommittedOnly('wt-shortcut')).toBe(false)
+  })
+
+  it('turns the latest agent turn off when it is already showing', () => {
+    const turn = {
+      kind: 'turn' as const,
+      compare: { commitOid: 'c2', parentOid: 'c1', compareRef: 'c2', baseRef: 'c1' },
+      entries: [],
+      prompt: 'Fix the parser',
+      latest: true
+    }
+    vi.stubGlobal('window', {})
+    setChangesFilter('wt-shortcut', turn)
+    const match = (id: string): boolean => id === 'sourceControl.openLatestAgentTurn'
+    expect(takeSourceControlShortcut(match, true, actions)).toBe(
+      'sourceControl.openLatestAgentTurn'
+    )
+    expect(getChangesFilter('wt-shortcut')).toBeNull()
+    vi.unstubAllGlobals()
   })
 
   it('opens the PR panel to send the queued comments from any panel', () => {

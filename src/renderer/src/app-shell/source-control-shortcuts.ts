@@ -1,7 +1,7 @@
 import { toast } from 'sonner'
 import { translate } from '@/i18n/i18n'
 import { openLatestAgentTurn } from '@/lib/agent-turn-open'
-import { toggleUncommittedOnly } from '@/lib/changes-filter'
+import { clearChangesFilter, getChangesFilter, toggleUncommittedOnly } from '@/lib/changes-filter'
 import { showInChanges } from '@/lib/show-in-changes'
 import { sendQueuedPRCommentsForActiveWorktree } from '@/components/right-sidebar/queued-pr-comments-send'
 import {
@@ -35,6 +35,11 @@ function focusReviewSummaryInOpenPanel(): boolean {
 function startOpenLatestAgentTurn(): boolean {
   const store = useAppStore.getState()
   const worktreeId = store.activeWorktreeId
+  const filter = worktreeId ? getChangesFilter(worktreeId) : null
+  if (worktreeId && filter?.kind === 'turn' && filter.latest) {
+    clearChangesFilter(worktreeId)
+    return true
+  }
   const worktreePath = worktreeId ? store.getKnownWorktreeById(worktreeId)?.path : undefined
   if (!worktreeId || !worktreePath || !window.api?.agentTurns) {
     return false

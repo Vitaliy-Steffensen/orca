@@ -1272,8 +1272,8 @@ notes" shortcut no longer reveals source control. The diff viewer's notes menus 
 ### 33. Latest-turn shortcut and horizontal trackpad scroll in combined diffs
 
 `sourceControl.openLatestAgentTurn` (Cmd+Option+Shift+T on macOS, unbound elsewhere because
-Ctrl+Alt is AltGr) opens the active workspace's newest agent turn in the commit diff view
-(`lib/agent-turn-open.ts`, shared with the Agent turns section; handled in
+Ctrl+Alt is AltGr) opens the active workspace's newest agent turn in the commit diff view, or turns
+that filter off when it is already showing (`lib/agent-turn-open.ts`, shared with the Agent turns section; handled in
 `app-shell/source-control-shortcuts.ts`, which also holds upstream's send-notes block moved out of
 `use-global-keybindings.ts` to keep it under the line limit). Combined-diff sections turn off Monaco's wheel handling so vertical
 scrolling reaches the outer list, and upstream re-added only Shift+wheel for sideways scrolling. A
