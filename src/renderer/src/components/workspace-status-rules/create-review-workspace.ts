@@ -12,6 +12,7 @@ import {
   renderWorkspaceStatusRulePrompt
 } from '../../../../shared/workspace-status-rule-prompt'
 import { translate } from '@/i18n/i18n'
+import { openReviewWorkspaceLayout } from './open-review-workspace-layout'
 
 function reviewWorkspaceName(pr: ReviewSnapshotPullRequest): string {
   const slug = pr.title
@@ -112,7 +113,7 @@ export async function createReviewWorkspace(
     const rebaseNote = sinceReviewCommit
       ? await pinInterdiffBase(created.worktree, sinceReviewCommit, pr)
       : ''
-    await launchAgentBackgroundSession({
+    const launched = await launchAgentBackgroundSession({
       agent: config.reviewInbox.agent,
       worktreeId: created.worktree.id,
       // Why a second template: a re-request is a different job from a first read — the
@@ -133,6 +134,20 @@ export async function createReviewWorkspace(
         }
       )
     })
+    // Why the store first: a rebased re-review moved the worktree's base to the interdiff ref.
+    const baseRef =
+      useAppStore.getState().getKnownWorktreeById?.(created.worktree.id)?.baseRef ??
+      created.worktree.baseRef ??
+      sinceReviewCommit ??
+      startPoint.compareBaseRef
+    if (launched?.tabId && baseRef) {
+      void openReviewWorkspaceLayout({
+        worktreeId: created.worktree.id,
+        worktreePath: created.worktree.path,
+        agentTabId: launched.tabId,
+        baseRef
+      })
+    }
     return { ok: true, worktreeId: created.worktree.id }
   } catch (error) {
     return { ok: false, error: error instanceof Error ? error.message : String(error) }

@@ -8,7 +8,8 @@ const mocks = vi.hoisted(() => ({
   launchWorktreeBackgroundTerminals: vi.fn(),
   launchAgentBackgroundSession: vi.fn(),
   updateWorktreeMeta: vi.fn(),
-  resolveBase: vi.fn()
+  resolveBase: vi.fn(),
+  openReviewWorkspaceLayout: vi.fn()
 }))
 
 vi.mock('@/store', () => ({
@@ -40,6 +41,9 @@ vi.mock('@/lib/launch-agent-background-session', () => ({
 }))
 vi.mock('@/i18n/i18n', () => ({
   translate: (_key: string, fallback: string) => fallback
+}))
+vi.mock('./open-review-workspace-layout', () => ({
+  openReviewWorkspaceLayout: mocks.openReviewWorkspaceLayout
 }))
 
 import { createReviewWorkspace } from './create-review-workspace'
@@ -91,6 +95,23 @@ describe('createReviewWorkspace', () => {
       defaultTabs: undefined
     })
     expect(mocks.launchAgentBackgroundSession).toHaveBeenCalled()
+  })
+
+  it('lays the review out as the agent beside the first file of the PR', async () => {
+    mocks.ensureHooksConfirmed.mockResolvedValue('skip')
+    mocks.createWorktree.mockResolvedValue({
+      worktree: { id: 'wt-1', path: '/work/review-3170', baseRef: 'origin/main' }
+    })
+    mocks.launchAgentBackgroundSession.mockResolvedValue({ tabId: 'agent-tab' })
+
+    await createReviewWorkspace(PR, config())
+
+    expect(mocks.openReviewWorkspaceLayout).toHaveBeenCalledWith({
+      worktreeId: 'wt-1',
+      worktreePath: '/work/review-3170',
+      agentTabId: 'agent-tab',
+      baseRef: 'origin/main'
+    })
   })
 
   it('skips setup the user has not trusted', async () => {

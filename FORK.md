@@ -1596,6 +1596,20 @@ paragraphs or a list.
 | `src/renderer/src/components/diff-comments/DiffCommentCard.tsx`, `src/renderer/src/assets/main.css` | Markdown for agent notes. |
 | `src/cli/handlers/notes.ts`, `src/cli/specs/notes.ts` | `\n` in the body; the formatting guidance. |
 
+### 50. Review workspaces open as the agent beside the first file
+
+When the review inbox creates a "Reviewing" workspace (`workspace-status-rules/create-review-workspace.ts`),
+after the review agent launches it fetches the PR's changed files against the workspace's base (in the
+background, since the Source Control panel only loads the compare for the active worktree), seeds the
+store with them, splits the agent's group to the right and opens the first file's diff there
+(`workspace-status-rules/open-review-workspace-layout.ts`). A PR with no changed files, or a compare
+that fails, leaves the agent on its own.
+
+| File | What is ours |
+| --- | --- |
+| `workspace-status-rules/open-review-workspace-layout.ts` | The split and the first file. |
+| `workspace-status-rules/create-review-workspace.ts` | Running it after the agent launches. |
+
 ## Verify
 
 Verify runs on GitHub, not locally: `fork-verify.yml` runs it on every pull request against `main`,
