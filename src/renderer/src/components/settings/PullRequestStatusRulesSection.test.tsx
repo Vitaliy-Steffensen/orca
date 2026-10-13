@@ -61,6 +61,22 @@ describe('PR rules settings', () => {
     expect(screen.queryByText('Prompt for a first review')).toBeNull()
   })
 
+  it('lets the conflict agent’s prompt be edited, starting from the built-in one', async () => {
+    mocks.config = { ...mocks.config!, resolveConflictsWithAgent: true }
+    render(<PullRequestStatusRulesSection />)
+
+    await userEvent.click(screen.getByRole('tab', { name: 'Conflicts' }))
+    const box = screen.getByRole('textbox', { name: 'Conflict prompt' })
+    expect((box as HTMLTextAreaElement).value).toContain('Resolve the merge conflicts')
+
+    await userEvent.clear(box)
+    await userEvent.type(box, 'Merge it')
+
+    expect(mocks.setWorkspaceStatusRules).toHaveBeenLastCalledWith(
+      expect.objectContaining({ conflictPromptTemplate: expect.stringContaining('t') })
+    )
+  })
+
   it('lets the reviewing view be picked', async () => {
     mocks.config = {
       ...mocks.config!,

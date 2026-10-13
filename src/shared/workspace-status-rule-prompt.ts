@@ -8,7 +8,8 @@ export const WORKSPACE_STATUS_RULE_PROMPT_VARIABLES = [
   'baseRef',
   'url',
   'repo',
-  'sinceCommit'
+  'sinceCommit',
+  'worktreePath'
 ] as const
 
 export type WorkspaceStatusRulePromptVariable =

@@ -59,6 +59,8 @@ export type WorkspaceStatusRuleConfig = {
   onReviewed: 'delete' | 'none'
   /** Starts an agent to merge the base branch and push when your pull request lands in Conflicts. */
   resolveConflictsWithAgent: boolean
+  /** The conflict agent's prompt; empty uses the built-in one. */
+  conflictPromptTemplate: string
   /** Shell command run in the workspace when your pull request lands in Review; empty runs nothing. */
   reviewEnteredCommand: string
   /** The top bar's action buttons; an empty or missing entry uses the built-in prompt. */
@@ -115,6 +117,7 @@ export function cloneDefaultWorkspaceStatusRuleConfig(): WorkspaceStatusRuleConf
     onResolved: 'none',
     onReviewed: 'none',
     resolveConflictsWithAgent: false,
+    conflictPromptTemplate: '',
     reviewEnteredCommand: '',
     actionPrompts: {},
     reviewInbox: {
@@ -255,6 +258,10 @@ export function normalizeWorkspaceStatusRuleConfig(value: unknown): WorkspaceSta
     onResolved: raw.onResolved === 'delete' ? 'delete' : 'none',
     onReviewed: raw.onReviewed === 'delete' ? 'delete' : 'none',
     resolveConflictsWithAgent: raw.resolveConflictsWithAgent === true,
+    conflictPromptTemplate:
+      typeof raw.conflictPromptTemplate === 'string'
+        ? raw.conflictPromptTemplate.slice(0, MAX_ACTION_PROMPT_LENGTH)
+        : '',
     reviewEnteredCommand:
       typeof raw.reviewEnteredCommand === 'string'
         ? raw.reviewEnteredCommand.trim().slice(0, MAX_COMMAND_LENGTH)

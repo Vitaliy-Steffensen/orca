@@ -28,6 +28,26 @@ describe('the reviewing view', () => {
   })
 })
 
+describe('the conflict prompt template', () => {
+  it('is empty, meaning the built-in prompt, until edited', () => {
+    expect(cloneDefaultWorkspaceStatusRuleConfig().conflictPromptTemplate).toBe('')
+  })
+
+  it('keeps an edited template and drops a non-string one', () => {
+    const defaults = cloneDefaultWorkspaceStatusRuleConfig()
+    expect(
+      normalizeWorkspaceStatusRuleConfig({
+        ...defaults,
+        conflictPromptTemplate: 'Merge {{baseRef}}'
+      }).conflictPromptTemplate
+    ).toBe('Merge {{baseRef}}')
+    expect(
+      normalizeWorkspaceStatusRuleConfig({ ...defaults, conflictPromptTemplate: 7 })
+        .conflictPromptTemplate
+    ).toBe('')
+  })
+})
+
 describe('normalizeWorkspaceStatusRuleConfig', () => {
   it('keeps the command to run when a pull request enters Review, trimmed', () => {
     const config = normalizeWorkspaceStatusRuleConfig({

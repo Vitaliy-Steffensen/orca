@@ -81,6 +81,17 @@ describe('launchConflictAgents', () => {
     expect(call.prompt).toContain('plain git push')
   })
 
+  it('uses the conflict prompt from settings, filled in for this pull request', async () => {
+    const config = {
+      ...cloneDefaultWorkspaceStatusRuleConfig(),
+      resolveConflictsWithAgent: true,
+      conflictPromptTemplate: 'Merge {{baseRef}} into {{worktreePath}} for #{{prNumber}}.'
+    }
+    await launchConflictAgents(planWith('conflicts'), [target], snapshot, config)
+
+    expect(mocks.launch.mock.calls[0]?.[0].prompt).toBe('Merge main into /w/e-4861 for #3166.')
+  })
+
   it('does nothing while the option is off, or for other moves', async () => {
     await launchConflictAgents(
       planWith('conflicts'),

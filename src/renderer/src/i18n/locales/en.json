@@ -12811,6 +12811,8 @@
           "deleteOnReviewedDescription": "Applies to pull requests you did not write, once you have approved or requested changes. A workspace holding unsent review comments, uncommitted work or a running agent is kept. If the author asks you again, the workspace comes back with the diff pointed at the commit you last reviewed.",
           "resolveConflicts": "Resolve conflicts with an agent",
           "resolveConflictsDescription": "When one of your pull requests lands in the Conflicts column, starts an agent in its workspace that merges the base branch, resolves the conflicts and pushes. Never force-pushes.",
+          "conflictPrompt": "Conflict prompt",
+          "conflictPromptDescription": "What the conflict agent is told. Supports {{baseRef}}, {{worktreePath}}, {{prNumber}}, {{title}}, {{author}}, {{branch}}, {{url}} and {{repo}}. Clear the box to go back to the built-in prompt.",
           "reviewCommand": "Run a command when your pull request enters Review",
           "reviewCommandDescription": "Runs once in the workspace's folder each time it moves into the Review column, for example to stop its dev stack. Leave empty to run nothing.",
           "reviewCommandPlaceholder": "mise run bd",

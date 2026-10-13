@@ -1,4 +1,6 @@
 import { Input } from '@/components/ui/input'
+import { Textarea } from '@/components/ui/textarea'
+import { DEFAULT_CONFLICT_PROMPT_TEMPLATE } from '../../../../shared/workspace-status-rule-conflict-prompt'
 import { translate } from '@/i18n/i18n'
 import type {
   WorkspaceStatusRuleCondition,
@@ -29,6 +31,55 @@ function DeleteOnResolvedRow({ config, patch }: StateSettingsProps): React.JSX.E
   )
 }
 
+function ConflictAgentSettings({ config, patch }: StateSettingsProps): React.JSX.Element {
+  const promptLabel = translate(
+    'auto.components.settings.prRules.conflictPrompt',
+    'Conflict prompt'
+  )
+  return (
+    <>
+      <SettingsSwitchRow
+        label={translate(
+          'auto.components.settings.prRules.resolveConflicts',
+          'Resolve conflicts with an agent'
+        )}
+        description={translate(
+          'auto.components.settings.prRules.resolveConflictsDescription',
+          'When one of your pull requests lands in the Conflicts column, starts an agent in its workspace that merges the base branch, resolves the conflicts and pushes. Never force-pushes.'
+        )}
+        checked={config.resolveConflictsWithAgent}
+        onChange={() => patch({ resolveConflictsWithAgent: !config.resolveConflictsWithAgent })}
+      />
+      {config.resolveConflictsWithAgent ? (
+        <SettingsRow
+          alignTop
+          label={promptLabel}
+          description={translate(
+            'auto.components.settings.prRules.conflictPromptDescription',
+            'What the conflict agent is told. Supports {{baseRef}}, {{worktreePath}}, {{prNumber}}, {{title}}, {{author}}, {{branch}}, {{url}} and {{repo}}. Clear the box to go back to the built-in prompt.'
+          )}
+          control={
+            <Textarea
+              aria-label={promptLabel}
+              value={config.conflictPromptTemplate || DEFAULT_CONFLICT_PROMPT_TEMPLATE}
+              onChange={(event) =>
+                patch({
+                  // Why the built-in text saves as empty: the prompt keeps following upstream's wording.
+                  conflictPromptTemplate:
+                    event.target.value === DEFAULT_CONFLICT_PROMPT_TEMPLATE
+                      ? ''
+                      : event.target.value
+                })
+              }
+              className="h-40 w-[320px]"
+            />
+          }
+        />
+      ) : null}
+    </>
+  )
+}
+
 /** What a pull request state does beyond picking its column. */
 export function ConditionSettings({
   condition,
@@ -42,20 +93,7 @@ export function ConditionSettings({
     case 'reviewing':
       return <ReviewingRuleSettings config={config} patch={patch} />
     case 'conflicts':
-      return (
-        <SettingsSwitchRow
-          label={translate(
-            'auto.components.settings.prRules.resolveConflicts',
-            'Resolve conflicts with an agent'
-          )}
-          description={translate(
-            'auto.components.settings.prRules.resolveConflictsDescription',
-            'When one of your pull requests lands in the Conflicts column, starts an agent in its workspace that merges the base branch, resolves the conflicts and pushes. Never force-pushes.'
-          )}
-          checked={config.resolveConflictsWithAgent}
-          onChange={() => patch({ resolveConflictsWithAgent: !config.resolveConflictsWithAgent })}
-        />
-      )
+      return <ConflictAgentSettings config={config} patch={patch} />
     case 'merging':
       return (
         <SettingsRow
