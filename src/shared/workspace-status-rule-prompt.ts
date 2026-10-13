@@ -19,7 +19,7 @@ export function buildReviewPromptVariables(
   pr: ReviewSnapshotPullRequest,
   /** The commit a re-review is diffed against; absent on a first look. */
   sinceCommit?: string
-): Record<WorkspaceStatusRulePromptVariable, string> {
+): Record<Exclude<WorkspaceStatusRulePromptVariable, 'worktreePath'>, string> {
   return {
     prNumber: String(pr.number),
     title: pr.title,
