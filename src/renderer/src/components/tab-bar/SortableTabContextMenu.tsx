@@ -146,9 +146,8 @@ export function SortableTabContextMenu({
 
   const closeShortcut = useOptionalShortcutLabel('tab.close')
   const renameShortcut = useOptionalShortcutLabel('tab.rename')
-  // Why: switching a tab into chat view is hidden while that toggle is removed; a tab already in
-  // chat view keeps its way back.
-  const showTerminalViewSwitch = canToggleViewMode && isChatView && onToggleViewMode !== undefined
+  // Fork: upstream hid switching a terminal tab into chat view; the View submenu keeps it both ways.
+  const showTerminalViewSwitch = canToggleViewMode && onToggleViewMode !== undefined
 
   return (
     <DropdownMenu open={open} onOpenChange={onOpenChange} modal={false}>

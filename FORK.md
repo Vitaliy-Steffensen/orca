@@ -1839,8 +1839,8 @@ sync hit exactly that (#23062 landed two commits later) and was fixed by merging
   and a fork fix commit gives it its own switch (`ClaudeWebDefaultViewSetting.tsx`).
 - `SortableTabContextMenu.tsx` — upstream hides "switch into chat view" (only a chat tab gets
   "Switch to terminal view") and adds `TabSessionSurfaceSwitchMenuItems`. Kept the fork's
-  `AgentViewSubmenu` with `canChat` set to upstream's `showTerminalViewSwitch`, plus upstream's new
-  items.
+  `AgentViewSubmenu` plus upstream's new items. `canChat` drops upstream's `isChatView` condition,
+  so a terminal tab can still pick Chat UI in place.
 - `CommentMarkdown.tsx` — upstream renders block by block (`MemoizedMarkdown` per block) and moved
   component selection to `selectCommentMarkdownComponents`. Wrapped the blocks in the fork's
   `MediaGalleryProvider` and dropped upstream's `expandImages` again (every image expands here).
