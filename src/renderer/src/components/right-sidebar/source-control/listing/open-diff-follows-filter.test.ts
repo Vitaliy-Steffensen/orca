@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest'
+import type { ChangesFilter } from '@/lib/changes-filter'
 import type { GitStatusEntry } from '../../../../../../shared/git-status-types'
 import {
   changesFilterKey,
@@ -7,14 +8,13 @@ import {
 } from './open-diff-follows-filter'
 
 const compare = { commitOid: 'c2', parentOid: 'c1', compareRef: 'c2', baseRef: 'c1' }
-const turn = (commitOid: string) =>
-  ({
-    kind: 'turn',
-    compare: { ...compare, commitOid },
-    entries: [],
-    prompt: 'Fix it',
-    latest: true
-  }) as const
+const turn = (commitOid: string): ChangesFilter => ({
+  kind: 'turn',
+  compare: { ...compare, commitOid },
+  entries: [],
+  prompt: 'Fix it',
+  latest: true
+})
 
 describe('changesFilterKey', () => {
   it('tells every filter apart, a newer latest turn included', () => {
