@@ -22,7 +22,7 @@ export function ReviewStateBadge({
           )}
         >
           <Check className="size-3" aria-hidden />
-          {translate('prComments.reviewState.approved', 'Approved')}
+          {translate('checksPanel.reviewState.approved', 'Approved')}
         </span>
       )
     case 'changes-requested':
@@ -34,21 +34,21 @@ export function ReviewStateBadge({
           )}
         >
           <X className="size-3" aria-hidden />
-          {translate('prComments.reviewState.changesRequested', 'Changes requested')}
+          {translate('checksPanel.reviewState.changesRequested', 'Changes requested')}
         </span>
       )
     case 'commented':
       return (
         <span className={cn(BADGE, 'bg-muted text-muted-foreground')}>
           <MessageSquare className="size-3" aria-hidden />
-          {translate('prComments.reviewState.commented', 'Commented')}
+          {translate('checksPanel.reviewState.commented', 'Commented')}
         </span>
       )
     case 'dismissed':
       return (
         <span className={cn(BADGE, 'bg-muted text-muted-foreground')}>
           <Undo2 className="size-3" aria-hidden />
-          {translate('prComments.reviewState.dismissed', 'Dismissed')}
+          {translate('checksPanel.reviewState.dismissed', 'Dismissed')}
         </span>
       )
     case undefined:

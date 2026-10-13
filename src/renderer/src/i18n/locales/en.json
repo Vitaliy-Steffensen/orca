@@ -13572,7 +13572,6 @@
                 "b4e8a1c902": "Queued",
                 "7c1f0a2b11": "Open",
                 "e8b4c1a903": "Resolved · {{value0}}",
-                "c3a8e5d710": "Needs review · {{value0}}",
                 "a7f0c7e8d1": "Queue",
                 "8a621a2c4f": "Grouped",
                 "b13f85d75c": "Timeline",
@@ -19623,6 +19622,12 @@
     "goToLineColumn": "Go to line {{line}}, column {{column}}"
   },
   "checksPanel": {
+    "reviewState": {
+      "approved": "Approved",
+      "changesRequested": "Changes requested",
+      "commented": "Commented",
+      "dismissed": "Dismissed"
+    },
     "unlinked": {
       "title": "Pull request unlinked",
       "description": "PR #{{number}} is hidden for this workspace. Link it again to restore checks and review details.",
