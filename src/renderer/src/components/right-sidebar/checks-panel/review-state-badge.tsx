@@ -51,7 +51,7 @@ export function ReviewStateBadge({
           {translate('prComments.reviewState.dismissed', 'Dismissed')}
         </span>
       )
-    default:
+    case undefined:
       return null
   }
 }
