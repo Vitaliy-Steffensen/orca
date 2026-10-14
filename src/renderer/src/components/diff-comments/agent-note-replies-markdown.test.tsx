@@ -4,7 +4,14 @@ import { afterEach, describe, expect, it, vi } from 'vitest'
 import type { DiffComment } from '../../../../shared/diff-comment-types'
 import { NoteThread } from './agent-note-replies-list'
 
-vi.mock('@/store', () => ({ useAppStore: { getState: () => ({}) } }))
+vi.mock('@/store', () => {
+  const state = { tabsByWorktree: {}, agentStatusByPaneKey: {} }
+  return {
+    useAppStore: Object.assign((select: (s: typeof state) => unknown) => select(state), {
+      getState: () => state
+    })
+  }
+})
 vi.mock('@/lib/send-notes-to-best-agent', () => ({ sendNotesToBestAgent: vi.fn() }))
 
 afterEach(cleanup)

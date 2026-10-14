@@ -48,6 +48,8 @@ export type DiffComment = {
   updatedAt?: number
   /** Set after the note has been handed to an agent. Edits clear it. */
   sentAt?: number
+  /** Fork: the agent pane it was handed to, when known, to show that agent working on a reply. */
+  sentToPaneKey?: string
   scope?: DiffReviewScope
   oldPath?: string
   diffIdentity?: string

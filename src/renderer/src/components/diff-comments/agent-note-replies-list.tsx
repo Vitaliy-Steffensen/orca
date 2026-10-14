@@ -1,5 +1,6 @@
 import React, { useState } from 'react'
-import { CornerDownLeft, MessageSquareReply, Trash, User } from 'lucide-react'
+import { CornerDownLeft, LoaderCircle, MessageSquareReply, Trash, User } from 'lucide-react'
+import { noteThreadThinkingAgent } from './note-thread-thinking'
 import { AgentNoteIcon } from './agent-note-icon'
 import CommentMarkdown from '@/components/sidebar/CommentMarkdown'
 import type { DiffComment } from '../../../../shared/diff-comment-types'
@@ -13,6 +14,33 @@ const MAX_REPLY_HEIGHT_PX = 240
 function fitToContent(textarea: HTMLTextAreaElement): void {
   textarea.style.height = 'auto'
   textarea.style.height = `${Math.min(textarea.scrollHeight, MAX_REPLY_HEIGHT_PX)}px`
+}
+
+function NoteThreadThinking({
+  thread,
+  worktreeId
+}: {
+  thread: readonly DiffComment[]
+  worktreeId: string
+}): React.JSX.Element | null {
+  const agent = useAppStore((state) =>
+    noteThreadThinkingAgent(
+      thread,
+      (state.tabsByWorktree[worktreeId] ?? []).map((tab) => tab.id),
+      state.agentStatusByPaneKey
+    )
+  )
+  if (!agent) {
+    return null
+  }
+  return (
+    <div role="status" className="orca-diff-comment-thread-thinking">
+      <LoaderCircle className="size-3 animate-spin" aria-hidden />
+      {translate('auto.components.diff.comments.NoteThread.thinking', '{{agent}} is thinking…', {
+        agent
+      })}
+    </div>
+  )
 }
 
 // Fork: the replies under a note (the user's and agents'), and a box to add one.
@@ -117,6 +145,7 @@ export function NoteThread({
           )}
         </div>
       ))}
+      <NoteThreadThinking thread={[root, ...replies]} worktreeId={worktreeId} />
       {composing ? (
         <div className="orca-diff-comment-thread-composer">
           <ImeTextarea

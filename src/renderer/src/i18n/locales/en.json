@@ -16415,7 +16415,8 @@
             "add": "Add reply",
             "you": "You",
             "sent": "sent",
-            "placeholder": "Ask a follow-up…"
+            "placeholder": "Ask a follow-up…",
+            "thinking": "{{agent}} is thinking…"
           },
           "AgentNoteGitHubLink": {
             "label": "Show the GitHub comment"

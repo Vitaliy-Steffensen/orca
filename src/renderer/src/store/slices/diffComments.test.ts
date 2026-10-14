@@ -489,6 +489,16 @@ describe('clearDeliveredDiffComments', () => {
     expect(updateMeta).toHaveBeenCalledTimes(1)
   })
 
+  it('remembers which agent pane the notes went to', async () => {
+    const store = createTestStore()
+    const delivered = makeComment({ id: 'c1' })
+    seed(store, [delivered])
+
+    await store.getState().clearDeliveredDiffComments(WT, [delivered], 'tab-1:leaf-1')
+
+    expect(store.getState().getDiffComments(WT)[0]?.sentToPaneKey).toBe('tab-1:leaf-1')
+  })
+
   it('leaves unsent a note that changed while delivery was pending', async () => {
     const store = createTestStore()
     const sentSnapshot = makeComment({ id: 'c1', body: 'old body' })

@@ -6,9 +6,18 @@ import { NoteThread } from './agent-note-replies-list'
 
 const mocks = vi.hoisted(() => ({ addDiffComment: vi.fn(), sendNotesToBestAgent: vi.fn() }))
 
-vi.mock('@/store', () => ({
-  useAppStore: { getState: () => ({ addDiffComment: mocks.addDiffComment }) }
-}))
+vi.mock('@/store', () => {
+  const state = {
+    addDiffComment: mocks.addDiffComment,
+    tabsByWorktree: {},
+    agentStatusByPaneKey: {}
+  }
+  return {
+    useAppStore: Object.assign((select: (s: typeof state) => unknown) => select(state), {
+      getState: () => state
+    })
+  }
+})
 vi.mock('@/lib/send-notes-to-best-agent', () => ({
   sendNotesToBestAgent: mocks.sendNotesToBestAgent
 }))
