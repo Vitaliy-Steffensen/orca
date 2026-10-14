@@ -29,18 +29,24 @@ describe('buildAllChangeEntries', () => {
     ).toEqual(['docs/readme.md', 'src/a.ts', 'src/b.ts', 'src/new.ts'])
   })
 
-  it('keeps only files with uncommitted changes when asked, still reported against the base', () => {
+  it('keeps only files with uncommitted changes when asked, reported as uncommitted changes', () => {
     const entries = buildAllChangeEntries(
       [
         status({ path: 'src/b.ts', area: 'staged' }),
-        status({ path: 'src/new.ts', status: 'untracked', area: 'untracked' }),
-        status({ path: 'src/a.ts' })
+        status({ path: 'src/new.ts', status: 'untracked', area: 'untracked', added: 9 }),
+        status({ path: 'src/a.ts', added: 15, removed: 0 })
       ],
-      [branch({ path: 'src/a.ts', status: 'added' }), branch({ path: 'docs/readme.md' })],
-      { uncommittedOnly: true }
+      [
+        branch({ path: 'src/a.ts', status: 'added', added: 142, removed: 0 }),
+        branch({ path: 'docs/readme.md' })
+      ],
+      { uncommittedOnly: true, lineCounts: { 'src/a.ts': { added: 142, removed: 0 } } }
     )
-    expect(entries.map((entry) => entry.path)).toEqual(['src/a.ts', 'src/b.ts', 'src/new.ts'])
-    expect(entries[0].status).toBe('added')
+    expect(entries.map((entry) => [entry.path, entry.status, entry.added])).toEqual([
+      ['src/a.ts', 'modified', 15],
+      ['src/b.ts', 'modified', undefined],
+      ['src/new.ts', 'added', 9]
+    ])
   })
 
   it('reports each file as it stands against the branch base', () => {
@@ -97,20 +103,27 @@ describe('buildAllChangeEntries', () => {
       'both.ts': { added: 11, removed: 3 },
       'two-areas.ts': { added: 2, removed: 1 }
     }
-    for (const uncommittedOnly of [false, true]) {
-      const entries = buildAllChangeEntries(
-        [
-          status({ path: 'both.ts', added: 2, removed: 1 }),
-          status({ path: 'two-areas.ts', area: 'staged', added: 1, removed: 0 }),
-          status({ path: 'two-areas.ts', added: 1, removed: 1 })
-        ],
-        [branch({ path: 'both.ts', added: 10, removed: 3 })],
-        { uncommittedOnly, lineCounts }
-      )
-      expect(
-        Object.fromEntries(entries.map((entry) => [entry.path, [entry.added, entry.removed]]))
-      ).toEqual({ 'both.ts': [11, 3], 'two-areas.ts': [2, 1] })
-    }
+    const entries = buildAllChangeEntries(
+      [
+        status({ path: 'both.ts', added: 2, removed: 1 }),
+        status({ path: 'two-areas.ts', area: 'staged', added: 1, removed: 0 }),
+        status({ path: 'two-areas.ts', added: 1, removed: 1 })
+      ],
+      [branch({ path: 'both.ts', added: 10, removed: 3 })],
+      { lineCounts }
+    )
+    expect(
+      Object.fromEntries(entries.map((entry) => [entry.path, [entry.added, entry.removed]]))
+    ).toEqual({ 'both.ts': [11, 3], 'two-areas.ts': [2, 1] })
+  })
+
+  it('counts only the uncommitted lines while uncommitted changes are shown', () => {
+    const entries = buildAllChangeEntries(
+      [status({ path: 'both.ts', added: 2, removed: 1 })],
+      [branch({ path: 'both.ts', added: 10, removed: 3 })],
+      { uncommittedOnly: true, lineCounts: { 'both.ts': { added: 11, removed: 3 } } }
+    )
+    expect(entries.map((entry) => [entry.added, entry.removed])).toEqual([[2, 1]])
   })
 
   it("highlights a file's one row whichever kind of tab has it open, a previewed commit's too", () => {
