@@ -37,6 +37,16 @@ export function readCommits(connection: unknown): PullRequestCommitSummary[] {
   })
 }
 
+function isReplyOnlyReview(node: Record<string, unknown>, state: string): boolean {
+  const comments = readNodes(node.comments)
+  return (
+    state === 'COMMENTED' &&
+    !readString(node.body)?.trim() &&
+    comments.length > 0 &&
+    comments.every((comment) => asRecord(comment.replyTo) !== null)
+  )
+}
+
 export function readReviewHistory(connection: unknown): RawPullRequestReview[] {
   return readNodes(connection).flatMap((node) => {
     const login = readString(asRecord(node.author)?.login)
@@ -47,7 +57,8 @@ export function readReviewHistory(connection: unknown): RawPullRequestReview[] {
             login,
             state,
             commitOid: readString(asRecord(node.commit)?.oid),
-            submittedAt: readString(node.submittedAt)
+            submittedAt: readString(node.submittedAt),
+            isReplyOnly: isReplyOnlyReview(node, state)
           }
         ]
       : []
