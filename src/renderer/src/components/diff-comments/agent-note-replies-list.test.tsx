@@ -3,6 +3,7 @@ import { cleanup, fireEvent, render, screen } from '@testing-library/react'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import type { DiffComment } from '../../../../shared/diff-comment-types'
 import { NoteThread } from './agent-note-replies-list'
+import { reloadSavedDraftsForTests } from '@/lib/saved-drafts'
 
 const mocks = vi.hoisted(() => ({ addDiffComment: vi.fn(), sendNotesToBestAgent: vi.fn() }))
 
@@ -46,6 +47,26 @@ describe('NoteThread reply box', () => {
   afterEach(() => {
     cleanup()
     vi.restoreAllMocks()
+    localStorage.clear()
+    reloadSavedDraftsForTests()
+  })
+
+  it('keeps an unsent follow-up and reopens with it after a restart', () => {
+    const first = render(
+      <NoteThread root={root} replies={[]} worktreeId="wt-1" onDelete={vi.fn()} />
+    )
+    fireEvent.click(screen.getByRole('button', { name: 'Reply' }))
+    fireEvent.change(screen.getByPlaceholderText('Ask a follow-up…'), {
+      target: { value: 'Half a question' }
+    })
+    first.unmount()
+
+    reloadSavedDraftsForTests()
+    render(<NoteThread root={root} replies={[]} worktreeId="wt-1" onDelete={vi.fn()} />)
+    expect(screen.getByPlaceholderText('Ask a follow-up…')).toHaveProperty(
+      'value',
+      'Half a question'
+    )
   })
 
   it('grows with what is typed, up to a cap', () => {

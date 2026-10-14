@@ -20,6 +20,7 @@ import type { TaskSourceContext } from '../../../../../shared/task-source-contex
 import type { MentionOption } from '../page-types'
 import { loadPRFileContents } from '../cache/file-content'
 import { CommentReplyForm } from '../comments/reply-form'
+import { commentReplyDraftKey } from '@/lib/saved-drafts'
 
 export function ConversationCommentCard({
   comment,
@@ -173,6 +174,7 @@ export function ConversationCommentCard({
                   })
             }
             mentionOptions={mentionOptions}
+            draftKey={commentReplyDraftKey(comment.id)}
             onCancel={() => onToggleReply(comment.id)}
             onSubmit={(replyBody) => onSubmitReply(comment, replyBody)}
           />

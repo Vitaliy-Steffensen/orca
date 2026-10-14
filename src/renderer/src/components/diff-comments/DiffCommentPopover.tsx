@@ -13,6 +13,7 @@ import { ReviewMarkdownComposer } from '@/components/github/ReviewMarkdownCompos
 import { installOpenDraftAddReviewNoteGuard } from '../editor/editor-shortcuts'
 import { resolveDiffCommentPopoverTop } from './diff-comment-popover-position'
 import { armNoteSendFocus } from './note-send-focus'
+import { useSavedDraft } from '@/lib/saved-drafts'
 
 // Why: a DOM sibling overlay rather than a Monaco content widget, so it can own a React rich editor.
 
@@ -61,6 +62,8 @@ type Props = {
   onSubmit: (body: string) => Promise<void>
   /** Fork: reports the box's height so the caller can open a gap that tall under the line. */
   onHeightChange?: (height: number) => void
+  /** Fork: keeps the text across closing the box and restarts. */
+  draftKey?: string
 }
 
 function hasDraftText(body: string): boolean {
@@ -82,9 +85,10 @@ export function DiffCommentPopover({
   submittingLabel = 'Saving…',
   onCancel,
   onSubmit,
-  onHeightChange
+  onHeightChange,
+  draftKey
 }: Props): React.JSX.Element {
-  const [body, setBody] = useState('')
+  const [body, setBody] = useSavedDraft(draftKey ?? null)
   // Why: mirror the draft into a ref so the mousedown listener reads it fresh without re-registering each keystroke.
   const bodyRef = useRef(body)
   bodyRef.current = body
@@ -198,6 +202,7 @@ export function DiffCommentPopover({
     setSubmitting(true)
     try {
       await onSubmit(bodyState.body)
+      setBody('')
     } finally {
       if (mountedRef.current) {
         setSubmitting(false)

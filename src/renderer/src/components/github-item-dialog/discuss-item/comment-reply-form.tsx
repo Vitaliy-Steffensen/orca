@@ -9,19 +9,22 @@ import {
   hasBoundedCommentBodyText
 } from '@/lib/comment-body-submit-state'
 import { translate } from '@/i18n/i18n'
+import { useSavedDraft } from '@/lib/saved-drafts'
 
 export function CommentReplyForm({
   className,
   placeholder,
+  draftKey,
   onCancel,
   onSubmit
 }: {
   className?: string
   placeholder: string
+  draftKey: string
   onCancel: () => void
   onSubmit: (body: string) => Promise<boolean>
 }): React.JSX.Element {
-  const [body, setBody] = useState('')
+  const [body, setBody] = useSavedDraft(draftKey)
   const [submitting, setSubmitting] = useState(false)
   const mountedRef = useMountedRef()
 
@@ -42,9 +45,6 @@ export function CommentReplyForm({
     setSubmitting(true)
     try {
       const ok = await onSubmit(bodyState.body)
-      if (!mountedRef.current) {
-        return
-      }
       if (ok) {
         setBody('')
       }
@@ -53,7 +53,7 @@ export function CommentReplyForm({
         setSubmitting(false)
       }
     }
-  }, [body, mountedRef, onSubmit, submitting])
+  }, [body, mountedRef, onSubmit, setBody, submitting])
   const canSubmitReply = hasBoundedCommentBodyText(body)
 
   return (

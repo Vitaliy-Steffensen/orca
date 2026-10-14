@@ -281,6 +281,7 @@ export function useCommentsListState({
         autoFocus
         disabled={commentsDisabled}
         disabledReason={commentsDisabledReason}
+        draftKey={selectionContextKey ? `pr-comment:${selectionContextKey}` : undefined}
         onCancel={cancelAddComment}
         onSubmit={
           onAddComment ??

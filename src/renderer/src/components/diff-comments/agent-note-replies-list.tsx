@@ -8,6 +8,7 @@ import { ImeTextarea } from '@/lib/ime-text-field'
 import { useAppStore } from '@/store'
 import { translate } from '@/i18n/i18n'
 import { sendNotesToBestAgent } from '@/lib/send-notes-to-best-agent'
+import { useSavedDraft } from '@/lib/saved-drafts'
 
 const MAX_REPLY_HEIGHT_PX = 240
 
@@ -58,8 +59,8 @@ export function NoteThread({
   groupId?: string
   onDelete: (noteId: string) => void
 }): React.JSX.Element {
-  const [composing, setComposing] = useState(false)
-  const [draft, setDraft] = useState('')
+  const [draft, setDraft] = useSavedDraft(`note-reply:${root.id}`)
+  const [composing, setComposing] = useState(() => draft !== '')
   const [saving, setSaving] = useState(false)
   const deleteLabel = translate(
     'auto.components.diff.comments.AgentNoteReplies.delete',
