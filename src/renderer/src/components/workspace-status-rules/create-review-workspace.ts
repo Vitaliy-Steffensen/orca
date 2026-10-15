@@ -7,6 +7,7 @@ import { launchWorktreeBackgroundTerminals } from '@/lib/launch-worktree-backgro
 import { markReviewedCommit } from '@/lib/reviewed-commit-bases'
 import type { ReviewSnapshotPullRequest } from '../../../../shared/github/review-status-snapshot-types'
 import type { WorkspaceStatusRuleConfig } from '../../../../shared/workspace-status-rule-config'
+import { applyReviewAgentView } from './apply-review-agent-view'
 import type { Worktree } from '../../../../shared/worktree/types'
 import {
   buildReviewPromptVariables,
@@ -135,6 +136,9 @@ export async function createReviewWorkspace(
         }
       )
     })
+    if (launched?.tabId) {
+      applyReviewAgentView(launched, config.reviewInbox.view)
+    }
     // Why the store first: a rebased re-review moved the worktree's base to the interdiff ref.
     const baseRef =
       useAppStore.getState().getKnownWorktreeById?.(created.worktree.id)?.baseRef ??

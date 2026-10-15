@@ -18,7 +18,7 @@ import { newAgentLaunchRequestId } from './agent-launch-request-id'
 export type SendNotesToBestAgentDeps = {
   pickTarget: (
     worktreeId: string
-  ) => Pick<NotesSendAgentTarget, 'messageTarget' | 'tabTitle'> | null
+  ) => Pick<NotesSendAgentTarget, 'messageTarget' | 'tabTitle' | 'paneKey'> | null
   sendMessage: (args: {
     worktreeId: string
     target: NotesSendAgentTarget['messageTarget']
@@ -27,7 +27,7 @@ export type SendNotesToBestAgentDeps = {
   defaultAgent: (worktreeId: string) => TuiAgent | null
   launch: (args: LaunchAgentInNewTabArgs) => unknown
   earlierInThread: (worktreeId: string) => (note: DiffComment) => readonly DiffComment[]
-  clearDelivered: (worktreeId: string, notes: readonly DiffComment[]) => void
+  clearDelivered: (worktreeId: string, notes: readonly DiffComment[], paneKey?: string) => void
   notify: { success: (message: string) => void; error: (message: string) => void }
 }
 
@@ -51,8 +51,8 @@ const defaultDeps: SendNotesToBestAgentDeps = {
   },
   launch: launchAgentInNewTab,
   earlierInThread: earlierInThreadFromStore,
-  clearDelivered: (worktreeId, notes) =>
-    void useAppStore.getState().clearDeliveredDiffComments(worktreeId, notes),
+  clearDelivered: (worktreeId, notes, paneKey) =>
+    void useAppStore.getState().clearDeliveredDiffComments(worktreeId, notes, paneKey),
   notify: { success: (message) => toast.success(message), error: (message) => toast.error(message) }
 }
 
@@ -75,7 +75,7 @@ export async function sendNotesToBestAgent(
   if (target) {
     const result = await deps.sendMessage({ worktreeId, target: target.messageTarget, prompt })
     if (result.status === 'sent') {
-      delivered()
+      deps.clearDelivered(worktreeId, notes, target.paneKey)
       deps.notify.success(
         translate('notesFollowUp.sent', 'Sent to {{agent}}', { agent: target.tabTitle })
       )

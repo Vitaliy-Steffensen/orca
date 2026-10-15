@@ -19,7 +19,8 @@ export type DiffCommentsSlice = {
   updateDiffComment: (worktreeId: string, commentId: string, body: string) => Promise<boolean>
   clearDeliveredDiffComments: (
     worktreeId: string,
-    comments: readonly DiffCommentDeliverySnapshot[]
+    comments: readonly DiffCommentDeliverySnapshot[],
+    sentToPaneKey?: string
   ) => Promise<boolean>
   markDiffCommentsSent: (
     worktreeId: string,
@@ -163,7 +164,7 @@ export const createDiffCommentsSlice: StateCreator<AppState, [], [], DiffComment
     }
   },
 
-  clearDeliveredDiffComments: async (worktreeId, comments) => {
+  clearDeliveredDiffComments: async (worktreeId, comments, sentToPaneKey) => {
     if (comments.length === 0) {
       return true
     }
@@ -179,7 +180,8 @@ export const createDiffCommentsSlice: StateCreator<AppState, [], [], DiffComment
           return comment
         }
         changed = true
-        return { ...comment, sentAt }
+        const { sentToPaneKey: _previous, ...rest } = comment
+        return { ...rest, sentAt, ...(sentToPaneKey ? { sentToPaneKey } : {}) }
       })
       return changed ? next : null
     })

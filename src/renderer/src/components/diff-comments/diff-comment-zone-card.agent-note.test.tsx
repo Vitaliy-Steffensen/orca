@@ -19,9 +19,14 @@ vi.mock('@/lib/agent-notes', () => ({
 }))
 
 const addDiffComment = vi.hoisted(() => vi.fn())
-vi.mock('@/store', () => ({
-  useAppStore: { getState: () => ({ addDiffComment }) }
-}))
+vi.mock('@/store', () => {
+  const state = { addDiffComment, tabsByWorktree: {}, agentStatusByPaneKey: {} }
+  return {
+    useAppStore: Object.assign((select: (s: typeof state) => unknown) => select(state), {
+      getState: () => state
+    })
+  }
+})
 
 vi.mock('@/lib/send-notes-to-best-agent', () => ({
   sendNotesToBestAgent: vi.fn(async () => 'sent')

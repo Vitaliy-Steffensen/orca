@@ -10,20 +10,36 @@ export type MentionQueryState = {
   bottom: number
 }
 
+export type MentionMode = 'user' | 'file'
+
 export type ReviewMentionOptions = {
   onQueryChange: (state: MentionQueryState | null) => void
   onKeyDown: (event: KeyboardEvent) => boolean
   onEditor: (editor: Editor | null) => void
+  mode: () => MentionMode
 }
 
-const MENTION_BEFORE_CURSOR = /(^|[\s([{,])@([A-Za-z0-9-]*)$/
+const MENTION_BEFORE_CURSOR: Record<MentionMode, RegExp> = {
+  user: /(^|[\s([{,])@([A-Za-z0-9-]*)$/,
+  file: /(^|[\s([{,])@([^\s@]*)$/
+}
+
+export function readMentionQuery(before: string, mode: MentionMode): string | null {
+  const match = MENTION_BEFORE_CURSOR[mode].exec(before)
+  return match ? (match[2] ?? '') : null
+}
 
 export const ReviewMention = Extension.create<ReviewMentionOptions>({
   name: 'reviewMention',
   priority: 1000,
 
   addOptions() {
-    return { onQueryChange: () => undefined, onKeyDown: () => false, onEditor: () => undefined }
+    return {
+      onQueryChange: () => undefined,
+      onKeyDown: () => false,
+      onEditor: () => undefined,
+      mode: () => 'user'
+    }
   },
 
   onCreate() {
@@ -47,12 +63,11 @@ export const ReviewMention = Extension.create<ReviewMentionOptions>({
             }
             const $from = selection.$from
             const before = $from.parent.textBetween(0, $from.parentOffset, undefined, '￼')
-            const match = MENTION_BEFORE_CURSOR.exec(before)
-            if (!match) {
+            const query = readMentionQuery(before, options.mode())
+            if (query === null) {
               options.onQueryChange(null)
               return
             }
-            const query = match[2] ?? ''
             const from = selection.from - query.length - 1
             const coords = view.coordsAtPos(selection.from)
             options.onQueryChange({

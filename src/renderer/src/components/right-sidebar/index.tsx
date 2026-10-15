@@ -7,6 +7,7 @@ import { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider } from '@/comp
 import { ContextMenu, ContextMenuTrigger } from '@/components/ui/context-menu'
 import { getTopActivityBarLayout, showsHeaderActionLabels } from './activity-bar-overflow'
 import { PreviewDeploymentButton } from './PreviewDeploymentButton'
+import { FrontendDevServerButton } from './FrontendDevServerButton'
 import { ActivityBarButton } from './activity-bar-buttons'
 import { getActiveChecksStatus } from './active-checks-status'
 import { useShortcutLabel } from '@/hooks/useShortcutLabel'
@@ -116,6 +117,7 @@ function RightSidebarInner(): React.JSX.Element {
   const closeButton = rightSidebarOpen ? (
     <>
       <WorkspaceActionButtons showLabels={showsHeaderActionLabels(renderedRightSidebarWidth)} />
+      <FrontendDevServerButton />
       <PreviewDeploymentButton />
       <Tooltip>
         <TooltipTrigger asChild>

@@ -326,8 +326,27 @@ describe('SortableTabContextMenu', () => {
     expect(onToggleViewMode).toHaveBeenCalled()
   })
 
-  it('does not offer switching a terminal tab into chat view', () => {
-    const { container } = renderMenu({ canToggleViewMode: true, isChatView: false })
+  it('offers switching a terminal tab into chat view in the View submenu', () => {
+    const onToggleViewMode = vi.fn()
+    const { container } = renderMenu({
+      canToggleViewMode: true,
+      isChatView: false,
+      onToggleViewMode
+    })
+    const submenu = getButton(container, 'View')
+
+    expect(submenu.getAttribute('data-can-chat')).toBe('true')
+    expect(submenu.getAttribute('data-is-chat')).toBe('false')
+    act(() => submenu.click())
+    expect(onToggleViewMode).toHaveBeenCalled()
+  })
+
+  it('does not offer chat view for a tab that cannot run native chat', () => {
+    const { container } = renderMenu({
+      canToggleViewMode: false,
+      isChatView: false,
+      onToggleViewMode: vi.fn()
+    })
 
     expect(getButton(container, 'View').getAttribute('data-can-chat')).toBe('false')
   })

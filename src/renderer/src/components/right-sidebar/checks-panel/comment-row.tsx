@@ -4,13 +4,17 @@ import CommentMarkdown from '@/components/sidebar/CommentMarkdown'
 import { CommentReactions } from '@/components/github/CommentReactions'
 import { CommentEditor } from './comment-editor'
 import { isBotPRComment } from '../../../../../shared/pr-comment-audience'
-import { isEditablePublishedReviewComment } from '@/components/pending-review/editable-published-comment'
+import {
+  isEditablePublishedReviewComment,
+  isEditablePublishedReviewSummary
+} from '@/components/pending-review/editable-published-comment'
 import type { GitHubReactionContent, PRComment } from '../../../../../shared/github/comment-types'
 import type { PRCommentGroupActionState } from '@/lib/pr-comment-action-state'
 import type { PRCommentPresentationClasses } from '../pr-comment-presentation'
 import { formatPrCommentRelativeTime } from '../../../../../shared/pr-comment-time'
 import { translate } from '@/i18n/i18n'
 import { usePRCommentReveal } from '@/lib/pr-comment-reveal'
+import { ReviewStateBadge } from './review-state-badge'
 import {
   buildCopyText,
   CommentMoreMenu,
@@ -77,7 +81,10 @@ export function CommentRow({
   const canMutateComment = forceMutable || isMutablePRConversationComment(comment)
   // Why edit is wider than delete: the provider lets the author rewrite an inline review
   // comment, but orca has no path for removing one, so the menu must not offer it.
-  const canEditComment = canMutateComment || isEditablePublishedReviewComment(comment)
+  const canEditComment =
+    canMutateComment ||
+    isEditablePublishedReviewComment(comment) ||
+    isEditablePublishedReviewSummary(comment)
   const [editing, setEditing] = useState(false)
   const [draft, setDraft] = useState(comment.body)
   const [submittingEdit, setSubmittingEdit] = useState(false)
@@ -193,9 +200,12 @@ export function CommentRow({
   )
 
   const authorName = (
-    <span className={cn(presentation.author, comment.isResolved && presentation.authorResolved)}>
-      {comment.author}
-    </span>
+    <>
+      <span className={cn(presentation.author, comment.isResolved && presentation.authorResolved)}>
+        {comment.author}
+      </span>
+      {isReply ? null : <ReviewStateBadge state={comment.reviewState} />}
+    </>
   )
   const queueButton =
     !isReply && onQueueForAgent ? <QueueForAgentButton onQueueForAgent={onQueueForAgent} /> : null

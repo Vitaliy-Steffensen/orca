@@ -9,6 +9,7 @@ import {
 } from '@/lib/comment-body-submit-state'
 import { translate } from '@/i18n/i18n'
 import { ReviewMarkdownComposer } from '@/components/github/ReviewMarkdownComposer'
+import { useSavedDraft } from '@/lib/saved-drafts'
 
 export type RightPanelCommentSubmitResult = { ok: true } | { ok: false; error: string }
 
@@ -21,6 +22,8 @@ type RightPanelCommentComposerProps = {
   autoFocus?: boolean
   className?: string
   onCancel?: () => void
+  /** Fork: keeps the text across closing the box and restarts. */
+  draftKey?: string
 }
 
 export function RightPanelCommentComposer({
@@ -31,9 +34,10 @@ export function RightPanelCommentComposer({
   disabledReason,
   autoFocus,
   className,
-  onCancel
+  onCancel,
+  draftKey
 }: RightPanelCommentComposerProps): React.JSX.Element {
-  const [body, setBody] = useState('')
+  const [body, setBody] = useSavedDraft(draftKey ?? null)
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [uploading, setUploading] = useState(false)
@@ -72,7 +76,7 @@ export function RightPanelCommentComposer({
     } finally {
       setSubmitting(false)
     }
-  }, [uploading, body, disabled, onCancel, onSubmit, submitting])
+  }, [uploading, body, disabled, onCancel, onSubmit, setBody, submitting])
   const canSubmitComment = hasBoundedCommentBodyText(body)
 
   return (

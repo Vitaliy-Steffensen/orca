@@ -13,6 +13,8 @@ export type MentionOption = {
   name?: string | null
   avatarUrl?: string
   source: string
+  /** Fork: `login` is a workspace-relative path, mentioned for an agent to read. */
+  isFile?: boolean
 }
 
 export type MentionQuery = {

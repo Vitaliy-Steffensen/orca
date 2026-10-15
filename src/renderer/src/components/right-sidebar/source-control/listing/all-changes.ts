@@ -79,17 +79,20 @@ export function buildAllChangeEntries(
     const deletedLocally =
       local.some((entry) => entry.status === 'deleted') &&
       !local.some((entry) => entry.status === 'untracked')
-    const fromBase = branch
-      ? { status: branch.status, oldPath: branch.oldPath }
-      : localStatus(local)
+    // Fork: uncommitted-only rows describe the uncommitted change, not the file against the base.
+    const fromBase =
+      branch && !uncommittedOnly
+        ? { status: branch.status, oldPath: branch.oldPath }
+        : localStatus(local)
     if (deletedLocally && fromBase.status === 'added') {
       continue
     }
     // Why only a single source: per-area counts overlap, so adding them would double-count a line
     // touched both on the branch and since.
-    const sources = [...(branch ? [branch] : []), ...local]
+    const sources = uncommittedOnly ? local : [...(branch ? [branch] : []), ...local]
+    const measured = uncommittedOnly ? undefined : lineCounts?.[path]
     const counts: { added?: number; removed?: number } =
-      lineCounts?.[path] ?? (sources.length === 1 ? sources[0] : {})
+      measured ?? (sources.length === 1 ? sources[0] : {})
     entries.push({
       path,
       status: deletedLocally ? 'deleted' : fromBase.status,

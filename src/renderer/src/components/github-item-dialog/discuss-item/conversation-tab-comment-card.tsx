@@ -18,6 +18,7 @@ import type { TaskSourceContext } from '../../../../../shared/task-source-contex
 import { translate } from '@/i18n/i18n'
 import { loadPRFileContents } from '../load-item-details/pr-file-content-cache'
 import { CommentReplyForm } from './comment-reply-form'
+import { commentReplyDraftKey } from '@/lib/saved-drafts'
 
 export type ConversationCommentCardContext = {
   repoPath: string | null
@@ -163,6 +164,7 @@ export function renderCommentCard(
                     value0: comment.author
                   })
             }
+            draftKey={commentReplyDraftKey(comment.id)}
             onCancel={() => ctx.setReplyingTo(null)}
             onSubmit={(replyBody) => ctx.handleReply(comment, replyBody)}
           />

@@ -74,4 +74,10 @@ describe('buildPullRequestNodeIdQuery', () => {
       buildPullRequestNodeIdQuery({ owner: 'flowbasedk', repo: 'flowbase', number: 3170 })
     ).toContain('repository(owner: "flowbasedk", name: "flowbase") { pullRequest(number: 3170)')
   })
+
+  it('reads each review body and whether its comments reply to a thread', () => {
+    expect(buildPullRequestNodeIdQuery({ owner: 'o', repo: 'r', number: 1 })).toContain(
+      'reviews(last: 100) { nodes { state body submittedAt author { login } commit { oid } comments(first: 10) { nodes { replyTo { id } } } } }'
+    )
+  })
 })

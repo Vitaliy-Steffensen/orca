@@ -45,7 +45,7 @@ function ListedLineTotal({
         '{{added}} lines added, {{removed}} lines deleted in the listed files',
         { added, removed }
       )}
-      className="inline-flex shrink-0 items-center gap-1 whitespace-nowrap text-[10px] font-medium tabular-nums"
+      className="mr-2 inline-flex shrink-0 items-center gap-1 whitespace-nowrap text-[10px] font-medium tabular-nums"
     >
       <span className="text-[color:var(--git-decoration-added)]">
         +{added.toLocaleString(locale)}

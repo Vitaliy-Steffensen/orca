@@ -58,15 +58,21 @@ export function useTabGroupWorkspaceModel({
 
   const { closeItem, closeMany } = useTabGroupTabCloseCommands({ worktreeId })
 
-  const { closeGroup, closeAllEditorTabsInGroup, closeOthers, closeToRight, closeToLeft } =
-    useTabGroupCloseScopeCommands({
-      groupId,
-      worktreeId,
-      group,
-      groupTabs,
-      closeItem,
-      closeMany
-    })
+  const {
+    closeGroup,
+    closeAllEditorTabsInGroup,
+    closeAllUnpinned,
+    closeOthers,
+    closeToRight,
+    closeToLeft
+  } = useTabGroupCloseScopeCommands({
+    groupId,
+    worktreeId,
+    group,
+    groupTabs,
+    closeItem,
+    closeMany
+  })
 
   const {
     activateTerminal,
@@ -99,6 +105,7 @@ export function useTabGroupWorkspaceModel({
       closeAllEditorTabsInGroup,
       closeGroup,
       closeItem,
+      closeAllUnpinned,
       closeOthers,
       closeToRight,
       closeToLeft,

@@ -30,7 +30,9 @@ const TARGET = { kind: 'terminal', tabId: 'tab-1', leafId: 'leaf-1' }
 
 function deps(overrides: Partial<SendNotesToBestAgentDeps> = {}): SendNotesToBestAgentDeps {
   return {
-    pickTarget: vi.fn(() => ({ messageTarget: TARGET, tabTitle: 'Claude Code' }) as never),
+    pickTarget: vi.fn(
+      () => ({ messageTarget: TARGET, tabTitle: 'Claude Code', paneKey: 'tab-1:leaf-1' }) as never
+    ),
     sendMessage: vi.fn(async () => ({ status: 'sent' as const })),
     defaultAgent: vi.fn(() => 'claude' as const),
     launch: vi.fn(() => ({}) as never),
@@ -53,7 +55,7 @@ describe('sendNotesToBestAgent', () => {
     expect(prompt).toContain('Why not keep the branded type?')
     expect(prompt).toContain('Candidate id is now a bare string.')
     expect(prompt).toContain('Note id: reply-1')
-    expect(d.clearDelivered).toHaveBeenCalledWith('wt', [FOLLOW_UP])
+    expect(d.clearDelivered).toHaveBeenCalledWith('wt', [FOLLOW_UP], 'tab-1:leaf-1')
     expect(d.launch).not.toHaveBeenCalled()
   })
 

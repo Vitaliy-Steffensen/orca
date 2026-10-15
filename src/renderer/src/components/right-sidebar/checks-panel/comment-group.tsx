@@ -25,6 +25,7 @@ import {
   type RightPanelCommentSubmitResult
 } from '../right-panel-comment-composer'
 import { CommentRow } from './comment-row'
+import { commentReplyDraftKey } from '@/lib/saved-drafts'
 import { translate } from '@/i18n/i18n'
 
 export function PRCommentGroupView({
@@ -102,6 +103,7 @@ export function PRCommentGroupView({
           autoFocus
           disabled={replyDisabled}
           disabledReason={replyDisabledReason}
+          draftKey={commentReplyDraftKey(comment.id)}
           onCancel={() => onCancelReply?.(comment.id)}
           onSubmit={(body) => onReply(replyTarget, body)}
         />

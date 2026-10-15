@@ -1,6 +1,8 @@
 import { useState } from 'react'
 import type React from 'react'
-import { ExternalLink } from 'lucide-react'
+import { ExternalLink, RotateCw } from 'lucide-react'
+import { Button } from '../ui/button'
+import { restartLanguageServers } from '@/lib/restart-language-servers'
 import type { GlobalSettings } from '../../../../shared/global-settings-types'
 import {
   LANGUAGE_SERVER_LANGUAGES,
@@ -80,6 +82,7 @@ function LanguageServerCard({
   const meta = RENDERER_LANGUAGE_SERVERS[language]
   const servers = languageServerOptions(language)
   const label = meta.label()
+  const restartLabel = translate('languageServers.restartAction', 'Restart Language Server')
   return (
     <div
       data-language-server={language}
@@ -91,6 +94,18 @@ function LanguageServerCard({
           <Label className="text-sm">{label}</Label>
           <p className="text-xs text-muted-foreground">{meta.description()}</p>
         </div>
+        {choice.enabled ? (
+          <Button
+            type="button"
+            variant="ghost"
+            size="icon-sm"
+            aria-label={restartLabel}
+            title={restartLabel}
+            onClick={() => void restartLanguageServers([language])}
+          >
+            <RotateCw className="size-3.5" />
+          </Button>
+        ) : null}
         <SettingsSwitch
           checked={choice.enabled}
           ariaLabel={label}

@@ -17,6 +17,8 @@ export type RawPullRequestReview = {
   state: string
   commitOid: string | null
   submittedAt: string | null
+  /** The provider records each thread reply as its own bodiless comment review. */
+  isReplyOnly: boolean
 }
 
 export function buildViewerReviewHistory(
@@ -32,6 +34,7 @@ export function buildViewerReviewHistory(
       (review): review is RawPullRequestReview & { commitOid: string; submittedAt: string } =>
         review.login.toLowerCase() === viewer &&
         review.state !== 'PENDING' &&
+        !review.isReplyOnly &&
         review.commitOid !== null &&
         review.submittedAt !== null
     )

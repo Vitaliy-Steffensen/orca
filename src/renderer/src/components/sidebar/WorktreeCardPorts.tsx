@@ -15,6 +15,7 @@ import {
 } from '@/lib/workspace-port-actions'
 import { useLocalhostLabelRouteForPort } from '@/lib/workspace-port-localhost-label-selector'
 import { addressForPort } from '@/lib/workspace-port-urls'
+import { useWorkspacePortLabels } from './worktree-card-port-labels'
 import type { WorkspacePort } from '../../../../shared/workspace-ports'
 import {
   WorktreeCardDetailSection,
@@ -97,7 +98,13 @@ function PortAction({
 }
 
 /** One port row on a sidebar worktree card, with open/copy/stop actions on its owner host. */
-function WorktreePortRow({ port }: { port: WorkspacePort }): React.JSX.Element {
+function WorktreePortRow({
+  port,
+  label
+}: {
+  port: WorkspacePort
+  label?: string
+}): React.JSX.Element {
   const settings = useAppStore((s) => s.settings)
   const localhostLabelRoute = useLocalhostLabelRouteForPort(port)
 
@@ -157,7 +164,6 @@ function WorktreePortRow({ port }: { port: WorkspacePort }): React.JSX.Element {
       settings
     ]
   )
-
   const handleCopy = useCallback(
     (event: React.MouseEvent<HTMLButtonElement>) => {
       event.stopPropagation()
@@ -235,6 +241,11 @@ function WorktreePortRow({ port }: { port: WorkspacePort }): React.JSX.Element {
         <Tooltip>
           <TooltipTrigger asChild>
             <span className="flex min-w-0 select-text items-baseline gap-1 overflow-hidden pr-[3.75rem] text-[11px] text-muted-foreground">
+              {label ? (
+                <span className="min-w-0 shrink-0 truncate font-medium text-foreground">
+                  {label}
+                </span>
+              ) : null}
               <span className="min-w-0 flex-1 truncate">{processLabel}</span>
               <span className="shrink-0 text-muted-foreground/45">-</span>
               <span className="min-w-0 flex-[1.1] truncate text-muted-foreground/70">
@@ -244,6 +255,7 @@ function WorktreePortRow({ port }: { port: WorkspacePort }): React.JSX.Element {
           </TooltipTrigger>
           <TooltipContent side="top" sideOffset={4}>
             <span className="flex items-center gap-1.5">
+              {label ? <span className="font-medium">{label}</span> : null}
               <span>{processLabel}</span>
               <span className="text-muted-foreground/60">-</span>
               <span>{address}</span>
@@ -287,9 +299,11 @@ function WorktreePortRow({ port }: { port: WorkspacePort }): React.JSX.Element {
 export function WorktreeCardPortsDetails({
   ports
 }: WorktreeCardPortsProps): React.JSX.Element | null {
+  const labels = useWorkspacePortLabels(ports)
   if (ports.length === 0) {
     return null
   }
+  const labelByPort = new Map(labels.map((entry) => [entry.port, entry.label]))
 
   return (
     <WorktreeCardDetailSection>
@@ -306,7 +320,7 @@ export function WorktreeCardPortsDetails({
       </div>
       <WorktreeCardDetailSectionContent className="space-y-0.5">
         {ports.map((port) => (
-          <WorktreePortRow key={port.id} port={port} />
+          <WorktreePortRow key={port.id} port={port} label={labelByPort.get(port.port)} />
         ))}
       </WorktreeCardDetailSectionContent>
     </WorktreeCardDetailSection>

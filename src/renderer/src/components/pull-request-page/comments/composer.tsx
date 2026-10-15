@@ -17,6 +17,7 @@ import type { PRComment } from '../../../../../shared/github/comment-types'
 import type { TaskSourceContext } from '../../../../../shared/task-source-context'
 import type { MentionOption } from '../page-types'
 import { MentionTextarea } from '../mentions/textarea'
+import { issueCommentDraftKey, useSavedDraft } from '@/lib/saved-drafts'
 
 export function GHCommentComposer({
   className,
@@ -39,7 +40,7 @@ export function GHCommentComposer({
   mentionOptions: MentionOption[]
   onCommentAdded: (comment: PRComment) => void
 }): React.JSX.Element {
-  const [body, setBody] = useState('')
+  const [body, setBody] = useSavedDraft(issueCommentDraftKey(repoPath, prRepo, issueNumber))
   const [submitting, setSubmitting] = useState(false)
   const textareaRef = useRef<HTMLTextAreaElement>(null)
   const mountedRef = useMountedRef()
@@ -78,11 +79,13 @@ export function GHCommentComposer({
         type: itemType,
         prRepo
       })
+      if (result.ok) {
+        setBody('')
+      }
       if (!mountedRef.current) {
         return
       }
       if (result.ok) {
-        setBody('')
         requestAnimationFrame(autoGrow)
         // Why: use GitHub's returned comment so the optimistic row shows the real login/avatar without a reopen.
         onCommentAdded(result.comment)
@@ -115,7 +118,8 @@ export function GHCommentComposer({
     issueNumber,
     itemType,
     prRepo,
-    onCommentAdded
+    onCommentAdded,
+    setBody
   ])
   const canSubmitComment = hasBoundedCommentBodyText(body)
 

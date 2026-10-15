@@ -40,41 +40,28 @@ import {
 } from '@/components/right-sidebar/file-explorer-operation-owner'
 import { runtimeTargetForOwnerEnvironment } from '@/runtime/runtime-client-target'
 
-export type RuntimeFileListState = {
-  files: string[]
-  loading: boolean
-  loadError: string | null
-  recentError?: string | null
-  truncated?: boolean
-  operationOwner?: FileExplorerOperationOwner
-}
-
-/** Files settled for one request key; local listings key without the query, so they answer every query. */
-type RuntimeFileListing = {
-  requestKey: string
-  files: string[]
-  truncated: boolean
-  recentError?: string | null
-}
-
-const NO_LISTING: RuntimeFileListing = { requestKey: '', files: [], truncated: false }
-
-export function cleanRuntimeFileListError(error: unknown): string {
-  const raw = error instanceof Error ? error.message : String(error)
-  return raw.replace(/^Error invoking remote method '[^']+':\s*Error:\s*/, '')
-}
+import {
+  cleanRuntimeFileListError,
+  NO_LISTING,
+  type RuntimeFileListState
+} from './quick-open-file-list-state'
+export { cleanRuntimeFileListError } from './quick-open-file-list-state'
+export type { RuntimeFileListState } from './quick-open-file-list-state'
 
 export function useRuntimeFileListForWorktree({
   enabled,
   worktreeId,
   query,
   hostFilterWhenCapped = false,
-  recentPaths
+  recentPaths,
+  includeIgnored: includeIgnoredOverride
 }: {
   enabled: boolean
   worktreeId: string | null
   query?: string
   recentPaths?: readonly string[]
+  /** Fork: overrides the Explorer's "show git-ignored files" setting for this listing. */
+  includeIgnored?: boolean
   /** When a local listing hits its cap, re-list with `query` applied as the Explorer name filter on the host. */
   hostFilterWhenCapped?: boolean
 }): RuntimeFileListState {
@@ -130,7 +117,9 @@ export function useRuntimeFileListForWorktree({
     (runtimeEnvironmentId !== null || connectionId !== undefined) && query !== undefined
   const remoteQuery = usesRuntimePathSearch ? query.trim() : ''
   const remoteQueryTooLarge = usesRuntimePathSearch && isQuickOpenRemoteQueryTooLarge(remoteQuery)
-  const includeIgnored = useAppStore((state) => state.settings?.showGitIgnoredFiles ?? true)
+  const includeIgnored = useAppStore(
+    (state) => includeIgnoredOverride ?? state.settings?.showGitIgnoredFiles ?? true
+  )
   const followSymlinks = useAppStore((state) => state.settings?.followSymlinkedDirectories ?? false)
   const recentKey = JSON.stringify(recentPaths ?? [])
   const listingKey = `${worktreePath ?? ''}\n${operationOwnerKey}\n${excludeRequest.key}\n${includeIgnored}\n${followSymlinks}\n${activeTargetStatus ?? ''}`

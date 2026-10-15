@@ -96,5 +96,18 @@ export function useTabGroupCloseScopeCommands({
     [closeMany, group, groupTabs]
   )
 
-  return { closeGroup, closeAllEditorTabsInGroup, closeOthers, closeToRight, closeToLeft }
+  const closeAllUnpinned = useCallback(() => {
+    closeMany(groupTabs.filter((candidate) => !candidate.isPinned).map((candidate) => candidate.id))
+    // Why: an emptied split is layout state; collapse it like closeGroup does. No-op if tabs remain.
+    closeEmptyGroup(worktreeId, groupId)
+  }, [closeEmptyGroup, closeMany, groupId, groupTabs, worktreeId])
+
+  return {
+    closeGroup,
+    closeAllEditorTabsInGroup,
+    closeAllUnpinned,
+    closeOthers,
+    closeToRight,
+    closeToLeft
+  }
 }

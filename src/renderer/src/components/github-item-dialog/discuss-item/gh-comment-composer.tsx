@@ -15,6 +15,7 @@ import type { PRComment } from '../../../../../shared/github/comment-types'
 import type { GitHubOwnerRepo } from '../../../../../shared/github/pull-request-types'
 import type { TaskSourceContext } from '../../../../../shared/task-source-context'
 import { translate } from '@/i18n/i18n'
+import { issueCommentDraftKey, useSavedDraft } from '@/lib/saved-drafts'
 
 export function GHCommentComposer({
   className,
@@ -35,7 +36,7 @@ export function GHCommentComposer({
   prRepo?: GitHubOwnerRepo | null
   onCommentAdded: (comment: PRComment) => void
 }): React.JSX.Element {
-  const [body, setBody] = useState('')
+  const [body, setBody] = useSavedDraft(issueCommentDraftKey(repoPath, prRepo, issueNumber))
   const [submitting, setSubmitting] = useState(false)
   const mountedRef = useMountedRef()
 
@@ -64,11 +65,13 @@ export function GHCommentComposer({
         type: itemType,
         prRepo
       })
+      if (result.ok) {
+        setBody('')
+      }
       if (!mountedRef.current) {
         return
       }
       if (result.ok) {
-        setBody('')
         // Why: use GitHub's returned comment so the optimistic row shows the real login/avatar immediately.
         onCommentAdded(result.comment)
       } else {
@@ -99,7 +102,8 @@ export function GHCommentComposer({
     issueNumber,
     itemType,
     prRepo,
-    onCommentAdded
+    onCommentAdded,
+    setBody
   ])
   const canSubmitComment = hasBoundedCommentBodyText(body)
 

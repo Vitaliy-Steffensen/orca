@@ -210,7 +210,10 @@ Four upstream **test** files carry our additions. Take upstream's version, then 
 
 Watches each workspace's linked pull request and sets its board column, deletes the workspace once
 its pull request is merged or closed, and opens a review workspace when someone asks you to review.
-Configured per project under Settings → Automations.
+Configured per project under Settings → Automations, as a General tab plus one tab per state
+(`PullRequestStatusRuleTabs.tsx`): each state's tab holds its column and whatever that state does
+(`PullRequestStatusRuleStateSettings.tsx`; the review inbox in `ReviewingRuleSettings.tsx`, with
+`reviewInbox.view` choosing how the review agent opens: Chat UI, Terminal, Claude web or the default).
 
 Dev builds (`pnpm dev`) do not run the poller unless `localStorage['orca.devStatusRules'] = '1'`: they
 share the workspace folder and GitHub account with the installed app, and a dev build that ticked
@@ -550,6 +553,11 @@ Each PR-rules tick also does three smaller things, all in `workspace-status-rule
 - **Conflict agent.** With "Resolve conflicts with an agent" on, a workspace entering Conflicts
   gets an agent on `buildConflictAgentPrompt` — upstream's pull-request conflict prompt with its
   no-push rule swapped for "push, never force-push" (`launch-conflict-agents.ts`).
+- **Review command.** "Run a command when your pull request enters Review" runs `reviewEnteredCommand`
+  once in a local workspace entering the column mapped from `review` (`run-review-entered-commands.ts`).
+  It runs headless in main (`src/main/github/workspace-command.ts`, bash with the app's environment,
+  like setup hooks) behind IPC `review-status-rules:run-workspace-command`, which checks the path is a
+  registered worktree first; a failure toasts the command's last output lines.
 
 ### 9. Sidebar: hide temporary checkouts, and Run on a shortcut
 
@@ -1683,6 +1691,35 @@ the per-area counts it could not add up. Turns and commits already count their r
 | `source-control/listing/all-changes-section.tsx` | The header total. |
 | `src/renderer/src/i18n/locales/en.json` | `allChanges.lineTotal`. |
 
+### 56. Review summaries show their verdict
+
+A review summary in the PR panel carries the verdict it was submitted with (Approved, Changes
+requested, Commented, Dismissed) as a badge beside the author, so it reads apart from a plain
+comment. The Comments list no longer heads open threads with "Needs review · N".
+
+| File | What is ours |
+| --- | --- |
+| `src/shared/github/comment-types.ts` | `reviewState` on `PRComment`, `toPRReviewSummaryState`. |
+| `src/main/github/client/fetch/pr-review-threads-query.ts` | `state` on `reviews.nodes`. |
+| `src/main/github/client/fetch/get-pr-comments.ts` | `reviewState` on both the GraphQL and the REST review summaries. |
+| `checks-panel/comment-row.tsx` | `<ReviewStateBadge>` after the author name (badge in `review-state-badge.tsx`). |
+| `checks-panel/comments-list.tsx` | The "Needs review" label removed; open threads render first, unlabelled. |
+
+### 57. `orca file open --line/--column`
+
+`orca file open <path> --line <n> [--column <n>]` opens the file with the cursor on that spot, so a
+"go to source" link (a framework devtools inspector, say) can target Orca like any editor. The line
+rides the existing open path as an optional `RuntimeFileReveal` and ends in the renderer's
+`setPendingEditorReveal`, the same reveal terminal file links use (`reveal-opened-file.ts`).
+
+| File | What is ours |
+| --- | --- |
+| `src/cli/specs/file.ts`, `src/cli/handlers/file.ts` | The two flags, sent only with a line. |
+| `src/shared/rpc-contract/files-params.ts` | Optional `line`/`column` on `FileOpenTab` (so the generated catalog is unchanged). |
+| `src/main/runtime/rpc/methods/files.ts`, `runtime-file-command-access.ts`, `runtime-file-command-host.ts`, `orca-runtime-file-commands.ts`, `runtime-notifier-contract.ts`, `src/main/window/runtime-window-lifecycle.ts` | A trailing optional `reveal`, passed only when set. |
+| `src/preload/api/ui-command-event-api.ts`, `ui-bridge-terminal-and-session-tabs.ts` | `reveal` on the open-file payload. |
+| `src/renderer/src/hooks/ipc-events/mobile-terminal-close-ipc-bridge.ts` | Calls `revealOpenedFile` after the open. |
+
 ## Verify
 
 Verify runs on GitHub, not locally: `fork-verify.yml` runs it on every pull request against `main`,
@@ -1839,8 +1876,8 @@ sync hit exactly that (#23062 landed two commits later) and was fixed by merging
   and a fork fix commit gives it its own switch (`ClaudeWebDefaultViewSetting.tsx`).
 - `SortableTabContextMenu.tsx` — upstream hides "switch into chat view" (only a chat tab gets
   "Switch to terminal view") and adds `TabSessionSurfaceSwitchMenuItems`. Kept the fork's
-  `AgentViewSubmenu` with `canChat` set to upstream's `showTerminalViewSwitch`, plus upstream's new
-  items.
+  `AgentViewSubmenu` plus upstream's new items. `canChat` drops upstream's `isChatView` condition,
+  so a terminal tab can still pick Chat UI in place.
 - `CommentMarkdown.tsx` — upstream renders block by block (`MemoizedMarkdown` per block) and moved
   component selection to `selectCommentMarkdownComponents`. Wrapped the blocks in the fork's
   `MediaGalleryProvider` and dropped upstream's `expandImages` again (every image expands here).

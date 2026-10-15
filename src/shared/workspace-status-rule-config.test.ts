@@ -4,7 +4,69 @@ import {
   normalizeWorkspaceStatusRuleConfig
 } from './workspace-status-rule-config'
 
+describe('the reviewing view', () => {
+  it('opens a review in Chat UI unless chosen otherwise', () => {
+    expect(cloneDefaultWorkspaceStatusRuleConfig().reviewInbox.view).toBe('chat')
+  })
+
+  it.each(['chat', 'terminal', 'claude-web', 'default'] as const)('keeps %s', (view) => {
+    const defaults = cloneDefaultWorkspaceStatusRuleConfig()
+    const config = normalizeWorkspaceStatusRuleConfig({
+      ...defaults,
+      reviewInbox: { ...defaults.reviewInbox, view }
+    })
+    expect(config.reviewInbox.view).toBe(view)
+  })
+
+  it('falls back to Chat UI for an unknown value', () => {
+    const defaults = cloneDefaultWorkspaceStatusRuleConfig()
+    const config = normalizeWorkspaceStatusRuleConfig({
+      ...defaults,
+      reviewInbox: { ...defaults.reviewInbox, view: 'sideways' }
+    })
+    expect(config.reviewInbox.view).toBe('chat')
+  })
+})
+
+describe('the conflict prompt template', () => {
+  it('is empty, meaning the built-in prompt, until edited', () => {
+    expect(cloneDefaultWorkspaceStatusRuleConfig().conflictPromptTemplate).toBe('')
+  })
+
+  it('keeps an edited template and drops a non-string one', () => {
+    const defaults = cloneDefaultWorkspaceStatusRuleConfig()
+    expect(
+      normalizeWorkspaceStatusRuleConfig({
+        ...defaults,
+        conflictPromptTemplate: 'Merge {{baseRef}}'
+      }).conflictPromptTemplate
+    ).toBe('Merge {{baseRef}}')
+    expect(
+      normalizeWorkspaceStatusRuleConfig({ ...defaults, conflictPromptTemplate: 7 })
+        .conflictPromptTemplate
+    ).toBe('')
+  })
+})
+
 describe('normalizeWorkspaceStatusRuleConfig', () => {
+  it('keeps the command to run when a pull request enters Review, trimmed', () => {
+    const config = normalizeWorkspaceStatusRuleConfig({
+      ...cloneDefaultWorkspaceStatusRuleConfig(),
+      reviewEnteredCommand: '  mise run bd  '
+    })
+    expect(config.reviewEnteredCommand).toBe('mise run bd')
+  })
+
+  it('has no Review command by default or for a non-string value', () => {
+    expect(cloneDefaultWorkspaceStatusRuleConfig().reviewEnteredCommand).toBe('')
+    expect(
+      normalizeWorkspaceStatusRuleConfig({
+        ...cloneDefaultWorkspaceStatusRuleConfig(),
+        reviewEnteredCommand: 42
+      }).reviewEnteredCommand
+    ).toBe('')
+  })
+
   it('discards a ledger written before the seeding step was removed', () => {
     const config = normalizeWorkspaceStatusRuleConfig({
       ...cloneDefaultWorkspaceStatusRuleConfig(),

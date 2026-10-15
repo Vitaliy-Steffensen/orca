@@ -64,6 +64,29 @@ describe('useRuntimeFileListForWorktree', () => {
     expect(states.at(-1)?.files).toEqual(['example.txt'])
   })
 
+  it('leaves out git-ignored files when the caller asks, whatever the Explorer setting', async () => {
+    const workspaceKey = folderWorkspaceKey('folder-workspace-1')
+    useAppStore.setState({
+      folderWorkspaces: [makeFolderWorkspace({ folderPath: '/srv/app', connectionId: null })],
+      projectGroups: [makeProjectGroup({ parentPath: '/srv/app', connectionId: null })],
+      repos: [],
+      worktreesByRepo: {}
+    })
+    listRuntimeFilesMock.mockResolvedValueOnce(['CLAUDE.md'])
+    await renderProbe({
+      enabled: true,
+      worktreeId: workspaceKey,
+      states: [],
+      includeIgnored: false
+    })
+    await waitForListRuntimeFilesCall()
+
+    expect(listRuntimeFilesMock).toHaveBeenLastCalledWith(
+      expect.anything(),
+      expect.objectContaining({ includeIgnored: false })
+    )
+  })
+
   it('lists a repo-less SSH folder workspace after folder metadata hydrates', async () => {
     const states: RuntimeFileListState[] = []
     const workspaceKey = folderWorkspaceKey('folder-workspace-1')

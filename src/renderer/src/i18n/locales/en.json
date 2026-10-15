@@ -2998,7 +2998,10 @@
           "addNamedReaction": "Add {{value0}} reaction"
         },
         "mentions": {
-          "member": "Member"
+          "member": "Member",
+          "app": "App",
+          "commenter": "Commenter",
+          "file": "File"
         },
         "reviewAssets": {
           "noRepository": "This workspace has no GitHub repository to attach the file to.",
@@ -5997,6 +6000,7 @@
           "29df45afa2": "MR"
         },
         "WorktreeCardPorts": {
+          "openNamed": "Open {{label}}",
           "34f733dda2": "Go to Worktree",
           "3240f320d7": "Live Ports",
           "3e5f66564e": "Workspace unavailable",
@@ -12811,6 +12815,27 @@
           "deleteOnReviewedDescription": "Applies to pull requests you did not write, once you have approved or requested changes. A workspace holding unsent review comments, uncommitted work or a running agent is kept. If the author asks you again, the workspace comes back with the diff pointed at the commit you last reviewed.",
           "resolveConflicts": "Resolve conflicts with an agent",
           "resolveConflictsDescription": "When one of your pull requests lands in the Conflicts column, starts an agent in its workspace that merges the base branch, resolves the conflicts and pushes. Never force-pushes.",
+          "conflictPrompt": "Conflict prompt",
+          "conflictPromptDescription": "What the conflict agent is told. Supports {{baseRef}}, {{worktreePath}}, {{prNumber}}, {{title}}, {{author}}, {{branch}}, {{url}} and {{repo}}. Clear the box to go back to the built-in prompt.",
+          "reviewCommand": "Run a command when your pull request enters Review",
+          "reviewCommandDescription": "Runs once in the workspace's folder each time it moves into the Review column, for example to stop its dev stack. Leave empty to run nothing.",
+          "reviewCommandPlaceholder": "mise run bd",
+          "reviewView": "Open the review in",
+          "reviewViewDescription": "Which view the review agent's tab starts in. Default follows your default view.",
+          "reviewViewChat": "Chat UI",
+          "reviewViewTerminal": "Terminal",
+          "reviewViewClaudeWeb": "Claude web",
+          "reviewViewDefault": "Default",
+          "tabGeneral": "General",
+          "tabMerged": "Merged",
+          "tabClosed": "Closed",
+          "tabReviewing": "Reviewing",
+          "tabConflicts": "Conflicts",
+          "tabDraft": "Draft",
+          "tabChangesRequested": "Changes requested",
+          "tabMerging": "Merge gate",
+          "tabPmApproval": "PM approval",
+          "tabReview": "Review",
           "reviewInbox": "Open a workspace when you are asked to review",
           "reviewInboxDescription": "Creates the workspace, points the diff at the pull request base, and starts the agent on the prompt below. Every review already waiting on you is picked up on the first check.",
           "prompt": "Prompt for a first review",
@@ -12839,6 +12864,16 @@
         "PythonEnvironmentSection": {
           "placeholder": ".venv",
           "hint": "Relative to the worktree, or absolute. Empty finds the nearest .venv. Cmd+click in a Python file runs pyrefly from this venv, or from PATH."
+        },
+        "PortLabelsCommandSection": {
+          "title": "Port Names",
+          "description": "A command that prints the URLs a workspace serves, to name its live ports.",
+          "placeholder": "mise run print-urls",
+          "keywordPorts": "ports",
+          "keywordUrls": "urls",
+          "keywordDevServer": "dev server",
+          "keywordFrontend": "frontend",
+          "hint": "Runs in the workspace. Each line of the form \"Label  http://host:port\" names that port, and the Frontend entry gets a quick open button while it is running."
         },
         "transfer": {
           "summarySettings": "{{count}} settings",
@@ -13569,7 +13604,6 @@
                 "b4e8a1c902": "Queued",
                 "7c1f0a2b11": "Open",
                 "e8b4c1a903": "Resolved · {{value0}}",
-                "c3a8e5d710": "Needs review · {{value0}}",
                 "a7f0c7e8d1": "Queue",
                 "8a621a2c4f": "Grouped",
                 "b13f85d75c": "Timeline",
@@ -16393,7 +16427,8 @@
             "add": "Add reply",
             "you": "You",
             "sent": "sent",
-            "placeholder": "Ask a follow-up…"
+            "placeholder": "Ask a follow-up…",
+            "thinking": "{{agent}} is thinking…"
           },
           "AgentNoteGitHubLink": {
             "label": "Show the GitHub comment"
@@ -18237,7 +18272,8 @@
         "noMatchingProject": "No selected project matches {{repo}}.",
         "reviewTabTitle": "Review #{{number}}",
         "conflictTabTitle": "Resolve conflicts #{{number}}",
-        "conflictAgentFailed": "Could not start an agent for the conflicts in {{name}}: {{reason}}"
+        "conflictAgentFailed": "Could not start an agent for the conflicts in {{name}}: {{reason}}",
+        "reviewCommandFailed": "\"{{command}}\" failed in {{name}}"
       }
     },
     "i18n": {
@@ -19619,6 +19655,12 @@
     "goToLineColumn": "Go to line {{line}}, column {{column}}"
   },
   "checksPanel": {
+    "reviewState": {
+      "approved": "Approved",
+      "changesRequested": "Changes requested",
+      "commented": "Commented",
+      "dismissed": "Dismissed"
+    },
     "unlinked": {
       "title": "Pull request unlinked",
       "description": "PR #{{number}} is hidden for this workspace. Link it again to restore checks and review details.",
@@ -20165,6 +20207,9 @@
     "review": "Review"
   },
   "languageServers": {
+    "restartFailed": "Could not restart the language server.",
+    "restarted": "Language server restarted. It starts again on use.",
+    "restartAction": "Restart Language Server",
     "path": "Path",
     "pathPlaceholder": "{{command}} from the project, else PATH",
     "server": "Server",

@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useMemo, useState } from 'react'
 import { LoaderCircle, MessageSquare, Plus, SendHorizontal, Sparkles, X } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
@@ -13,8 +13,15 @@ import { PendingReviewPanelSection } from '@/components/pending-review/PendingRe
 import { SectionHeader } from '../source-control/listing/section-header'
 import { type PRCommentsListProps, useCommentsListState } from './use-comments-list-state'
 import { CommentDisplayModeMenu } from './comment-display-mode-menu'
+import { withoutResolvedThreads } from './listed-comments'
 
-export function PRCommentsList(props: PRCommentsListProps): React.JSX.Element {
+export function PRCommentsList(listProps: PRCommentsListProps): React.JSX.Element {
+  const listedComments = useMemo(
+    () =>
+      listProps.sectionHeader ? withoutResolvedThreads(listProps.comments) : listProps.comments,
+    [listProps.comments, listProps.sectionHeader]
+  )
+  const props = { ...listProps, comments: listedComments }
   const {
     comments,
     commentsError,
@@ -233,7 +240,9 @@ export function PRCommentsList(props: PRCommentsListProps): React.JSX.Element {
             presentation.sectionHeader,
             // Why: the checks sidebar scrolls as one column; pinning this header keeps
             // filter and add-comment actions reachable while reading long threads.
-            !sectionHeader && 'sticky top-0 z-10 bg-sidebar/95 backdrop-blur-sm'
+            !sectionHeader && 'sticky top-0 z-10 bg-sidebar/95 backdrop-blur-sm',
+            // Fork: under a section header the tabs lead straight into the cards, no rule between.
+            sectionHeader && 'border-b-0'
           )}
         >
           {!sectionHeader && (
@@ -317,18 +326,7 @@ export function PRCommentsList(props: PRCommentsListProps): React.JSX.Element {
             timelineGroups.map(renderCommentGroup)
           ) : (
             <>
-              {triageGroups.open.length > 0 ? (
-                <>
-                  <div className={presentation.sectionTriageLabel}>
-                    {translate(
-                      'auto.components.right.sidebar.checks.panel.content.c3a8e5d710',
-                      'Needs review · {{value0}}',
-                      { value0: triageGroups.open.length }
-                    )}
-                  </div>
-                  {triageGroups.open.map(renderCommentGroup)}
-                </>
-              ) : null}
+              {triageGroups.open.map(renderCommentGroup)}
               {triageGroups.conversation.map(renderCommentGroup)}
               {/* Fork: in the PR panel, resolved threads are a section of their own. */}
               <ResolvedCommentGroupsSection
