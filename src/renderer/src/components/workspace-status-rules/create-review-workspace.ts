@@ -6,12 +6,8 @@ import { ensureHooksConfirmed } from '@/lib/ensure-hooks-confirmed'
 import { launchWorktreeBackgroundTerminals } from '@/lib/launch-worktree-background-terminals'
 import { markReviewedCommit } from '@/lib/reviewed-commit-bases'
 import type { ReviewSnapshotPullRequest } from '../../../../shared/github/review-status-snapshot-types'
-import type {
-  ReviewAgentView,
-  WorkspaceStatusRuleConfig
-} from '../../../../shared/workspace-status-rule-config'
-import { preferClaudeWebForTab } from '@/components/terminal-pane/claude-web-tab-preference'
-import { claudeWebView } from '@/components/terminal-pane/claude-web-view-state'
+import type { WorkspaceStatusRuleConfig } from '../../../../shared/workspace-status-rule-config'
+import { applyReviewAgentView } from './apply-review-agent-view'
 import type { Worktree } from '../../../../shared/worktree/types'
 import {
   buildReviewPromptVariables,
@@ -19,21 +15,6 @@ import {
 } from '../../../../shared/workspace-status-rule-prompt'
 import { translate } from '@/i18n/i18n'
 import { openReviewWorkspaceLayout } from './open-review-workspace-layout'
-
-// Fork: the user picks how a review opens; anything but 'default' overrides the app's default view.
-function applyReviewAgentView(tabId: string, view: ReviewAgentView): void {
-  if (view === 'default') {
-    return
-  }
-  if (view === 'claude-web') {
-    preferClaudeWebForTab(tabId, true)
-    return
-  }
-  useAppStore.getState().setTabViewMode(tabId, view)
-  preferClaudeWebForTab(tabId, false)
-  // Why hide: the Claude web default can open the tab before the launch hands its id back.
-  claudeWebView.hide(tabId)
-}
 
 function reviewWorkspaceName(pr: ReviewSnapshotPullRequest): string {
   const slug = pr.title
@@ -156,7 +137,7 @@ export async function createReviewWorkspace(
       )
     })
     if (launched?.tabId) {
-      applyReviewAgentView(launched.tabId, config.reviewInbox.view)
+      applyReviewAgentView(launched, config.reviewInbox.view)
     }
     // Why the store first: a rebased re-review moved the worktree's base to the interdiff ref.
     const baseRef =

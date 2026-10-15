@@ -33,8 +33,11 @@ vi.mock('@/store', () => ({
       repos: [{ id: 'repo-1', path: '/work/flowbasedk/flowbase' }],
       createWorktree: mocks.createWorktree,
       updateWorktreeMeta: mocks.updateWorktreeMeta,
-      setTabViewMode: mocks.setTabViewMode
-    })
+      setTabViewMode: mocks.setTabViewMode,
+      agentStatusByPaneKey: {},
+      paneForegroundAgentByPaneKey: { 'agent-tab:leaf-1': 'claude' }
+    }),
+    subscribe: () => () => undefined
   }
 }))
 vi.mock('@/lib/github-pr-start-point', () => ({
@@ -118,7 +121,10 @@ describe('createReviewWorkspace', () => {
       mocks.createWorktree.mockResolvedValue({
         worktree: { id: 'wt-1', path: '/work/review-3170' }
       })
-      mocks.launchAgentBackgroundSession.mockResolvedValue({ tabId: 'agent-tab' })
+      mocks.launchAgentBackgroundSession.mockResolvedValue({
+        tabId: 'agent-tab',
+        paneKey: 'agent-tab:leaf-1'
+      })
       mocks.setTabViewMode.mockReset()
       mocks.preferClaudeWebForTab.mockReset()
       mocks.hideClaudeWeb.mockReset()
