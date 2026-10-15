@@ -26,7 +26,9 @@ export function useWorktreeMentionFiles(
     enabled,
     worktreeId: enabled ? worktreeId : null,
     query: query ?? '',
-    recentPaths: history
+    recentPaths: history,
+    // Why: build output and dependencies would crowd out the files an agent should read.
+    includeIgnored: false
   })
   const failed = list.loadError !== null
 

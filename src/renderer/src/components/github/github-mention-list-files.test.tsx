@@ -6,20 +6,21 @@ import { GitHubMentionList, fileMentionOptions } from './github-mention-autocomp
 afterEach(cleanup)
 
 describe('GitHubMentionList with files', () => {
-  it('lists workspace files by path, without a user avatar', () => {
+  it('lists workspace files by name with their file icon, the full path on hover', () => {
     render(
       <GitHubMentionList
-        options={fileMentionOptions(['CLAUDE.md', 'apps/frontend/CLAUDE.md'])}
+        options={fileMentionOptions(['README.md', 'apps/frontend/package.json'])}
         activeIndex={0}
         anchor={{ left: 0, top: 400, bottom: 420 }}
         onPick={vi.fn()}
       />
     )
     const options = screen.getAllByRole('option')
-    expect(options.map((option) => option.textContent)).toEqual([
-      '@CLAUDE.md',
-      '@apps/frontend/CLAUDE.md'
+    expect(options.map((option) => option.textContent)).toEqual(['README.md', 'package.json'])
+    expect(options.map((option) => option.getAttribute('title'))).toEqual([
+      'README.md',
+      'apps/frontend/package.json'
     ])
-    expect(document.querySelector('[role="listbox"] img')).toBeNull()
+    expect(options.every((option) => option.querySelector('img') !== null)).toBe(true)
   })
 })

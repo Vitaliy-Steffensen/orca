@@ -1,6 +1,7 @@
 import React, { useMemo } from 'react'
 import { createPortal } from 'react-dom'
-import { FileText } from 'lucide-react'
+import { MaterialFileIcon } from '@/lib/material-icons/material-icon'
+import { basename } from '@/lib/path'
 import { cn } from '@/lib/utils'
 import { useAppStore } from '@/store'
 import { useRepoAssignees } from '@/hooks/useIssueMetadata'
@@ -76,6 +77,7 @@ export function GitHubMentionList({
           key={option.login}
           role="option"
           aria-selected={index === activeIndex}
+          title={option.isFile ? option.login : undefined}
           type="button"
           onMouseDown={(event) => {
             event.preventDefault()
@@ -87,7 +89,7 @@ export function GitHubMentionList({
           )}
         >
           {option.isFile ? (
-            <FileText className="size-4 shrink-0 text-muted-foreground" aria-hidden />
+            <MaterialFileIcon path={option.login} size={16} className="shrink-0" />
           ) : (
             <GitHubUserAvatar
               login={option.login}
@@ -97,12 +99,11 @@ export function GitHubMentionList({
             />
           )}
           <span className="flex min-w-0 flex-1 items-baseline gap-1.5">
-            <span
-              className={cn('font-medium', option.isFile ? 'truncate' : 'shrink-0')}
-              title={option.isFile ? option.login : undefined}
-            >
-              @{option.login}
-            </span>
+            {option.isFile ? (
+              <span className="truncate font-medium">{basename(option.login)}</span>
+            ) : (
+              <span className="shrink-0 font-medium">@{option.login}</span>
+            )}
             {option.name ? (
               <span className="truncate text-muted-foreground">{option.name}</span>
             ) : null}
