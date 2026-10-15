@@ -14,6 +14,25 @@ const UPDATE_REVIEW_COMMENT_MUTATION = `mutation($id: ID!, $body: String!) {
   }
 }`
 
+const UPDATE_REVIEW_MUTATION = `mutation($id: ID!, $body: String!) {
+  updatePullRequestReview(input: { pullRequestReviewId: $id, body: $body }) {
+    pullRequestReview { body lastEditedAt }
+  }
+}`
+
+const MUTATIONS = {
+  'review-comment': {
+    query: UPDATE_REVIEW_COMMENT_MUTATION,
+    field: 'updatePullRequestReviewComment',
+    node: 'pullRequestReviewComment'
+  },
+  review: {
+    query: UPDATE_REVIEW_MUTATION,
+    field: 'updatePullRequestReview',
+    node: 'pullRequestReview'
+  }
+} as const
+
 function asRecord(value: unknown): Record<string, unknown> | null {
   return value && typeof value === 'object' && !Array.isArray(value) ? { ...value } : null
 }
@@ -32,7 +51,7 @@ function firstGraphQLError(payload: unknown): string | null {
     .join('; ')
 }
 
-/** Rewrite the body of an inline review comment that is already on the pull request. */
+/** Rewrite the body of an inline review comment, or of a review's summary, already on the pull request. */
 export async function updatePublishedReviewComment(
   request: UpdatePublishedCommentRequest
 ): Promise<UpdatePublishedCommentResult> {
@@ -55,6 +74,7 @@ export async function updatePublishedReviewComment(
       error: `GitHub GraphQL rate limit nearly exhausted (${guard.remaining}/${guard.limit}).`
     }
   }
+  const mutation = MUTATIONS[request.kind ?? 'review-comment']
   await acquire()
   try {
     noteRepositoryRateLimitSpend(ownerRepo, 'graphql', 1, ghOptions)
@@ -63,7 +83,7 @@ export async function updatePublishedReviewComment(
         'api',
         'graphql',
         '-f',
-        `query=${UPDATE_REVIEW_COMMENT_MUTATION}`,
+        `query=${mutation.query}`,
         '-f',
         `id=${request.commentNodeId}`,
         '-f',
@@ -77,8 +97,7 @@ export async function updatePublishedReviewComment(
       return { ok: false, error }
     }
     const updated = asRecord(
-      asRecord(asRecord(asRecord(parsed)?.data)?.updatePullRequestReviewComment)
-        ?.pullRequestReviewComment
+      asRecord(asRecord(asRecord(parsed)?.data)?.[mutation.field])?.[mutation.node]
     )
     return {
       ok: true,

@@ -15,7 +15,10 @@ import type { ChecksPanelComposerState } from './use-checks-panel-composer-state
 import type { ChecksPanelContextState } from './use-checks-panel-context-state'
 import { checksPanelAsyncResultKey } from '../checks-panel-async-result-key'
 import { isMutablePRConversationComment } from './comment-controls'
-import { isEditablePublishedReviewComment } from '@/components/pending-review/editable-published-comment'
+import {
+  isEditablePublishedReviewComment,
+  isEditablePublishedReviewSummary
+} from '@/components/pending-review/editable-published-comment'
 import type { GitHubReactionContent, PRComment } from '../../../../../shared/github/comment-types'
 import { translate } from '@/i18n/i18n'
 
@@ -96,7 +99,8 @@ export function useChecksPanelCommentMutations(model: ChecksPanelCommentMutation
       }
       // Why a separate call: an inline review comment is not an issue comment, so the
       // conversation endpoint cannot reach it.
-      if (isEditablePublishedReviewComment(comment)) {
+      const isReviewSummary = isEditablePublishedReviewSummary(comment)
+      if (isReviewSummary || isEditablePublishedReviewComment(comment)) {
         if (!repo || !comment.reactionSubjectId) {
           return false
         }
@@ -105,7 +109,8 @@ export function useChecksPanelCommentMutations(model: ChecksPanelCommentMutation
           prRepo: pr.prRepo,
           connectionId: repo.connectionId,
           commentNodeId: comment.reactionSubjectId,
-          body
+          body,
+          ...(isReviewSummary ? { kind: 'review' as const } : {})
         })
         if (!edit.ok) {
           toast.error(edit.error)

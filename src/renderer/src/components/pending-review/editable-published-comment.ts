@@ -10,3 +10,13 @@ import type { PRComment } from '../../../../shared/github/comment-types'
 export function isEditablePublishedReviewComment(comment: PRComment): boolean {
   return Boolean(comment.threadId && comment.viewerCanUpdate && comment.reactionSubjectId)
 }
+
+/** Fork: a submitted review's summary, which GitHub lets its author rewrite but not delete. */
+export function isEditablePublishedReviewSummary(comment: PRComment): boolean {
+  return Boolean(
+    comment.reviewState !== undefined &&
+    !comment.threadId &&
+    comment.viewerCanUpdate &&
+    comment.reactionSubjectId
+  )
+}

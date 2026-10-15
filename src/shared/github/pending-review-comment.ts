@@ -37,6 +37,8 @@ export type UpdatePublishedCommentRequest = {
   /** The comment's GraphQL node id, which locates it without an owner or a number. */
   commentNodeId: string
   body: string
+  /** Fork: 'review' is a submitted review's summary; inline review comments are the default. */
+  kind?: 'review-comment' | 'review'
 }
 
 export type UpdatePublishedCommentResult =

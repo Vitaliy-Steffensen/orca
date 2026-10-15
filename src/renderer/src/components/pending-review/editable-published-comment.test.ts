@@ -1,5 +1,8 @@
 import { describe, expect, it } from 'vitest'
-import { isEditablePublishedReviewComment } from './editable-published-comment'
+import {
+  isEditablePublishedReviewComment,
+  isEditablePublishedReviewSummary
+} from './editable-published-comment'
 import type { PRComment } from '../../../../shared/github/comment-types'
 
 function comment(overrides: Partial<PRComment> = {}): PRComment {
@@ -33,5 +36,27 @@ describe('isEditablePublishedReviewComment', () => {
 
   it('refuses without the node id the edit mutation needs to locate the comment', () => {
     expect(isEditablePublishedReviewComment(comment({ reactionSubjectId: undefined }))).toBe(false)
+  })
+})
+
+describe('isEditablePublishedReviewSummary', () => {
+  const summary = (overrides: Partial<PRComment> = {}): PRComment =>
+    comment({
+      threadId: undefined,
+      reactionSubjectId: 'PRR_1',
+      reviewState: 'commented',
+      url: 'https://github.com/acme/widgets/pull/7#pullrequestreview-1',
+      ...overrides
+    })
+
+  it("accepts a review's summary the provider says this viewer may update", () => {
+    expect(isEditablePublishedReviewSummary(summary())).toBe(true)
+  })
+
+  it('refuses without permission, without the node id, or for anything but a review', () => {
+    expect(isEditablePublishedReviewSummary(summary({ viewerCanUpdate: false }))).toBe(false)
+    expect(isEditablePublishedReviewSummary(summary({ reactionSubjectId: undefined }))).toBe(false)
+    expect(isEditablePublishedReviewSummary(summary({ reviewState: undefined }))).toBe(false)
+    expect(isEditablePublishedReviewSummary(comment())).toBe(false)
   })
 })

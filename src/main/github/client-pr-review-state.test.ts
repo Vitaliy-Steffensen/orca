@@ -88,6 +88,38 @@ describe('review summary state', () => {
     )
   })
 
+  it('keeps whether this viewer may edit a review summary', async () => {
+    getOwnerRepoMock.mockResolvedValueOnce({ owner: 'acme', repo: 'widgets' })
+    ghExecFileAsyncMock
+      .mockResolvedValueOnce({
+        stdout: JSON.stringify({
+          data: {
+            repository: {
+              pullRequest: {
+                reviewThreads: { nodes: [] },
+                comments: { nodes: [] },
+                reviews: {
+                  nodes: [
+                    { ...graphQLReview(1, 'COMMENTED'), viewerCanUpdate: true },
+                    { ...graphQLReview(2, 'APPROVED'), viewerCanUpdate: false }
+                  ]
+                }
+              }
+            }
+          }
+        })
+      })
+      .mockResolvedValueOnce({ stdout: '[]' })
+      .mockResolvedValueOnce({ stdout: '[]' })
+
+    const comments = await getPRComments('/repo-root', 7)
+
+    expect(Object.fromEntries(comments.map((c) => [c.id, c.viewerCanUpdate]))).toEqual({
+      1: true,
+      2: false
+    })
+  })
+
   it('keeps the state from REST reviews when GraphQL is rate limited', async () => {
     rateLimitGuardMock.mockImplementation(((bucket: string) =>
       bucket === 'graphql'

@@ -185,7 +185,10 @@ export async function getPRComments(
                 isBot: review.author?.__typename === 'Bot',
                 reactionSubjectId: review.id,
                 reactions: mapGraphQLReactionGroups(review.reactionGroups),
-                reviewState: toPRReviewSummaryState(review.state)
+                reviewState: toPRReviewSummaryState(review.state),
+                ...(review.viewerCanUpdate !== undefined
+                  ? { viewerCanUpdate: review.viewerCanUpdate }
+                  : {})
               }))
           : undefined
 
