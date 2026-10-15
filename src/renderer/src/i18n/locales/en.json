@@ -12869,6 +12869,10 @@
           "title": "Port Names",
           "description": "A command that prints the URLs a workspace serves, to name its live ports.",
           "placeholder": "mise run print-urls",
+          "keywordPorts": "ports",
+          "keywordUrls": "urls",
+          "keywordDevServer": "dev server",
+          "keywordFrontend": "frontend",
           "hint": "Runs in the workspace. Each line of the form \"Label  http://host:port\" names that port, and the Frontend entry gets a quick open button while it is running."
         },
         "transfer": {

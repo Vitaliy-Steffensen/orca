@@ -4,6 +4,7 @@ import { RepoSettingsDraftInput } from './RepositorySettingsDraftInput'
 import { SearchableSetting } from './SearchableSetting'
 import { translate } from '@/i18n/i18n'
 import type { SettingsSearchEntry } from './settings-search'
+import { translateSearchKeyword } from './settings-search-keywords'
 
 export function getPortLabelsSearchEntry(repo: Repo): SettingsSearchEntry {
   return {
@@ -12,7 +13,25 @@ export function getPortLabelsSearchEntry(repo: Repo): SettingsSearchEntry {
       'auto.components.settings.PortLabelsCommandSection.description',
       'A command that prints the URLs a workspace serves, to name its live ports.'
     ),
-    keywords: [repo.displayName, 'ports', 'urls', 'dev server', 'frontend', 'live ports']
+    keywords: [
+      repo.displayName,
+      ...translateSearchKeyword(
+        'auto.components.settings.PortLabelsCommandSection.keywordPorts',
+        'ports'
+      ),
+      ...translateSearchKeyword(
+        'auto.components.settings.PortLabelsCommandSection.keywordUrls',
+        'urls'
+      ),
+      ...translateSearchKeyword(
+        'auto.components.settings.PortLabelsCommandSection.keywordDevServer',
+        'dev server'
+      ),
+      ...translateSearchKeyword(
+        'auto.components.settings.PortLabelsCommandSection.keywordFrontend',
+        'frontend'
+      )
+    ]
   }
 }
 
