@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from 'react'
+import React, { useCallback } from 'react'
 import { Plug, Copy, ExternalLink, Trash2 } from 'lucide-react'
 import { toast } from 'sonner'
 import { useAppStore } from '@/store'
@@ -15,12 +15,7 @@ import {
 } from '@/lib/workspace-port-actions'
 import { useLocalhostLabelRouteForPort } from '@/lib/workspace-port-localhost-label-selector'
 import { addressForPort } from '@/lib/workspace-port-urls'
-import { pickFrontendPortLabel } from '@/lib/workspace-port-labels'
-import {
-  OpenFrontendButton,
-  useWorkspacePortLabels,
-  type PortOpeners
-} from './worktree-card-port-labels'
+import { useWorkspacePortLabels } from './worktree-card-port-labels'
 import type { WorkspacePort } from '../../../../shared/workspace-ports'
 import {
   WorktreeCardDetailSection,
@@ -105,12 +100,10 @@ function PortAction({
 /** One port row on a sidebar worktree card, with open/copy/stop actions on its owner host. */
 function WorktreePortRow({
   port,
-  label,
-  openers
+  label
 }: {
   port: WorkspacePort
   label?: string
-  openers?: PortOpeners
 }): React.JSX.Element {
   const settings = useAppStore((s) => s.settings)
   const localhostLabelRoute = useLocalhostLabelRouteForPort(port)
@@ -171,19 +164,6 @@ function WorktreePortRow({
       settings
     ]
   )
-  // Why a registry: the header's quick open reuses this row's open rather than routing on its own.
-  useEffect(() => {
-    if (!openers) {
-      return
-    }
-    openers.set(port.port, handleOpen)
-    return () => {
-      if (openers.get(port.port) === handleOpen) {
-        openers.delete(port.port)
-      }
-    }
-  }, [handleOpen, openers, port.port])
-
   const handleCopy = useCallback(
     (event: React.MouseEvent<HTMLButtonElement>) => {
       event.stopPropagation()
@@ -320,15 +300,10 @@ export function WorktreeCardPortsDetails({
   ports
 }: WorktreeCardPortsProps): React.JSX.Element | null {
   const labels = useWorkspacePortLabels(ports)
-  const [openers] = useState<PortOpeners>(() => new Map())
   if (ports.length === 0) {
     return null
   }
   const labelByPort = new Map(labels.map((entry) => [entry.port, entry.label]))
-  const frontend = pickFrontendPortLabel(
-    labels,
-    ports.map((port) => port.port)
-  )
 
   return (
     <WorktreeCardDetailSection>
@@ -342,18 +317,10 @@ export function WorktreeCardPortsDetails({
             ({ports.length})
           </span>
         </span>
-        {frontend ? (
-          <OpenFrontendButton port={frontend.port} label={frontend.label} openers={openers} />
-        ) : null}
       </div>
       <WorktreeCardDetailSectionContent className="space-y-0.5">
         {ports.map((port) => (
-          <WorktreePortRow
-            key={port.id}
-            port={port}
-            label={labelByPort.get(port.port)}
-            openers={openers}
-          />
+          <WorktreePortRow key={port.id} port={port} label={labelByPort.get(port.port)} />
         ))}
       </WorktreeCardDetailSectionContent>
     </WorktreeCardDetailSection>
