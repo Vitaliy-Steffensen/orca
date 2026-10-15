@@ -20196,6 +20196,9 @@
     "review": "Review"
   },
   "languageServers": {
+    "restartFailed": "Could not restart the language server.",
+    "restarted": "Language server restarted. It starts again on use.",
+    "restartAction": "Restart Language Server",
     "path": "Path",
     "pathPlaceholder": "{{command}} from the project, else PATH",
     "server": "Server",

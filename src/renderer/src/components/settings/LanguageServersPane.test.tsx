@@ -47,6 +47,18 @@ describe('LanguageServersPane', () => {
     expect(card('typescript')?.textContent).toContain('TypeScript and JavaScript')
   })
 
+  it("restarts a language's server from its card", async () => {
+    const stop = vi.fn(async () => undefined)
+    vi.stubGlobal('api', { languageServer: { stop } })
+    render(undefined)
+    const button = card('python')?.querySelector<HTMLButtonElement>(
+      'button[aria-label="Restart Language Server"]'
+    )
+    await act(async () => button?.click())
+    expect(stop).toHaveBeenCalledWith({ language: 'python' })
+    vi.unstubAllGlobals()
+  })
+
   it('turns one language off and keeps the others as they were', () => {
     const updateSettings = render({ typescript: false })
     act(() => card('python')?.querySelector<HTMLElement>('[role="switch"]')?.click())
