@@ -3,12 +3,17 @@ import type { Editor } from '@tiptap/react'
 import { cn } from '@/lib/utils'
 import { GitHubMarkdownComposer } from './GitHubMarkdownComposer'
 import { filterGitHubMentionOptions } from './github-mention-option-filter'
-import { GitHubMentionList, useActiveRepoMentionOptions } from './github-mention-autocomplete'
+import {
+  GitHubMentionList,
+  fileMentionOptions,
+  useActiveRepoMentionOptions
+} from './github-mention-autocomplete'
+import { useWorktreeMentionFiles } from '@/lib/use-worktree-mention-files'
 import { withCommentAuthorMentionOptions } from './comment-author-mention-options'
 import { ReviewAssetUpload } from './review-asset-upload-extension'
 import { useAppStore } from '@/store'
 import { usePRCommentScope } from '@/components/pr-comments/use-pr-comment-scope'
-import { ReviewMention, type MentionQueryState } from './review-mention-extension'
+import { ReviewMention, type MentionMode, type MentionQueryState } from './review-mention-extension'
 import { ReviewEmojiShortcode } from './review-emoji-shortcode-extension'
 import { searchCommentEmoji } from './emoji-shortcode-query'
 import { EmojiShortcodeList } from './emoji-shortcode-list'
@@ -29,6 +34,7 @@ export function ReviewMarkdownComposer({
   disabled,
   mentions = true,
   uploads = true,
+  fileMentionWorktreeId = null,
   className
 }: {
   value: string
@@ -41,6 +47,8 @@ export function ReviewMarkdownComposer({
   disabled?: boolean
   mentions?: boolean
   uploads?: boolean
+  /** Fork: `@` names this workspace's files, for an agent to read, in place of GitHub users. */
+  fileMentionWorktreeId?: string | null
   className?: string
 }): React.JSX.Element {
   const [query, setQuery] = useState<MentionQueryState | null>(null)
@@ -49,20 +57,29 @@ export function ReviewMarkdownComposer({
   const editorRef = useRef<Editor | null>(null)
   const dropRootRef = useRef<HTMLDivElement | null>(null)
   useReviewAssetDropClaim(dropRootRef, uploads)
-  const memberOptions = useActiveRepoMentionOptions(mentions && query !== null)
+  const fileMode = fileMentionWorktreeId !== null
+  const mentionMode = useRef<MentionMode>('user')
+  mentionMode.current = fileMode ? 'file' : 'user'
+  const memberOptions = useActiveRepoMentionOptions(mentions && !fileMode && query !== null)
+  const mentionFiles = useWorktreeMentionFiles(
+    mentions && fileMode ? (query?.query ?? null) : null,
+    fileMentionWorktreeId
+  )
   const activeWorktreeId = useAppStore((state) => state.activeWorktreeId)
   const scope = usePRCommentScope(activeWorktreeId)
   const uploadTarget = useRef({ repo: scope.repo, prRepo: scope.pr?.prRepo })
-  const suggestions = useMemo(
-    () =>
-      mentions && query
-        ? filterGitHubMentionOptions(
-            withCommentAuthorMentionOptions(memberOptions, scope.comments),
-            query.query
-          )
-        : [],
-    [mentions, memberOptions, query, scope.comments]
-  )
+  const suggestions = useMemo(() => {
+    if (!mentions || !query) {
+      return []
+    }
+    // Why no second filter for files: the file search already ranked them fuzzily.
+    return fileMode
+      ? fileMentionOptions(mentionFiles.files)
+      : filterGitHubMentionOptions(
+          withCommentAuthorMentionOptions(memberOptions, scope.comments),
+          query.query
+        )
+  }, [fileMode, mentionFiles.files, mentions, memberOptions, query, scope.comments])
   const open = suggestions.length > 0 && query !== null
   const [emojiQuery, setEmojiQuery] = useState<MentionQueryState | null>(null)
   const emojiQueryRef = useRef<MentionQueryState | null>(null)
@@ -188,7 +205,8 @@ export function ReviewMarkdownComposer({
         onKeyDown: (event) => keyHandler.current(event),
         onEditor: (editor) => {
           editorRef.current = editor
-        }
+        },
+        mode: () => mentionMode.current
       }),
       ReviewEmojiShortcode.configure({
         onQueryChange: (next) => {

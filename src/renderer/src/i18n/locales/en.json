@@ -3000,7 +3000,8 @@
         "mentions": {
           "member": "Member",
           "app": "App",
-          "commenter": "Commenter"
+          "commenter": "Commenter",
+          "file": "File"
         },
         "reviewAssets": {
           "noRepository": "This workspace has no GitHub repository to attach the file to.",

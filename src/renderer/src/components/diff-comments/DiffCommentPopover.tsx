@@ -64,6 +64,8 @@ type Props = {
   onHeightChange?: (height: number) => void
   /** Fork: keeps the text across closing the box and restarts. */
   draftKey?: string
+  /** Fork: the workspace whose files an `@` in a note names. */
+  fileMentionWorktreeId?: string
 }
 
 function hasDraftText(body: string): boolean {
@@ -86,8 +88,10 @@ export function DiffCommentPopover({
   onCancel,
   onSubmit,
   onHeightChange,
-  draftKey
+  draftKey,
+  fileMentionWorktreeId
 }: Props): React.JSX.Element {
+  const isNote = !mode || mode === 'note'
   const [body, setBody] = useSavedDraft(draftKey ?? null)
   // Why: mirror the draft into a ref so the mousedown listener reads it fresh without re-registering each keystroke.
   const bodyRef = useRef(body)
@@ -257,9 +261,11 @@ export function DiffCommentPopover({
           onChange={setBody}
           placeholder={placeholder}
           autoFocus
-          // Why GitHub modes only: an @ in a note for the agent tags nobody, and uploads are public.
-          mentions={Boolean(mode && mode !== 'note')}
-          uploads={Boolean(mode && mode !== 'note')}
+          // Why: in a note for the agent an @ names a workspace file for it to read; uploads are
+          // public, so they stay with GitHub modes.
+          mentions={isNote ? Boolean(fileMentionWorktreeId) : true}
+          fileMentionWorktreeId={isNote ? (fileMentionWorktreeId ?? null) : null}
+          uploads={!isNote}
           onUploadingChange={setUploading}
           onSubmitShortcut={() => {
             armNoteSendFocus()

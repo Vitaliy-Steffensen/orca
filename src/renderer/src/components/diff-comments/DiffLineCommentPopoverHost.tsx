@@ -95,6 +95,7 @@ export function DiffLineCommentPopoverHost({
       }
       submittingLabel="Posting…"
       onHeightChange={setPopoverHeight}
+      fileMentionWorktreeId={worktreeId ?? undefined}
       draftKey={
         worktreeId
           ? `line-note:${worktreeId}:${relativePath}:${anchor.startLine ?? anchor.lineNumber}:${anchor.lineNumber}`

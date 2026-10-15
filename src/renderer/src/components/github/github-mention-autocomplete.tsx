@@ -1,5 +1,6 @@
 import React, { useMemo } from 'react'
 import { createPortal } from 'react-dom'
+import { FileText } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { useAppStore } from '@/store'
 import { useRepoAssignees } from '@/hooks/useIssueMetadata'
@@ -31,6 +32,14 @@ export function useActiveRepoMentionOptions(wanted: boolean): MentionOption[] {
       })),
     [assignees.data]
   )
+}
+
+export function fileMentionOptions(paths: readonly string[]): MentionOption[] {
+  return paths.map((path) => ({
+    login: path,
+    source: translate('auto.components.github.mentions.file', 'File'),
+    isFile: true
+  }))
 }
 
 const LIST_MAX_HEIGHT_PX = 256
@@ -77,14 +86,23 @@ export function GitHubMentionList({
             index === activeIndex && 'bg-accent text-accent-foreground'
           )}
         >
-          <GitHubUserAvatar
-            login={option.login}
-            name={option.name}
-            avatarUrl={option.avatarUrl}
-            className="size-5"
-          />
+          {option.isFile ? (
+            <FileText className="size-4 shrink-0 text-muted-foreground" aria-hidden />
+          ) : (
+            <GitHubUserAvatar
+              login={option.login}
+              name={option.name}
+              avatarUrl={option.avatarUrl}
+              className="size-5"
+            />
+          )}
           <span className="flex min-w-0 flex-1 items-baseline gap-1.5">
-            <span className="shrink-0 font-medium">@{option.login}</span>
+            <span
+              className={cn('font-medium', option.isFile ? 'truncate' : 'shrink-0')}
+              title={option.isFile ? option.login : undefined}
+            >
+              @{option.login}
+            </span>
             {option.name ? (
               <span className="truncate text-muted-foreground">{option.name}</span>
             ) : null}
