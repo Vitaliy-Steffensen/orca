@@ -147,7 +147,8 @@ export function createFileApi(): NonNullable<Partial<PreloadApi>['fs']> {
             useRegex: args.useRegex,
             includePattern: args.includePattern,
             excludePattern: args.excludePattern,
-            maxResults: args.maxResults
+            maxResults: args.maxResults,
+            restrictToPaths: args.restrictToPaths
           },
           15_000,
           controller.signal

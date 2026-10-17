@@ -3,6 +3,8 @@ import type { SearchOptions, SearchResult } from '../../shared/code-search-types
 import { RipgrepSearchDiagnostics } from '../../shared/ripgrep-search-diagnostics'
 import { SearchSubprocessLineAccumulator } from '../../shared/search-subprocess-lines'
 import { throwIfSignalAborted, abortSignalReason } from '../../shared/abort-signal-reason'
+import { clampRestrictedSearchPaths } from '../../shared/text-search-path-restriction'
+import { createEmptySearchResult } from '../../shared/search-result-empty'
 import {
   buildRgArgs,
   createAccumulator,
@@ -30,6 +32,20 @@ import { stopBundledRipgrep } from './bundled-ripgrep-stop'
 // skips unfollowed anyway. One of them must not fail or truncate the whole search.
 const WINDOWS_UNOPENABLE_PATH_OS_ERRORS: ReadonlySet<number> = new Set([1, 2, 1920])
 
+// Why: git status lags the disk, so a restricted path can vanish before rg opens it; skipping
+// that one file must not fail the whole search. Only when a restriction is actually in play.
+const RESTRICTED_PATH_MISSING_OS_ERROR = 2
+
+function skippablePathOsErrors(
+  windowsUnopenable: boolean,
+  restricted: boolean
+): ReadonlySet<number> | undefined {
+  if (windowsUnopenable) {
+    return WINDOWS_UNOPENABLE_PATH_OS_ERRORS
+  }
+  return restricted ? new Set([RESTRICTED_PATH_MISSING_OS_ERROR]) : undefined
+}
+
 export function runBundledRipgrepTextSearch({
   options,
   rootPath,
@@ -48,19 +64,29 @@ export function runBundledRipgrepTextSearch({
   onSpawn: (child: ChildProcessHandle) => () => void
 }): Promise<SearchResult> {
   throwIfSignalAborted(signal)
+  const restriction =
+    options.restrictToPaths === undefined
+      ? null
+      : clampRestrictedSearchPaths(options.restrictToPaths)
+  // Why: a restriction that clamps to nothing must never decay into a whole-tree scan.
+  if (restriction && restriction.paths.length === 0) {
+    return Promise.resolve({ ...createEmptySearchResult(), truncated: restriction.truncated })
+  }
   const maxResults = Math.max(
     1,
     Math.min(options.maxResults ?? DEFAULT_SEARCH_MAX_RESULTS, DEFAULT_SEARCH_MAX_RESULTS)
   )
   return new Promise<SearchResult>((resolvePromise, rejectPromise) => {
-    const rgArgs = buildRgArgs(options.query, '.', options)
+    const rgArgs = buildRgArgs(options.query, restriction?.paths ?? ['.'], options)
 
     const acc = createAccumulator()
+    acc.truncated = restriction?.truncated ?? false
     const lines = new SearchSubprocessLineAccumulator()
     const diagnostics = new RipgrepSearchDiagnostics(
-      process.platform === 'win32' && !wslDistroForOutput
-        ? WINDOWS_UNOPENABLE_PATH_OS_ERRORS
-        : undefined
+      skippablePathOsErrors(
+        process.platform === 'win32' && !wslDistroForOutput,
+        restriction !== null
+      )
     )
     let resolved = false
     let processErrorObserved = false

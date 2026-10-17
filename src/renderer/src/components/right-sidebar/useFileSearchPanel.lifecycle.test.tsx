@@ -6,6 +6,14 @@ import { makeFolderWorkspace } from '@/store/slices/worktrees-slice-test-fixture
 import { useFileSearchPanel } from './useFileSearchPanel'
 import type { SearchResult } from '../../../../shared/code-search-types'
 
+function useExplorerPanel(view: 'files' | 'search') {
+  return useFileSearchPanel({ scope: 'explorer', active: view === 'search', restriction: null })
+}
+
+function explorerSearchState(worktreeId: string) {
+  return useAppStore.getState().fileSearchStateByWorktree[worktreeId].explorer
+}
+
 const { search } = vi.hoisted(() => ({ search: vi.fn() }))
 vi.mock('@/runtime/runtime-file-search-client', () => ({ searchRuntimeFiles: search }))
 const initial = useAppStore.getInitialState()
@@ -39,15 +47,15 @@ it('aborts on view hide, resumes the saved query, keeps completed results and ca
     signals.push(signal)
     return new Promise<SearchResult>((resolve) => completions.push(resolve))
   })
-  useAppStore.getState().updateFileSearchState('folder:a', { query: 'needle' })
-  const hook = renderHook(({ view }: { view: 'files' | 'search' }) => useFileSearchPanel(view), {
+  useAppStore.getState().updateFileSearchState('folder:a', 'explorer', { query: 'needle' })
+  const hook = renderHook(({ view }: { view: 'files' | 'search' }) => useExplorerPanel(view), {
     initialProps: initialView
   })
   await act(async () => vi.advanceTimersByTimeAsync(300))
   expect(signals).toHaveLength(1)
   hook.rerender({ view: 'files' })
   expect(signals[0].aborted).toBe(true)
-  expect(useAppStore.getState().fileSearchStateByWorktree['folder:a'].results).toBeNull()
+  expect(explorerSearchState('folder:a').results).toBeNull()
   hook.rerender({ view: 'search' })
   await act(async () => vi.advanceTimersByTimeAsync(300))
   expect(signals).toHaveLength(2)
@@ -56,16 +64,16 @@ it('aborts on view hide, resumes the saved query, keeps completed results and ca
   hook.rerender({ view: 'search' })
   await act(async () => vi.advanceTimersByTimeAsync(300))
   expect(signals).toHaveLength(2)
-  expect(useAppStore.getState().fileSearchStateByWorktree['folder:a'].results).toEqual(empty)
+  expect(explorerSearchState('folder:a').results).toEqual(empty)
   await act(async () => {
-    useAppStore.getState().updateFileSearchState('folder:b', { query: 'other' })
+    useAppStore.getState().updateFileSearchState('folder:b', 'explorer', { query: 'other' })
     useAppStore.setState({ activeWorktreeId: 'folder:b' })
   })
   await act(async () => vi.advanceTimersByTimeAsync(300))
   expect(signals).toHaveLength(3)
   await act(async () => useAppStore.setState({ activeWorktreeId: 'folder:a' }))
   expect(signals[2].aborted).toBe(true)
-  expect(useAppStore.getState().fileSearchStateByWorktree['folder:b'].loading).toBe(false)
+  expect(explorerSearchState('folder:b').loading).toBe(false)
   hook.unmount()
 })
 
@@ -73,8 +81,8 @@ it.each(['search', 'files', 'unmounted'] as const)(
   'invalidates completed results across same-ID root changes while %s',
   async (view) => {
     search.mockResolvedValue(empty)
-    useAppStore.getState().updateFileSearchState('folder:a', { query: 'needle' })
-    let hook = renderHook(({ view }: { view: 'search' | 'files' }) => useFileSearchPanel(view), {
+    useAppStore.getState().updateFileSearchState('folder:a', 'explorer', { query: 'needle' })
+    let hook = renderHook(({ view }: { view: 'search' | 'files' }) => useExplorerPanel(view), {
       initialProps: initialView
     })
     await act(async () => vi.advanceTimersByTimeAsync(300))
@@ -90,27 +98,25 @@ it.each(['search', 'files', 'unmounted'] as const)(
       })
     )
     if (view === 'files') {
-      expect(useAppStore.getState().fileSearchStateByWorktree['folder:a'].results).toBeNull()
+      expect(explorerSearchState('folder:a').results).toBeNull()
       hook.rerender({ view: 'search' })
     } else if (view === 'unmounted') {
-      hook = renderHook(({ view }: { view: 'search' | 'files' }) => useFileSearchPanel(view), {
+      hook = renderHook(({ view }: { view: 'search' | 'files' }) => useExplorerPanel(view), {
         initialProps: initialView
       })
     }
     await act(async () => vi.advanceTimersByTimeAsync(300))
     expect(search).toHaveBeenCalledTimes(2)
     expect(search.mock.calls[1][1].rootPath).toBe('/replacement')
-    expect(useAppStore.getState().fileSearchStateByWorktree['folder:a'].resultOwner?.rootPath).toBe(
-      '/replacement'
-    )
+    expect(explorerSearchState('folder:a').resultOwner?.rootPath).toBe('/replacement')
     hook.unmount()
   }
 )
 
 it('invalidates completed results and errors when the execution owner changes at the same root', async () => {
   search.mockResolvedValue(empty)
-  useAppStore.getState().updateFileSearchState('folder:a', { query: 'needle' })
-  const hook = renderHook(() => useFileSearchPanel('search'))
+  useAppStore.getState().updateFileSearchState('folder:a', 'explorer', { query: 'needle' })
+  const hook = renderHook(() => useExplorerPanel('search'))
   await act(async () => vi.advanceTimersByTimeAsync(300))
   await act(async () =>
     useAppStore.setState({
@@ -122,9 +128,7 @@ it('invalidates completed results and errors when the execution owner changes at
   await act(async () => vi.advanceTimersByTimeAsync(300))
   expect(search).toHaveBeenCalledTimes(2)
   expect(search.mock.calls[1][0].target).toEqual({ kind: 'environment', environmentId: 'remote-a' })
-  expect(
-    useAppStore.getState().fileSearchStateByWorktree['folder:a'].resultOwner?.executionHostId
-  ).toBe('runtime:remote-a')
+  expect(explorerSearchState('folder:a').resultOwner?.executionHostId).toBe('runtime:remote-a')
   hook.unmount()
 })
 
@@ -135,8 +139,8 @@ it('automatically replaces pending root searches and ignores a late old completi
     signals.push(signal)
     return new Promise<SearchResult>((resolve) => completions.push(resolve))
   })
-  useAppStore.getState().updateFileSearchState('folder:a', { query: 'needle' })
-  const hook = renderHook(() => useFileSearchPanel('search'))
+  useAppStore.getState().updateFileSearchState('folder:a', 'explorer', { query: 'needle' })
+  const hook = renderHook(() => useExplorerPanel('search'))
   await act(async () => vi.advanceTimersByTimeAsync(300))
   await act(async () =>
     useAppStore.setState({
@@ -147,12 +151,10 @@ it('automatically replaces pending root searches and ignores a late old completi
   await act(async () => vi.advanceTimersByTimeAsync(300))
   expect(search).toHaveBeenCalledTimes(2)
   await act(async () => completions[1](empty))
-  const replacementOwner = useAppStore.getState().fileSearchStateByWorktree['folder:a'].resultOwner
+  const replacementOwner = explorerSearchState('folder:a').resultOwner
   await act(async () => completions[0]({ ...empty, totalMatches: 99 }))
-  expect(useAppStore.getState().fileSearchStateByWorktree['folder:a'].results?.totalMatches).toBe(0)
-  expect(useAppStore.getState().fileSearchStateByWorktree['folder:a'].resultOwner).toBe(
-    replacementOwner
-  )
+  expect(explorerSearchState('folder:a').results?.totalMatches).toBe(0)
+  expect(explorerSearchState('folder:a').resultOwner).toBe(replacementOwner)
   hook.unmount()
 })
 
@@ -160,12 +162,10 @@ it('retries a saved failure after its root changes without reusing the old error
   const log = vi.spyOn(console, 'error').mockImplementation(() => {})
   try {
     search.mockRejectedValueOnce(new Error('old root unavailable')).mockResolvedValue(empty)
-    useAppStore.getState().updateFileSearchState('folder:a', { query: 'needle' })
-    const hook = renderHook(() => useFileSearchPanel('search'))
+    useAppStore.getState().updateFileSearchState('folder:a', 'explorer', { query: 'needle' })
+    const hook = renderHook(() => useExplorerPanel('search'))
     await act(async () => vi.advanceTimersByTimeAsync(300))
-    expect(useAppStore.getState().fileSearchStateByWorktree['folder:a'].error).toBe(
-      'old root unavailable'
-    )
+    expect(explorerSearchState('folder:a').error).toBe('old root unavailable')
     await act(async () =>
       useAppStore.setState({
         folderWorkspaces: [makeFolderWorkspace({ id: 'a', folderPath: '/replacement' })]
@@ -173,8 +173,8 @@ it('retries a saved failure after its root changes without reusing the old error
     )
     await act(async () => vi.advanceTimersByTimeAsync(300))
     expect(search).toHaveBeenCalledTimes(2)
-    expect(useAppStore.getState().fileSearchStateByWorktree['folder:a'].error).toBeNull()
-    expect(useAppStore.getState().fileSearchStateByWorktree['folder:a'].results).toEqual(empty)
+    expect(explorerSearchState('folder:a').error).toBeNull()
+    expect(explorerSearchState('folder:a').results).toEqual(empty)
     hook.unmount()
   } finally {
     log.mockRestore()
@@ -185,10 +185,10 @@ it.each(['root', 'owner'] as const)(
   'hides stale errors during %s replacement before effects clear them',
   async (change) => {
     search.mockRejectedValue(new Error('current failure'))
-    useAppStore.getState().updateFileSearchState('folder:a', { query: 'needle' })
+    useAppStore.getState().updateFileSearchState('folder:a', 'explorer', { query: 'needle' })
     const renders: (string | null | undefined)[] = []
     const hook = renderHook(() => {
-      const panel = useFileSearchPanel('search')
+      const panel = useExplorerPanel('search')
       renders.push(panel.resultsProps.error)
       return panel
     })
@@ -211,3 +211,30 @@ it.each(['root', 'owner'] as const)(
     hook.unmount()
   }
 )
+
+it('keeps the Explorer and Source Control searches of one worktree apart', async () => {
+  search.mockResolvedValue(empty)
+  const restriction = { paths: ['src/a.ts'], signature: 'src/a.ts' }
+  const explorer = renderHook(() => useExplorerPanel('search'))
+  const sourceControl = renderHook(() =>
+    useFileSearchPanel({ scope: 'source-control', active: true, restriction })
+  )
+
+  act(() => explorer.result.current.queryRowProps.onQueryChange('explorer-term'))
+  act(() => sourceControl.result.current.queryRowProps.onQueryChange('changed-files-term'))
+  await act(async () => vi.advanceTimersByTimeAsync(300))
+
+  const scoped = useAppStore.getState().fileSearchStateByWorktree['folder:a']
+  expect(scoped.explorer.query).toBe('explorer-term')
+  expect(scoped['source-control'].query).toBe('changed-files-term')
+  expect(explorer.result.current.queryRowProps.query).toBe('explorer-term')
+  expect(sourceControl.result.current.queryRowProps.query).toBe('changed-files-term')
+
+  // Only the Source Control search is confined to the changed files.
+  expect(search.mock.calls.map((call) => call[1].restrictToPaths)).toEqual([
+    undefined,
+    ['src/a.ts']
+  ])
+  explorer.unmount()
+  sourceControl.unmount()
+})

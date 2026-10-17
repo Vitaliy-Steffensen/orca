@@ -4,6 +4,10 @@ import { act, renderHook } from '@testing-library/react'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import type { SearchResult } from '../../../../shared/code-search-types'
 import { useFileSearchRunner } from './useFileSearchRunner'
+import {
+  createFileSearchPathRestriction,
+  type FileSearchPathRestriction
+} from './file-search-path-restriction'
 
 const mocks = vi.hoisted(() => ({
   getConnectionId: vi.fn(),
@@ -34,7 +38,11 @@ const RESULTS: SearchResult = {
   truncated: false
 }
 
-function renderSearchRunner(state: Record<string, unknown>, worktreeId: string) {
+function renderSearchRunner(
+  state: Record<string, unknown>,
+  worktreeId: string,
+  restriction: FileSearchPathRestriction | null = null
+) {
   const updates: Record<string, unknown>[] = []
   mocks.getState.mockImplementation(() => state)
   mocks.searchRuntimeFiles.mockResolvedValue(RESULTS)
@@ -43,6 +51,8 @@ function renderSearchRunner(state: Record<string, unknown>, worktreeId: string) 
     useFileSearchRunner({
       activeWorktreeId: worktreeId,
       worktreePath: '/repo',
+      scope: 'explorer',
+      restriction,
       updateActiveSearchState: (update) => updates.push(update)
     })
   )
@@ -76,7 +86,7 @@ describe('useFileSearchRunner result ownership', () => {
       worktreesByRepo: {
         'repo-a': [{ id: worktreeId, repoId: 'repo-a', hostId: 'runtime:search-runtime-a' }]
       },
-      fileSearchStateByWorktree: { [worktreeId]: {} }
+      fileSearchStateByWorktree: { [worktreeId]: { explorer: {} } }
     }
     const { hook, updates } = renderSearchRunner(state, worktreeId)
 
@@ -109,7 +119,7 @@ describe('useFileSearchRunner result ownership', () => {
       worktreesByRepo: {
         'repo-a': [{ id: worktreeId, repoId: 'repo-a', hostId: 'local' }]
       },
-      fileSearchStateByWorktree: { [worktreeId]: {} }
+      fileSearchStateByWorktree: { [worktreeId]: { explorer: {} } }
     }
     const { hook, updates } = renderSearchRunner(state, worktreeId)
 
@@ -139,7 +149,7 @@ describe('useFileSearchRunner result ownership', () => {
       worktreesByRepo: {
         'repo-a': [{ id: worktreeId, repoId: 'repo-a', hostId: 'ssh:ssh-target' }]
       },
-      fileSearchStateByWorktree: { [worktreeId]: {} }
+      fileSearchStateByWorktree: { [worktreeId]: { explorer: {} } }
     }
     mocks.getConnectionId.mockReturnValue('ssh-target')
     const { hook, updates } = renderSearchRunner(state, worktreeId)
@@ -172,7 +182,7 @@ describe('useFileSearchRunner result ownership', () => {
       settings: { activeRuntimeEnvironmentId: null },
       repos: [],
       worktreesByRepo: {},
-      fileSearchStateByWorktree: { [worktreeId]: {} }
+      fileSearchStateByWorktree: { [worktreeId]: { explorer: {} } }
     }
     const { hook, updates } = renderSearchRunner(state, worktreeId)
 
@@ -248,7 +258,7 @@ it('aborts 99 superseded searches, preserves the latest result and stops the fin
         settings: {},
         repos: [],
         worktreesByRepo: {},
-        fileSearchStateByWorktree: { [worktreeId]: {} }
+        fileSearchStateByWorktree: { [worktreeId]: { explorer: {} } }
       },
       worktreeId
     )
@@ -304,6 +314,8 @@ it('aborts the old root when a workspace path changes without changing its id', 
         useFileSearchRunner({
           activeWorktreeId: 'folder:stable',
           worktreePath: path,
+          scope: 'explorer',
+          restriction: null,
           updateActiveSearchState
         }),
       { initialProps: { path: '/old-root' } }
@@ -324,4 +336,82 @@ it('aborts the old root when a workspace path changes without changing its id', 
     vi.useRealTimers()
     vi.clearAllMocks()
   }
+})
+
+describe('useFileSearchRunner path restriction', () => {
+  const worktreeId = 'repo-a::/repo'
+  const state = {
+    settings: {},
+    repos: [{ id: 'repo-a', executionHostId: 'local' }],
+    worktreesByRepo: { 'repo-a': [{ id: worktreeId, repoId: 'repo-a', hostId: 'local' }] },
+    fileSearchStateByWorktree: { [worktreeId]: { explorer: {} } }
+  }
+
+  beforeEach(() => {
+    vi.useFakeTimers()
+    mocks.getConnectionId.mockReturnValue(null)
+  })
+
+  afterEach(() => {
+    vi.useRealTimers()
+    vi.clearAllMocks()
+  })
+
+  it('forwards the changed paths and drops files the host searched anyway', async () => {
+    const restriction = createFileSearchPathRestriction(['src/a.ts'])
+    mocks.getState.mockImplementation(() => state)
+    mocks.searchRuntimeFiles.mockResolvedValue({
+      files: [
+        { filePath: '/repo/src/a.ts', relativePath: 'src/a.ts', matches: [], matchCount: 2 },
+        { filePath: '/repo/src/b.ts', relativePath: 'src/b.ts', matches: [], matchCount: 5 }
+      ],
+      totalMatches: 7,
+      truncated: false
+    })
+    const updates: Record<string, unknown>[] = []
+    const hook = renderHook(() =>
+      useFileSearchRunner({
+        activeWorktreeId: worktreeId,
+        worktreePath: '/repo',
+        scope: 'source-control',
+        restriction,
+        updateActiveSearchState: (update) => updates.push(update)
+      })
+    )
+
+    await finishSearch(hook.result.current.executeSearch)
+
+    expect(mocks.searchRuntimeFiles).toHaveBeenCalledWith(
+      expect.any(Object),
+      expect.objectContaining({ restrictToPaths: ['src/a.ts'] }),
+      expect.any(AbortSignal)
+    )
+    const committed = updates.find((update) => 'results' in update && update.results)
+    expect(committed?.results).toEqual({
+      files: [{ filePath: '/repo/src/a.ts', relativePath: 'src/a.ts', matches: [], matchCount: 2 }],
+      totalMatches: 2,
+      truncated: false
+    })
+  })
+
+  it('resolves an empty result without searching when nothing has changed', async () => {
+    mocks.getState.mockImplementation(() => state)
+    const updates: Record<string, unknown>[] = []
+    const hook = renderHook(() =>
+      useFileSearchRunner({
+        activeWorktreeId: worktreeId,
+        worktreePath: '/repo',
+        scope: 'pr-diff',
+        restriction: createFileSearchPathRestriction([]),
+        updateActiveSearchState: (update) => updates.push(update)
+      })
+    )
+
+    await finishSearch(hook.result.current.executeSearch)
+
+    expect(mocks.searchRuntimeFiles).not.toHaveBeenCalled()
+    expect(updates).toContainEqual(
+      expect.objectContaining({ results: { files: [], totalMatches: 0, truncated: false } })
+    )
+  })
 })

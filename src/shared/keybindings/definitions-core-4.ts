@@ -2,6 +2,30 @@ import type { KeybindingDefinition } from './types'
 import { platformBindings } from './definitions-support'
 
 export const KEYBINDING_DEFINITION_CORE_4: readonly KeybindingDefinition[] = [
+  {
+    id: 'terminal.equalizePaneSizes',
+    title: 'Equalize pane sizes',
+    group: 'Terminal Panes',
+    scope: 'terminal',
+    searchKeywords: ['shortcut', 'pane', 'split', 'equalize', 'resize', 'balance', 'size'],
+    defaultBindings: platformBindings([])
+  },
+  {
+    id: 'terminal.expandPane',
+    title: 'Expand / collapse pane',
+    group: 'Terminal Panes',
+    scope: 'terminal',
+    searchKeywords: ['shortcut', 'pane', 'expand', 'collapse'],
+    defaultBindings: platformBindings(['Mod+Shift+Enter'])
+  },
+  {
+    id: 'terminal.setTitle',
+    title: 'Set Title…',
+    group: 'Terminal Panes',
+    scope: 'terminal',
+    searchKeywords: ['shortcut', 'terminal', 'pane', 'set title', 'title', 'rename'],
+    defaultBindings: platformBindings([])
+  },
   // Why: change navigation stops at the file boundary, so reviewing a branch needs a file-level
   // step too. Alt+F7 keeps the F7 family without colliding with Monaco's own bare/Shift F7 review
   // pane; the allow-flags let a user rebind these to bare or Shift-prefixed keys such as

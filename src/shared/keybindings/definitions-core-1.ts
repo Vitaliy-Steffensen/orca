@@ -219,6 +219,16 @@ export const KEYBINDING_DEFINITION_CORE_1: readonly KeybindingDefinition[] = [
     defaultBindings: platformBindings(['Mod+Shift+F'])
   },
   {
+    id: 'sidebar.find',
+    title: 'Find in Sidebar',
+    group: 'Global',
+    // Why rightSidebar scope: Mod+F is already claimed per-surface (editor, chat, terminal,
+    // browser, settings); conflicts bucket by scope, so a sixth focus-scoped owner is fine.
+    scope: 'rightSidebar',
+    searchKeywords: ['shortcut', 'sidebar', 'find', 'filter', 'search'],
+    defaultBindings: platformBindings(['Mod+F'])
+  },
+  {
     id: 'sidebar.sourceControl.toggle',
     title: 'Show Source Control',
     group: 'Global',
@@ -281,29 +291,6 @@ export const KEYBINDING_DEFINITION_CORE_1: readonly KeybindingDefinition[] = [
     scope: 'global',
     searchKeywords: ['shortcut', 'floating terminal', 'terminal'],
     defaultBindings: platformBindings(['Mod+Alt+A']),
-    allowInTerminal: true
-  },
-  {
-    id: 'floatingWorkspace.maximize',
-    title: 'Maximize Floating Workspace Panel',
-    group: 'Global',
-    scope: 'global',
-    searchKeywords: [
-      'shortcut',
-      'floating',
-      'workspace',
-      'panel',
-      'floating workspace',
-      'workspace panel',
-      'maximize',
-      'expand'
-    ],
-    // Why: pairs with floatingTerminal.toggle (Cmd+Opt+A) so maximize stays one-handed; macOS-only, Linux/Windows unbound.
-    defaultBindings: {
-      darwin: ['Mod+Alt+Shift+A'],
-      linux: [],
-      win32: []
-    },
     allowInTerminal: true
   }
 ]

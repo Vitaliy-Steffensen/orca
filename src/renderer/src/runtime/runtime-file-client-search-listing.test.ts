@@ -44,7 +44,8 @@ describe('runtime file client', () => {
           query: 'needle',
           rootPath: '/remote/repo',
           caseSensitive: true,
-          maxResults: 50
+          maxResults: 50,
+          restrictToPaths: ['src/a.ts']
         }
       )
     ).resolves.toEqual({ files: [], totalMatches: 0, truncated: false })
@@ -52,7 +53,13 @@ describe('runtime file client', () => {
     expect(runtimeEnvironmentCall).toHaveBeenCalledWith({
       selector: 'env-1',
       method: 'files.search',
-      params: { worktree: 'id:wt-1', query: 'needle', caseSensitive: true, maxResults: 50 },
+      params: {
+        worktree: 'id:wt-1',
+        query: 'needle',
+        caseSensitive: true,
+        maxResults: 50,
+        restrictToPaths: ['src/a.ts']
+      },
       timeoutMs: 15_000
     })
   })
@@ -94,6 +101,19 @@ describe('runtime file client', () => {
 
     expect(runtimeEnvironmentCall).not.toHaveBeenCalled()
     expect(fsSearch).not.toHaveBeenCalled()
+  })
+
+  it('carries the path restriction over the desktop IPC hop', async () => {
+    fsSearch.mockResolvedValue({ files: [], totalMatches: 0, truncated: false })
+
+    await searchRuntimeFiles(
+      { target: { kind: 'local' as const }, worktreeId: 'wt-1', worktreePath: '/repo' },
+      { query: 'needle', rootPath: '/repo', restrictToPaths: ['src/a.ts'] }
+    )
+
+    expect(fsSearch).toHaveBeenCalledWith(
+      expect.objectContaining({ restrictToPaths: ['src/a.ts'] })
+    )
   })
 
   it('routes quick-open file listing through the selected runtime', async () => {

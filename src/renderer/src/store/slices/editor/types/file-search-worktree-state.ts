@@ -1,5 +1,6 @@
 import type { SearchResult } from '../../../../../../shared/code-search-types'
 import type { FileSearchResultOwner } from '@/lib/file-search-result-owner'
+import type { FileSearchScopeId } from './file-search-scope-id'
 
 export type FileSearchWorktreeState = {
   query: string
@@ -16,3 +17,5 @@ export type FileSearchWorktreeState = {
   seedRequestId?: number
   focusRequestId?: number
 }
+
+export type FileSearchScopedStates = Record<FileSearchScopeId, FileSearchWorktreeState>

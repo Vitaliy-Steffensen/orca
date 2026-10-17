@@ -105,6 +105,11 @@ function resetState(overrides: Partial<Record<string, unknown>> = {}): void {
     worktreesByRepo: { [mocks.activeRepo.id]: [mocks.activeWorktree] },
     rightSidebarOpen: false,
     rightSidebarTab: 'source-control',
+    fileSearchStateByWorktree: {},
+    updateFileSearchState: () => undefined,
+    consumeFileSearchSeedRequest: () => undefined,
+    toggleFileSearchCollapsedFile: () => undefined,
+    clearFileSearch: () => undefined,
     gitStatusByWorktree: { [mocks.activeWorktree.id]: [] },
     gitBranchChangesByWorktree: { [mocks.activeWorktree.id]: [] },
     gitBranchCompareSummaryByWorktree: { [mocks.activeWorktree.id]: null },
@@ -225,6 +230,11 @@ function isHighlighted(element: HTMLElement | null): boolean {
 describe('SourceControl open-file highlight', () => {
   it('highlights the row whose unstaged diff is the active editor tab', () => {
     resetState({
+      fileSearchStateByWorktree: {},
+      updateFileSearchState: () => undefined,
+      consumeFileSearchSeedRequest: () => undefined,
+      toggleFileSearchCollapsedFile: () => undefined,
+      clearFileSearch: () => undefined,
       gitStatusByWorktree: {
         [mocks.activeWorktree.id]: [
           gitEntry({ path: 'src/file.ts', area: 'unstaged' }),
@@ -250,6 +260,11 @@ describe('SourceControl open-file highlight', () => {
 
   it('matches by area so only the staged row of a partially staged file lights up', () => {
     resetState({
+      fileSearchStateByWorktree: {},
+      updateFileSearchState: () => undefined,
+      consumeFileSearchSeedRequest: () => undefined,
+      toggleFileSearchCollapsedFile: () => undefined,
+      clearFileSearch: () => undefined,
       gitStatusByWorktree: {
         [mocks.activeWorktree.id]: [
           gitEntry({ path: 'src/file.ts', area: 'staged' }),
@@ -275,6 +290,11 @@ describe('SourceControl open-file highlight', () => {
 
   it('highlights the untracked row when an untracked file is open as an unstaged diff', () => {
     resetState({
+      fileSearchStateByWorktree: {},
+      updateFileSearchState: () => undefined,
+      consumeFileSearchSeedRequest: () => undefined,
+      toggleFileSearchCollapsedFile: () => undefined,
+      clearFileSearch: () => undefined,
       gitStatusByWorktree: {
         [mocks.activeWorktree.id]: [
           gitEntry({ path: 'src/new.ts', area: 'untracked', status: 'untracked' })
@@ -298,6 +318,11 @@ describe('SourceControl open-file highlight', () => {
 
   it('does not highlight any row when the visible tab is not an editor', () => {
     resetState({
+      fileSearchStateByWorktree: {},
+      updateFileSearchState: () => undefined,
+      consumeFileSearchSeedRequest: () => undefined,
+      toggleFileSearchCollapsedFile: () => undefined,
+      clearFileSearch: () => undefined,
       gitStatusByWorktree: {
         [mocks.activeWorktree.id]: [gitEntry({ path: 'src/file.ts', area: 'unstaged' })]
       },
@@ -319,6 +344,11 @@ describe('SourceControl open-file highlight', () => {
 
   it('does not highlight pending rows for branch compare tabs with the same path', () => {
     resetState({
+      fileSearchStateByWorktree: {},
+      updateFileSearchState: () => undefined,
+      consumeFileSearchSeedRequest: () => undefined,
+      toggleFileSearchCollapsedFile: () => undefined,
+      clearFileSearch: () => undefined,
       gitStatusByWorktree: {
         [mocks.activeWorktree.id]: [gitEntry({ path: 'src/file.ts', area: 'unstaged' })]
       },
@@ -340,6 +370,11 @@ describe('SourceControl open-file highlight', () => {
 
   it('falls back to a staged-only row for an ordinary editor tab', () => {
     resetState({
+      fileSearchStateByWorktree: {},
+      updateFileSearchState: () => undefined,
+      consumeFileSearchSeedRequest: () => undefined,
+      toggleFileSearchCollapsedFile: () => undefined,
+      clearFileSearch: () => undefined,
       gitStatusByWorktree: {
         [mocks.activeWorktree.id]: [gitEntry({ path: 'src/file.ts', area: 'staged' })]
       },
@@ -360,6 +395,11 @@ describe('SourceControl open-file highlight', () => {
 
   it('falls back to the visible staged row when the working-tree section is collapsed', () => {
     resetState({
+      fileSearchStateByWorktree: {},
+      updateFileSearchState: () => undefined,
+      consumeFileSearchSeedRequest: () => undefined,
+      toggleFileSearchCollapsedFile: () => undefined,
+      clearFileSearch: () => undefined,
       gitStatusByWorktree: {
         [mocks.activeWorktree.id]: [
           gitEntry({ path: 'src/file.ts', area: 'staged' }),

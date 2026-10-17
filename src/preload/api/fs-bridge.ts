@@ -189,6 +189,7 @@ export const fsApi = {
     includePattern?: string
     excludePattern?: string
     maxResults?: number
+    restrictToPaths?: string[]
     connectionId?: string
   }): Promise<SearchResult> => ipcRenderer.invoke('fs:search', args),
   importExternalPaths: (

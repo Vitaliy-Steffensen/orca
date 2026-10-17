@@ -27,7 +27,7 @@ describe('normalizeRelativePath', () => {
 
 describe('buildRgArgs', () => {
   it('defaults to case-insensitive, fixed-strings, hidden, exclude .git', () => {
-    const args = buildRgArgs('needle', '/root', {})
+    const args = buildRgArgs('needle', ['/root'], {})
     expect(args).toContain('--json')
     expect(args).toContain('--hidden')
     expect(args).toContain('--ignore-case')
@@ -37,21 +37,21 @@ describe('buildRgArgs', () => {
   })
 
   it('honors caseSensitive, wholeWord, useRegex', () => {
-    const args = buildRgArgs('q', '/r', { caseSensitive: true, wholeWord: true, useRegex: true })
+    const args = buildRgArgs('q', ['/r'], { caseSensitive: true, wholeWord: true, useRegex: true })
     expect(args).not.toContain('--ignore-case')
     expect(args).toContain('--word-regexp')
     expect(args).not.toContain('--fixed-strings')
   })
 
   it('splits comma-separated include/exclude patterns', () => {
-    const args = buildRgArgs('q', '/r', { includePattern: '*.ts, *.tsx', excludePattern: '*.md' })
+    const args = buildRgArgs('q', ['/r'], { includePattern: '*.ts, *.tsx', excludePattern: '*.md' })
     expect(args).toContain('*.ts')
     expect(args).toContain('*.tsx')
     expect(args).toContain('!*.md')
   })
 
   it('keeps escaped commas inside a single generated folder glob', () => {
-    const args = buildRgArgs('q', '/r', { includePattern: 'foo\\,bar/**, *.ts' })
+    const args = buildRgArgs('q', ['/r'], { includePattern: 'foo\\,bar/**, *.ts' })
     expect(args).toContain('foo\\,bar/**')
     expect(args).toContain('*.ts')
   })

@@ -8,18 +8,21 @@ import {
   isFileSearchResultOwnerCurrent,
   type FileSearchResultOwner
 } from '@/lib/file-search-result-owner'
+import type { FileSearchScopeId } from '@/store/slices/editor/types/file-search-scope-id'
 
 export function useFileSearchScope({
   activeWorktreeId,
   worktreePath,
-  explorerView,
+  scope,
+  active,
   executeSearch,
   cancelPendingSearch,
   updateActiveSearchState
 }: {
   activeWorktreeId: string | null
   worktreePath: string | null
-  explorerView: 'files' | 'search'
+  scope: FileSearchScopeId
+  active: boolean
   executeSearch: (query: string) => void
   cancelPendingSearch: () => void
   updateActiveSearchState: (updates: { results: null; resultOwner: null; error: null }) => void
@@ -43,16 +46,16 @@ export function useFileSearchScope({
   )
   useEffect(() => {
     if (activeWorktreeId) {
-      const saved = useAppStore.getState().fileSearchStateByWorktree[activeWorktreeId]
+      const saved = useAppStore.getState().fileSearchStateByWorktree[activeWorktreeId]?.[scope]
       if ((saved?.results || saved?.error) && !isCurrentOwner(saved.resultOwner)) {
         cancelPendingSearch()
         updateActiveSearchState({ results: null, resultOwner: null, error: null })
       }
     }
-    if (explorerView !== 'search') {
+    if (!active) {
       cancelPendingSearch()
     } else if (activeWorktreeId) {
-      const saved = useAppStore.getState().fileSearchStateByWorktree[activeWorktreeId]
+      const saved = useAppStore.getState().fileSearchStateByWorktree[activeWorktreeId]?.[scope]
       if (
         saved?.query.trim() &&
         !saved.results &&
@@ -63,7 +66,8 @@ export function useFileSearchScope({
       }
     }
   }, [
-    explorerView,
+    active,
+    scope,
     activeWorktreeId,
     isCurrentOwner,
     updateActiveSearchState,

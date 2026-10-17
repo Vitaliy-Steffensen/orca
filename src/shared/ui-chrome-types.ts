@@ -98,6 +98,7 @@ export type RightSidebarTab =
   | 'workspaces'
   | 'pr-checks'
   | 'source-control'
+  | 'pr-diff'
   | 'checks'
   | 'ports'
   // Plugin-contributed panels are keyed `plugin:<pluginId>/<panelId>` so the

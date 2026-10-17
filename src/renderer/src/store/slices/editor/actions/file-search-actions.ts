@@ -1,6 +1,26 @@
 import type { EditorGet, EditorSet } from '../types/editor-set-get'
 import type { EditorSlice } from '../types/editor-slice'
-import { defaultFileSearchState } from '../search/file-search-state'
+import type { FileSearchWorktreeState } from '../types/file-search-worktree-state'
+import {
+  readFileSearchScopeState,
+  withFileSearchScopeState
+} from '../search/file-search-scope-update'
+
+function seeded(
+  current: FileSearchWorktreeState,
+  updates: Partial<FileSearchWorktreeState>
+): FileSearchWorktreeState {
+  return {
+    ...current,
+    ...updates,
+    results: null,
+    resultOwner: null,
+    loading: false,
+    error: null,
+    collapsedFiles: new Set(),
+    seedRequestId: (current.seedRequestId ?? 0) + 1
+  }
+}
 
 export function createFileSearchActions(
   set: EditorSet,
@@ -17,98 +37,86 @@ export function createFileSearchActions(
 > {
   return {
     fileSearchStateByWorktree: {},
-    updateFileSearchState: (worktreeId, updates) =>
-      set((s) => {
-        const current = s.fileSearchStateByWorktree[worktreeId] || defaultFileSearchState()
-        return {
-          fileSearchStateByWorktree: {
-            ...s.fileSearchStateByWorktree,
-            [worktreeId]: { ...current, ...updates }
-          }
-        }
-      }),
+    updateFileSearchState: (worktreeId, scope, updates) =>
+      set((s) => ({
+        fileSearchStateByWorktree: withFileSearchScopeState(
+          s.fileSearchStateByWorktree,
+          worktreeId,
+          scope,
+          (current) => ({ ...current, ...updates })
+        )
+      })),
+    // Why: the seeding entry points (command palette, find chord) are Explorer-targeted.
     seedFileSearchQuery: (worktreeId, query) =>
-      set((s) => {
-        const current = s.fileSearchStateByWorktree[worktreeId] || defaultFileSearchState()
-        return {
-          fileSearchStateByWorktree: {
-            ...s.fileSearchStateByWorktree,
-            [worktreeId]: {
-              ...current,
-              query,
-              results: null,
-              resultOwner: null,
-              loading: false,
-              error: null,
-              collapsedFiles: new Set(),
-              seedRequestId: (current.seedRequestId ?? 0) + 1
-            }
-          }
-        }
-      }),
+      set((s) => ({
+        fileSearchStateByWorktree: withFileSearchScopeState(
+          s.fileSearchStateByWorktree,
+          worktreeId,
+          'explorer',
+          (current) => seeded(current, { query })
+        )
+      })),
     seedFileSearchIncludePattern: (worktreeId, includePattern) =>
+      set((s) => ({
+        fileSearchStateByWorktree: withFileSearchScopeState(
+          s.fileSearchStateByWorktree,
+          worktreeId,
+          'explorer',
+          (current) => seeded(current, { includePattern })
+        )
+      })),
+    consumeFileSearchSeedRequest: (worktreeId, scope, seedRequestId) =>
       set((s) => {
-        const current = s.fileSearchStateByWorktree[worktreeId] || defaultFileSearchState()
-        return {
-          fileSearchStateByWorktree: {
-            ...s.fileSearchStateByWorktree,
-            [worktreeId]: {
-              ...current,
-              includePattern,
-              results: null,
-              resultOwner: null,
-              loading: false,
-              error: null,
-              collapsedFiles: new Set(),
-              seedRequestId: (current.seedRequestId ?? 0) + 1
-            }
-          }
-        }
-      }),
-    consumeFileSearchSeedRequest: (worktreeId, seedRequestId) =>
-      set((s) => {
-        const current = s.fileSearchStateByWorktree[worktreeId]
+        const current = readFileSearchScopeState(s.fileSearchStateByWorktree, worktreeId, scope)
         if (!current || current.seedRequestId !== seedRequestId) {
           return s
         }
-        const next = { ...current }
-        delete next.seedRequestId
         return {
-          fileSearchStateByWorktree: {
-            ...s.fileSearchStateByWorktree,
-            [worktreeId]: next
-          }
+          fileSearchStateByWorktree: withFileSearchScopeState(
+            s.fileSearchStateByWorktree,
+            worktreeId,
+            scope,
+            (state) => {
+              const next = { ...state }
+              delete next.seedRequestId
+              return next
+            }
+          )
         }
       }),
-    toggleFileSearchCollapsedFile: (worktreeId, filePath) =>
+    toggleFileSearchCollapsedFile: (worktreeId, scope, filePath) =>
       set((s) => {
-        const current = s.fileSearchStateByWorktree[worktreeId]
-        if (!current) {
-          return s
-        }
-        const nextCollapsed = new Set(current.collapsedFiles)
-        if (nextCollapsed.has(filePath)) {
-          nextCollapsed.delete(filePath)
-        } else {
-          nextCollapsed.add(filePath)
-        }
-        return {
-          fileSearchStateByWorktree: {
-            ...s.fileSearchStateByWorktree,
-            [worktreeId]: { ...current, collapsedFiles: nextCollapsed }
-          }
-        }
-      }),
-    clearFileSearch: (worktreeId) =>
-      set((s) => {
-        const current = s.fileSearchStateByWorktree[worktreeId]
-        if (!current) {
+        if (!readFileSearchScopeState(s.fileSearchStateByWorktree, worktreeId, scope)) {
           return s
         }
         return {
-          fileSearchStateByWorktree: {
-            ...s.fileSearchStateByWorktree,
-            [worktreeId]: {
+          fileSearchStateByWorktree: withFileSearchScopeState(
+            s.fileSearchStateByWorktree,
+            worktreeId,
+            scope,
+            (current) => {
+              const nextCollapsed = new Set(current.collapsedFiles)
+              if (nextCollapsed.has(filePath)) {
+                nextCollapsed.delete(filePath)
+              } else {
+                nextCollapsed.add(filePath)
+              }
+              return { ...current, collapsedFiles: nextCollapsed }
+            }
+          )
+        }
+      }),
+    clearFileSearch: (worktreeId, scope) =>
+      set((s) => {
+        if (!readFileSearchScopeState(s.fileSearchStateByWorktree, worktreeId, scope)) {
+          return s
+        }
+        return {
+          fileSearchStateByWorktree: withFileSearchScopeState(
+            s.fileSearchStateByWorktree,
+            worktreeId,
+            scope,
+            (current) => ({
               ...current,
               query: '',
               results: null,
@@ -116,8 +124,8 @@ export function createFileSearchActions(
               loading: false,
               error: null,
               collapsedFiles: new Set()
-            }
-          }
+            })
+          )
         }
       })
   }

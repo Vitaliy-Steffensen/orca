@@ -71,7 +71,7 @@ describe('file search with real search engines', () => {
     const { rgPath } = await import('@vscode/ripgrep-universal')
     const result = await runProcess({
       program: rgPath,
-      args: buildRgArgs('needle', root, options),
+      args: buildRgArgs('needle', [root], options),
       cwd: root
     })
     expect(result.stderr).toBe('')
@@ -92,7 +92,7 @@ describe('file search with real search engines', () => {
     for (const options of [{ includePattern: pattern }, { excludePattern: pattern }]) {
       const result = await runProcess({
         program: rgPath,
-        args: buildRgArgs('needle', root, options),
+        args: buildRgArgs('needle', [root], options),
         cwd: root
       })
       expect(result.code).toBe(2)
@@ -177,7 +177,7 @@ describe('engine-specific character classes', () => {
           program: engine === 'rg' ? rgPath : 'git',
           args:
             engine === 'rg'
-              ? buildRgArgs('needle', root, options)
+              ? buildRgArgs('needle', [root], options)
               : buildGitGrepArgs('needle', options),
           cwd: root
         })

@@ -27,7 +27,7 @@ describe('ripgrep Unicode match coordinates', () => {
     excludePattern?: string
   ) {
     const child = spawnBundledRipgrep(
-      buildRgArgs(query, '.', { useRegex, includePattern, excludePattern }),
+      buildRgArgs(query, ['.'], { useRegex, includePattern, excludePattern }),
       {
         cwd: root,
         stdio: ['ignore', 'pipe', 'pipe']

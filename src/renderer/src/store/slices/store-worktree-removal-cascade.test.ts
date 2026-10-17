@@ -18,6 +18,7 @@ import {
 } from '@/lib/source-control-commit-draft-session'
 import { createStoreCascadesMockApi } from './store-cascades-test-harness'
 import { getWorktreeHostIdentity } from '../../../../shared/worktree/host-qualified-identity'
+import { defaultFileSearchScopedStates } from './editor/search/file-search-scope-update'
 
 const mockUnregisterPtyDataHandlers = vi.hoisted(() => vi.fn<() => unknown[]>(() => []))
 const mockRestorePtyDataHandlersAfterFailedShutdown = vi.hoisted(() => vi.fn())
@@ -95,16 +96,19 @@ describe('removeWorktree cascade', () => {
       },
       fileSearchStateByWorktree: {
         [worktreeId]: {
-          query: 'needle',
-          caseSensitive: true,
-          wholeWord: false,
-          useRegex: false,
-          includePattern: '*.ts',
-          excludePattern: 'dist/**',
-          results: { files: [], totalMatches: 0, truncated: false },
-          resultOwner: null,
-          loading: false,
-          collapsedFiles: new Set(['/path/wt1/file.ts'])
+          ...defaultFileSearchScopedStates(),
+          explorer: {
+            query: 'needle',
+            caseSensitive: true,
+            wholeWord: false,
+            useRegex: false,
+            includePattern: '*.ts',
+            excludePattern: 'dist/**',
+            results: { files: [], totalMatches: 0, truncated: false },
+            resultOwner: null,
+            loading: false,
+            collapsedFiles: new Set(['/path/wt1/file.ts'])
+          }
         }
       },
       activeWorktreeId: worktreeId,
@@ -671,28 +675,34 @@ describe('removeWorktree cascade', () => {
       },
       fileSearchStateByWorktree: {
         [wt1]: {
-          query: 'old',
-          caseSensitive: false,
-          wholeWord: false,
-          useRegex: false,
-          includePattern: '',
-          excludePattern: '',
-          results: { files: [], totalMatches: 0, truncated: false },
-          resultOwner: null,
-          loading: false,
-          collapsedFiles: new Set()
+          ...defaultFileSearchScopedStates(),
+          explorer: {
+            query: 'old',
+            caseSensitive: false,
+            wholeWord: false,
+            useRegex: false,
+            includePattern: '',
+            excludePattern: '',
+            results: { files: [], totalMatches: 0, truncated: false },
+            resultOwner: null,
+            loading: false,
+            collapsedFiles: new Set()
+          }
         },
         [wt2]: {
-          query: 'keep',
-          caseSensitive: true,
-          wholeWord: true,
-          useRegex: false,
-          includePattern: '*.md',
-          excludePattern: '',
-          results: { files: [], totalMatches: 1, truncated: false },
-          resultOwner: null,
-          loading: false,
-          collapsedFiles: new Set(['/path/wt2/notes.md'])
+          ...defaultFileSearchScopedStates(),
+          explorer: {
+            query: 'keep',
+            caseSensitive: true,
+            wholeWord: true,
+            useRegex: false,
+            includePattern: '*.md',
+            excludePattern: '',
+            results: { files: [], totalMatches: 1, truncated: false },
+            resultOwner: null,
+            loading: false,
+            collapsedFiles: new Set(['/path/wt2/notes.md'])
+          }
         }
       },
       activeWorktreeId: wt2,
@@ -707,7 +717,7 @@ describe('removeWorktree cascade', () => {
     expect(s.tabsByWorktree[wt2][0].id).toBe('tab2')
     expect(s.ptyIdsByTabId['tab2']).toEqual(['pty2'])
     expect(s.terminalLayoutsByTabId['tab2']).toEqual(makeLayout())
-    expect(s.fileSearchStateByWorktree[wt2]?.query).toBe('keep')
+    expect(s.fileSearchStateByWorktree[wt2]?.explorer.query).toBe('keep')
     expect(s.activeWorktreeId).toBe(wt2)
     expect(s.activeTabId).toBe('tab2')
 

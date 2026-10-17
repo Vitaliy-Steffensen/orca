@@ -7,6 +7,7 @@ import { remapBrowserPageDocLocation } from '../../../../../../shared/browser-pa
 import { splitWorktreeIdForFilesystem } from '../../../../../../shared/worktree/id'
 import { worktreeWorkspaceKey } from '../../../../../../shared/workspace-scope'
 import { getWorktreeIdFromVisitKey } from '@/lib/worktree-visit-recency'
+import { mapFileSearchScopedStates } from '../../editor/search/file-search-scope-update'
 import {
   remapClosedTerminalTabSnapshotCwds,
   type ClosedTerminalTabSnapshot
@@ -111,10 +112,11 @@ export function buildWorktreeRenameState(
         workspace: withNewBrowserWorktreeId(snapshot.workspace),
         pages: snapshot.pages.map(withNewBrowserWorktreeId)
       })),
-    fileSearchStateByWorktree: (searchState: AppState['fileSearchStateByWorktree'][string]) => ({
-      ...searchState,
-      resultOwner: searchState.resultOwner ? withNewWorktreeId(searchState.resultOwner) : null
-    }),
+    fileSearchStateByWorktree: (scopes: AppState['fileSearchStateByWorktree'][string]) =>
+      mapFileSearchScopedStates(scopes, (searchState) => ({
+        ...searchState,
+        resultOwner: searchState.resultOwner ? withNewWorktreeId(searchState.resultOwner) : null
+      })),
     unifiedTabsByWorktree: (tabs: { worktreeId: string }[]) => tabs.map(withNewWorktreeId),
     groupsByWorktree: (groups: { worktreeId: string }[]) => groups.map(withNewWorktreeId)
   }

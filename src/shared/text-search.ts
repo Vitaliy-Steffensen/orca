@@ -10,9 +10,10 @@
 import { parseRipgrepMatchJson, type RipgrepMatchMessage } from './ripgrep-dense-match-json'
 import { normalizeSearchResult } from './search-match-count'
 import { escapeRegex } from './string-utils'
-import type { SearchFileResult, SearchOptions, SearchResult } from './code-search-types'
+import type { SearchFileResult, SearchResult } from './code-search-types'
 import { pushSearchMatch } from './text-search-match-accumulator'
 import { splitSearchGlobPatterns, toGitGlobPathspecs } from './text-search-glob-patterns'
+import type { SearchOptionsLike } from './text-search-rg-args'
 import {
   joinSearchRoot,
   normalizeRelativePath,
@@ -23,6 +24,7 @@ import { ripgrepMatchRanges } from './ripgrep-match-offsets'
 import { decodeRipgrepLine } from './ripgrep-line-decoding'
 
 export { MAX_LINE_CONTENT_LENGTH } from './text-search-match-accumulator'
+export { buildRgArgs, type SearchOptionsLike } from './text-search-rg-args'
 
 export type SearchAccumulator = {
   fileMap: Map<string, SearchFileResult>
@@ -42,54 +44,6 @@ export const SEARCH_JSON_STRUCTURE_LIMITS = {
   structuralTokens: 32 * 1024,
   nestingDepth: 16
 } as const
-
-// Why: keep search cheaper than opening a file; the editor read path has a larger cap (Monaco large-file handling).
-const SEARCH_MAX_FILE_SIZE = 5 * 1024 * 1024
-
-// ─── rg ─────────────────────────────────────────────────────────────
-
-export type SearchOptionsLike = Pick<
-  SearchOptions,
-  'caseSensitive' | 'wholeWord' | 'useRegex' | 'includePattern' | 'excludePattern'
->
-
-/**
- * Build the complete rg argv (flags + `--` + query + target) for both callers to spawn as-is.
- *
- * Use target `.` with cwd set to the search root so anchored globs match root-relative paths.
- */
-export function buildRgArgs(query: string, target: string, opts: SearchOptionsLike): string[] {
-  const args: string[] = [
-    '--no-config',
-    '--json',
-    '--hidden',
-    '--glob',
-    '!.git',
-    '--max-filesize',
-    `${Math.floor(SEARCH_MAX_FILE_SIZE / 1024 / 1024)}M`
-  ]
-  if (!opts.caseSensitive) {
-    args.push('--ignore-case')
-  }
-  if (opts.wholeWord) {
-    args.push('--word-regexp')
-  }
-  if (!opts.useRegex) {
-    args.push('--fixed-strings')
-  }
-  if (opts.includePattern) {
-    for (const pat of splitSearchGlobPatterns(opts.includePattern, 'rg')) {
-      args.push('--glob', pat)
-    }
-  }
-  if (opts.excludePattern) {
-    for (const pat of splitSearchGlobPatterns(opts.excludePattern, 'rg')) {
-      args.push('--glob', `!${pat}`)
-    }
-  }
-  args.push('--', query, target)
-  return args
-}
 
 /**
  * Ingest a single line of rg `--json` stdout, mutating `acc`. Returns 'stop' when

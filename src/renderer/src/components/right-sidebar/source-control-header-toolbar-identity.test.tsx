@@ -49,7 +49,6 @@ function renderToolbar(options?: {
     <SourceControlHeaderToolbar
       filterQuery=""
       filterExpanded={false}
-      onFilterQueryChange={vi.fn()}
       onFilterExpandedChange={vi.fn()}
       visibleCreatePrHeaderAction={
         options?.visibleCreatePrHeaderAction === undefined

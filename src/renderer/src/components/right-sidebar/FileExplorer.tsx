@@ -20,11 +20,9 @@ import { isGitRepoKind } from '../../../../shared/repo-kind'
 import { getVisibleFileExplorerWorktreePath } from './file-explorer-reset'
 import { FileExplorerBackgroundMenu } from './FileExplorerBackgroundMenu'
 import { FileExplorerFilesTreePane } from './FileExplorerFilesTreePane'
-import { FileExplorerNameFilter } from './FileExplorerNameFilter'
-import { FileExplorerQueryStrip } from './FileExplorerQueryStrip'
+import { ExplorerFindBar } from './file-find/ExplorerFindBar'
 import { FileExplorerToolbar } from './FileExplorerToolbar'
 import { SearchFilters } from './SearchFilters'
-import { SearchQueryRow } from './SearchQueryRow'
 import { SearchResultsPane } from './SearchResultsPane'
 import { useFileSearchPanel } from './useFileSearchPanel'
 import {
@@ -45,9 +43,15 @@ import type { RightSidebarExplorerView } from '../../../../shared/ui-chrome-type
 /** Coordinates scoped navigation while retaining the actual worktree root for file operations and runtime routing. */
 function FileExplorerFiles(): React.JSX.Element {
   const explorerView = useAppStore((s) => s.rightSidebarExplorerView)
+  const findExpanded = useAppStore((s) => s.rightSidebarFindExpanded)
+  const setFindExpanded = useAppStore((s) => s.setRightSidebarFindExpanded)
   const showRightSidebarFiles = useAppStore((s) => s.showRightSidebarFiles)
   const showRightSidebarSearch = useAppStore((s) => s.showRightSidebarSearch)
-  const searchPanel = useFileSearchPanel(explorerView)
+  const searchPanel = useFileSearchPanel({
+    scope: 'explorer',
+    active: explorerView === 'search',
+    restriction: null
+  })
   const activeWorktreeId = useAppStore((s) => s.activeWorktreeId)
   const runtimeEnvironmentId = useAppStore((s) =>
     getRuntimeEnvironmentIdForWorktree(s, activeWorktreeId)
@@ -272,6 +276,13 @@ function FileExplorerFiles(): React.JSX.Element {
           onToggleGitIgnoredFiles={toggleGitIgnoredFiles}
           showDotfiles={showDotfiles}
           onToggleDotfiles={handleToggleDotfiles}
+          find={{
+            expanded: findExpanded,
+            toggle: () => setFindExpanded(!findExpanded),
+            hasQuery: Boolean(
+              (explorerView === 'search' ? searchPanel.queryRowProps.query : nameFilterQuery).trim()
+            )
+          }}
         />
         {activeWorktree?.isSparse && (
           <FileExplorerScopeNotice
@@ -296,33 +307,16 @@ function FileExplorerFiles(): React.JSX.Element {
             sparse={!!activeWorktree?.isSparse}
           />
         )}
-        <FileExplorerQueryStrip view={explorerView} onSelectView={handleSelectExplorerView}>
-          {/* Why: keep both query rows mounted and cross-fade so the Names/Contents
-             switch does not remount or shift when changing modes. */}
-          <div className="relative min-h-7">
-            <div
-              className={cn(
-                explorerView !== 'files' && 'pointer-events-none invisible absolute inset-x-0 top-0'
-              )}
-            >
-              <FileExplorerNameFilter
-                query={nameFilterQuery}
-                scopeLabel={rootOptions?.find((option) => option.value === rootChoice)?.label}
-                loading={nameFilterFiles.loading}
-                onQueryChange={setNameFilterQuery}
-                onClear={handleClearNameFilter}
-              />
-            </div>
-            <div
-              className={cn(
-                explorerView !== 'search' &&
-                  'pointer-events-none invisible absolute inset-x-0 top-0'
-              )}
-            >
-              <SearchQueryRow {...searchPanel.queryRowProps} />
-            </div>
-          </div>
-        </FileExplorerQueryStrip>
+        <ExplorerFindBar
+          explorerView={explorerView}
+          onSelectView={handleSelectExplorerView}
+          nameFilterQuery={nameFilterQuery}
+          nameFilterScopeLabel={rootOptions?.find((option) => option.value === rootChoice)?.label}
+          nameFilterLoading={nameFilterFiles.loading}
+          onNameFilterChange={setNameFilterQuery}
+          onClearNameFilter={handleClearNameFilter}
+          contentSearch={searchPanel.queryRowProps}
+        />
         <div
           className={cn(
             'border-b border-border px-2 pb-1.5',

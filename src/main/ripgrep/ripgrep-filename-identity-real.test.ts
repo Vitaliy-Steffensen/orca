@@ -50,7 +50,7 @@ describe.skipIf(process.platform === 'win32')('real ripgrep POSIX filename ident
         )
       }
       const acc = createAccumulator()
-      for (const line of (await capture(root, buildRgArgs('needle', '.', {}))).split('\n')) {
+      for (const line of (await capture(root, buildRgArgs('needle', ['.'], {}))).split('\n')) {
         ingestRgJsonLine(line, root, acc, 10)
       }
       expect([...acc.fileMap.values()].map((file) => file.relativePath).sort()).toEqual(names)

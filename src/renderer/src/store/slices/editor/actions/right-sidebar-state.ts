@@ -5,6 +5,10 @@ import type {
   RightSidebarExplorerView
 } from '../../../../../../shared/ui-chrome-types'
 import { defaultFileSearchState } from '../search/file-search-state'
+import {
+  readFileSearchScopeState,
+  withFileSearchScopeState
+} from '../search/file-search-scope-update'
 
 export type RightSidebarState = {
   rightSidebarOpen: boolean
@@ -16,6 +20,9 @@ export type RightSidebarState = {
   aiVaultSearchFocusRequested: boolean
   rightSidebarTabByWorktree: Record<string, ActiveRightSidebarTab>
   rightSidebarExplorerViewByWorktree: Record<string, RightSidebarExplorerView>
+  /** In memory: the find bar is shared chrome, and only one right-sidebar panel is mounted at a time. */
+  rightSidebarFindExpanded: boolean
+  rightSidebarFindFocusRequestId: number
   /** In memory: the tab the mounted sidebar renders, which differs from rightSidebarTab when that tab is hidden here. */
   rightSidebarEffectiveTab: ActiveRightSidebarTab | null
   activityBarPosition: ActivityBarPosition
@@ -31,6 +38,8 @@ export type RightSidebarState = {
   }) => void
   showAiVaultSearch: () => void
   clearAiVaultSearchFocusRequest: () => void
+  setRightSidebarFindExpanded: (expanded: boolean) => void
+  requestRightSidebarFind: () => void
   setRightSidebarEffectiveTab: (tab: ActiveRightSidebarTab | null) => void
   setActivityBarPosition: (position: ActivityBarPosition) => void
 }
@@ -45,6 +54,8 @@ export function createRightSidebarState(set: EditorSet, _get: EditorGet): RightS
     aiVaultSearchFocusRequested: false,
     rightSidebarTabByWorktree: {},
     rightSidebarExplorerViewByWorktree: {},
+    rightSidebarFindExpanded: false,
+    rightSidebarFindFocusRequestId: 0,
     rightSidebarEffectiveTab: null,
     activityBarPosition: 'top',
     toggleRightSidebar: () => set((s) => ({ rightSidebarOpen: !s.rightSidebarOpen })),
@@ -86,11 +97,25 @@ export function createRightSidebarState(set: EditorSet, _get: EditorGet): RightS
       })),
     showRightSidebarSearch: (payload) =>
       set((s) => {
+        // Why: Source Control and the PR diff viewer search their own changed files, so the find
+        // chord opens their bar rather than yanking the user over to the Explorer.
+        if (
+          !payload &&
+          (s.rightSidebarTab === 'source-control' || s.rightSidebarTab === 'pr-diff')
+        ) {
+          return {
+            rightSidebarOpen: true,
+            rightSidebarFindExpanded: true,
+            rightSidebarFindFocusRequestId: s.rightSidebarFindFocusRequestId + 1
+          }
+        }
         const next = {
           rightSidebarOpen: true,
           rightSidebarTab: 'explorer' as const,
           rightSidebarExplorerView: 'search' as const,
           rightSidebarRouteRequestId: s.rightSidebarRouteRequestId + 1,
+          rightSidebarFindExpanded: true,
+          rightSidebarFindFocusRequestId: s.rightSidebarFindFocusRequestId + 1,
           ...(s.activeWorktreeId
             ? {
                 rightSidebarExplorerViewByWorktree: {
@@ -106,7 +131,9 @@ export function createRightSidebarState(set: EditorSet, _get: EditorGet): RightS
 
         const query = payload?.query?.trim() ? payload.query : null
         const includePattern = payload?.includePattern?.trim() ? payload.includePattern : null
-        const current = s.fileSearchStateByWorktree[s.activeWorktreeId] || defaultFileSearchState()
+        const current =
+          readFileSearchScopeState(s.fileSearchStateByWorktree, s.activeWorktreeId, 'explorer') ||
+          defaultFileSearchState()
         const shouldSeed = Boolean(query || (includePattern && current.query.trim()))
         const shouldFocus = !shouldSeed
         const nextSearchState = {
@@ -127,10 +154,12 @@ export function createRightSidebarState(set: EditorSet, _get: EditorGet): RightS
 
         return {
           ...next,
-          fileSearchStateByWorktree: {
-            ...s.fileSearchStateByWorktree,
-            [s.activeWorktreeId]: nextSearchState
-          }
+          fileSearchStateByWorktree: withFileSearchScopeState(
+            s.fileSearchStateByWorktree,
+            s.activeWorktreeId,
+            'explorer',
+            () => nextSearchState
+          )
         }
       }),
     // Settings sends the user here; the panel owns scope, so this asks rather than writes.
@@ -142,6 +171,12 @@ export function createRightSidebarState(set: EditorSet, _get: EditorGet): RightS
         aiVaultSearchFocusRequested: true
       })),
     clearAiVaultSearchFocusRequest: () => set({ aiVaultSearchFocusRequested: false }),
+    setRightSidebarFindExpanded: (expanded) => set({ rightSidebarFindExpanded: expanded }),
+    requestRightSidebarFind: () =>
+      set((s) => ({
+        rightSidebarFindExpanded: true,
+        rightSidebarFindFocusRequestId: s.rightSidebarFindFocusRequestId + 1
+      })),
     setRightSidebarEffectiveTab: (tab) =>
       set((s) => (s.rightSidebarEffectiveTab === tab ? {} : { rightSidebarEffectiveTab: tab })),
     setActivityBarPosition: (position) => set({ activityBarPosition: position })

@@ -115,6 +115,11 @@ function resetState(overrides: Partial<Record<string, unknown>> = {}): void {
     worktreesByRepo: { [mocks.activeRepo.id]: [mocks.activeWorktree] },
     rightSidebarOpen: false,
     rightSidebarTab: 'source-control',
+    fileSearchStateByWorktree: {},
+    updateFileSearchState: () => undefined,
+    consumeFileSearchSeedRequest: () => undefined,
+    toggleFileSearchCollapsedFile: () => undefined,
+    clearFileSearch: () => undefined,
     gitStatusByWorktree: { [mocks.activeWorktree.id]: [] },
     gitBranchChangesByWorktree: { [mocks.activeWorktree.id]: [] },
     gitBranchCompareSummaryByWorktree: { [mocks.activeWorktree.id]: null },
@@ -284,6 +289,11 @@ function virtualList(): HTMLDivElement | null {
 describe('SourceControl virtualized changed-files list', () => {
   it('bounds mounted rows by viewport + overscan with 500 entries', () => {
     resetState({
+      fileSearchStateByWorktree: {},
+      updateFileSearchState: () => undefined,
+      consumeFileSearchSeedRequest: () => undefined,
+      toggleFileSearchCollapsedFile: () => undefined,
+      clearFileSearch: () => undefined,
       gitStatusByWorktree: { [mocks.activeWorktree.id]: manyEntries(500) }
     })
     renderSourceControl()
@@ -296,6 +306,11 @@ describe('SourceControl virtualized changed-files list', () => {
 
   it('windows rows while scrolling instead of mounting the tail', () => {
     resetState({
+      fileSearchStateByWorktree: {},
+      updateFileSearchState: () => undefined,
+      consumeFileSearchSeedRequest: () => undefined,
+      toggleFileSearchCollapsedFile: () => undefined,
+      clearFileSearch: () => undefined,
       gitStatusByWorktree: { [mocks.activeWorktree.id]: manyEntries(500) }
     })
     renderSourceControl()
@@ -312,6 +327,11 @@ describe('SourceControl virtualized changed-files list', () => {
 
   it('keeps row selection across the virtualized boundary', () => {
     resetState({
+      fileSearchStateByWorktree: {},
+      updateFileSearchState: () => undefined,
+      consumeFileSearchSeedRequest: () => undefined,
+      toggleFileSearchCollapsedFile: () => undefined,
+      clearFileSearch: () => undefined,
       gitStatusByWorktree: { [mocks.activeWorktree.id]: manyEntries(500) }
     })
     renderSourceControl()
@@ -335,6 +355,11 @@ describe('SourceControl virtualized changed-files list', () => {
 
   it('collapses and re-expands a virtualized section', () => {
     resetState({
+      fileSearchStateByWorktree: {},
+      updateFileSearchState: () => undefined,
+      consumeFileSearchSeedRequest: () => undefined,
+      toggleFileSearchCollapsedFile: () => undefined,
+      clearFileSearch: () => undefined,
       gitStatusByWorktree: { [mocks.activeWorktree.id]: manyEntries(500) }
     })
     renderSourceControl()
@@ -360,6 +385,11 @@ describe('SourceControl virtualized changed-files list', () => {
 
   it('keeps the scroll offset and window when a refresh delivers identical entries', () => {
     resetState({
+      fileSearchStateByWorktree: {},
+      updateFileSearchState: () => undefined,
+      consumeFileSearchSeedRequest: () => undefined,
+      toggleFileSearchCollapsedFile: () => undefined,
+      clearFileSearch: () => undefined,
       gitStatusByWorktree: { [mocks.activeWorktree.id]: manyEntries(500) }
     })
     renderSourceControl()
@@ -371,6 +401,11 @@ describe('SourceControl virtualized changed-files list', () => {
     // A status refresh rebuilds every entry object with identical content.
     mocks.state = {
       ...mocks.state,
+      fileSearchStateByWorktree: {},
+      updateFileSearchState: () => undefined,
+      consumeFileSearchSeedRequest: () => undefined,
+      toggleFileSearchCollapsedFile: () => undefined,
+      clearFileSearch: () => undefined,
       gitStatusByWorktree: {
         [mocks.activeWorktree.id]: manyEntries(500).map((entry) => ({ ...entry }))
       }
@@ -385,6 +420,11 @@ describe('SourceControl virtualized changed-files list', () => {
   it('renders small changesets in full without the virtualization container', () => {
     const paths = ['src/a.ts', 'src/b.ts', 'src/c.ts']
     resetState({
+      fileSearchStateByWorktree: {},
+      updateFileSearchState: () => undefined,
+      consumeFileSearchSeedRequest: () => undefined,
+      toggleFileSearchCollapsedFile: () => undefined,
+      clearFileSearch: () => undefined,
       gitStatusByWorktree: {
         [mocks.activeWorktree.id]: paths.map((path) => gitEntry({ path }))
       }
@@ -402,6 +442,11 @@ describe('SourceControl virtualized changed-files list', () => {
   it('bounds mounted tree-view rows for large changesets', () => {
     resetState({
       settings: { sourceControlViewMode: 'tree', sourceControlGrouping: 'status' },
+      fileSearchStateByWorktree: {},
+      updateFileSearchState: () => undefined,
+      consumeFileSearchSeedRequest: () => undefined,
+      toggleFileSearchCollapsedFile: () => undefined,
+      clearFileSearch: () => undefined,
       gitStatusByWorktree: {
         [mocks.activeWorktree.id]: Array.from({ length: 500 }, (_, index) =>
           gitEntry({

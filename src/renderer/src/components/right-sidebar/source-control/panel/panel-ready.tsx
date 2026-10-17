@@ -2,6 +2,9 @@ import { useEffect } from 'react'
 import { syncLatestAgentTurn } from '@/lib/changes-filter'
 import { BulkActionBar } from '../commit/bulk-action-bar'
 import { SourceControlHeaderToolbar } from './header-toolbar'
+import { ChangedFilesFindBar } from '../../file-find/ChangedFilesFindBar'
+import { SearchFilters } from '../../SearchFilters'
+import { SearchResultsPane } from '../../SearchResultsPane'
 import { SourceControlPendingReviewShelf } from '../pending-review/pending-review-shelf'
 import { SourceControlPendingCommentsSection } from '../pending-review/pending-comments-section'
 import { AgentNotesShelf } from '../notes/agent-notes-shelf'
@@ -39,8 +42,11 @@ export function SourceControlPanelReady(props: SourceControlPanelReadyProps) {
     clearSelection,
     collapsedSections,
     compareBaseRef,
+    contentSearch,
     filterExpanded,
     filterQuery,
+    findMode,
+    setFindMode,
     gitIdentityDisplay,
     handleBulkStage,
     handleBulkUnstage,
@@ -166,7 +172,6 @@ export function SourceControlPanelReady(props: SourceControlPanelReadyProps) {
         <SourceControlHeaderToolbar
           filterQuery={filterQuery}
           filterExpanded={filterExpanded}
-          onFilterQueryChange={setFilterQuery}
           onFilterExpandedChange={setFilterExpanded}
           // Fork: PRs are opened by the agent or the CLI, so the header offers no Create PR.
           visibleCreatePrHeaderAction={null}
@@ -194,17 +199,40 @@ export function SourceControlPanelReady(props: SourceControlPanelReadyProps) {
           manualReviewUrl={manualReviewUrl}
         />
 
-        <SourceControlStackedSections
-          shelves={visibleShelves}
-          order={sectionOrder}
-          onMove={moveSection}
-          onHide={hideSection}
-          scrollRef={setFileListScrollElement}
-          scrollStyle={{ paddingBottom: selectedKeys.size > 0 ? 50 : undefined }}
-          footer={<SourceControlCommitsSection model={model} />}
-        >
-          <SourceControlPanelContent {...props} />
-        </SourceControlStackedSections>
+        <ChangedFilesFindBar
+          mode={findMode}
+          onModeChange={setFindMode}
+          nameFilterQuery={filterQuery}
+          onNameFilterChange={setFilterQuery}
+          contentSearch={contentSearch.queryRowProps}
+          testId="source-control-filter-input"
+        />
+
+        {findMode === 'contents' && filterExpanded ? (
+          <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
+            <div className="border-b border-border px-2 pb-1.5">
+              <SearchFilters {...contentSearch.filtersProps} />
+            </div>
+            <div
+              className="flex min-h-0 flex-1 flex-col"
+              data-testid="source-control-content-search-results"
+            >
+              <SearchResultsPane {...contentSearch.resultsProps} />
+            </div>
+          </div>
+        ) : (
+          <SourceControlStackedSections
+            shelves={visibleShelves}
+            order={sectionOrder}
+            onMove={moveSection}
+            onHide={hideSection}
+            scrollRef={setFileListScrollElement}
+            scrollStyle={{ paddingBottom: selectedKeys.size > 0 ? 50 : undefined }}
+            footer={<SourceControlCommitsSection model={model} />}
+          >
+            <SourceControlPanelContent {...props} />
+          </SourceControlStackedSections>
+        )}
 
         {selectedKeys.size > 0 && (
           <BulkActionBar
