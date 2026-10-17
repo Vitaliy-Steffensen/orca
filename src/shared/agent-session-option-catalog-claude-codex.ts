@@ -67,10 +67,10 @@ export function createClaudeCatalogOptions(args: {
   const effortChoices = EXTENDED_EFFORT_CHOICES.filter((choice) =>
     args.effortLevelIds.includes(choice.value)
   )
-  return withClaudePermissionMode([
+  return [
     ...(effortChoices.length > 0 ? [claudeEffortWithChoices(effortChoices)] : []),
     ...(args.supportsFastMode ? [CLAUDE_FAST_MODE] : [])
-  ])
+  ]
 }
 
 function parseClaudeCatalogModels(stdout: string): CatalogModel[] {
@@ -110,16 +110,10 @@ const CLAUDE_PERMISSION_MODE: CatalogOption = {
     ],
     defaultValue: 'default'
   },
-  // No launch flag and no PTY command: a terminal Claude pane owns its own
-  // Shift+Tab, and `--permission-mode` would collide with the yolo setting's
-  // `--dangerously-skip-permissions`. The structured lane writes it over the
-  // control protocol, which `settableState` admits on its own.
+  // No launch flag and no PTY command: `--permission-mode` would collide with the
+  // yolo setting's `--dangerously-skip-permissions`. The structured lane writes it
+  // over the control protocol, which `settableState` admits on its own.
   apply: { midSession: { kind: 'unsupported' } }
-}
-
-/** Every Claude model takes the same permission mode, whatever else it offers. */
-function withClaudePermissionMode(options: readonly CatalogOption[]): CatalogOption[] {
-  return [...options, CLAUDE_PERMISSION_MODE]
 }
 
 export const CLAUDE_SESSION_OPTION_CATALOG: AgentSessionOptionCatalog = {
@@ -134,26 +128,26 @@ export const CLAUDE_SESSION_OPTION_CATALOG: AgentSessionOptionCatalog = {
       id: 'fable',
       label: 'Fable',
       description: 'Most capable for the hardest, longest-running tasks',
-      options: withClaudePermissionMode([claudeEffort(true)])
+      options: [claudeEffort(true)]
     },
     {
       id: 'opus',
       label: 'Opus',
       description: 'Best for everyday, complex tasks',
-      options: withClaudePermissionMode([claudeEffort(true), CLAUDE_FAST_MODE])
+      options: [claudeEffort(true), CLAUDE_FAST_MODE]
     },
     {
       id: 'sonnet',
       label: 'Sonnet',
       description: 'Efficient for routine tasks',
       isDefault: true,
-      options: withClaudePermissionMode([claudeEffort(true)])
+      options: [claudeEffort(true)]
     },
     {
       id: 'haiku',
       label: 'Haiku',
       description: 'Fastest for quick answers',
-      options: withClaudePermissionMode([])
+      options: []
     }
   ],
   modelApply: {
@@ -168,7 +162,8 @@ export const CLAUDE_SESSION_OPTION_CATALOG: AgentSessionOptionCatalog = {
       detectAgentInteraction: 'claude-model-switch-confirmation'
     }
   },
-  unknownModelOptions: withClaudePermissionMode([claudeEffort(true)]),
+  unknownModelOptions: [claudeEffort(true)],
+  structuredSessionOptions: [CLAUDE_PERMISSION_MODE],
   listModels: {
     command: `echo '${CLAUDE_MODEL_LIST_STDIN.trim()}' | claude ${CLAUDE_MODEL_LIST_ARGS.join(' ')}`,
     parse: parseClaudeCatalogModels

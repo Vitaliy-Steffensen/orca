@@ -47,9 +47,15 @@ describe('nextPermissionMode', () => {
     expect(nextPermissionMode('plan')).toBe('default')
   })
 
-  it('steps to the top of the cycle from an unreported or off-cycle mode', () => {
-    expect(nextPermissionMode(undefined)).toBe('default')
+  it('advances from the catalog default when nothing has reported a mode', () => {
+    // Otherwise the first Shift+Tab of a fresh chat re-sends `default` and the user
+    // presses three times to reach Plan.
+    expect(nextPermissionMode(undefined)).toBe('acceptEdits')
+  })
+
+  it('resets a named mode that is off the cycle', () => {
     expect(nextPermissionMode('bypassPermissions')).toBe('default')
+    expect(nextPermissionMode('dontAsk')).toBe('default')
   })
 })
 
@@ -61,6 +67,20 @@ describe('useNativeChatPermissionModeCycle', () => {
     )
     expect(result.current()).toBe(true)
     expect(optionsSurface.setOption).toHaveBeenCalledWith('permissionMode', 'plan')
+  })
+
+  it('reaches Plan in two presses from a chat that has reported no mode', () => {
+    const optionsSurface = surface()
+    const fresh = renderHook(() =>
+      useNativeChatPermissionModeCycle(optionsSurface, [descriptor(undefined)])
+    )
+    expect(fresh.result.current()).toBe(true)
+    expect(optionsSurface.setOption).toHaveBeenLastCalledWith('permissionMode', 'acceptEdits')
+    const stepped = renderHook(() =>
+      useNativeChatPermissionModeCycle(optionsSurface, [descriptor('acceptEdits')])
+    )
+    expect(stepped.result.current()).toBe(true)
+    expect(optionsSurface.setOption).toHaveBeenLastCalledWith('permissionMode', 'plan')
   })
 
   it('leaves Shift+Tab alone where the mode is not settable or absent', () => {

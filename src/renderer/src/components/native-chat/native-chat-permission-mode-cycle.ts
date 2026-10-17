@@ -16,9 +16,11 @@ const NEXT_BY_MODE = new Map<string, string>(
 )
 
 export function nextPermissionMode(current: string | undefined): string {
-  // An unrecognised mode (a launch's `dontAsk`, say) steps to the top of the cycle
-  // rather than nowhere, so the chord is never inert.
-  return (current && NEXT_BY_MODE.get(current)) || PERMISSION_MODE_CYCLE[0]
+  // No reported value is not a fourth position: nothing has said the session left the
+  // catalog default, so the first press advances from it rather than re-sending it.
+  // A named mode off the cycle (a launch's `dontAsk`, say) does reset to the top —
+  // there the value IS known, and stepping anywhere else would guess.
+  return NEXT_BY_MODE.get(current ?? PERMISSION_MODE_CYCLE[0]) ?? PERMISSION_MODE_CYCLE[0]
 }
 
 function settablePermissionMode(

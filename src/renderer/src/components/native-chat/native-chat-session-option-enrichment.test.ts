@@ -256,8 +256,7 @@ describe('native chat session option enrichment', () => {
             ]
           })
         }),
-        expect.objectContaining({ id: 'fastMode' }),
-        expect.objectContaining({ id: 'permissionMode' })
+        expect.objectContaining({ id: 'fastMode' })
       ]
     })
     expect(readNativeChatEnrichedModels('claude', 'local')).toBeNull()
