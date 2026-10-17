@@ -3,6 +3,7 @@ import { useSourceControlAi } from '../ai/use-ai'
 import { useSourceControlFileListing } from '../listing/use-file-listing'
 import { useSourceControlReviewContext } from '../review/use-review-context'
 import { useSourceControlPanelState } from './use-panel-state'
+import { useSourceControlContentSearch } from './use-panel-content-search'
 
 /**
  * Everything the panel knows before any action runs: state, review context, the projected file
@@ -79,6 +80,13 @@ export function useSourceControlPanelFoundation() {
     worktreeMap,
     worktreePath
   })
+  const contentSearch = useSourceControlContentSearch({
+    activeWorktreeId,
+    entries,
+    branchEntries,
+    findMode: panelState.findMode,
+    findExpanded: panelState.filterExpanded
+  })
   const ai = useSourceControlAi({
     settings: panelState.settings,
     target: activeRepoTarget,
@@ -120,7 +128,7 @@ export function useSourceControlPanelFoundation() {
     sourceControlAiActionsVisible
   ])
 
-  return { ...panelState, ...reviewContext, ...listing, ...ai }
+  return { ...panelState, ...reviewContext, ...listing, ...ai, contentSearch }
 }
 
 export type SourceControlPanelFoundation = ReturnType<typeof useSourceControlPanelFoundation>

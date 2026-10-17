@@ -6,6 +6,7 @@ import type { SourceControlStoreActions } from '../listing/use-store-actions'
 import type { SourceControlWorktreeContext } from '../listing/use-worktree-context'
 import type { SourceControlFileCategory } from '../listing/file-category'
 import { useAppStore } from '@/store'
+import type { FileFindMode } from '../../file-find/file-find-mode'
 
 const DEFAULT_COLLAPSED_SECTIONS = ['history'] as const
 const NO_HIDDEN_FILE_CATEGORIES: ReadonlySet<SourceControlFileCategory> = new Set()
@@ -47,6 +48,7 @@ export function useSourceControlPanelViewState({
   const [collapsedTreeDirs, setCollapsedTreeDirs] = useState<Set<string>>(new Set())
   const [baseRefDialogOpen, setBaseRefDialogOpen] = useState(false)
   const [filterQuery, setFilterQuery] = useState('')
+  const [findMode, setFindMode] = useState<FileFindMode>('names')
   // Why kept per worktree, not reset on switch: each worktree's review keeps its own filter.
   const [hiddenFileCategoriesByWorktree, setHiddenFileCategoriesByWorktree] = useState<
     ReadonlyMap<string, ReadonlySet<SourceControlFileCategory>>
@@ -82,6 +84,7 @@ export function useSourceControlPanelViewState({
     setBaseRefDialogOpen(false)
     // Why: don't reset defaultBaseRef here — it's repo-scoped (resolved on activeRepo change); resetting would clobber non-main defaults.
     setFilterQuery('')
+    setFindMode('names')
     // Why: don't reset commit-in-flight state — it's per-worktree; resetting would re-enable Commit for an incoming worktree mid-commit.
   }
 
@@ -132,6 +135,8 @@ export function useSourceControlPanelViewState({
     fileListScrollElement,
     filterExpanded,
     filterQuery,
+    findMode,
+    setFindMode,
     handleToggleSourceControlGrouping,
     handleToggleSourceControlViewMode,
     hiddenFileCategories,

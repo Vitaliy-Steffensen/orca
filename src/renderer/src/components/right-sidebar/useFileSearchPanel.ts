@@ -13,6 +13,9 @@ import { cancelRevealFrame, openMatchResult } from './search-match-open'
 import type { ContentSearchFieldProps } from './file-find/ContentSearchToggles'
 import type { SearchFiltersProps } from './SearchFilters'
 import { useFileSearchRunner } from './useFileSearchRunner'
+import { useFileSearchScopeState } from './use-file-search-scope-state'
+import type { FileSearchPathRestriction } from './file-search-path-restriction'
+import type { FileSearchScopeId } from '@/store/slices/editor/types/file-search-scope-id'
 
 const EMPTY_COLLAPSED_FILES = new Set<string>()
 
@@ -34,15 +37,31 @@ export type FileSearchPanelModel = {
   focusQueryInput: () => void
 }
 
-export function useFileSearchPanel(explorerView: 'files' | 'search'): FileSearchPanelModel {
+export type FileSearchPanelOptions = {
+  scope: FileSearchScopeId
+  /** False cancels pending work: the panel's content mode isn't the one on screen. */
+  active: boolean
+  /** Confines the search to a changed-file set; `null` searches the whole tree. */
+  restriction: FileSearchPathRestriction | null
+}
+
+export function useFileSearchPanel({
+  scope,
+  active,
+  restriction
+}: FileSearchPanelOptions): FileSearchPanelModel {
   const activeWorktree = useActiveWorktree()
   const activeWorktreeId = useAppStore((s) => s.activeWorktreeId)
   const openFile = useAppStore((s) => s.openFile)
   const setPendingEditorReveal = useAppStore((s) => s.setPendingEditorReveal)
 
-  const searchState = useAppStore((s) =>
-    activeWorktreeId ? s.fileSearchStateByWorktree[activeWorktreeId] : null
-  )
+  const {
+    searchState,
+    updateActiveSearchState,
+    clearActiveSearch,
+    toggleActiveCollapsedFile,
+    consumeSeedRequest
+  } = useFileSearchScopeState(activeWorktreeId, scope)
   const fileSearchQuery = searchState?.query ?? ''
   const fileSearchCaseSensitive = searchState?.caseSensitive ?? false
   const fileSearchWholeWord = searchState?.wholeWord ?? false
@@ -56,11 +75,6 @@ export function useFileSearchPanel(explorerView: 'files' | 'search'): FileSearch
   const fileSearchSeedRequestId = searchState?.seedRequestId
   const fileSearchFocusRequestId = searchState?.focusRequestId
 
-  const updateFileSearchState = useAppStore((s) => s.updateFileSearchState)
-  const consumeFileSearchSeedRequest = useAppStore((s) => s.consumeFileSearchSeedRequest)
-  const toggleFileSearchCollapsedFile = useAppStore((s) => s.toggleFileSearchCollapsedFile)
-  const clearFileSearch = useAppStore((s) => s.clearFileSearch)
-
   const inputRef = useRef<HTMLInputElement>(null)
   const resultsScrollRef = useRef<HTMLDivElement>(null)
   const revealRafRef = useRef<number | null>(null)
@@ -69,37 +83,12 @@ export function useFileSearchPanel(explorerView: 'files' | 'search'): FileSearch
   const includeInputRef = useRef<HTMLInputElement>(null)
   const excludeInputRef = useRef<HTMLInputElement>(null)
 
-  const updateActiveSearchState = useCallback(
-    (updates: Partial<NonNullable<typeof searchState>>) => {
-      if (!activeWorktreeId) {
-        return
-      }
-      updateFileSearchState(activeWorktreeId, updates)
-    },
-    [activeWorktreeId, updateFileSearchState]
-  )
-
-  const clearActiveSearch = useCallback(() => {
-    if (!activeWorktreeId) {
-      return
-    }
-    clearFileSearch(activeWorktreeId)
-  }, [activeWorktreeId, clearFileSearch])
-
-  const toggleActiveCollapsedFile = useCallback(
-    (filePath: string) => {
-      if (!activeWorktreeId) {
-        return
-      }
-      toggleFileSearchCollapsedFile(activeWorktreeId, filePath)
-    },
-    [activeWorktreeId, toggleFileSearchCollapsedFile]
-  )
-
   const worktreePath = activeWorktree?.path ?? null
   const { executeSearch, cancelPendingSearch } = useFileSearchRunner({
     activeWorktreeId,
     worktreePath,
+    scope,
+    restriction,
     updateActiveSearchState
   })
 
@@ -141,7 +130,8 @@ export function useFileSearchPanel(explorerView: 'files' | 'search'): FileSearch
   const isCurrentOwner = useFileSearchScope({
     activeWorktreeId,
     worktreePath,
-    explorerView,
+    scope,
+    active,
     executeSearch,
     cancelPendingSearch,
     updateActiveSearchState
@@ -182,10 +172,10 @@ export function useFileSearchPanel(explorerView: 'files' | 'search'): FileSearch
       executeSearch(fileSearchQuery)
     }
     scheduleSeededInputSelection()
-    consumeFileSearchSeedRequest(activeWorktreeId, fileSearchSeedRequestId)
+    consumeSeedRequest(fileSearchSeedRequestId)
   }, [
     activeWorktreeId,
-    consumeFileSearchSeedRequest,
+    consumeSeedRequest,
     executeSearch,
     fileSearchQuery,
     fileSearchSeedRequestId,
@@ -199,13 +189,26 @@ export function useFileSearchPanel(explorerView: 'files' | 'search'): FileSearch
     inputRef.current?.focus()
   }, [activeWorktreeId, fileSearchFocusRequestId])
 
-  const previousExplorerViewRef = useRef(explorerView)
+  const previousActiveRef = useRef(active)
   useEffect(() => {
-    if (previousExplorerViewRef.current !== 'search' && explorerView === 'search') {
+    if (!previousActiveRef.current && active) {
       focusQueryInput()
     }
-    previousExplorerViewRef.current = explorerView
-  }, [explorerView, focusQueryInput])
+    previousActiveRef.current = active
+  }, [active, focusQueryInput])
+
+  // Why: the changed-file set moves under the panel as the user stages or commits.
+  const restrictionSignature = restriction?.signature ?? null
+  const previousRestrictionRef = useRef(restrictionSignature)
+  useEffect(() => {
+    if (previousRestrictionRef.current === restrictionSignature) {
+      return
+    }
+    previousRestrictionRef.current = restrictionSignature
+    if (active && fileSearchQuery.trim()) {
+      executeSearch(fileSearchQuery)
+    }
+  }, [restrictionSignature, active, fileSearchQuery, executeSearch])
 
   const handleClearSearch = useCallback(() => {
     cancelPendingSearch()
@@ -216,11 +219,12 @@ export function useFileSearchPanel(explorerView: 'files' | 'search'): FileSearch
     if (!activeWorktreeId) {
       return
     }
-    const q = useAppStore.getState().fileSearchStateByWorktree[activeWorktreeId]?.query ?? ''
+    const q =
+      useAppStore.getState().fileSearchStateByWorktree[activeWorktreeId]?.[scope]?.query ?? ''
     if (q.trim()) {
       executeSearch(q)
     }
-  }, [executeSearch, activeWorktreeId])
+  }, [executeSearch, activeWorktreeId, scope])
 
   const handleQueryChange = useCallback(
     (value: string) => {

@@ -18,9 +18,27 @@ import {
 } from '@/lib/worktree-runtime-owner'
 import type { SearchResult } from '../../../../shared/code-search-types'
 import { runtimeTargetForOwnerEnvironment } from '@/runtime/runtime-client-target'
+import { restrictSearchResultToPaths } from '../../../../shared/search-result-path-restriction'
+import type { FileSearchScopeId } from '@/store/slices/editor/types/file-search-scope-id'
+import type { FileSearchPathRestriction } from './file-search-path-restriction'
 
 const SEARCH_DEBOUNCE_MS = 300
 const SEARCH_MAX_RESULTS = 2000
+
+/**
+ * The guaranteed floor: an older host drops `restrictToPaths` and searches everything,
+ * so filter here regardless. A result that still carries outside files proves the host
+ * ignored the restriction, in which case its own truncation verdict stands.
+ */
+function confineResults(
+  results: SearchResult,
+  restriction: FileSearchPathRestriction | null
+): SearchResult {
+  if (!restriction) {
+    return results
+  }
+  return restrictSearchResultToPaths(results, new Set(restriction.paths)).result
+}
 
 type UpdateSearchState = (updates: {
   error?: string | null
@@ -32,12 +50,17 @@ type UpdateSearchState = (updates: {
 type UseFileSearchRunnerArgs = {
   activeWorktreeId: string | null
   worktreePath: string | null
+  scope: FileSearchScopeId
+  /** Confines the search to these paths; `null` searches the whole tree. */
+  restriction: FileSearchPathRestriction | null
   updateActiveSearchState: UpdateSearchState
 }
 
 export function useFileSearchRunner({
   activeWorktreeId,
   worktreePath,
+  scope,
+  restriction,
   updateActiveSearchState
 }: UseFileSearchRunnerArgs): {
   executeSearch: (query: string) => void
@@ -88,7 +111,8 @@ export function useFileSearchRunner({
         return
       }
 
-      const currentSearchState = useAppStore.getState().fileSearchStateByWorktree[activeWorktreeId]
+      const currentSearchState =
+        useAppStore.getState().fileSearchStateByWorktree[activeWorktreeId]?.[scope]
       if (
         getRuntimeFileSearchRejectedField({
           query,
@@ -112,6 +136,19 @@ export function useFileSearchRunner({
         return
       }
 
+      // Why: nothing to search, and an empty list on the wire would read as "unrestricted" to the host.
+      if (restriction && restriction.paths.length === 0) {
+        updateActiveSearchState({
+          results: createEmptyRuntimeFileSearchResult(),
+          resultOwner: createFileSearchResultOwner(activeWorktreeId, runtimeEnvironmentId, {
+            rootPath: worktreePath,
+            executionHostId
+          }),
+          loading: false
+        })
+        return
+      }
+
       updateActiveSearchState({ loading: true })
       searchTimerRef.current = setTimeout(async () => {
         searchTimerRef.current = null
@@ -125,7 +162,7 @@ export function useFileSearchRunner({
         try {
           const state = useAppStore.getState()
           const connectionId = getConnectionId(activeWorktreeId) ?? undefined
-          const activeSearchState = state.fileSearchStateByWorktree[activeWorktreeId]
+          const activeSearchState = state.fileSearchStateByWorktree[activeWorktreeId]?.[scope]
           if (
             getRuntimeFileSearchRejectedField({
               query,
@@ -157,12 +194,13 @@ export function useFileSearchRunner({
               useRegex: activeSearchState?.useRegex ?? false,
               includePattern: activeSearchState?.includePattern || undefined,
               excludePattern: activeSearchState?.excludePattern || undefined,
-              maxResults: SEARCH_MAX_RESULTS
+              maxResults: SEARCH_MAX_RESULTS,
+              restrictToPaths: restriction ? [...restriction.paths] : undefined
             },
             controller.signal
           )
           if (latestSearchIdRef.current === searchId) {
-            updateActiveSearchState({ results, resultOwner })
+            updateActiveSearchState({ results: confineResults(results, restriction), resultOwner })
           }
         } catch (err) {
           if (controller.signal.aborted) {
@@ -188,7 +226,15 @@ export function useFileSearchRunner({
         }
       }, SEARCH_DEBOUNCE_MS)
     },
-    [activeWorktreeId, updateActiveSearchState, worktreePath, executionHostId, runtimeEnvironmentId]
+    [
+      activeWorktreeId,
+      updateActiveSearchState,
+      worktreePath,
+      executionHostId,
+      runtimeEnvironmentId,
+      scope,
+      restriction
+    ]
   )
 
   useEffect(

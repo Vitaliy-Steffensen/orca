@@ -157,6 +157,11 @@ function resetState(overrides: Partial<Record<string, unknown>> = {}): void {
     worktreesByRepo: { [mocks.activeRepo.id]: [mocks.activeWorktree] },
     rightSidebarOpen: false,
     rightSidebarTab: 'source-control',
+    fileSearchStateByWorktree: {},
+    updateFileSearchState: () => undefined,
+    consumeFileSearchSeedRequest: () => undefined,
+    toggleFileSearchCollapsedFile: () => undefined,
+    clearFileSearch: () => undefined,
     gitStatusByWorktree: { [mocks.activeWorktree.id]: [] },
     gitBranchChangesByWorktree: { [mocks.activeWorktree.id]: [] },
     gitBranchCompareSummaryByWorktree: { [mocks.activeWorktree.id]: null },
@@ -283,6 +288,11 @@ function clickBranchRow(init: MouseEventInit = {}): void {
 describe('SourceControl preview row opens', () => {
   it('passes preview=true when plain uncommitted row clicks open diff tabs', () => {
     resetState({
+      fileSearchStateByWorktree: {},
+      updateFileSearchState: () => undefined,
+      consumeFileSearchSeedRequest: () => undefined,
+      toggleFileSearchCollapsedFile: () => undefined,
+      clearFileSearch: () => undefined,
       gitStatusByWorktree: {
         [mocks.activeWorktree.id]: [
           gitEntry({ path: 'src/file.ts' }),
@@ -315,6 +325,11 @@ describe('SourceControl preview row opens', () => {
 
   it('keeps modifier split row opens permanent and targeted at the split group', () => {
     resetState({
+      fileSearchStateByWorktree: {},
+      updateFileSearchState: () => undefined,
+      consumeFileSearchSeedRequest: () => undefined,
+      toggleFileSearchCollapsedFile: () => undefined,
+      clearFileSearch: () => undefined,
       gitStatusByWorktree: { [mocks.activeWorktree.id]: [gitEntry({ path: 'src/file.ts' })] }
     })
     renderSourceControl()
@@ -338,6 +353,11 @@ describe('SourceControl preview row opens', () => {
 
   it('keeps explicit permanent uncommitted opens permanent', () => {
     resetState({
+      fileSearchStateByWorktree: {},
+      updateFileSearchState: () => undefined,
+      consumeFileSearchSeedRequest: () => undefined,
+      toggleFileSearchCollapsedFile: () => undefined,
+      clearFileSearch: () => undefined,
       gitStatusByWorktree: { [mocks.activeWorktree.id]: [gitEntry({ path: 'src/file.ts' })] }
     })
     renderSourceControl()
@@ -356,6 +376,11 @@ describe('SourceControl preview row opens', () => {
 
   it('passes preview through markdown edit-in-changes and conflict file opens', () => {
     resetState({
+      fileSearchStateByWorktree: {},
+      updateFileSearchState: () => undefined,
+      consumeFileSearchSeedRequest: () => undefined,
+      toggleFileSearchCollapsedFile: () => undefined,
+      clearFileSearch: () => undefined,
       gitStatusByWorktree: {
         [mocks.activeWorktree.id]: [
           gitEntry({ path: 'docs/readme.md' }),
@@ -393,6 +418,11 @@ describe('SourceControl preview row opens', () => {
 
   it('scopes discard autosave quiesce and reload notifications to the repo owner runtime', async () => {
     resetState({
+      fileSearchStateByWorktree: {},
+      updateFileSearchState: () => undefined,
+      consumeFileSearchSeedRequest: () => undefined,
+      toggleFileSearchCollapsedFile: () => undefined,
+      clearFileSearch: () => undefined,
       gitStatusByWorktree: { [mocks.activeWorktree.id]: [gitEntry({ path: 'src/file.ts' })] }
     })
     // Why: the owner stamp routes the discard; a different focused server must not.
@@ -440,6 +470,11 @@ describe('SourceControl preview row opens', () => {
 
   it('keeps nested-only submodule rows non-stageable from the parent repo', () => {
     resetState({
+      fileSearchStateByWorktree: {},
+      updateFileSearchState: () => undefined,
+      consumeFileSearchSeedRequest: () => undefined,
+      toggleFileSearchCollapsedFile: () => undefined,
+      clearFileSearch: () => undefined,
       gitStatusByWorktree: {
         [mocks.activeWorktree.id]: [
           gitEntry({

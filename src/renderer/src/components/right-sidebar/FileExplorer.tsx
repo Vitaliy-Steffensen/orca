@@ -43,10 +43,15 @@ import type { RightSidebarExplorerView } from '../../../../shared/ui-chrome-type
 /** Coordinates scoped navigation while retaining the actual worktree root for file operations and runtime routing. */
 function FileExplorerFiles(): React.JSX.Element {
   const explorerView = useAppStore((s) => s.rightSidebarExplorerView)
-  const requestRightSidebarFind = useAppStore((s) => s.requestRightSidebarFind)
+  const findExpanded = useAppStore((s) => s.rightSidebarFindExpanded)
+  const setFindExpanded = useAppStore((s) => s.setRightSidebarFindExpanded)
   const showRightSidebarFiles = useAppStore((s) => s.showRightSidebarFiles)
   const showRightSidebarSearch = useAppStore((s) => s.showRightSidebarSearch)
-  const searchPanel = useFileSearchPanel(explorerView)
+  const searchPanel = useFileSearchPanel({
+    scope: 'explorer',
+    active: explorerView === 'search',
+    restriction: null
+  })
   const activeWorktreeId = useAppStore((s) => s.activeWorktreeId)
   const runtimeEnvironmentId = useAppStore((s) =>
     getRuntimeEnvironmentIdForWorktree(s, activeWorktreeId)
@@ -272,7 +277,8 @@ function FileExplorerFiles(): React.JSX.Element {
           showDotfiles={showDotfiles}
           onToggleDotfiles={handleToggleDotfiles}
           find={{
-            expand: requestRightSidebarFind,
+            expanded: findExpanded,
+            toggle: () => setFindExpanded(!findExpanded),
             hasQuery: Boolean(
               (explorerView === 'search' ? searchPanel.queryRowProps.query : nameFilterQuery).trim()
             )

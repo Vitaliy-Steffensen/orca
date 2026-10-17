@@ -64,6 +64,7 @@ describe('migrateWorktreeIdentity', () => {
 
   it('re-keys worktree-scoped maps, pointers, the Set, and openFiles old->new', () => {
     const store = createTestStore()
+    // oxlint-disable-next-line typescript/consistent-type-assertions -- SAFETY: a rename fixture, not a store snapshot: each map holds only the one field the re-keying reads.
     store.setState({
       activeWorktreeId: OLD,
       activeWorkspaceKey: worktreeWorkspaceKey(OLD),
@@ -71,7 +72,12 @@ describe('migrateWorktreeIdentity', () => {
       tabsByWorktree: { [OLD]: [{ id: 'tab1', worktreeId: OLD }] },
       rightSidebarExplorerViewByWorktree: { [OLD]: 'search' },
       fileSearchStateByWorktree: {
-        [OLD]: { resultOwner: { worktreeId: OLD, runtimeEnvironmentId: 'runtime-a' } }
+        [OLD]: {
+          explorer: { resultOwner: { worktreeId: OLD, runtimeEnvironmentId: 'runtime-a' } },
+          'source-control': {
+            resultOwner: { worktreeId: OLD, runtimeEnvironmentId: 'runtime-a' }
+          }
+        }
       },
       activeTabIdByWorktree: { [OLD]: 'tab1' },
       browserTabsByWorktree: {
@@ -178,10 +184,16 @@ describe('migrateWorktreeIdentity', () => {
     expect(s.rightSidebarExplorerViewByWorktree[OLD]).toBeUndefined()
     expect(s.rightSidebarExplorerViewByWorktree[NEW]).toBe('search')
     expect(s.fileSearchStateByWorktree[OLD]).toBeUndefined()
-    expect(s.fileSearchStateByWorktree[NEW]?.resultOwner).toEqual({
+    // Every scope's owner re-keys, not just the Explorer's.
+    expect(s.fileSearchStateByWorktree[NEW]?.explorer.resultOwner).toEqual({
       worktreeId: NEW,
       runtimeEnvironmentId: 'runtime-a'
     })
+    expect(s.fileSearchStateByWorktree[NEW]?.['source-control'].resultOwner).toEqual({
+      worktreeId: NEW,
+      runtimeEnvironmentId: 'runtime-a'
+    })
+    expect(s.fileSearchStateByWorktree[NEW]?.['pr-diff'].resultOwner).toBeNull()
     expect(s.lastVisitedAtByWorktreeId[NEW]).toBe(123)
     expect(s.defaultTerminalTabsAppliedByWorktreeId[NEW]).toBe(true)
     // The two maps absent from the purge list are still re-keyed.

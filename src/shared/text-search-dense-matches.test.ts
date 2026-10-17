@@ -16,7 +16,7 @@ describe('text search match budgets', () => {
         await writeFile(filename, `a${'😀x'.repeat(10_000)}\n`)
         const result = await runProcess({
           program: rgPath,
-          args: buildRgArgs(query, '.', {}),
+          args: buildRgArgs(query, ['.'], {}),
           cwd: root
         })
         expect(result.code).toBe(0)
@@ -51,7 +51,7 @@ describe('text search match budgets', () => {
       await writeFile(filename, `header\n\ufeff${'x '.repeat(10_000)}`)
       const result = await runProcess({
         program: rgPath,
-        args: buildRgArgs('x', '.', {}),
+        args: buildRgArgs('x', ['.'], {}),
         cwd: root
       })
       expect(result.code).toBe(0)
@@ -80,7 +80,7 @@ describe('text search match budgets', () => {
       await writeFile(join(root, 'dense.txt'), 'x '.repeat(10_000))
       const result = await runProcess({
         program: rgPath,
-        args: buildRgArgs('x', root, {}),
+        args: buildRgArgs('x', [root], {}),
         cwd: root
       })
       expect(result.code).toBe(0)
@@ -104,7 +104,7 @@ describe('text search match budgets', () => {
       await writeFile(join(root, 'many.txt'), 'needle\n'.repeat(150))
       const result = await runProcess({
         program: rgPath,
-        args: buildRgArgs('needle', root, {}),
+        args: buildRgArgs('needle', [root], {}),
         cwd: root
       })
       expect(result.code).toBe(0)

@@ -33,7 +33,7 @@ type FileExplorerToolbarProps = {
   onToggleGitIgnoredFiles: () => void
   showDotfiles: boolean
   onToggleDotfiles: () => void
-  find: { expand: () => void; hasQuery: boolean }
+  find: { expanded: boolean; toggle: () => void; hasQuery: boolean }
 }
 
 /** Shares repository actions across explorer views. */
@@ -63,7 +63,8 @@ export function FileExplorerToolbar({
         {repoName}
       </span>
       <FileFindToggle
-        onExpand={find.expand}
+        expanded={find.expanded}
+        onToggle={find.toggle}
         hasQuery={find.hasQuery}
         label={translate(
           'auto.components.right.sidebar.FileExplorerNameFilter.26fb73c6e3',

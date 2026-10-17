@@ -2,9 +2,9 @@ import { useEffect } from 'react'
 import { syncLatestAgentTurn } from '@/lib/changes-filter'
 import { BulkActionBar } from '../commit/bulk-action-bar'
 import { SourceControlHeaderToolbar } from './header-toolbar'
-import { FileFindBar } from '../../file-find/FileFindBar'
-import { translate } from '@/i18n/i18n'
-import { useAppStore } from '@/store'
+import { ChangedFilesFindBar } from '../../file-find/ChangedFilesFindBar'
+import { SearchFilters } from '../../SearchFilters'
+import { SearchResultsPane } from '../../SearchResultsPane'
 import { SourceControlPendingReviewShelf } from '../pending-review/pending-review-shelf'
 import { SourceControlPendingCommentsSection } from '../pending-review/pending-comments-section'
 import { AgentNotesShelf } from '../notes/agent-notes-shelf'
@@ -27,7 +27,6 @@ import {
 /** The panel chrome: toolbar, review and agent-notes shelves, the file surface, bulk bar and dialogs. */
 export function SourceControlPanelReady(props: SourceControlPanelReadyProps) {
   const { model, worktreePath } = props
-  const findFocusRequestId = useAppStore((s) => s.rightSidebarFindFocusRequestId)
   const pendingReviewQueue = usePendingReviewQueue(props.model.activeWorktreeId ?? null)
   const submitReviewVerdict = useSubmitReviewVerdict(
     props.model.activeWorktreeId ?? null,
@@ -43,8 +42,11 @@ export function SourceControlPanelReady(props: SourceControlPanelReadyProps) {
     clearSelection,
     collapsedSections,
     compareBaseRef,
+    contentSearch,
     filterExpanded,
     filterQuery,
+    findMode,
+    setFindMode,
     gitIdentityDisplay,
     handleBulkStage,
     handleBulkUnstage,
@@ -197,37 +199,40 @@ export function SourceControlPanelReady(props: SourceControlPanelReadyProps) {
           manualReviewUrl={manualReviewUrl}
         />
 
-        <FileFindBar
-          expanded={filterExpanded}
-          onExpandedChange={setFilterExpanded}
-          mode="names"
-          onModeChange={() => undefined}
-          query={filterQuery}
-          onQueryChange={setFilterQuery}
-          onClear={() => setFilterQuery('')}
-          focusRequestId={findFocusRequestId}
-          placeholder={translate(
-            'auto.components.right.sidebar.SourceControl.c35baf2f1e',
-            'Filter files…'
-          )}
-          ariaLabel={translate(
-            'auto.components.right.sidebar.SourceControl.c35baf2f1e',
-            'Filter files…'
-          )}
+        <ChangedFilesFindBar
+          mode={findMode}
+          onModeChange={setFindMode}
+          nameFilterQuery={filterQuery}
+          onNameFilterChange={setFilterQuery}
+          contentSearch={contentSearch.queryRowProps}
           testId="source-control-filter-input"
         />
 
-        <SourceControlStackedSections
-          shelves={visibleShelves}
-          order={sectionOrder}
-          onMove={moveSection}
-          onHide={hideSection}
-          scrollRef={setFileListScrollElement}
-          scrollStyle={{ paddingBottom: selectedKeys.size > 0 ? 50 : undefined }}
-          footer={<SourceControlCommitsSection model={model} />}
-        >
-          <SourceControlPanelContent {...props} />
-        </SourceControlStackedSections>
+        {findMode === 'contents' && filterExpanded ? (
+          <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
+            <div className="border-b border-border px-2 pb-1.5">
+              <SearchFilters {...contentSearch.filtersProps} />
+            </div>
+            <div
+              className="flex min-h-0 flex-1 flex-col"
+              data-testid="source-control-content-search-results"
+            >
+              <SearchResultsPane {...contentSearch.resultsProps} />
+            </div>
+          </div>
+        ) : (
+          <SourceControlStackedSections
+            shelves={visibleShelves}
+            order={sectionOrder}
+            onMove={moveSection}
+            onHide={hideSection}
+            scrollRef={setFileListScrollElement}
+            scrollStyle={{ paddingBottom: selectedKeys.size > 0 ? 50 : undefined }}
+            footer={<SourceControlCommitsSection model={model} />}
+          >
+            <SourceControlPanelContent {...props} />
+          </SourceControlStackedSections>
+        )}
 
         {selectedKeys.size > 0 && (
           <BulkActionBar

@@ -3,7 +3,8 @@ import { Search } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
 type FileFindToggleProps = {
-  onExpand: () => void
+  expanded: boolean
+  onToggle: () => void
   label: string
   /** Marks a filter that is still narrowing the list while the bar is collapsed. */
   hasQuery?: boolean
@@ -12,7 +13,8 @@ type FileFindToggleProps = {
 
 /** The collapsed half of the find bar: a magnifier that lives in each view's own toolbar. */
 export function FileFindToggle({
-  onExpand,
+  expanded,
+  onToggle,
   label,
   hasQuery = false,
   testId
@@ -23,12 +25,12 @@ export function FileFindToggle({
       data-testid={testId}
       className={cn(
         'relative inline-flex size-7 shrink-0 items-center justify-center rounded-sm text-muted-foreground transition-colors hover:bg-accent hover:text-foreground',
-        hasQuery && 'bg-muted text-foreground'
+        (expanded || hasQuery) && 'bg-muted text-foreground'
       )}
-      onClick={onExpand}
+      onClick={onToggle}
       aria-label={label}
       title={label}
-      aria-expanded={false}
+      aria-expanded={expanded}
     >
       <Search className="size-3.5" />
       {hasQuery ? (

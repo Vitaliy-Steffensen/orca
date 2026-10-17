@@ -20191,6 +20191,8 @@
     "badge": "{{count}} queued"
   },
   "prDiff": {
+    "title": "Changed files",
+    "comparedAgainst": "vs {{ref}}",
     "noWorkspace": "Select a workspace to see its changed files.",
     "folderWorkspace": "Changed files are only available for Git repositories.",
     "noMatchingFiles": "No changed files match the filter.",

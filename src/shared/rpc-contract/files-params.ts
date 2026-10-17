@@ -2,6 +2,7 @@ import { PATH_EXISTENCE_BATCH_MAX } from '../path-existence-batch'
 import { z } from 'zod'
 import { QUICK_OPEN_REMOTE_QUERY_MAX_CODE_UNITS } from '../quick-open-path-search'
 import { RUNTIME_NAVIGATION_TARGETS } from '../runtime-navigation'
+import { MAX_RESTRICTED_SEARCH_PATHS } from '../text-search-path-restriction'
 import { FileOpen, WorktreeSelector } from './files-target-params'
 
 export const FilePathsExist = WorktreeSelector.extend({
@@ -97,7 +98,10 @@ export const FileSearch = WorktreeSelector.extend({
   useRegex: z.boolean().optional(),
   includePattern: z.string().optional(),
   excludePattern: z.string().optional(),
-  maxResults: z.number().int().positive().optional()
+  maxResults: z.number().int().positive().optional(),
+  // Why: `restrictToPaths` is a new optional field (wire rule 1) — an older host strips it and
+  // searches the whole tree, so the client must still filter the result against the same set.
+  restrictToPaths: z.array(z.string().max(4096)).max(MAX_RESTRICTED_SEARCH_PATHS).optional()
 })
 
 // Why: `maxResults` is a new optional field (wire rule 1) — an older host strips it and keeps its

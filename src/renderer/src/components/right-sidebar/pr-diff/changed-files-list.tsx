@@ -3,7 +3,10 @@ import { useAppStore } from '@/store'
 import { translate } from '@/i18n/i18n'
 import { SourceControlAllChangesSection } from '../source-control/listing/all-changes-section'
 import { CompareUnavailable } from '../source-control/sync/compare-summary'
-import { FileFindBar } from '../file-find/FileFindBar'
+import { ChangedFilesFindBar } from '../file-find/ChangedFilesFindBar'
+import { SearchFilters } from '../SearchFilters'
+import { SearchResultsPane } from '../SearchResultsPane'
+import { PrDiffHeaderToolbar } from './header-toolbar'
 import type { PrDiffModel } from './use-pr-diff-model'
 
 const NO_COUNTS = new Map<string, number>()
@@ -35,26 +38,35 @@ export function PrDiffChangedFilesList({ model }: { model: PrDiffModel }): React
 
   return (
     <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
-      <FileFindBar
-        expanded={find.expanded}
-        onExpandedChange={find.setExpanded}
-        mode="names"
-        onModeChange={() => undefined}
-        query={find.query}
-        onQueryChange={find.setQuery}
-        onClear={() => find.setQuery('')}
-        focusRequestId={find.focusRequestId}
-        placeholder={translate(
-          'auto.components.right.sidebar.SourceControl.c35baf2f1e',
-          'Filter files…'
-        )}
-        ariaLabel={translate(
-          'auto.components.right.sidebar.SourceControl.c35baf2f1e',
-          'Filter files…'
-        )}
+      {/* Why above the scroller: the unavailable and empty states replace it, and a magnifier
+         hidden behind an empty result is the one time the user must be able to clear the filter. */}
+      <PrDiffHeaderToolbar
+        compareBaseRef={model.compareBaseRef}
+        findExpanded={find.expanded}
+        onToggleFind={() => find.setExpanded(!find.expanded)}
+        hasQuery={Boolean(find.query.trim())}
+      />
+      <ChangedFilesFindBar
+        mode={find.mode}
+        onModeChange={find.setMode}
+        nameFilterQuery={find.query}
+        onNameFilterChange={find.setQuery}
+        contentSearch={model.contentSearch.queryRowProps}
         testId="pr-diff-filter-input"
       />
-      {unavailable ? (
+      {find.mode === 'contents' && find.expanded ? (
+        <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
+          <div className="border-b border-border px-2 pb-1.5">
+            <SearchFilters {...model.contentSearch.filtersProps} />
+          </div>
+          <div
+            className="flex min-h-0 flex-1 flex-col"
+            data-testid="pr-diff-content-search-results"
+          >
+            <SearchResultsPane {...model.contentSearch.resultsProps} />
+          </div>
+        </div>
+      ) : unavailable ? (
         <CompareUnavailable
           summary={branchSummary}
           onChangeBaseRef={() => undefined}

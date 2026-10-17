@@ -5,6 +5,10 @@ import type {
   RightSidebarExplorerView
 } from '../../../../../../shared/ui-chrome-types'
 import { defaultFileSearchState } from '../search/file-search-state'
+import {
+  readFileSearchScopeState,
+  withFileSearchScopeState
+} from '../search/file-search-scope-update'
 
 export type RightSidebarState = {
   rightSidebarOpen: boolean
@@ -93,8 +97,8 @@ export function createRightSidebarState(set: EditorSet, _get: EditorGet): RightS
       })),
     showRightSidebarSearch: (payload) =>
       set((s) => {
-        // Why: Source Control and the PR diff viewer have no content search, so the find chord
-        // opens their own filter rather than yanking the user over to the Explorer.
+        // Why: Source Control and the PR diff viewer search their own changed files, so the find
+        // chord opens their bar rather than yanking the user over to the Explorer.
         if (
           !payload &&
           (s.rightSidebarTab === 'source-control' || s.rightSidebarTab === 'pr-diff')
@@ -127,7 +131,9 @@ export function createRightSidebarState(set: EditorSet, _get: EditorGet): RightS
 
         const query = payload?.query?.trim() ? payload.query : null
         const includePattern = payload?.includePattern?.trim() ? payload.includePattern : null
-        const current = s.fileSearchStateByWorktree[s.activeWorktreeId] || defaultFileSearchState()
+        const current =
+          readFileSearchScopeState(s.fileSearchStateByWorktree, s.activeWorktreeId, 'explorer') ||
+          defaultFileSearchState()
         const shouldSeed = Boolean(query || (includePattern && current.query.trim()))
         const shouldFocus = !shouldSeed
         const nextSearchState = {
@@ -148,10 +154,12 @@ export function createRightSidebarState(set: EditorSet, _get: EditorGet): RightS
 
         return {
           ...next,
-          fileSearchStateByWorktree: {
-            ...s.fileSearchStateByWorktree,
-            [s.activeWorktreeId]: nextSearchState
-          }
+          fileSearchStateByWorktree: withFileSearchScopeState(
+            s.fileSearchStateByWorktree,
+            s.activeWorktreeId,
+            'explorer',
+            () => nextSearchState
+          )
         }
       }),
     // Settings sends the user here; the panel owns scope, so this asks rather than writes.

@@ -15,7 +15,8 @@ import type {
 import type { WorkspaceSessionState } from '../../../../../../shared/workspace-session-state-types'
 import type { GitPushTarget } from '../../../../../../shared/worktree/types'
 import type { PendingEditorFocusRequest, PendingEditorReveal } from './pending-editor-reveal'
-import type { FileSearchWorktreeState } from './file-search-worktree-state'
+import type { FileSearchScopedStates, FileSearchWorktreeState } from './file-search-worktree-state'
+import type { FileSearchScopeId } from './file-search-scope-id'
 import type { GitRuntimeOperationOptions } from './git-runtime-operation'
 
 export type EditorGitSlice = {
@@ -115,13 +116,25 @@ export type EditorGitSlice = {
   clearGitBranchCompare: (worktreeId: string) => void
 
   // File search state
-  fileSearchStateByWorktree: Record<string, FileSearchWorktreeState>
-  updateFileSearchState: (worktreeId: string, updates: Partial<FileSearchWorktreeState>) => void
+  fileSearchStateByWorktree: Record<string, FileSearchScopedStates>
+  updateFileSearchState: (
+    worktreeId: string,
+    scope: FileSearchScopeId,
+    updates: Partial<FileSearchWorktreeState>
+  ) => void
   seedFileSearchQuery: (worktreeId: string, query: string) => void
   seedFileSearchIncludePattern: (worktreeId: string, includePattern: string) => void
-  consumeFileSearchSeedRequest: (worktreeId: string, seedRequestId: number) => void
-  toggleFileSearchCollapsedFile: (worktreeId: string, filePath: string) => void
-  clearFileSearch: (worktreeId: string) => void
+  consumeFileSearchSeedRequest: (
+    worktreeId: string,
+    scope: FileSearchScopeId,
+    seedRequestId: number
+  ) => void
+  toggleFileSearchCollapsedFile: (
+    worktreeId: string,
+    scope: FileSearchScopeId,
+    filePath: string
+  ) => void
+  clearFileSearch: (worktreeId: string, scope: FileSearchScopeId) => void
 
   // Editor navigation (for search result → go-to-line)
   pendingEditorReveal: PendingEditorReveal | null

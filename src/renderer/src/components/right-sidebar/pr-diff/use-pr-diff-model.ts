@@ -12,6 +12,8 @@ import { buildChangedPathGroups } from './changed-path-grouping'
 import type { FlatEntry } from '../source-control/listing/use-selection'
 import type { SourceControlTreeNode } from '../source-control-tree'
 import type { GitBranchChangeEntry } from '../../../../../shared/git-diff-compare-types'
+import type { FileFindMode } from '../file-find/file-find-mode'
+import { usePrDiffContentSearch } from './use-pr-diff-content-search'
 
 // Why module scope: a fresh [] each render would churn every memo keyed on it.
 const NO_SELECTION_ENTRIES: FlatEntry[] = []
@@ -42,6 +44,7 @@ export function usePrDiffModel() {
   const findFocusRequestId = useAppStore((s) => s.rightSidebarFindFocusRequestId)
   const isMac = useMemo(() => navigator.userAgent.includes('Mac'), [])
   const [query, setQuery] = useState('')
+  const [findMode, setFindMode] = useState<FileFindMode>('names')
   const [collapsedTreeDirs, setCollapsedTreeDirs] = useState<Set<string>>(new Set())
   const [fileListScrollElement, setFileListScrollElement] = useState<HTMLDivElement | null>(null)
 
@@ -50,6 +53,7 @@ export function usePrDiffModel() {
   if (viewStateWorktreeId !== activeWorktreeId) {
     setViewStateWorktreeId(activeWorktreeId)
     setQuery('')
+    setFindMode('names')
     setCollapsedTreeDirs(new Set())
   }
 
@@ -108,6 +112,14 @@ export function usePrDiffModel() {
     forceEnabled: true
   })
 
+  const contentSearch = usePrDiffContentSearch({
+    activeWorktreeId,
+    entries,
+    branchEntries,
+    findMode,
+    findExpanded: expanded
+  })
+
   const { resolveSplitTargetGroupId, activeOpenRowKeys, activeOpenRowKey, openAllChangesEntry } =
     useSourceControlRowOpening({
       isMac,
@@ -139,7 +151,16 @@ export function usePrDiffModel() {
     compareBaseRef,
     fileListScrollElement,
     filter,
-    find: { expanded, setExpanded, focusRequestId: findFocusRequestId, query, setQuery },
+    contentSearch,
+    find: {
+      expanded,
+      setExpanded,
+      focusRequestId: findFocusRequestId,
+      query,
+      setQuery,
+      mode: findMode,
+      setMode: setFindMode
+    },
     isFolder,
     openAllChangesEntry,
     refreshBranchCompare,

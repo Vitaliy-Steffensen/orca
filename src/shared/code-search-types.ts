@@ -30,4 +30,10 @@ export type SearchOptions = {
   includePattern?: string
   excludePattern?: string
   maxResults?: number
+  /**
+   * Root-relative POSIX paths to confine the search to. Omitted means the whole tree.
+   * An older peer that drops this field runs an unrestricted search, so callers must
+   * still filter the result against the same set.
+   */
+  restrictToPaths?: string[]
 }

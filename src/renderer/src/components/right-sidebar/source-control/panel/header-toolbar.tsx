@@ -214,7 +214,8 @@ export function SourceControlHeaderToolbar({
           <span className="min-w-0 flex-1" aria-hidden="true" />
         ) : null}
         <FileFindToggle
-          onExpand={() => onFilterExpandedChange(true)}
+          expanded={filterExpanded}
+          onToggle={() => onFilterExpandedChange(!filterExpanded)}
           hasQuery={Boolean(normalizedFilter)}
           label={filterToggleTitle}
           testId="source-control-filter-toggle"

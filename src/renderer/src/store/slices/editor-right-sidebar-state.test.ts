@@ -156,7 +156,7 @@ describe('createEditorSlice right sidebar state', () => {
 
   it('showRightSidebarSearch opens Explorer search and requests focus without payload', () => {
     const store = createEditorStore()
-    store.getState().updateFileSearchState('wt-1', {
+    store.getState().updateFileSearchState('wt-1', 'explorer', {
       query: 'needle',
       results: { files: [], totalMatches: 1, truncated: false }
     })
@@ -167,12 +167,14 @@ describe('createEditorSlice right sidebar state', () => {
     expect(store.getState().rightSidebarTab).toBe('explorer')
     expect(store.getState().rightSidebarExplorerView).toBe('search')
     expect(store.getState().rightSidebarExplorerViewByWorktree).toEqual({ 'wt-1': 'search' })
-    expect(store.getState().fileSearchStateByWorktree['wt-1']).toMatchObject({
+    expect(store.getState().fileSearchStateByWorktree['wt-1'].explorer).toMatchObject({
       query: 'needle',
       results: { files: [], totalMatches: 1, truncated: false },
       focusRequestId: 1
     })
-    expect(store.getState().fileSearchStateByWorktree['wt-1']?.seedRequestId).toBeUndefined()
+    expect(
+      store.getState().fileSearchStateByWorktree['wt-1']?.explorer.seedRequestId
+    ).toBeUndefined()
   })
 
   it('showRightSidebarSearch seeds query and include together with one request', () => {
@@ -180,7 +182,7 @@ describe('createEditorSlice right sidebar state', () => {
 
     store.getState().showRightSidebarSearch({ query: 'needle', includePattern: 'src/**' })
 
-    expect(store.getState().fileSearchStateByWorktree['wt-1']).toMatchObject({
+    expect(store.getState().fileSearchStateByWorktree['wt-1'].explorer).toMatchObject({
       query: 'needle',
       includePattern: 'src/**',
       results: null,
@@ -194,24 +196,26 @@ describe('createEditorSlice right sidebar state', () => {
 
     store.getState().showRightSidebarSearch({ includePattern: 'src/**' })
 
-    expect(store.getState().fileSearchStateByWorktree['wt-1']).toMatchObject({
+    expect(store.getState().fileSearchStateByWorktree['wt-1'].explorer).toMatchObject({
       query: '',
       includePattern: 'src/**',
       focusRequestId: 1
     })
-    expect(store.getState().fileSearchStateByWorktree['wt-1']?.seedRequestId).toBeUndefined()
+    expect(
+      store.getState().fileSearchStateByWorktree['wt-1']?.explorer.seedRequestId
+    ).toBeUndefined()
   })
 
   it('showRightSidebarSearch include-only reruns an existing query', () => {
     const store = createEditorStore()
-    store.getState().updateFileSearchState('wt-1', {
+    store.getState().updateFileSearchState('wt-1', 'explorer', {
       query: 'needle',
       results: { files: [], totalMatches: 1, truncated: false }
     })
 
     store.getState().showRightSidebarSearch({ includePattern: 'src/**' })
 
-    expect(store.getState().fileSearchStateByWorktree['wt-1']).toMatchObject({
+    expect(store.getState().fileSearchStateByWorktree['wt-1'].explorer).toMatchObject({
       query: 'needle',
       includePattern: 'src/**',
       results: null,
@@ -291,7 +295,7 @@ describe('createEditorSlice file search seed state', () => {
 
     store.getState().seedFileSearchQuery('wt-1', 'selectedText')
 
-    expect(store.getState().fileSearchStateByWorktree['wt-1']).toMatchObject({
+    expect(store.getState().fileSearchStateByWorktree['wt-1'].explorer).toMatchObject({
       query: 'selectedText',
       results: null,
       loading: false,
@@ -301,7 +305,7 @@ describe('createEditorSlice file search seed state', () => {
 
   it('preserves search options while replacing stale results and collapsed files', () => {
     const store = createEditorStore()
-    store.getState().updateFileSearchState('wt-1', {
+    store.getState().updateFileSearchState('wt-1', 'explorer', {
       query: 'old',
       caseSensitive: true,
       wholeWord: true,
@@ -315,7 +319,7 @@ describe('createEditorSlice file search seed state', () => {
 
     store.getState().seedFileSearchQuery('wt-1', 'next')
 
-    const state = store.getState().fileSearchStateByWorktree['wt-1']
+    const state = store.getState().fileSearchStateByWorktree['wt-1'].explorer
     expect(state).toMatchObject({
       query: 'next',
       caseSensitive: true,
@@ -335,7 +339,7 @@ describe('createEditorSlice file search seed state', () => {
 
     store.getState().seedFileSearchIncludePattern('wt-1', 'src/**')
 
-    expect(store.getState().fileSearchStateByWorktree['wt-1']).toMatchObject({
+    expect(store.getState().fileSearchStateByWorktree['wt-1'].explorer).toMatchObject({
       query: '',
       includePattern: 'src/**',
       results: null,
@@ -346,7 +350,7 @@ describe('createEditorSlice file search seed state', () => {
 
   it('preserves search query and options while replacing stale scoped results', () => {
     const store = createEditorStore()
-    store.getState().updateFileSearchState('wt-1', {
+    store.getState().updateFileSearchState('wt-1', 'explorer', {
       query: 'needle',
       caseSensitive: true,
       wholeWord: true,
@@ -360,7 +364,7 @@ describe('createEditorSlice file search seed state', () => {
 
     store.getState().seedFileSearchIncludePattern('wt-1', 'src/**')
 
-    const state = store.getState().fileSearchStateByWorktree['wt-1']
+    const state = store.getState().fileSearchStateByWorktree['wt-1'].explorer
     expect(state).toMatchObject({
       query: 'needle',
       caseSensitive: true,
@@ -379,10 +383,12 @@ describe('createEditorSlice file search seed state', () => {
     const store = createEditorStore()
     store.getState().seedFileSearchQuery('wt-1', 'selectedText')
 
-    store.getState().consumeFileSearchSeedRequest('wt-1', 2)
-    expect(store.getState().fileSearchStateByWorktree['wt-1']?.seedRequestId).toBe(1)
+    store.getState().consumeFileSearchSeedRequest('wt-1', 'explorer', 2)
+    expect(store.getState().fileSearchStateByWorktree['wt-1']?.explorer.seedRequestId).toBe(1)
 
-    store.getState().consumeFileSearchSeedRequest('wt-1', 1)
-    expect(store.getState().fileSearchStateByWorktree['wt-1']?.seedRequestId).toBeUndefined()
+    store.getState().consumeFileSearchSeedRequest('wt-1', 'explorer', 1)
+    expect(
+      store.getState().fileSearchStateByWorktree['wt-1']?.explorer.seedRequestId
+    ).toBeUndefined()
   })
 })

@@ -182,7 +182,8 @@ export const FILE_METHODS = [
           useRegex: params.useRegex,
           includePattern: params.includePattern,
           excludePattern: params.excludePattern,
-          maxResults: params.maxResults
+          maxResults: params.maxResults,
+          restrictToPaths: params.restrictToPaths
         },
         { signal }
       )
