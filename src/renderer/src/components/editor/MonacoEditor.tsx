@@ -1,4 +1,4 @@
-import { editorThemeName, ensureCustomEditorThemes } from '@/lib/custom-editor-theme'
+import { useEditorThemeName } from '@/hooks/use-editor-theme-name'
 /* oxlint-disable react-doctor/no-adjust-state-on-prop-change -- Why: selection annotations are synchronized from Monaco editor selection and layout APIs, not derived React props. */
 import React, { useRef, useEffect, useLayoutEffect, useMemo, useState } from 'react'
 import Editor from '@monaco-editor/react'
@@ -130,19 +130,7 @@ export default function MonacoEditor({
   const [gutterMenuPoint, setGutterMenuPoint] = useState({ x: 0, y: 0 })
   const [gutterMenuLine, setGutterMenuLine] = useState(1)
   const isDark = useDocumentDarkTheme()
-
-  const [, setCustomThemesReady] = useState(false)
-  useEffect(() => {
-    let cancelled = false
-    void ensureCustomEditorThemes().then(() => {
-      if (!cancelled) {
-        setCustomThemesReady(true)
-      }
-    })
-    return () => {
-      cancelled = true
-    }
-  }, [])
+  const themeName = useEditorThemeName(isDark)
 
   const { queueReveal, cancelScheduledReveal, clearTransientRevealHighlight } =
     useMonacoRevealScheduler()
@@ -262,7 +250,7 @@ export default function MonacoEditor({
         language={language}
         // Why: defaultValue, not controlled value — Orca owns post-mount content sync; a controlled path would double setValue.
         defaultValue={content}
-        theme={editorThemeName(isDark)}
+        theme={themeName}
         onChange={contentSync.handleChange}
         onMount={handleMount}
         options={{

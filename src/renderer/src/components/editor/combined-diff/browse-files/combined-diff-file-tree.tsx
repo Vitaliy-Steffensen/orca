@@ -1,9 +1,4 @@
 import React from 'react'
-import { Check, Filter, PanelLeftClose, Search } from 'lucide-react'
-import { cn } from '@/lib/utils'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import {
   getCombinedDiffFileTreeEntriesMatchingStaticFilters,
   getEntryExtension
@@ -12,8 +7,13 @@ import type {
   CombinedDiffFileTreeEntry,
   CombinedDiffFileTreeMode
 } from '../resolve-changes/combined-diff-section-identity'
+import { CombinedDiffFileTreeHeader } from './combined-diff-file-tree-header'
 import { CombinedDiffFileTreeRows } from './combined-diff-file-tree-rows'
 import { useCombinedDiffFileTreeResize } from './use-combined-diff-file-tree-resize'
+import {
+  useCombinedDiffTreeReveal,
+  type CombinedDiffTreeRevealRequest
+} from './use-combined-diff-tree-reveal'
 import { translate } from '@/i18n/i18n'
 import {
   buildCombinedDiffBranchTreeRoots,
@@ -42,6 +42,7 @@ export function CombinedDiffFileTree({
   activeSectionKey,
   viewedSectionKeys,
   collapsed,
+  revealRequest = null,
   onCollapsedChange,
   onNavigate
 }: {
@@ -53,6 +54,8 @@ export function CombinedDiffFileTree({
   activeSectionKey: string | null
   viewedSectionKeys: ReadonlySet<string>
   collapsed: boolean
+  /** Absent for the read-only PR viewers, which have no app shortcut to reveal from. */
+  revealRequest?: CombinedDiffTreeRevealRequest | null
   onCollapsedChange: (collapsed: boolean) => void
   onNavigate: (entry: CombinedDiffFileTreeEntry) => void
 }): React.JSX.Element | null {
@@ -131,6 +134,27 @@ export function CombinedDiffFileTree({
         : EMPTY_TREE_ROOTS,
     [collapsed, mode, structurallyFilteredEntries]
   )
+  const revealRoots = React.useMemo(
+    () => [...uncommittedTreeGroups.flatMap((group) => group.roots), ...branchTreeRoots],
+    [branchTreeRoots, uncommittedTreeGroups]
+  )
+  const reveal = useCombinedDiffTreeReveal({
+    mode,
+    request: revealRequest,
+    roots: revealRoots,
+    onExpandAncestors: React.useCallback((ancestorKeys: readonly string[]) => {
+      setCollapsedDirectoryKeys((prev) => {
+        if (!ancestorKeys.some((key) => prev.has(key))) {
+          return prev
+        }
+        const next = new Set(prev)
+        for (const key of ancestorKeys) {
+          next.delete(key)
+        }
+        return next
+      })
+    }, [])
+  })
   // Why: the viewed overlay below replaces these rows entirely when viewed files are hidden, so
   // flattening the unfiltered tree there is pure dead work.
   const uncommittedRowsByArea = React.useMemo(() => {
@@ -207,6 +231,9 @@ export function CombinedDiffFileTree({
     sectionIndexByKey,
     collapsedDirectoryKeys,
     scrollElement: listScrollElement,
+    flashRowKey: reveal.flashRowKey,
+    // Why unscoped: a list that does not hold the key resolves it to index -1 and returns.
+    scrollToRowKey: reveal.scrollToRowKey,
     onToggleDirectory: toggleDirectory,
     onNavigate
   }
@@ -219,110 +246,18 @@ export function CombinedDiffFileTree({
       ref={treeRef}
       className="relative flex min-h-0 shrink-0 flex-col overflow-hidden border-r border-border bg-background"
     >
-      <div className="sticky top-0 z-20 shrink-0 bg-background">
-        <div className="flex items-center justify-between gap-2 border-b border-border px-3 py-1.5">
-          <div className="text-[11px] font-semibold uppercase tracking-[0.05em] text-muted-foreground">
-            {translate('auto.components.editor.CombinedDiffFileTree.481e63ca52', 'Files')}
-          </div>
-          <Button
-            type="button"
-            variant="ghost"
-            size="icon-xs"
-            aria-label={translate(
-              'auto.components.editor.CombinedDiffFileTree.21783df79f',
-              'Collapse file tree'
-            )}
-            onClick={() => onCollapsedChange(true)}
-          >
-            <PanelLeftClose className="size-3.5" />
-          </Button>
-        </div>
-        <div className="flex items-center gap-2 border-b border-border px-2 py-2">
-          <div className="relative min-w-0 flex-1">
-            <Search className="pointer-events-none absolute left-2 top-1/2 size-3.5 -translate-y-1/2 text-muted-foreground" />
-            <Input
-              value={query}
-              onChange={(event) => setQuery(event.target.value)}
-              placeholder={translate(
-                'auto.components.editor.CombinedDiffFileTree.4cc7b83ffe',
-                'Filter files...'
-              )}
-              className="h-8 pl-7 text-xs"
-            />
-          </div>
-          <Popover>
-            <PopoverTrigger asChild>
-              <Button
-                type="button"
-                variant="outline"
-                size="icon-sm"
-                aria-label={translate(
-                  'auto.components.editor.CombinedDiffFileTree.cd0e0ed79e',
-                  'Filter diff files'
-                )}
-                className={cn(activeFilterCount > 0 && 'border-foreground/30 text-foreground')}
-              >
-                <Filter className="size-3.5" />
-              </Button>
-            </PopoverTrigger>
-            <PopoverContent align="end" side="bottom" sideOffset={6} className="w-56 p-0">
-              <div className="border-b border-border px-3 py-2 text-xs font-semibold text-foreground">
-                {translate(
-                  'auto.components.editor.CombinedDiffFileTree.c00020f081',
-                  'File extensions'
-                )}
-              </div>
-              <div className="max-h-60 overflow-auto py-1 scrollbar-sleek">
-                {availableExtensions.map((extension) => {
-                  const checked = !excludedExtensions.has(extension)
-                  return (
-                    <button
-                      key={extension}
-                      type="button"
-                      className="flex w-full items-center gap-2 px-3 py-1.5 text-left text-xs transition-colors hover:bg-accent hover:text-accent-foreground"
-                      onClick={() => toggleExtension(extension)}
-                    >
-                      <Check
-                        className={cn('size-3.5 shrink-0', checked ? 'opacity-100' : 'opacity-0')}
-                      />
-                      <span className="min-w-0 flex-1 truncate">{extension}</span>
-                    </button>
-                  )
-                })}
-              </div>
-              <div className="border-t border-border py-1">
-                <button
-                  type="button"
-                  className="flex w-full items-center gap-2 px-3 py-1.5 text-left text-xs transition-colors hover:bg-accent hover:text-accent-foreground"
-                  onClick={() => setIncludeViewed((prev) => !prev)}
-                >
-                  <Check
-                    className={cn('size-3.5 shrink-0', includeViewed ? 'opacity-100' : 'opacity-0')}
-                  />
-                  <span className="min-w-0 flex-1 truncate">
-                    {translate(
-                      'auto.components.editor.CombinedDiffFileTree.be119cb9d1',
-                      'Viewed files'
-                    )}
-                  </span>
-                </button>
-                {activeFilterCount > 0 && (
-                  <button
-                    type="button"
-                    className="w-full px-3 py-1.5 text-left text-xs text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
-                    onClick={resetFilters}
-                  >
-                    {translate(
-                      'auto.components.editor.CombinedDiffFileTree.eafe1aeb53',
-                      'Reset filters'
-                    )}
-                  </button>
-                )}
-              </div>
-            </PopoverContent>
-          </Popover>
-        </div>
-      </div>
+      <CombinedDiffFileTreeHeader
+        query={query}
+        setQuery={setQuery}
+        availableExtensions={availableExtensions}
+        excludedExtensions={excludedExtensions}
+        toggleExtension={toggleExtension}
+        includeViewed={includeViewed}
+        setIncludeViewed={setIncludeViewed}
+        activeFilterCount={activeFilterCount}
+        resetFilters={resetFilters}
+        onCollapsedChange={onCollapsedChange}
+      />
       <div ref={setListScrollElement} className="min-h-0 flex-1 overflow-auto py-1 scrollbar-sleek">
         {visibleEntryCount === 0 ? (
           <div className="px-3 py-6 text-center text-xs text-muted-foreground">

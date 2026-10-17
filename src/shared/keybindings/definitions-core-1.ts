@@ -203,6 +203,14 @@ export const KEYBINDING_DEFINITION_CORE_1: readonly KeybindingDefinition[] = [
     defaultBindings: platformBindings(['Mod+Shift+E'])
   },
   {
+    id: 'view.revealActiveFile',
+    title: 'Reveal Active File in Tree',
+    group: 'Global',
+    scope: 'global',
+    searchKeywords: ['shortcut', 'reveal', 'explorer', 'file tree', 'locate', 'current file'],
+    defaultBindings: platformBindings(['Mod+Shift+H'])
+  },
+  {
     id: 'sidebar.search.toggle',
     title: 'Show Search',
     group: 'Global',
@@ -283,29 +291,6 @@ export const KEYBINDING_DEFINITION_CORE_1: readonly KeybindingDefinition[] = [
     scope: 'global',
     searchKeywords: ['shortcut', 'floating terminal', 'terminal'],
     defaultBindings: platformBindings(['Mod+Alt+A']),
-    allowInTerminal: true
-  },
-  {
-    id: 'floatingWorkspace.maximize',
-    title: 'Maximize Floating Workspace Panel',
-    group: 'Global',
-    scope: 'global',
-    searchKeywords: [
-      'shortcut',
-      'floating',
-      'workspace',
-      'panel',
-      'floating workspace',
-      'workspace panel',
-      'maximize',
-      'expand'
-    ],
-    // Why: pairs with floatingTerminal.toggle (Cmd+Opt+A) so maximize stays one-handed; macOS-only, Linux/Windows unbound.
-    defaultBindings: {
-      darwin: ['Mod+Alt+Shift+A'],
-      linux: [],
-      win32: []
-    },
     allowInTerminal: true
   }
 ]

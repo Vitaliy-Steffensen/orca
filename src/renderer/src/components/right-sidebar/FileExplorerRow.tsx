@@ -3,6 +3,7 @@ import { ChevronRight, CircleAlert, CircleSlash, Link, Loader2 } from 'lucide-re
 import { ContextMenu, ContextMenuTrigger } from '@/components/ui/context-menu'
 import { cn } from '@/lib/utils'
 import { getFileTypeIcon } from '@/lib/file-type-icons'
+import { REVEAL_FLASH_CLASS } from '@/lib/reveal-flash-class'
 import { MaterialFolderIcon } from '@/lib/material-icons/material-icon'
 import {
   encodeWorkspaceFilePaths,
@@ -152,7 +153,7 @@ export function FileExplorerRow({
             'flex w-full items-center gap-1 rounded-sm px-2 py-1 text-left text-xs transition-colors',
             !isSelected && 'hover:bg-accent hover:text-foreground',
             isSelected && 'text-accent-foreground',
-            isFlashing && 'bg-amber-400/20 ring-1 ring-inset ring-amber-400/70'
+            isFlashing && REVEAL_FLASH_CLASS
           )}
           style={{ paddingLeft: `${(node.depth - displayDepthOffset) * 16 + 8}px` }}
           ref={setRowDragNode}

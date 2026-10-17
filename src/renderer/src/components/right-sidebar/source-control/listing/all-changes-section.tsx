@@ -9,6 +9,7 @@ import { BranchEntryRow } from './branch-entry-row'
 import { SectionHeader } from './section-header'
 import { formatSourceControlRefLabel } from '../panel/branch-context-stats'
 import { SourceControlBranchTreeDirectoryRow } from './tree-directory-rows'
+import { useSourceControlRowRevealRequestId } from '@/lib/source-control-row-reveal'
 import { VirtualizedList } from '../../../virtualized-list'
 import { ALL_CHANGES_AREA } from './all-changes'
 
@@ -109,6 +110,7 @@ export function SourceControlAllChangesSection({
   activeOpenRowKeys: ReadonlySet<string>
   activeOpenRowKey: string | null
 }): React.JSX.Element {
+  const revealRequestId = useSourceControlRowRevealRequestId(activeOpenRowKey)
   const fileCount = entries.length
   const ref = baseRef?.trim()
   // Why silent under a filter: a narrowed count is not the number of files changed vs the base.
@@ -134,6 +136,7 @@ export function SourceControlAllChangesSection({
   ): React.JSX.Element => (
     <BranchEntryRow
       key={key}
+      rowKey={key}
       entry={entry}
       currentWorktreeId={currentWorktreeId}
       worktreePath={worktreePath}
@@ -190,6 +193,7 @@ export function SourceControlAllChangesSection({
             scrollElement={fileListScrollElement}
             getRowKey={(node) => node.key}
             scrollToRowKey={activeOpenRowKey}
+            scrollToRowRequestId={revealRequestId}
             renderRow={(node) =>
               node.type === 'directory' ? (
                 <SourceControlBranchTreeDirectoryRow
@@ -209,6 +213,7 @@ export function SourceControlAllChangesSection({
             scrollElement={fileListScrollElement}
             getRowKey={(entry) => `${ALL_CHANGES_AREA}::${entry.path}`}
             scrollToRowKey={activeOpenRowKey}
+            scrollToRowRequestId={revealRequestId}
             renderRow={(entry) => renderEntry(entry, `${ALL_CHANGES_AREA}::${entry.path}`)}
           />
         ))}

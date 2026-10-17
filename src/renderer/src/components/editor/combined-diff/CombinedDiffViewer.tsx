@@ -27,6 +27,7 @@ import { useCombinedDiffScrollbar } from './scroll-viewport/use-combined-diff-sc
 import { useCombinedDiffVirtualizer } from './scroll-viewport/use-combined-diff-virtualizer'
 import { CombinedDiffSectionList } from './scroll-viewport/combined-diff-section-list'
 import { CombinedDiffFileTree } from './browse-files/combined-diff-file-tree'
+import { useCombinedDiffTreeRevealRequest } from './browse-files/use-combined-diff-tree-reveal-request'
 import { useCombinedDiffTreeNavigation } from './browse-files/use-combined-diff-tree-navigation'
 import { CombinedDiffCommitHeader } from './review-controls/combined-diff-commit-header'
 import { CombinedDiffToolbar } from './review-controls/combined-diff-toolbar'
@@ -192,6 +193,17 @@ export default function CombinedDiffViewer({
     sectionsRef: registry.sectionsRef,
     toggleSection,
     treeMode: entrySet.treeMode
+  })
+  const revealRequest = useCombinedDiffTreeRevealRequest({
+    fileId: file.id,
+    // Why the anchor and not the tree's own active key: the anchor tracks scrolling, the tree key
+    // only tracks clicks, so after a scroll only the anchor knows which file is on screen.
+    resolveSectionKey: () =>
+      restore.scrollAnchorRef.current?.key ?? treeNavigation.activeTreeSectionKey,
+    onReveal: (sectionKey) => {
+      preferences.setFileTreeCollapsed(false)
+      treeNavigation.setActiveTreeSectionKey(sectionKey)
+    }
   })
   const combinedGitStatusSignature = useCombinedDiffSectionRevalidation({
     file,
@@ -361,6 +373,7 @@ export default function CombinedDiffViewer({
             activeSectionKey={treeNavigation.activeTreeSectionKey}
             viewedSectionKeys={treeNavigation.viewedSectionKeys}
             collapsed={preferences.fileTreeCollapsed}
+            revealRequest={revealRequest}
             onCollapsedChange={preferences.setFileTreeCollapsed}
             onNavigate={treeNavigation.handleTreeNavigate}
           />

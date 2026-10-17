@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef } from 'react'
 import type { Dispatch, RefObject, SetStateAction } from 'react'
 import type { Virtualizer } from '@tanstack/react-virtual'
+import { REVEAL_FLASH_DURATION_MS } from '@/lib/reveal-flash-class'
 import { getRelativePathInsideRoot } from '@/lib/path'
 import { getExplorerDisplayDepth, FILE_EXPLORER_FULL_ROOT } from './file-explorer-display-root'
 import { useAppStore } from '@/store'
@@ -239,7 +240,7 @@ export function useFileExplorerReveal({
       flashTimeoutRef.current = window.setTimeout(() => {
         setFlashingPath((current) => (current === revealPath ? null : current))
         flashTimeoutRef.current = null
-      }, 2000)
+      }, REVEAL_FLASH_DURATION_MS)
     }
 
     cancelRevealScroll()
