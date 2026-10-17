@@ -10,6 +10,8 @@ import {
   Undo2
 } from 'lucide-react'
 import { getFileTypeIcon } from '@/lib/file-type-icons'
+import { REVEAL_FLASH_CLASS } from '@/lib/reveal-flash-class'
+import { useSourceControlRowRevealFlash } from '@/lib/source-control-row-reveal'
 import { basename, dirname, joinPath } from '@/lib/path'
 import { cn } from '@/lib/utils'
 import { WORKSPACE_FILE_PATH_MIME } from '@/lib/workspace-file-drag'
@@ -85,6 +87,7 @@ export const UncommittedEntryRow = React.memo(function UncommittedEntryRow({
   // When set, the row is a dirty submodule: clicking toggles lazy expansion instead of opening an uninformative gitlink diff.
   submoduleExpansion?: { isExpanded: boolean; onToggle: () => void }
 }): React.JSX.Element {
+  const revealFlashing = useSourceControlRowRevealFlash(entryKey)
   const FileIcon = getFileTypeIcon(entry.path)
   const fileName = basename(entry.path)
   const parentDir = dirname(entry.path)
@@ -125,7 +128,8 @@ export const UncommittedEntryRow = React.memo(function UncommittedEntryRow({
         className={cn(
           'group relative flex cursor-pointer items-center gap-1 pr-3 py-1 transition-colors',
           isOpenFile ? 'bg-accent hover:bg-accent' : 'hover:bg-accent/40',
-          !isOpenFile && selected && 'bg-accent/60'
+          !isOpenFile && selected && 'bg-accent/60',
+          revealFlashing && REVEAL_FLASH_CLASS
         )}
         style={{
           paddingLeft: `${depth * SOURCE_CONTROL_TREE_INDENT_PX + SOURCE_CONTROL_TREE_FILE_PADDING_PX}px`

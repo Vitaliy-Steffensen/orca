@@ -25,6 +25,8 @@ export function CombinedDiffFileTreeRows({
   collapsedDirectoryKeys,
   visibleFileCounts,
   scrollElement,
+  flashRowKey,
+  scrollToRowKey,
   onToggleDirectory,
   onNavigate
 }: {
@@ -37,6 +39,8 @@ export function CombinedDiffFileTreeRows({
   collapsedDirectoryKeys: ReadonlySet<string>
   visibleFileCounts: ReadonlyMap<string, number> | undefined
   scrollElement: HTMLDivElement | null
+  flashRowKey: string | null
+  scrollToRowKey: string | null
   onToggleDirectory: (key: string) => void
   onNavigate: (entry: CombinedDiffFileTreeEntry) => void
 }): React.JSX.Element {
@@ -46,6 +50,7 @@ export function CombinedDiffFileTreeRows({
       scrollElement={scrollElement}
       estimateRowHeightPx={COMBINED_DIFF_TREE_ROW_HEIGHT_PX}
       getRowKey={(node) => node.key}
+      scrollToRowKey={scrollToRowKey}
       renderRow={(node) => (
         <CombinedDiffFileTreeRow
           key={node.key}
@@ -56,6 +61,7 @@ export function CombinedDiffFileTreeRows({
           activeSectionKey={activeSectionKey}
           sectionIndexByKey={sectionIndexByKey}
           isCollapsed={collapsedDirectoryKeys.has(node.key)}
+          isFlashing={node.key === flashRowKey}
           visibleFileCount={visibleFileCounts?.get(node.key)}
           onToggleDirectory={onToggleDirectory}
           onNavigate={onNavigate}

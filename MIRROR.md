@@ -12,13 +12,17 @@ tree whole is deterministic: the result is exactly the tree his `fork verify` ch
 
 One commit, five lines, four files — the release channel:
 
-| File | Line |
-| --- | --- |
-| `config/electron-builder.config.cjs` | `ORCA_PUBLISH_OWNER ?? 'Vitaliy-Steffensen'` |
-| `src/main/updater/updater-manual-install.ts` | `FORK_REPO_URL` |
-| `src/main/updater/fork-install/fork-self-install.ts` | `FORK_REPO_URL` |
-| `config/scripts/fork-disable-upstream-pr-workflows.mjs` | `REPO` |
-| `.github/workflows/fork-verify.yml` | the owner grep in "Update channel survived" |
+| File                                                    | Line                                         |
+| ------------------------------------------------------- | -------------------------------------------- |
+| `config/electron-builder.config.cjs`                    | `ORCA_PUBLISH_OWNER ?? 'Vitaliy-Steffensen'` |
+| `src/main/updater/updater-manual-install.ts`            | `FORK_REPO_URL`                              |
+| `src/main/updater/fork-install/fork-self-install.ts`    | `FORK_REPO_URL`                              |
+| `config/scripts/fork-disable-upstream-pr-workflows.mjs` | `REPO`                                       |
+| `.github/workflows/fork-verify.yml`                     | the owner grep in "Update channel survived"  |
+
+Plus three documentation files this repo owns outright, which a mirror must not drop:
+[`MIRROR.md`](./MIRROR.md), [`CUSTOM-FEATURES.md`](./CUSTOM-FEATURES.md) and the custom-feature rule
+at the top of [`CLAUDE.md`](./CLAUDE.md) (with its one-line pointer in `AGENTS.md`).
 
 Both `FORK_REPO_URL` constants are runtime fallbacks, not build-time config: a packaged app has no
 `ORCA_RELEASES_REPO_URL` in its environment, so these are what `armForkUpdateChannel()` falls back
@@ -42,6 +46,10 @@ git cherry-pick <the release-channel commit>
 
 A conflict in the cherry-pick means Frederik touched one of those five lines — the only case that
 needs a human. Then run [Verify](./FORK.md#verify) and fast-forward `main` to the branch head.
+
+**Fold Frederik's new features into the skim list.** `grep -n '^### [0-9]' FORK.md` must have one
+section per numbered line in the "Inherited from `frbarbre/orca`" list of
+[`CUSTOM-FEATURES.md`](./CUSTOM-FEATURES.md); a sync that adds `### 58` adds a line there too.
 
 `main` here is permanently diverged from `origin/main` as GitHub sees it, so the push is
 `git push --force-with-lease=refs/heads/main:<old sha> origin HEAD:main`.

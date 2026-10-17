@@ -13,6 +13,7 @@ import { getSourceControlDirectoryActionPaths } from './directory-action-paths'
 import { SourceControlTreeDirectoryRow } from './tree-directory-rows'
 import { SubmodulePlaceholderRow } from './submodule-placeholder-row'
 import { UncommittedEntryRow } from './uncommitted-entry-row'
+import { useSourceControlRowRevealRequestId } from '@/lib/source-control-row-reveal'
 import { VirtualizedList } from '../../../virtualized-list'
 
 export function SourceControlSectionFileList({
@@ -76,12 +77,14 @@ export function SourceControlSectionFileList({
   reviewThreadCountByPath: Map<string, number>
   pendingReviewCountByPath: Map<string, number>
 }): React.JSX.Element {
+  const revealRequestId = useSourceControlRowRevealRequestId(activeOpenRowKey)
   return sourceControlViewMode === 'tree' ? (
     <VirtualizedList
       rows={treeRows}
       scrollElement={fileListScrollElement}
       getRowKey={(node) => node.key}
       scrollToRowKey={activeOpenRowKey}
+      scrollToRowRequestId={revealRequestId}
       renderRow={(node) => {
         if (node.type === 'submodule-placeholder') {
           return (
@@ -150,6 +153,7 @@ export function SourceControlSectionFileList({
         row.type === 'submodule-placeholder' ? row.key : `${row.entry.area}::${row.entry.path}`
       }
       scrollToRowKey={activeOpenRowKey}
+      scrollToRowRequestId={revealRequestId}
       renderRow={(row) => {
         if (row.type === 'submodule-placeholder') {
           return (

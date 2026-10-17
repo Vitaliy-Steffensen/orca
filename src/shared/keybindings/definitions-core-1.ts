@@ -203,6 +203,14 @@ export const KEYBINDING_DEFINITION_CORE_1: readonly KeybindingDefinition[] = [
     defaultBindings: platformBindings(['Mod+Shift+E'])
   },
   {
+    id: 'view.revealActiveFile',
+    title: 'Reveal Active File in Tree',
+    group: 'Global',
+    scope: 'global',
+    searchKeywords: ['shortcut', 'reveal', 'explorer', 'file tree', 'locate', 'current file'],
+    defaultBindings: platformBindings(['Mod+Shift+H'])
+  },
+  {
     id: 'sidebar.search.toggle',
     title: 'Show Search',
     group: 'Global',
