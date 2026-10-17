@@ -1,10 +1,12 @@
-import { Suspense } from 'react'
+import { Suspense, useRef } from 'react'
 import { lazyWithRetry as lazy } from '@/lib/lazy-with-retry'
 import type { ActiveRightSidebarTab } from '@/store/slices/editor'
 import { isPluginPanelTabKey } from '../../../../shared/plugins/plugin-manifest'
+import { useRightSidebarFindKeys } from './file-find/use-right-sidebar-find-keys'
 
 const FileExplorer = lazy(() => import('./FileExplorer'))
 const SourceControl = lazy(() => import('./SourceControl'))
+const PrDiffViewer = lazy(() => import('./PrDiffViewer'))
 const ChecksPanel = lazy(() => import('./ChecksPanel'))
 const PortsPanel = lazy(() => import('./PortsPanel'))
 const AiVaultPanel = lazy(() => import('./AiVaultPanel'))
@@ -21,11 +23,14 @@ export function RightSidebarPanelContent({
   effectiveTab,
   rightSidebarOpen
 }: RightSidebarPanelContentProps): React.JSX.Element {
+  const rootRef = useRef<HTMLDivElement | null>(null)
+  useRightSidebarFindKeys(rootRef)
   return (
-    <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
+    <div ref={rootRef} className="flex min-h-0 flex-1 flex-col overflow-hidden">
       <Suspense fallback={null}>
         {effectiveTab === 'explorer' && <FileExplorer />}
         {effectiveTab === 'source-control' && <SourceControl />}
+        {effectiveTab === 'pr-diff' && <PrDiffViewer />}
         {effectiveTab === 'checks' && <ChecksPanel />}
         {/* Why: SSH port forwarding still depends on the raw ports.detect data,
             which the workspace-scoped status bar popover intentionally does not

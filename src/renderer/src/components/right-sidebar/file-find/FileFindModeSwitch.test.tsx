@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from 'vitest'
-import { FileExplorerViewSwitch } from './FileExplorerViewSwitch'
-import { visit, type ReactElementLike } from './file-explorer-element-tree-test-harness'
+import { FileFindModeSwitch } from './FileFindModeSwitch'
+import { visit, type ReactElementLike } from '../file-explorer-element-tree-test-harness'
 
 function findElementByAriaLabel(node: unknown, ariaLabel: string): ReactElementLike {
   let found: ReactElementLike | null = null
@@ -15,33 +15,31 @@ function findElementByAriaLabel(node: unknown, ariaLabel: string): ReactElementL
   return found
 }
 
-describe('FileExplorerViewSwitch', () => {
-  it('switches between files and search views', () => {
-    const onSelectView = vi.fn()
-    const element = FileExplorerViewSwitch({
-      view: 'files',
-      onSelectView
-    })
+describe('FileFindModeSwitch', () => {
+  it('switches between names and contents modes', () => {
+    const onSelectMode = vi.fn()
+    const element = FileFindModeSwitch({ mode: 'names', onSelectMode })
 
     const switchRoot = findElementByAriaLabel(element, 'Explorer search mode')
-    ;(switchRoot.props.onValueChange as (value: string) => void)('search')
+    const onValueChange = switchRoot.props.onValueChange
+    if (typeof onValueChange !== 'function') {
+      throw new Error('mode switch is missing its value handler')
+    }
+    onValueChange('contents')
 
-    expect(onSelectView).toHaveBeenCalledWith('search')
+    expect(onSelectMode).toHaveBeenCalledWith('contents')
   })
 
   it('renders names and contents labels', () => {
-    const element = FileExplorerViewSwitch({
-      view: 'search',
-      onSelectView: vi.fn()
-    })
+    const element = FileFindModeSwitch({ mode: 'contents', onSelectMode: vi.fn() })
 
     const contentsTab = findElementByAriaLabel(element, 'Search file contents')
     const namesTab = findElementByAriaLabel(element, 'Filter files by name')
     const switchRoot = findElementByAriaLabel(element, 'Explorer search mode')
 
-    expect(switchRoot.props.value).toBe('search')
-    expect(contentsTab.props.value).toBe('search')
-    expect(namesTab.props.value).toBe('files')
+    expect(switchRoot.props.value).toBe('contents')
+    expect(contentsTab.props.value).toBe('contents')
+    expect(namesTab.props.value).toBe('names')
     expect(JSON.stringify(contentsTab.props.children)).toContain('Contents')
     expect(JSON.stringify(namesTab.props.children)).toContain('Names')
   })

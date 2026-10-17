@@ -12,6 +12,7 @@ import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip
 import { WorktreeOpenInMenuItems } from '@/components/sidebar/WorktreeOpenInMenu'
 import { translate } from '@/i18n/i18n'
 import { cn } from '@/lib/utils'
+import { FileFindToggle } from './file-find/FileFindToggle'
 
 type FileExplorerToolbarProps = {
   repoName: string
@@ -32,6 +33,7 @@ type FileExplorerToolbarProps = {
   onToggleGitIgnoredFiles: () => void
   showDotfiles: boolean
   onToggleDotfiles: () => void
+  find: { expand: () => void; hasQuery: boolean }
 }
 
 /** Shares repository actions across explorer views. */
@@ -49,7 +51,8 @@ export function FileExplorerToolbar({
   showGitIgnoredFiles,
   onToggleGitIgnoredFiles,
   showDotfiles,
-  onToggleDotfiles
+  onToggleDotfiles,
+  find
 }: FileExplorerToolbarProps): React.JSX.Element {
   return (
     <div className="flex h-8 min-h-8 items-center gap-2 border-b border-border px-2">
@@ -59,6 +62,15 @@ export function FileExplorerToolbar({
       >
         {repoName}
       </span>
+      <FileFindToggle
+        onExpand={find.expand}
+        hasQuery={find.hasQuery}
+        label={translate(
+          'auto.components.right.sidebar.FileExplorerNameFilter.26fb73c6e3',
+          'Find files'
+        )}
+        testId="file-explorer-find-toggle"
+      />
       <Tooltip>
         <TooltipTrigger asChild>
           <Button

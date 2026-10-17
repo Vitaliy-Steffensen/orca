@@ -10,7 +10,7 @@ import type {
 } from '../../../../shared/code-search-types'
 import { buildSearchRows } from './search-rows'
 import { cancelRevealFrame, openMatchResult } from './search-match-open'
-import type { SearchQueryRowProps } from './SearchQueryRow'
+import type { ContentSearchFieldProps } from './file-find/ContentSearchToggles'
 import type { SearchFiltersProps } from './SearchFilters'
 import { useFileSearchRunner } from './useFileSearchRunner'
 
@@ -18,7 +18,7 @@ const EMPTY_COLLAPSED_FILES = new Set<string>()
 
 export type FileSearchPanelModel = {
   activeWorktreeId: string | null
-  queryRowProps: SearchQueryRowProps
+  queryRowProps: ContentSearchFieldProps
   filtersProps: SearchFiltersProps
   resultsProps: {
     results: SearchResult | null
@@ -223,10 +223,9 @@ export function useFileSearchPanel(explorerView: 'files' | 'search'): FileSearch
   }, [executeSearch, activeWorktreeId])
 
   const handleQueryChange = useCallback(
-    (e: React.ChangeEvent<HTMLInputElement>) => {
-      const val = e.target.value
-      updateActiveSearchState({ query: val })
-      executeSearch(val)
+    (value: string) => {
+      updateActiveSearchState({ query: value })
+      executeSearch(value)
     },
     [updateActiveSearchState, executeSearch]
   )

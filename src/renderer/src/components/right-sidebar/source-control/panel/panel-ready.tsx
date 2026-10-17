@@ -2,6 +2,9 @@ import { useEffect } from 'react'
 import { syncLatestAgentTurn } from '@/lib/changes-filter'
 import { BulkActionBar } from '../commit/bulk-action-bar'
 import { SourceControlHeaderToolbar } from './header-toolbar'
+import { FileFindBar } from '../../file-find/FileFindBar'
+import { translate } from '@/i18n/i18n'
+import { useAppStore } from '@/store'
 import { SourceControlPendingReviewShelf } from '../pending-review/pending-review-shelf'
 import { SourceControlPendingCommentsSection } from '../pending-review/pending-comments-section'
 import { AgentNotesShelf } from '../notes/agent-notes-shelf'
@@ -24,6 +27,7 @@ import {
 /** The panel chrome: toolbar, review and agent-notes shelves, the file surface, bulk bar and dialogs. */
 export function SourceControlPanelReady(props: SourceControlPanelReadyProps) {
   const { model, worktreePath } = props
+  const findFocusRequestId = useAppStore((s) => s.rightSidebarFindFocusRequestId)
   const pendingReviewQueue = usePendingReviewQueue(props.model.activeWorktreeId ?? null)
   const submitReviewVerdict = useSubmitReviewVerdict(
     props.model.activeWorktreeId ?? null,
@@ -166,7 +170,6 @@ export function SourceControlPanelReady(props: SourceControlPanelReadyProps) {
         <SourceControlHeaderToolbar
           filterQuery={filterQuery}
           filterExpanded={filterExpanded}
-          onFilterQueryChange={setFilterQuery}
           onFilterExpandedChange={setFilterExpanded}
           // Fork: PRs are opened by the agent or the CLI, so the header offers no Create PR.
           visibleCreatePrHeaderAction={null}
@@ -192,6 +195,26 @@ export function SourceControlPanelReady(props: SourceControlPanelReadyProps) {
           compareBaseRef={compareBaseRef}
           headDisplay={gitIdentityDisplay}
           manualReviewUrl={manualReviewUrl}
+        />
+
+        <FileFindBar
+          expanded={filterExpanded}
+          onExpandedChange={setFilterExpanded}
+          mode="names"
+          onModeChange={() => undefined}
+          query={filterQuery}
+          onQueryChange={setFilterQuery}
+          onClear={() => setFilterQuery('')}
+          focusRequestId={findFocusRequestId}
+          placeholder={translate(
+            'auto.components.right.sidebar.SourceControl.c35baf2f1e',
+            'Filter files…'
+          )}
+          ariaLabel={translate(
+            'auto.components.right.sidebar.SourceControl.c35baf2f1e',
+            'Filter files…'
+          )}
+          testId="source-control-filter-input"
         />
 
         <SourceControlStackedSections

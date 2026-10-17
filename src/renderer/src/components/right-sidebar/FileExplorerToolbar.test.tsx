@@ -171,6 +171,7 @@ function makeToolbar(overrides: Partial<Parameters<typeof FileExplorerToolbar>[0
     showGitIgnoredFiles: true,
     onToggleGitIgnoredFiles: vi.fn(),
     showDotfiles: true,
+    find: { expand: () => undefined, hasQuery: false },
     onToggleDotfiles: vi.fn(),
     ...overrides
   })

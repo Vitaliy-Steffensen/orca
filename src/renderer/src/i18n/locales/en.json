@@ -13834,7 +13834,8 @@
             "fc3095d2ed": "explorer",
             "aiVaultSessionHistory": "Agents",
             "folderWorkspaces": "Attached worktrees",
-            "parentPrChecks": "PR Checks"
+            "parentPrChecks": "PR Checks",
+            "prDiffViewer": "PR Diff Viewer"
           },
           "right": {
             "panel": {
@@ -20188,6 +20189,12 @@
     "none": "No comments are queued.",
     "send": "Send {{count}} queued comments",
     "badge": "{{count}} queued"
+  },
+  "prDiff": {
+    "noWorkspace": "Select a workspace to see its changed files.",
+    "folderWorkspace": "Changed files are only available for Git repositories.",
+    "noMatchingFiles": "No changed files match the filter.",
+    "noChanges": "No changes against the base branch."
   },
   "allChanges": {
     "lineTotal": "{{added}} lines added, {{removed}} lines deleted in the listed files",

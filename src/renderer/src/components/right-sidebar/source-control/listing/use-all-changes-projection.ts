@@ -29,7 +29,8 @@ export function useAllChangesProjection({
   filteredGrouped,
   filteredBranchEntries,
   sourceControlViewMode,
-  collapsedTreeDirs
+  collapsedTreeDirs,
+  forceEnabled = false
 }: {
   activeWorktreeId: string | null
   sourceControlGrouping: 'all' | 'status'
@@ -40,8 +41,10 @@ export function useAllChangesProjection({
   filteredBranchEntries: readonly GitBranchChangeEntry[]
   sourceControlViewMode: SourceControlViewMode
   collapsedTreeDirs: ReadonlySet<string>
+  /** The PR diff viewer is definitionally all-changes, so the grouping preference cannot blank it. */
+  forceEnabled?: boolean
 }) {
-  const enabled = sourceControlGrouping === 'all'
+  const enabled = forceEnabled || sourceControlGrouping === 'all'
   // Why the merge-base check: a total can outlive the fork point it measured, like the branch chip's.
   const lineCounts = useAppStore((s) => {
     const total = activeWorktreeId ? s.gitBranchLineTotalByWorktree?.[activeWorktreeId] : undefined
