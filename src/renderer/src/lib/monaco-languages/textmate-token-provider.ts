@@ -9,8 +9,11 @@ import {
 
 type TextMateTokensProvider = Monaco.languages.TokensProvider
 
-/** A vendored grammar, named by its Monaco language id. */
-export type TextMateGrammarLoader = () => Promise<LanguageRegistration>
+/**
+ * A grammar, named by its Monaco language id. An array carries the grammars a
+ * language embeds (Shiki orders dependencies first, the language itself last).
+ */
+export type TextMateGrammarLoader = () => Promise<LanguageRegistration | LanguageRegistration[]>
 
 export type TextMateTokensProviderOptions = {
   loadGrammar: TextMateGrammarLoader
@@ -88,11 +91,22 @@ function createTokensProvider(
 export async function createTextMateTokensProvider(
   options: TextMateTokensProviderOptions
 ): Promise<TextMateTokensProvider> {
-  const [editorCore, registration] = await Promise.all([loadEditorCore(), options.loadGrammar()])
-  await editorCore.core.loadLanguage(registration)
+  const [editorCore, loaded] = await Promise.all([loadEditorCore(), options.loadGrammar()])
+  const registrations = Array.isArray(loaded) ? loaded : [loaded]
+  const language = registrations.at(-1)
+  if (!language) {
+    throw new Error('TextMate grammar loader resolved to no grammars')
+  }
+  // Why: one registry per owner, so a grammar an earlier language already pulled in as an
+  // embedded dependency is present under the same scope name and must not be loaded twice.
+  const alreadyLoaded = new Set(editorCore.core.getLoadedLanguages())
+  const missing = registrations.filter((registration) => !alreadyLoaded.has(registration.name))
+  if (missing.length > 0) {
+    await editorCore.core.loadLanguage(...missing)
+  }
   return createTokensProvider(
     editorCore,
-    editorCore.core.getLanguage(registration.name),
-    registration.scopeName
+    editorCore.core.getLanguage(language.name),
+    language.scopeName
   )
 }

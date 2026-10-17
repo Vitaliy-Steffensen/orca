@@ -14,6 +14,10 @@ import type {
 } from '../resolve-changes/combined-diff-section-identity'
 import { CombinedDiffFileTreeRows } from './combined-diff-file-tree-rows'
 import { useCombinedDiffFileTreeResize } from './use-combined-diff-file-tree-resize'
+import {
+  useCombinedDiffTreeReveal,
+  type CombinedDiffTreeRevealRequest
+} from './use-combined-diff-tree-reveal'
 import { translate } from '@/i18n/i18n'
 import {
   buildCombinedDiffBranchTreeRoots,
@@ -42,6 +46,7 @@ export function CombinedDiffFileTree({
   activeSectionKey,
   viewedSectionKeys,
   collapsed,
+  revealRequest = null,
   onCollapsedChange,
   onNavigate
 }: {
@@ -53,6 +58,8 @@ export function CombinedDiffFileTree({
   activeSectionKey: string | null
   viewedSectionKeys: ReadonlySet<string>
   collapsed: boolean
+  /** Absent for the read-only PR viewers, which have no app shortcut to reveal from. */
+  revealRequest?: CombinedDiffTreeRevealRequest | null
   onCollapsedChange: (collapsed: boolean) => void
   onNavigate: (entry: CombinedDiffFileTreeEntry) => void
 }): React.JSX.Element | null {
@@ -131,6 +138,27 @@ export function CombinedDiffFileTree({
         : EMPTY_TREE_ROOTS,
     [collapsed, mode, structurallyFilteredEntries]
   )
+  const revealRoots = React.useMemo(
+    () => [...uncommittedTreeGroups.flatMap((group) => group.roots), ...branchTreeRoots],
+    [branchTreeRoots, uncommittedTreeGroups]
+  )
+  const reveal = useCombinedDiffTreeReveal({
+    mode,
+    request: revealRequest,
+    roots: revealRoots,
+    onExpandAncestors: React.useCallback((ancestorKeys: readonly string[]) => {
+      setCollapsedDirectoryKeys((prev) => {
+        if (!ancestorKeys.some((key) => prev.has(key))) {
+          return prev
+        }
+        const next = new Set(prev)
+        for (const key of ancestorKeys) {
+          next.delete(key)
+        }
+        return next
+      })
+    }, [])
+  })
   // Why: the viewed overlay below replaces these rows entirely when viewed files are hidden, so
   // flattening the unfiltered tree there is pure dead work.
   const uncommittedRowsByArea = React.useMemo(() => {
@@ -207,6 +235,9 @@ export function CombinedDiffFileTree({
     sectionIndexByKey,
     collapsedDirectoryKeys,
     scrollElement: listScrollElement,
+    flashRowKey: reveal.flashRowKey,
+    // Why unscoped: a list that does not hold the key resolves it to index -1 and returns.
+    scrollToRowKey: reveal.scrollToRowKey,
     onToggleDirectory: toggleDirectory,
     onNavigate
   }

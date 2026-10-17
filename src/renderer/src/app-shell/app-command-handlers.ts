@@ -17,6 +17,7 @@ import {
   deleteHoveredWorkspaceImmediately,
   resolveHoveredWorkspaceDeleteTarget
 } from '../components/sidebar/hovered-workspace-delete'
+import { takeRevealActiveFileShortcut } from './reveal-active-file-shortcut'
 import { useAppStore } from '../store'
 import type { usePluginCommands } from '@/store/plugin-panels'
 import { isGitRepoKind } from '../../../shared/repo-kind'
@@ -291,6 +292,7 @@ export function createAppCommandHandlers(
         return claim('view.tasks', () => store.openTaskPage())
       }
     ],
+    ['view.revealActiveFile', () => takeRevealActiveFileShortcut(claim, canRevealRightSidebar)],
     [
       'sidebar.right.toggle',
       () =>

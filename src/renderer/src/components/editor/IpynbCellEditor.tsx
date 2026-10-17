@@ -14,6 +14,7 @@ import type { IpynbCell } from './ipynb-parse'
 import { MarkdownPreviewBody } from './MarkdownPreviewBody'
 import { useMonacoColorizedLines } from './MonacoCodeExcerpt'
 import { useDocumentDarkTheme } from '@/hooks/use-document-dark-theme'
+import { useEditorThemeName } from '@/hooks/use-editor-theme-name'
 
 const NO_MARKDOWN_COMPONENTS: Components = {}
 // Box metrics the preview and the live editor share, so activating a cell never shifts it.
@@ -152,6 +153,7 @@ function IpynbSourceEditor({
   const settings = useAppStore((s) => s.settings)
   const editorFontZoomLevel = useAppStore((s) => s.editorFontZoomLevel)
   const isDark = useDocumentDarkTheme()
+  const themeName = useEditorThemeName(isDark)
   const fontFamily = resolveEditorFontStack(settings)
   const fontSize = computeEditorFontSize(settings?.terminalFontSize ?? 13, editorFontZoomLevel)
   const containerRef = useRef<HTMLDivElement>(null)
@@ -165,8 +167,8 @@ function IpynbSourceEditor({
   }, [onChange, onDeactivate])
 
   useLayoutEffect(() => {
-    monaco.editor.setTheme(isDark ? 'vs-dark' : 'vs')
-  }, [isDark])
+    monaco.editor.setTheme(themeName)
+  }, [themeName])
 
   // Why: created synchronously before paint (not via @monaco-editor/react's async loader), so the
   // swap from the preview never shows a placeholder, an unlaid-out editor or a guessed caret.

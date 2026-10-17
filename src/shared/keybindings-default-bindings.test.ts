@@ -466,4 +466,31 @@ describe('keybindings', () => {
     expect(keybindingMatchesAction('browser.annotateElement', ctrlShiftC, platform)).toBe(false)
     expect(keybindingMatchesAction('browser.annotateElement', altShiftN, platform)).toBe(true)
   })
+
+  it('gives reveal-active-file Mod+Shift+H on every platform', () => {
+    const definition = getKeybindingDefinition('view.revealActiveFile')
+    expect(definition?.title).toBe('Reveal Active File in Tree')
+    expect(definition?.group).toBe('Global')
+    expect(definition?.scope).toBe('global')
+
+    for (const platform of ['darwin', 'linux', 'win32'] as const) {
+      expect(getEffectiveKeybindingsForAction('view.revealActiveFile', platform)).toEqual([
+        'Mod+Shift+H'
+      ])
+      expect(
+        keybindingMatchesAction(
+          'view.revealActiveFile',
+          {
+            key: 'h',
+            code: 'KeyH',
+            meta: platform === 'darwin',
+            control: platform !== 'darwin',
+            alt: false,
+            shift: true
+          },
+          platform
+        )
+      ).toBe(true)
+    }
+  })
 })

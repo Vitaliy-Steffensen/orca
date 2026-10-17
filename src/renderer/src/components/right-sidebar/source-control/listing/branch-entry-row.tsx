@@ -1,6 +1,8 @@
-import { cn } from '@/lib/utils'
 import React from 'react'
 import { MessageSquare, MessagesSquare, PencilLine } from 'lucide-react'
+import { cn } from '@/lib/utils'
+import { REVEAL_FLASH_CLASS } from '@/lib/reveal-flash-class'
+import { useSourceControlRowRevealFlash } from '@/lib/source-control-row-reveal'
 import { getFileTypeIcon } from '@/lib/file-type-icons'
 import { basename, dirname, joinPath } from '@/lib/path'
 import { WORKSPACE_FILE_PATH_MIME } from '@/lib/workspace-file-drag'
@@ -16,6 +18,7 @@ import { STATUS_COLORS, STATUS_LABELS } from '../../status-display'
 
 export function BranchEntryRow({
   entry,
+  rowKey,
   currentWorktreeId,
   worktreePath,
   depth = 0,
@@ -29,6 +32,7 @@ export function BranchEntryRow({
   showPathHint = true
 }: {
   entry: GitBranchChangeEntry
+  rowKey: string
   currentWorktreeId: string
   worktreePath: string
   depth?: number
@@ -41,6 +45,7 @@ export function BranchEntryRow({
   isOpenFile?: boolean
   showPathHint?: boolean
 }): React.JSX.Element {
+  const revealFlashing = useSourceControlRowRevealFlash(rowKey)
   const FileIcon = getFileTypeIcon(entry.path)
   const fileName = basename(entry.path)
   const parentDir = dirname(entry.path)
@@ -59,10 +64,12 @@ export function BranchEntryRow({
       <div
         // Why: mirrors the uncommitted row so the open file reads the same whether it came from the
         // working tree or the branch comparison.
+        data-source-control-path={entry.path}
         data-current={isOpenFile ? 'true' : undefined}
         className={cn(
           'group flex cursor-pointer items-center gap-1 pr-3 py-1 transition-colors',
-          isOpenFile ? 'bg-accent hover:bg-accent' : 'hover:bg-accent/40'
+          isOpenFile ? 'bg-accent hover:bg-accent' : 'hover:bg-accent/40',
+          revealFlashing && REVEAL_FLASH_CLASS
         )}
         style={{
           paddingLeft: `${depth * SOURCE_CONTROL_TREE_INDENT_PX + SOURCE_CONTROL_TREE_FILE_PADDING_PX}px`

@@ -8,6 +8,7 @@ import { isCombinedDiffSectionViewed } from './combined-diff-file-tree-filter'
 
 export type CombinedDiffTreeNavigation = {
   activeTreeSectionKey: string | null
+  setActiveTreeSectionKey: (key: string) => void
   handleTreeNavigate: (entry: GitStatusEntry | GitBranchChangeEntry) => void
   sectionIndexByKey: ReadonlyMap<string, number>
   sectionIndexByKeyRef: React.RefObject<ReadonlyMap<string, number>>
@@ -108,6 +109,10 @@ export function useCombinedDiffTreeNavigation({
     viewedSectionCacheRef.current = { entrySignature, sections, keys }
     return keys
   }, [entrySignature, sections])
+  const setActiveTreeSectionKey = useCallback(
+    (key: string) => setActiveTreeSectionState({ entrySignature, key }),
+    [entrySignature]
+  )
   const handleTreeNavigate = useCallback(
     (entry: GitStatusEntry | GitBranchChangeEntry) => {
       markDirectScrollInput()
@@ -141,6 +146,7 @@ export function useCombinedDiffTreeNavigation({
 
   return {
     activeTreeSectionKey,
+    setActiveTreeSectionKey,
     handleTreeNavigate,
     sectionIndexByKey,
     sectionIndexByKeyRef,

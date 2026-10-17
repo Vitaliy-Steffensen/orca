@@ -5,6 +5,7 @@ import {
   LANGUAGE_SERVERS,
   type LanguageServerLanguage
 } from '../../../shared/language-server'
+import { forgetLanguageServerFailures } from './language-server-failure-toast'
 
 export type RestartLanguageServersDeps = {
   stop: (args: { language: LanguageServerLanguage }) => Promise<void>
@@ -31,6 +32,7 @@ export async function restartLanguageServers(
   languages: readonly LanguageServerLanguage[] = LANGUAGE_SERVER_LANGUAGES,
   deps: RestartLanguageServersDeps = defaultDeps
 ): Promise<void> {
+  forgetLanguageServerFailures(languages)
   const results = await Promise.allSettled(languages.map((language) => deps.stop({ language })))
   if (results.some((result) => result.status === 'rejected')) {
     deps.notify.error(

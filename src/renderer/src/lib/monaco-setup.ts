@@ -9,6 +9,7 @@ import cssWorker from 'monaco-editor/esm/vs/language/css/css.worker?worker'
 import htmlWorker from 'monaco-editor/esm/vs/language/html/html.worker?worker'
 import tsWorker from 'monaco-editor/esm/vs/language/typescript/ts.worker?worker'
 import { registerAstroLanguage } from './monaco-languages/register-astro'
+import { registerBuiltinTextMateTokenization } from './monaco-languages/register-builtin-textmate-tokenization'
 import { registerJsonlLanguage } from './monaco-languages/register-jsonl'
 import { registerNimLanguage } from './monaco-languages/register-nim'
 import { registerQuartoLanguage } from './monaco-languages/register-quarto'
@@ -90,6 +91,9 @@ runMonacoSetupSteps([
   ['JSONL language registration', () => registerJsonlLanguage(monaco)],
   ['Quarto language registration', () => registerQuartoLanguage(monaco)],
   ['shell Markdown alias registration', () => registerShellMarkdownAliases(monaco)],
+  // Why last of the language steps: it replaces the tokens-provider factory Monaco's own
+  // basic-languages registered, so it has to run after those contributions are in place.
+  ['built-in TextMate tokenization', () => registerBuiltinTextMateTokenization(monaco)],
   ['delayer cancellation guard', installMonacoDelayerCancellationGuard],
   ['diff editor disposal guard', () => installMonacoDiffEditorDisposalGuard(monaco)],
   ['peek references preview options', installMonacoPeekReferencesPreviewOptions],

@@ -112,7 +112,8 @@ export function VirtualizedList<TRow>({
   estimateRowHeightPx = VIRTUALIZED_LIST_ROW_HEIGHT_PX,
   announceListPosition = false,
   hasUnloadedRows,
-  scrollToRowKey
+  scrollToRowKey,
+  scrollToRowRequestId
 }: {
   rows: readonly TRow[]
   getRowKey: (row: TRow) => string
@@ -136,6 +137,9 @@ export function VirtualizedList<TRow>({
   // it itself. Naming the row lets the virtualizer scroll by index instead. Below the windowing
   // threshold every row is mounted and the caller scrolls it directly, so this is ignored there.
   scrollToRowKey?: string | null
+  // Why: the latch below is per row, so a caller asking for the row that is already current — the
+  // reveal shortcut, after the user scrolled away from it — would otherwise be ignored.
+  scrollToRowRequestId?: number
 }): React.JSX.Element {
   const containerRef = useRef<HTMLDivElement>(null)
   // Why a separate ref: below the windowing threshold there is no positioned container, but scrolling
@@ -195,12 +199,13 @@ export function VirtualizedList<TRow>({
   // has scrolled away from a row that is still the active one.
   const lastScrolledRowKeyRef = useRef<string | null>(null)
   const lastFlowScrolledRowKeyRef = useRef<string | null>(null)
+  const scrollLatchKey = `${scrollToRowKey}:${scrollToRowRequestId ?? ''}`
   useEffect(() => {
     if (!virtualize || !scrollElement || !scrollToRowKey) {
       lastScrolledRowKeyRef.current = null
       return
     }
-    if (lastScrolledRowKeyRef.current === scrollToRowKey) {
+    if (lastScrolledRowKeyRef.current === scrollLatchKey) {
       return
     }
     if (!scrollMarginMeasuredRef.current) {
@@ -224,7 +229,7 @@ export function VirtualizedList<TRow>({
       frame = requestAnimationFrame(() => {
         const rendered = containerRef.current?.querySelector(`[data-index="${index}"]`)
         if (rendered instanceof HTMLElement) {
-          lastScrolledRowKeyRef.current = scrollToRowKey
+          lastScrolledRowKeyRef.current = scrollLatchKey
           alignRowWithinScrollPadding(scrollElement, rendered)
           return
         }
@@ -235,7 +240,16 @@ export function VirtualizedList<TRow>({
     }
     scrollAndVerify()
     return () => cancelAnimationFrame(frame)
-  }, [getRowKey, rows, scrollElement, scrollMargin, scrollToRowKey, virtualize, virtualizer])
+  }, [
+    getRowKey,
+    rows,
+    scrollElement,
+    scrollLatchKey,
+    scrollMargin,
+    scrollToRowKey,
+    virtualize,
+    virtualizer
+  ])
 
   // Why a second effect rather than a branch in the first: the non-windowed path has every row in the
   // DOM and no virtualizer to ask, and it must resolve the element by key so a row that has not
@@ -245,7 +259,7 @@ export function VirtualizedList<TRow>({
       lastFlowScrolledRowKeyRef.current = null
       return
     }
-    if (lastFlowScrolledRowKeyRef.current === scrollToRowKey) {
+    if (lastFlowScrolledRowKeyRef.current === scrollLatchKey) {
       return
     }
     const index = rows.findIndex((row) => getRowKey(row) === scrollToRowKey)
@@ -257,12 +271,12 @@ export function VirtualizedList<TRow>({
     if (!(element instanceof HTMLElement)) {
       return
     }
-    lastFlowScrolledRowKeyRef.current = scrollToRowKey
+    lastFlowScrolledRowKeyRef.current = scrollLatchKey
     element.scrollIntoView({ block: 'nearest' })
     if (scrollElement) {
       alignRowWithinScrollPadding(scrollElement, element)
     }
-  }, [getRowKey, rows, scrollElement, scrollToRowKey, virtualize])
+  }, [getRowKey, rows, scrollElement, scrollLatchKey, scrollToRowKey, virtualize])
 
   // Why not the window's count: the window is what AT must not be able to hear.
   const announcedSetSize = hasUnloadedRows ? -1 : rows.length
