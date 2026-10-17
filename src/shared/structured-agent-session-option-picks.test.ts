@@ -127,9 +127,20 @@ describe('structuredAgentSessionOptionPicks', () => {
   it('drops ids a launch cannot seed back', () => {
     expect(
       structuredAgentSessionOptionPicks(liveState({ model: 'account-model' }), {
-        permissionMode: 'plan'
+        thinking: 'on'
       })
     ).toEqual([])
+  })
+
+  it('remembers a permission mode so the next chat launches in it', () => {
+    const picks = structuredAgentSessionOptionPicks(liveState({ model: 'account-model' }), {
+      permissionMode: 'plan'
+    })
+    expect(picks).toEqual([{ modelId: 'account-model', optionId: 'permissionMode', value: 'plan' }])
+    expect(resolveStructuredLaunchSeedOptions(persist(picks), 'codex')).toEqual({
+      model: 'account-model',
+      permissionMode: 'plan'
+    })
   })
 
   it('remembers explicit Fast on and off as booleans and re-encodes the launch seed', () => {

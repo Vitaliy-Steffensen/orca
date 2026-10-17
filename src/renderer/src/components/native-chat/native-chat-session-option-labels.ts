@@ -1,4 +1,5 @@
 import {
+  isDefaultPermissionMode,
   isDefaultServiceTier,
   type SessionOptionDescriptor,
   type SessionOptionDisabledReason,
@@ -14,6 +15,8 @@ export function nativeChatSessionOptionLabel(descriptor: SessionOptionDescriptor
       return translate('components.native-chat.composer.effort', descriptor.label)
     case 'fastMode':
       return translate('components.native-chat.composer.fastMode', 'Fast mode')
+    case 'permissionMode':
+      return translate('components.native-chat.composer.permissionMode', 'Permission mode')
     case 'serviceTier':
       return translate('components.native-chat.composer.speed', 'Speed')
     case 'thinking':
@@ -108,7 +111,11 @@ export function nativeChatOptionsPillLabel(
   const effort = descriptors.find((descriptor) => descriptor.id === 'effort')
   const labels: string[] = []
   for (const descriptor of descriptors) {
-    if (descriptor.valueSource === 'unknown' || isDefaultServiceTier(descriptor)) {
+    if (
+      descriptor.valueSource === 'unknown' ||
+      isDefaultServiceTier(descriptor) ||
+      isDefaultPermissionMode(descriptor)
+    ) {
       continue
     }
     if (descriptor.kind.type === 'select' && descriptor.kind.currentValue) {

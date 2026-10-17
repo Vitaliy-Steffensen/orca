@@ -3,6 +3,7 @@
 // minus i18n — mobile renders plain strings throughout.
 
 import {
+  isDefaultPermissionMode,
   isDefaultServiceTier,
   type SessionOptionDescriptor,
   type SessionOptionDisabledReason,
@@ -59,7 +60,11 @@ export function mobileSessionOptionSummaryValue(descriptor: SessionOptionDescrip
 export function mobileOptionsPillLabel(descriptors: readonly SessionOptionDescriptor[]): string {
   const labels: string[] = []
   for (const descriptor of descriptors) {
-    if (descriptor.valueSource === 'unknown' || isDefaultServiceTier(descriptor)) {
+    if (
+      descriptor.valueSource === 'unknown' ||
+      isDefaultServiceTier(descriptor) ||
+      isDefaultPermissionMode(descriptor)
+    ) {
       continue
     }
     if (descriptor.kind.type === 'select') {

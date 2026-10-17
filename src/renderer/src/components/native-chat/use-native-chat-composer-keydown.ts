@@ -30,6 +30,9 @@ export type UseNativeChatComposerKeyDownArgs = {
   dismissPicker: (triggerKey: string) => void
   interrupt: () => void
   send: () => void
+  /** Shift+Tab: advance the live session's permission mode; false falls through to
+   *  focus traversal. */
+  cyclePermissionMode?: (() => boolean) | undefined
   /** Cmd/Ctrl+Enter from an empty composer: send the newest queued draft now; false falls
    *  through to send. */
   steerQueued?: (() => boolean) | undefined
@@ -52,6 +55,7 @@ export function useNativeChatComposerKeyDown({
   dismissPicker,
   interrupt,
   send,
+  cyclePermissionMode,
   steerQueued,
   setActiveSuggestion,
   setDraft,
@@ -87,7 +91,8 @@ export function useNativeChatComposerKeyDown({
           setActiveSuggestion((index) => (index - 1 + items.length) % items.length)
           return
         }
-        // Shift keeps its own meaning: a newline for Enter, focus back for Tab.
+        // Shift keeps its own meaning here: a newline for Enter, and for Tab the
+        // permission-mode cycle below, or focus traversal where there is none.
         const picks = (event.key === 'Enter' || event.key === 'Tab') && !event.shiftKey
         if (picks && items.length > 0) {
           event.preventDefault()
@@ -116,6 +121,11 @@ export function useNativeChatComposerKeyDown({
           dismissPicker(autocomplete.triggerKey)
           return
         }
+      }
+
+      if (event.key === 'Tab' && event.shiftKey && cyclePermissionMode?.()) {
+        event.preventDefault()
+        return
       }
 
       if (event.key === 'Escape') {
@@ -170,6 +180,7 @@ export function useNativeChatComposerKeyDown({
       autocomplete,
       completeMention,
       completePickerItem,
+      cyclePermissionMode,
       dismissPicker,
       dispatchPickerCommand,
       draft,

@@ -81,7 +81,11 @@ describe('buildNativeChatSessionOptionSnapshot', () => {
       modelLabel: 'Model',
       liveTransport: 'catalog'
     })
-    expect(snapshot.map((descriptor) => descriptor.id)).toEqual(['model', 'effort'])
+    expect(snapshot.map((descriptor) => descriptor.id)).toEqual([
+      'model',
+      'effort',
+      'permissionMode'
+    ])
     expect(snapshot[0]).toMatchObject({ valueSource: 'dispatched' })
   })
 

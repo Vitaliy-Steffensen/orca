@@ -131,7 +131,10 @@ export function applyStructuredAgentSessionOptions(
       ...(result.current.model ? { model: result.current.model } : {}),
       ...(result.current.effort ? { effort: result.current.effort } : {}),
       ...(result.current.fastMode !== undefined ? { fastMode: result.current.fastMode } : {}),
-      ...(result.current.serviceTier ? { serviceTier: result.current.serviceTier } : {})
+      ...(result.current.serviceTier ? { serviceTier: result.current.serviceTier } : {}),
+      // No clear-on-absent sibling above: an older host reports nothing, and dropping
+      // the value there would blank a mode the session really holds.
+      ...(result.current.permissionMode ? { permissionMode: result.current.permissionMode } : {})
     },
     result.current.confirmed ?? []
   )
