@@ -14,7 +14,7 @@ import { nativeChatImageSendBlock } from './native-chat-image-reattach'
 import { useNativeChatComposerHandle } from './use-native-chat-composer-handle'
 import { useNativeChatFileDrops } from './use-native-chat-file-drops'
 import { useNativeChatComposerKeyDown } from './use-native-chat-composer-keydown'
-import { useNativeChatPermissionModeCycle } from './native-chat-permission-mode-cycle'
+import { useNativeChatPlanModeToggle } from './native-chat-plan-mode-toggle'
 import { useNativeChatSendLifecycle } from './use-native-chat-send-lifecycle'
 import { useNativeChatSessionOptions } from './use-native-chat-session-options'
 import { useNativeChatDictation } from './use-native-chat-dictation'
@@ -246,7 +246,7 @@ const NativeChatComposerPane = forwardRef<NativeChatComposerHandle, NativeChatCo
     const contextUsageSummary = useNativeChatContextUsageSummary(structuredTransport)
     const sessionOptionsSnapshot = structuredTransport?.optionSnapshot ?? ptySessionOptionsSnapshot
 
-    const cyclePermissionMode = useNativeChatPermissionModeCycle(
+    const togglePlanMode = useNativeChatPlanModeToggle(
       sessionOptionsSurface,
       sessionOptionsSnapshot
     )
@@ -337,7 +337,7 @@ const NativeChatComposerPane = forwardRef<NativeChatComposerHandle, NativeChatCo
       dismissPicker: dismiss,
       interrupt,
       send,
-      cyclePermissionMode,
+      togglePlanMode,
       hasAttachments: imageAttachments.length > 0,
       ...(steerQueued ? { steerQueued } : {}),
       setActiveSuggestion,

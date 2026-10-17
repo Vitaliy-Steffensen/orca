@@ -30,9 +30,9 @@ export type UseNativeChatComposerKeyDownArgs = {
   dismissPicker: (triggerKey: string) => void
   interrupt: () => void
   send: () => void
-  /** Shift+Tab: advance the live session's permission mode; false falls through to
+  /** Shift+Tab: turn the live session's Plan mode on or off; false falls through to
    *  focus traversal. */
-  cyclePermissionMode?: (() => boolean) | undefined
+  togglePlanMode?: (() => boolean) | undefined
   /** Cmd/Ctrl+Enter from an empty composer: send the newest queued draft now; false falls
    *  through to send. */
   steerQueued?: (() => boolean) | undefined
@@ -55,7 +55,7 @@ export function useNativeChatComposerKeyDown({
   dismissPicker,
   interrupt,
   send,
-  cyclePermissionMode,
+  togglePlanMode,
   steerQueued,
   setActiveSuggestion,
   setDraft,
@@ -92,7 +92,7 @@ export function useNativeChatComposerKeyDown({
           return
         }
         // Shift keeps its own meaning here: a newline for Enter, and for Tab the
-        // permission-mode cycle below, or focus traversal where there is none.
+        // plan-mode switch below, or focus traversal where there is none.
         const picks = (event.key === 'Enter' || event.key === 'Tab') && !event.shiftKey
         if (picks && items.length > 0) {
           event.preventDefault()
@@ -123,7 +123,7 @@ export function useNativeChatComposerKeyDown({
         }
       }
 
-      if (event.key === 'Tab' && event.shiftKey && cyclePermissionMode?.()) {
+      if (event.key === 'Tab' && event.shiftKey && togglePlanMode?.()) {
         event.preventDefault()
         return
       }
@@ -180,7 +180,6 @@ export function useNativeChatComposerKeyDown({
       autocomplete,
       completeMention,
       completePickerItem,
-      cyclePermissionMode,
       dismissPicker,
       dispatchPickerCommand,
       draft,
@@ -190,6 +189,7 @@ export function useNativeChatComposerKeyDown({
       mentionFiles,
       send,
       steerQueued,
+      togglePlanMode,
       setActiveSuggestion,
       setCaret,
       setDraft

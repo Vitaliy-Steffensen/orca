@@ -7,7 +7,7 @@ import { useNativeChatComposerKeyDown } from './use-native-chat-composer-keydown
 type Handler = ReturnType<typeof useNativeChatComposerKeyDown>
 
 function setup(args: {
-  cyclePermissionMode?: () => boolean
+  togglePlanMode?: () => boolean
   autocomplete?: Parameters<typeof useNativeChatComposerKeyDown>[0]['autocomplete']
 }) {
   const hook = renderHook(() =>
@@ -26,7 +26,7 @@ function setup(args: {
       setActiveSuggestion: vi.fn(),
       setDraft: vi.fn(),
       setCaret: vi.fn(),
-      ...(args.cyclePermissionMode ? { cyclePermissionMode: args.cyclePermissionMode } : {})
+      ...(args.togglePlanMode ? { togglePlanMode: args.togglePlanMode } : {})
     })
   )
   return hook.result.current
@@ -49,21 +49,21 @@ function press(handler: Handler, event: ReturnType<typeof shiftTab>): void {
   handler(event as unknown as Parameters<Handler>[0])
 }
 
-describe('composer Shift+Tab permission mode chord', () => {
-  it('swallows the chord when the chat cycled its mode', () => {
-    const cyclePermissionMode = vi.fn(() => true)
-    const handler = setup({ cyclePermissionMode })
+describe('composer Shift+Tab plan mode chord', () => {
+  it('swallows the chord when the chat switched its mode', () => {
+    const togglePlanMode = vi.fn(() => true)
+    const handler = setup({ togglePlanMode })
     const event = shiftTab()
 
     press(handler, event)
 
-    expect(cyclePermissionMode).toHaveBeenCalledOnce()
+    expect(togglePlanMode).toHaveBeenCalledOnce()
     expect(event.preventDefault).toHaveBeenCalledOnce()
   })
 
   it('leaves focus traversal alone when the chat has no settable mode', () => {
-    const cyclePermissionMode = vi.fn(() => false)
-    const handler = setup({ cyclePermissionMode })
+    const togglePlanMode = vi.fn(() => false)
+    const handler = setup({ togglePlanMode })
     const event = shiftTab()
 
     press(handler, event)
@@ -71,19 +71,19 @@ describe('composer Shift+Tab permission mode chord', () => {
     expect(event.preventDefault).not.toHaveBeenCalled()
   })
 
-  it('still cycles with a mention picker open, which never claims Shift+Tab', () => {
+  it('still switches with a mention picker open, which never claims Shift+Tab', () => {
     // The chord sits after the picker block, which deliberately lets a shifted Tab
     // through; a picker on screen must not make the mode unreachable.
-    const cyclePermissionMode = vi.fn(() => true)
+    const togglePlanMode = vi.fn(() => true)
     const handler = setup({
-      cyclePermissionMode,
+      togglePlanMode,
       autocomplete: { mode: 'mention' as const, query: '', triggerKey: '@' }
     })
     const event = shiftTab()
 
     press(handler, event)
 
-    expect(cyclePermissionMode).toHaveBeenCalledOnce()
+    expect(togglePlanMode).toHaveBeenCalledOnce()
     expect(event.preventDefault).toHaveBeenCalledOnce()
   })
 })

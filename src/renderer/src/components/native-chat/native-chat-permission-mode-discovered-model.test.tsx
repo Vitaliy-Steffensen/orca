@@ -17,7 +17,7 @@ import type {
   SessionOptionDescriptor,
   SessionOptionsSurface
 } from '../../../../shared/native-chat-session-options'
-import { useNativeChatPermissionModeCycle } from './native-chat-permission-mode-cycle'
+import { useNativeChatPlanModeToggle } from './native-chat-plan-mode-toggle'
 import { useNativeChatComposerKeyDown } from './use-native-chat-composer-keydown'
 
 type Handler = ReturnType<typeof useNativeChatComposerKeyDown>
@@ -83,11 +83,11 @@ describe('Shift+Tab against a host-listed model', () => {
     expect(permissionMode).toMatchObject({ settable: true })
   })
 
-  it('cycles the mode and swallows the chord instead of moving focus', () => {
+  it('switches to Plan and swallows the chord instead of moving focus', () => {
     const optionsSurface = surface()
     const snapshot = preLaunchSnapshot()
-    const cycle = renderHook(() => useNativeChatPermissionModeCycle(optionsSurface, snapshot))
-      .result.current
+    const toggle = renderHook(() => useNativeChatPlanModeToggle(optionsSurface, snapshot)).result
+      .current
     const handler = renderHook(() =>
       useNativeChatComposerKeyDown({
         autocomplete: { mode: 'none' as const },
@@ -101,7 +101,7 @@ describe('Shift+Tab against a host-listed model', () => {
         dismissPicker: vi.fn(),
         interrupt: vi.fn(),
         send: vi.fn(),
-        cyclePermissionMode: cycle,
+        togglePlanMode: toggle,
         setActiveSuggestion: vi.fn(),
         setDraft: vi.fn(),
         setCaret: vi.fn()
@@ -111,7 +111,7 @@ describe('Shift+Tab against a host-listed model', () => {
 
     press(handler, event)
 
-    expect(optionsSurface.setOption).toHaveBeenCalledWith('permissionMode', 'acceptEdits')
+    expect(optionsSurface.setOption).toHaveBeenCalledWith('permissionMode', 'plan')
     expect(event.preventDefault).toHaveBeenCalledOnce()
   })
 })

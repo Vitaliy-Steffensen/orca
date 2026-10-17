@@ -17,8 +17,8 @@ Adding a feature here? See the rule at the top of [`CLAUDE.md`](./CLAUDE.md).
 - The app releases and auto-updates from this repository instead of upstream's or Frederik's.
 - A relative language server Path is read from the worktree root, and one that never starts keeps
   saying so instead of going quiet after its first warning.
-- Shift+Tab in the chat composer cycles Claude's permission mode — Normal, Accept edits, Plan — and
-  the next chat starts in the one you left off in.
+- Shift+Tab in the chat composer turns Claude's Plan mode on and off, the composer names the mode
+  you are in, and the next chat starts in the one you left off in.
 
 ## Inherited from `frbarbre/orca`
 
