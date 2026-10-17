@@ -1,6 +1,5 @@
-import { ImeInput } from '@/lib/ime-text-field'
-import React, { useCallback, useEffect, useRef } from 'react'
-import { GitPullRequestArrow, Loader2, Search, X } from 'lucide-react'
+import React from 'react'
+import { GitPullRequestArrow, Loader2 } from 'lucide-react'
 import type { GitBranchCompareSummary } from '../../../../../../shared/git-diff-compare-types'
 import type { GitBranchLineTotal } from '../../../../../../shared/git-status-types'
 import type { SourceControlViewMode } from '../../../../../../shared/ui-chrome-types'
@@ -15,11 +14,11 @@ import { HostedReviewHeaderLink, HostedReviewIcon } from '../review/hosted-revie
 import { SourceControlBranchContextRow } from './branch-context-row'
 import { shouldShowSourceControlBranchContextChrome } from './branch-context-stats'
 import { SourceControlHeaderOverflowMenu } from './header-overflow-menu'
+import { FileFindToggle } from '../../file-find/FileFindToggle'
 
 type SourceControlHeaderToolbarProps = {
   filterQuery: string
   filterExpanded: boolean
-  onFilterQueryChange: (value: string) => void
   onFilterExpandedChange: (expanded: boolean) => void
   visibleCreatePrHeaderAction: PrimaryAction | null
   hostedReview: HostedReviewInfo | null
@@ -116,7 +115,9 @@ function SuppressedGitHubPRToolbar({
       </span>
       <Button type="button" variant="outline" size="xs" onClick={onRelink} className="shrink-0">
         <GitPullRequestArrow className="size-3.5" aria-hidden="true" />
-        {translate('checksPanel.unlinked.relink', 'Link PR #{{number}}', { number })}
+        {translate('checksPanel.unlinked.relink', 'Link PR #{{number}}', {
+          number
+        })}
       </Button>
     </div>
   )
@@ -141,7 +142,6 @@ function renderOverflowMenu(
 export function SourceControlHeaderToolbar({
   filterQuery,
   filterExpanded,
-  onFilterQueryChange,
   onFilterExpandedChange,
   visibleCreatePrHeaderAction,
   hostedReview,
@@ -165,9 +165,7 @@ export function SourceControlHeaderToolbar({
   manualReviewUrl,
   branchLineTotal
 }: SourceControlHeaderToolbarProps): React.JSX.Element {
-  const filterInputRef = useRef<HTMLInputElement>(null)
   const normalizedFilter = filterQuery.trim()
-  const showCollapsedToolbar = !filterExpanded
   const overflowProps = {
     sourceControlViewMode,
     viewModeToggleDisabled,
@@ -179,27 +177,6 @@ export function SourceControlHeaderToolbar({
     onToggleGrouping
   }
 
-  const expandFilter = useCallback(() => {
-    onFilterExpandedChange(true)
-  }, [onFilterExpandedChange])
-
-  const collapseFilter = useCallback(() => {
-    onFilterExpandedChange(false)
-  }, [onFilterExpandedChange])
-
-  const clearAndCollapseFilter = useCallback(() => {
-    onFilterQueryChange('')
-    onFilterExpandedChange(false)
-  }, [onFilterExpandedChange, onFilterQueryChange])
-
-  useEffect(() => {
-    if (!filterExpanded) {
-      return
-    }
-    filterInputRef.current?.focus()
-    filterInputRef.current?.select()
-  }, [filterExpanded])
-
   const filterToggleTitle = normalizedFilter
     ? translate('auto.components.right.sidebar.SourceControl.c8e4a1f902', 'Filter: {{value0}}', {
         value0: filterQuery
@@ -209,102 +186,40 @@ export function SourceControlHeaderToolbar({
   return (
     <div className="border-b border-border px-3 pt-1.5 pb-1">
       <div
-        className={cn('flex min-w-0 items-center gap-1', filterExpanded && 'w-full gap-1.5')}
+        className="flex min-w-0 items-center gap-1"
         data-filter-expanded={filterExpanded ? 'true' : 'false'}
       >
-        {showCollapsedToolbar ? (
-          <>
-            {hostedReview ? (
-              <HostedReviewToolbarLink
-                review={hostedReview}
-                onOpenHostedReviewInChecks={onOpenHostedReviewInChecks}
-              />
-            ) : suppressedGitHubPRNumber !== null ? (
-              <SuppressedGitHubPRToolbar
-                number={suppressedGitHubPRNumber}
-                onRelink={onRelinkSuppressedGitHubPR}
-              />
-            ) : visibleCreatePrHeaderAction ? (
-              <CreatePrHeaderButton
-                action={visibleCreatePrHeaderAction}
-                isCreatePrIntentInFlight={isCreatePrIntentInFlight}
-                isCreatingPr={isCreatingPr}
-                onClick={onCreatePrHeaderClick}
-              />
-            ) : (
-              <span className="min-w-0 flex-1" aria-hidden="true" />
-            )}
-            {(visibleCreatePrHeaderAction || suppressedGitHubPRNumber !== null) && !hostedReview ? (
-              // Why: keep filter/overflow pinned right without stretching Create PR.
-              <span className="min-w-0 flex-1" aria-hidden="true" />
-            ) : null}
-            <button
-              type="button"
-              data-testid="source-control-filter-toggle"
-              className={cn(
-                'relative inline-flex size-7 shrink-0 items-center justify-center rounded-sm text-muted-foreground transition-colors hover:bg-accent hover:text-foreground',
-                normalizedFilter && 'bg-muted text-foreground'
-              )}
-              onClick={expandFilter}
-              aria-label={filterToggleTitle}
-              title={filterToggleTitle}
-              aria-expanded={false}
-            >
-              <Search className="size-3.5" />
-              {normalizedFilter ? (
-                <span className="absolute right-1 top-1 size-1.5 rounded-full bg-foreground" />
-              ) : null}
-            </button>
-            {renderOverflowMenu(overflowProps)}
-          </>
+        {hostedReview ? (
+          <HostedReviewToolbarLink
+            review={hostedReview}
+            onOpenHostedReviewInChecks={onOpenHostedReviewInChecks}
+          />
+        ) : suppressedGitHubPRNumber !== null ? (
+          <SuppressedGitHubPRToolbar
+            number={suppressedGitHubPRNumber}
+            onRelink={onRelinkSuppressedGitHubPR}
+          />
+        ) : visibleCreatePrHeaderAction ? (
+          <CreatePrHeaderButton
+            action={visibleCreatePrHeaderAction}
+            isCreatePrIntentInFlight={isCreatePrIntentInFlight}
+            isCreatingPr={isCreatingPr}
+            onClick={onCreatePrHeaderClick}
+          />
         ) : (
-          <>
-            {/* Why: expanded filter owns the toolbar row so typing isn't squeezed
-                beside PR links or overflow actions — collapse to reach those. */}
-            <div className="flex min-w-0 w-full flex-1 items-center gap-1.5">
-              <Search className="size-3.5 shrink-0 text-muted-foreground" />
-              <ImeInput
-                ref={filterInputRef}
-                data-testid="source-control-filter-input"
-                type="text"
-                value={filterQuery}
-                onChange={(event) => onFilterQueryChange(event.target.value)}
-                onKeyDown={(event) => {
-                  if (event.key === 'Escape') {
-                    event.preventDefault()
-                    collapseFilter()
-                  }
-                }}
-                placeholder={translate(
-                  'auto.components.right.sidebar.SourceControl.c35baf2f1e',
-                  'Filter files…'
-                )}
-                className="min-w-0 w-full flex-1 bg-transparent text-xs text-foreground outline-none placeholder:text-muted-foreground/60"
-                aria-label={translate(
-                  'auto.components.right.sidebar.SourceControl.c35baf2f1e',
-                  'Filter files…'
-                )}
-              />
-            </div>
-            <Button
-              type="button"
-              variant="ghost"
-              size="icon-xs"
-              className="size-7 shrink-0 text-muted-foreground hover:text-foreground"
-              aria-label={translate(
-                'auto.components.right.sidebar.SourceControl.d4f8c2a901',
-                'Clear and close filter'
-              )}
-              title={translate(
-                'auto.components.right.sidebar.SourceControl.d4f8c2a901',
-                'Clear and close filter'
-              )}
-              onClick={clearAndCollapseFilter}
-            >
-              <X className="size-3.5" />
-            </Button>
-          </>
+          <span className="min-w-0 flex-1" aria-hidden="true" />
         )}
+        {(visibleCreatePrHeaderAction || suppressedGitHubPRNumber !== null) && !hostedReview ? (
+          // Why: keep filter/overflow pinned right without stretching Create PR.
+          <span className="min-w-0 flex-1" aria-hidden="true" />
+        ) : null}
+        <FileFindToggle
+          onExpand={() => onFilterExpandedChange(true)}
+          hasQuery={Boolean(normalizedFilter)}
+          label={filterToggleTitle}
+          testId="source-control-filter-toggle"
+        />
+        {renderOverflowMenu(overflowProps)}
       </div>
 
       {shouldShowSourceControlBranchContextChrome(branchSummary, compareBaseRef, headDisplay) ? (

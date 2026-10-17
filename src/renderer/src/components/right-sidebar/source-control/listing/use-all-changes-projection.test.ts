@@ -34,6 +34,28 @@ function project(sourceControlViewMode: 'list' | 'tree', collapsedTreeDirs = new
 }
 
 describe('useAllChangesProjection', () => {
+  it('still lists rows under forceEnabled when the grouping preference is status', () => {
+    const { result } = renderHook(() =>
+      useAllChangesProjection({
+        activeWorktreeId: 'wt-forced',
+        sourceControlGrouping: 'status',
+        visibleSelectionEntries: [],
+        entries: [unstaged],
+        branchEntries: [committed],
+        filteredGrouped: { staged: [], unstaged: [unstaged], untracked: [] },
+        filteredBranchEntries: [committed],
+        sourceControlViewMode: 'list',
+        collapsedTreeDirs: new Set(),
+        forceEnabled: true
+      })
+    )
+    expect(result.current.showAllChanges).toBe(true)
+    expect(result.current.allChangeEntries.map((entry) => entry.path)).toEqual([
+      'src/ui/a.ts',
+      'src/ui/b.ts'
+    ])
+  })
+
   it("lists a previewed turn's or commit's files instead of the branch's, counted on their own", () => {
     const { result } = renderProjection('list', new Set(), 'wt-turn')
     act(() =>

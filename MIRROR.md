@@ -12,13 +12,13 @@ tree whole is deterministic: the result is exactly the tree his `fork verify` ch
 
 One commit, five lines, four files — the release channel:
 
-| File | Line |
-| --- | --- |
-| `config/electron-builder.config.cjs` | `ORCA_PUBLISH_OWNER ?? 'Vitaliy-Steffensen'` |
-| `src/main/updater/updater-manual-install.ts` | `FORK_REPO_URL` |
-| `src/main/updater/fork-install/fork-self-install.ts` | `FORK_REPO_URL` |
-| `config/scripts/fork-disable-upstream-pr-workflows.mjs` | `REPO` |
-| `.github/workflows/fork-verify.yml` | the owner grep in "Update channel survived" |
+| File                                                    | Line                                         |
+| ------------------------------------------------------- | -------------------------------------------- |
+| `config/electron-builder.config.cjs`                    | `ORCA_PUBLISH_OWNER ?? 'Vitaliy-Steffensen'` |
+| `src/main/updater/updater-manual-install.ts`            | `FORK_REPO_URL`                              |
+| `src/main/updater/fork-install/fork-self-install.ts`    | `FORK_REPO_URL`                              |
+| `config/scripts/fork-disable-upstream-pr-workflows.mjs` | `REPO`                                       |
+| `.github/workflows/fork-verify.yml`                     | the owner grep in "Update channel survived"  |
 
 Both `FORK_REPO_URL` constants are runtime fallbacks, not build-time config: a packaged app has no
 `ORCA_RELEASES_REPO_URL` in its environment, so these are what `armForkUpdateChannel()` falls back

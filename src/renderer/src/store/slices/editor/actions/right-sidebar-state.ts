@@ -16,6 +16,9 @@ export type RightSidebarState = {
   aiVaultSearchFocusRequested: boolean
   rightSidebarTabByWorktree: Record<string, ActiveRightSidebarTab>
   rightSidebarExplorerViewByWorktree: Record<string, RightSidebarExplorerView>
+  /** In memory: the find bar is shared chrome, and only one right-sidebar panel is mounted at a time. */
+  rightSidebarFindExpanded: boolean
+  rightSidebarFindFocusRequestId: number
   /** In memory: the tab the mounted sidebar renders, which differs from rightSidebarTab when that tab is hidden here. */
   rightSidebarEffectiveTab: ActiveRightSidebarTab | null
   activityBarPosition: ActivityBarPosition
@@ -31,6 +34,8 @@ export type RightSidebarState = {
   }) => void
   showAiVaultSearch: () => void
   clearAiVaultSearchFocusRequest: () => void
+  setRightSidebarFindExpanded: (expanded: boolean) => void
+  requestRightSidebarFind: () => void
   setRightSidebarEffectiveTab: (tab: ActiveRightSidebarTab | null) => void
   setActivityBarPosition: (position: ActivityBarPosition) => void
 }
@@ -45,6 +50,8 @@ export function createRightSidebarState(set: EditorSet, _get: EditorGet): RightS
     aiVaultSearchFocusRequested: false,
     rightSidebarTabByWorktree: {},
     rightSidebarExplorerViewByWorktree: {},
+    rightSidebarFindExpanded: false,
+    rightSidebarFindFocusRequestId: 0,
     rightSidebarEffectiveTab: null,
     activityBarPosition: 'top',
     toggleRightSidebar: () => set((s) => ({ rightSidebarOpen: !s.rightSidebarOpen })),
@@ -86,11 +93,25 @@ export function createRightSidebarState(set: EditorSet, _get: EditorGet): RightS
       })),
     showRightSidebarSearch: (payload) =>
       set((s) => {
+        // Why: Source Control and the PR diff viewer have no content search, so the find chord
+        // opens their own filter rather than yanking the user over to the Explorer.
+        if (
+          !payload &&
+          (s.rightSidebarTab === 'source-control' || s.rightSidebarTab === 'pr-diff')
+        ) {
+          return {
+            rightSidebarOpen: true,
+            rightSidebarFindExpanded: true,
+            rightSidebarFindFocusRequestId: s.rightSidebarFindFocusRequestId + 1
+          }
+        }
         const next = {
           rightSidebarOpen: true,
           rightSidebarTab: 'explorer' as const,
           rightSidebarExplorerView: 'search' as const,
           rightSidebarRouteRequestId: s.rightSidebarRouteRequestId + 1,
+          rightSidebarFindExpanded: true,
+          rightSidebarFindFocusRequestId: s.rightSidebarFindFocusRequestId + 1,
           ...(s.activeWorktreeId
             ? {
                 rightSidebarExplorerViewByWorktree: {
@@ -142,6 +163,12 @@ export function createRightSidebarState(set: EditorSet, _get: EditorGet): RightS
         aiVaultSearchFocusRequested: true
       })),
     clearAiVaultSearchFocusRequest: () => set({ aiVaultSearchFocusRequested: false }),
+    setRightSidebarFindExpanded: (expanded) => set({ rightSidebarFindExpanded: expanded }),
+    requestRightSidebarFind: () =>
+      set((s) => ({
+        rightSidebarFindExpanded: true,
+        rightSidebarFindFocusRequestId: s.rightSidebarFindFocusRequestId + 1
+      })),
     setRightSidebarEffectiveTab: (tab) =>
       set((s) => (s.rightSidebarEffectiveTab === tab ? {} : { rightSidebarEffectiveTab: tab })),
     setActivityBarPosition: (position) => set({ activityBarPosition: position })

@@ -1,5 +1,5 @@
 import { useMemo } from 'react'
-import { Plug, Files, GitBranch, ListChecks, Workflow } from 'lucide-react'
+import { Plug, Files, GitBranch, GitPullRequest, ListChecks, Workflow } from 'lucide-react'
 import { useAppStore } from '@/store'
 import { useRepoById } from '@/store/selectors'
 import { isFolderRepo } from '../../../../shared/repo-kind'
@@ -106,6 +106,13 @@ export function useRightSidebarActivityItems({
         icon: GitBranch,
         title: translate('auto.components.right.sidebar.index.0314901467', 'Source Control'),
         shortcut: sourceControlShortcut === 'Unassigned' ? '' : sourceControlShortcut,
+        gitOnly: true
+      },
+      {
+        id: 'pr-diff',
+        icon: GitPullRequest,
+        title: translate('auto.components.right.sidebar.index.prDiffViewer', 'PR Diff Viewer'),
+        shortcut: '',
         gitOnly: true
       },
       {
