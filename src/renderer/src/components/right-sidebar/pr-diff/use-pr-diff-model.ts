@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useCallback, useMemo, useState } from 'react'
 import { useAppStore } from '@/store'
 import { useSourceControlWorktreeContext } from '../source-control/listing/use-worktree-context'
 import { useSourceControlBaseRefs } from '../source-control/sync/use-base-refs'
@@ -8,6 +8,7 @@ import { useAllChangesProjection } from '../source-control/listing/use-all-chang
 import { useSourceControlRowOpening } from '../source-control/listing/use-row-opening'
 import { usePublishedSourceControlReviewOrder } from '../source-control/listing/use-published-review-order'
 import { normalizeSourceControlViewMode } from '../source-control/commit/commit-drafts'
+import { getNextSourceControlViewMode } from '../source-control/panel/header-toolbar'
 import { buildChangedPathGroups } from './changed-path-grouping'
 import type { FlatEntry } from '../source-control/listing/use-selection'
 import type { SourceControlTreeNode } from '../source-control-tree'
@@ -39,6 +40,7 @@ export function usePrDiffModel() {
     worktreePath
   } = context
 
+  const updateSettings = useAppStore((s) => s.updateSettings)
   const expanded = useAppStore((s) => s.rightSidebarFindExpanded)
   const setExpanded = useAppStore((s) => s.setRightSidebarFindExpanded)
   const findFocusRequestId = useAppStore((s) => s.rightSidebarFindFocusRequestId)
@@ -94,6 +96,14 @@ export function usePrDiffModel() {
   })
 
   const sourceControlViewMode = normalizeSourceControlViewMode(settings?.sourceControlViewMode)
+  // Why the shared setting: list-vs-tree is one preference across every changed-files surface.
+  const toggleViewMode = useCallback(() => {
+    if (!settings) {
+      return
+    }
+    updateSettings({ sourceControlViewMode: getNextSourceControlViewMode(sourceControlViewMode) })
+  }, [settings, sourceControlViewMode, updateSettings])
+
   const { filter, filteredGrouped, filteredBranchEntries } = useMemo(
     () => buildChangedPathGroups(entries, branchEntries, query),
     [branchEntries, entries, query]
@@ -168,6 +178,8 @@ export function usePrDiffModel() {
     setCollapsedTreeDirs,
     setFileListScrollElement,
     sourceControlViewMode,
+    toggleViewMode,
+    viewModeToggleDisabled: !settings,
     worktreePath
   }
 }

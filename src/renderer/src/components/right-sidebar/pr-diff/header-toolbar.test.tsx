@@ -11,6 +11,12 @@ vi.mock('@/i18n/i18n', () => ({
 
 afterEach(cleanup)
 
+const VIEW_MODE_PROPS = {
+  viewMode: 'list',
+  viewModeToggleDisabled: false,
+  onToggleViewMode: () => undefined
+} as const
+
 describe('PrDiffHeaderToolbar', () => {
   it('names the compare base without its ref namespace', () => {
     render(
@@ -19,6 +25,7 @@ describe('PrDiffHeaderToolbar', () => {
         findExpanded={false}
         onToggleFind={vi.fn()}
         hasQuery={false}
+        {...VIEW_MODE_PROPS}
       />
     )
     expect(screen.getByText('vs origin/main')).toBeInTheDocument()
@@ -31,6 +38,7 @@ describe('PrDiffHeaderToolbar', () => {
         findExpanded={false}
         onToggleFind={vi.fn()}
         hasQuery={false}
+        {...VIEW_MODE_PROPS}
       />
     )
     expect(screen.getByText('Changed files')).toBeInTheDocument()
@@ -44,11 +52,49 @@ describe('PrDiffHeaderToolbar', () => {
         findExpanded
         onToggleFind={onToggleFind}
         hasQuery={false}
+        {...VIEW_MODE_PROPS}
       />
     )
     const button = screen.getByTestId('pr-diff-filter-toggle')
     expect(button).toHaveAttribute('aria-expanded', 'true')
     fireEvent.click(button)
     expect(onToggleFind).toHaveBeenCalledTimes(1)
+  })
+
+  it('switches between list and tree', () => {
+    const onToggleViewMode = vi.fn()
+    render(
+      <PrDiffHeaderToolbar
+        compareBaseRef="origin/main"
+        findExpanded={false}
+        onToggleFind={vi.fn()}
+        hasQuery={false}
+        viewMode="list"
+        viewModeToggleDisabled={false}
+        onToggleViewMode={onToggleViewMode}
+      />
+    )
+    const button = screen.getByTestId('pr-diff-view-mode-toggle')
+    expect(button).toHaveAttribute('aria-label', 'View as tree')
+    fireEvent.click(button)
+    expect(onToggleViewMode).toHaveBeenCalledTimes(1)
+  })
+
+  it('offers the list switch while in tree mode', () => {
+    render(
+      <PrDiffHeaderToolbar
+        compareBaseRef="origin/main"
+        findExpanded={false}
+        onToggleFind={vi.fn()}
+        hasQuery={false}
+        viewMode="tree"
+        viewModeToggleDisabled={false}
+        onToggleViewMode={vi.fn()}
+      />
+    )
+    expect(screen.getByTestId('pr-diff-view-mode-toggle')).toHaveAttribute(
+      'aria-label',
+      'View as list'
+    )
   })
 })

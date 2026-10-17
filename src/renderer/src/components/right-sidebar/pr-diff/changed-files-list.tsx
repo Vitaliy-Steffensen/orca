@@ -45,6 +45,9 @@ export function PrDiffChangedFilesList({ model }: { model: PrDiffModel }): React
         findExpanded={find.expanded}
         onToggleFind={() => find.setExpanded(!find.expanded)}
         hasQuery={Boolean(find.query.trim())}
+        viewMode={model.sourceControlViewMode}
+        viewModeToggleDisabled={model.viewModeToggleDisabled}
+        onToggleViewMode={model.toggleViewMode}
       />
       <ChangedFilesFindBar
         mode={find.mode}
