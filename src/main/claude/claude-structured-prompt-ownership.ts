@@ -7,6 +7,7 @@ import type { StructuredAgentSessionAdapterStop } from '../native-chat/agent-ses
 import { answerClaudePrompt, cancelClaudeTurn } from './claude-structured-control-actions'
 import type { ClaudeLateDispatchSettlement } from './claude-replay-turn-resolution'
 import { buildClaudePromptReply, claudePromptDismissal } from './claude-structured-prompt-replies'
+import { leaveClaudeStructuredPlanMode } from './claude-structured-options'
 import type { ClaudeSession } from './claude-structured-session-state'
 import type { ClaudePendingPrompt } from './claude-prompt-registry'
 import { CLAUDE_STOP_GRACE_MS } from './claude-request-end-wait'
@@ -167,6 +168,11 @@ export async function answerClaudeStructuredPrompt(input: {
       throw new AgentSessionPromptUnavailableError(request.itemId)
     }
     await answerClaudePrompt(session, claim, reply)
+    if (reply.behavior === 'allow' && claim.found.prompt.subject?.kind === 'plan') {
+      // Last, and non-throwing: the plan is approved, so this confirmation can
+      // neither fail the answer nor hand the card back.
+      await leaveClaudeStructuredPlanMode(session)
+    }
   } catch (error) {
     session.prompts.releaseClaim(claim)
     throw error

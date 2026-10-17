@@ -15,8 +15,10 @@ describe('agent session option catalog', () => {
     const catalog = getAgentSessionOptionCatalog('claude')
     expect(
       catalog?.models.find((model) => model.id === 'opus')?.options.map(({ id }) => id)
-    ).toEqual(['effort', 'fastMode'])
-    expect(catalog?.models.find((model) => model.id === 'haiku')?.options).toEqual([])
+    ).toEqual(['effort', 'fastMode', 'permissionMode'])
+    expect(
+      catalog?.models.find((model) => model.id === 'haiku')?.options.map(({ id }) => id)
+    ).toEqual(['permissionMode'])
   })
 
   it('merges discovered labels while preserving cataloged option shapes', () => {
@@ -87,7 +89,7 @@ describe('agent session option catalog', () => {
       label: 'Opus (1M context)',
       description: 'Opus 5 with 1M context'
     })
-    expect(parsed[0].options.map(({ id }) => id)).toEqual(['effort', 'fastMode'])
+    expect(parsed[0].options.map(({ id }) => id)).toEqual(['effort', 'fastMode', 'permissionMode'])
     const opusEffort = parsed[0].options[0]
     expect(opusEffort.kind).toMatchObject({ defaultValue: 'high' })
     expect(
@@ -97,7 +99,7 @@ describe('agent session option catalog', () => {
     expect(
       sonnetEffort.kind.type === 'select' ? sonnetEffort.kind.choices.map((c) => c.value) : []
     ).toEqual(['low', 'medium', 'high'])
-    expect(parsed[2].options).toEqual([])
+    expect(parsed[2].options.map(({ id }) => id)).toEqual(['permissionMode'])
   })
 
   it('keeps the Claude seed when list_models output is unsupported or malformed', () => {
@@ -119,7 +121,7 @@ describe('agent session option catalog', () => {
     const sonnet = merged.find((model) => model.id === 'sonnet')!
     expect(sonnet.description).toBe('Sonnet 5 · Efficient')
     expect(sonnet.isDefault).toBe(true)
-    expect(sonnet.options.map(({ id }) => id)).toEqual(['effort'])
+    expect(sonnet.options.map(({ id }) => id)).toEqual(['effort', 'permissionMode'])
   })
 
   it('parses Cursor model discovery without treating headings as models', () => {

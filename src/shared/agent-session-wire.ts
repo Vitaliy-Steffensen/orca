@@ -503,6 +503,9 @@ export type AgentSessionOptionsResult = {
     fastMode?: boolean
     /** Next-turn service tier id where the model lists `serviceTiers`; `default` is standard. */
     serviceTier?: string
+    /** The permission mode the session holds. Absent from a host that predates it, which
+     *  leaves the client showing the last value it sent. */
+    permissionMode?: string
     /** Provider-reported effective routing, distinct from the next-turn preference. */
     fastModeState?: AgentSessionFastModeState
     /**
