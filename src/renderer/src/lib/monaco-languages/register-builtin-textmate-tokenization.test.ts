@@ -1,10 +1,11 @@
 import { describe, expect, it, vi } from 'vitest'
 import type * as Monaco from 'monaco-editor'
 import { loadNodeOniguruma } from '../syntax-highlighting/oniguruma-test-harness'
-import { createTextMateTokensProvider } from './textmate-token-provider'
+import { createTextMateTokensProvider, type TextMateGrammarLoader } from './textmate-token-provider'
 import {
   BUILTIN_TEXTMATE_LANGUAGE_IDS,
-  registerBuiltinTextMateTokenization
+  registerBuiltinTextMateTokenization,
+  type MonacoTokenizationRegistry
 } from './register-builtin-textmate-tokenization'
 
 vi.mock('../syntax-highlighting/oniguruma', () => ({ loadOniguruma: loadNodeOniguruma }))
@@ -12,34 +13,24 @@ vi.mock('../syntax-highlighting/oniguruma', () => ({ loadOniguruma: loadNodeOnig
 type FactoryCall = { languageId: string; factory: Monaco.languages.TokensProviderFactory }
 
 function fakeMonaco(registeredIds: string[]): {
-  monaco: typeof Monaco
+  monaco: MonacoTokenizationRegistry
   calls: FactoryCall[]
 } {
   const calls: FactoryCall[] = []
-  const monaco = {
+  const monaco: MonacoTokenizationRegistry = {
     languages: {
       getLanguages: () => registeredIds.map((id) => ({ id })),
-      registerTokensProviderFactory: (
-        languageId: string,
-        factory: Monaco.languages.TokensProviderFactory
-      ) => {
+      registerTokensProviderFactory: (languageId, factory) => {
         calls.push({ languageId, factory })
         return { dispose: () => undefined }
       }
     }
-    // oxlint-disable-next-line typescript/consistent-type-assertions -- SAFETY: the registration path touches only these two members, asserted by the calls it records.
-  } as unknown as typeof Monaco
+  }
   return { monaco, calls }
 }
 
-async function scopesOf(
-  loadGrammar: () => Promise<unknown>,
-  lines: string[]
-): Promise<string[][]> {
-  // oxlint-disable-next-line typescript/consistent-type-assertions -- SAFETY: the Shiki lang modules default-export LanguageRegistration[]; a wrong shape fails loadLanguage in this test.
-  const provider = await createTextMateTokensProvider({
-    loadGrammar: loadGrammar as Parameters<typeof createTextMateTokensProvider>[0]['loadGrammar']
-  })
+async function scopesOf(loadGrammar: TextMateGrammarLoader, lines: string[]): Promise<string[][]> {
+  const provider = await createTextMateTokensProvider({ loadGrammar })
   let state = provider.getInitialState()
   return lines.map((line) => {
     const result = provider.tokenize(line, state)

@@ -2,8 +2,11 @@ import type * as Monaco from 'monaco-editor'
 import type { LanguageRegistration } from 'shiki/core'
 import type { createTextMateTokensProvider as createTextMateTokensProviderType } from './textmate-token-provider'
 
-type MonacoModule = typeof Monaco
 type TextMateTokensProvider = Monaco.languages.TokensProvider
+/** Just the registry this touches, so a test can stand in for Monaco without a cast. */
+export type MonacoTokenizationRegistry = {
+  languages: Pick<typeof Monaco.languages, 'getLanguages' | 'registerTokensProviderFactory'>
+}
 type ShikiGrammarModule = { default: LanguageRegistration[] }
 
 /**
@@ -70,7 +73,7 @@ function loadProviderModule(): Promise<{
  * comments and indentation. Registering the factory after Monaco's own replaces it, because
  * `registerTokensProviderFactory` disposes the factory already stored for that language.
  */
-export function registerBuiltinTextMateTokenization(monaco: MonacoModule): void {
+export function registerBuiltinTextMateTokenization(monaco: MonacoTokenizationRegistry): void {
   const registered = new Set(monaco.languages.getLanguages().map((language) => language.id))
   for (const [languageId, loadModule] of Object.entries(BUILTIN_TEXTMATE_GRAMMARS)) {
     // Why: a language Monaco did not register has no model to tokenize, and registering a

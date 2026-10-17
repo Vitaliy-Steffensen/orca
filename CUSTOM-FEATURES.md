@@ -12,6 +12,8 @@ Adding a feature here? See the rule at the top of [`CLAUDE.md`](./CLAUDE.md).
   changes, the Explorer tree, or the combined diff's own file tree — and flashes the row.
 - Your `~/.orca/themes/` VS Code theme also colours notebook cells, code excerpts, combined-diff
   sections and the automation prompt editor, not just the editor and diff viewer.
+- The editor highlights 37 languages with the same TextMate grammars VS Code uses, so a
+  `~/.orca/themes/` theme paints control flow, functions and types as it does there.
 - The app releases and auto-updates from this repository instead of upstream's or Frederik's.
 - A relative language server Path is read from the worktree root, and one that never starts keeps
   saying so instead of going quiet after its first warning.
