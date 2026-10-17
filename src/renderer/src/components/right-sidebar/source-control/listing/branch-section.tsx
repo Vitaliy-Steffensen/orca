@@ -12,6 +12,7 @@ import { BranchEntryRow } from './branch-entry-row'
 import { SectionHeader } from './section-header'
 import { formatSourceControlRefLabel } from '../panel/branch-context-stats'
 import { SourceControlBranchTreeDirectoryRow } from './tree-directory-rows'
+import { useSourceControlRowRevealRequestId } from '@/lib/source-control-row-reveal'
 import { VirtualizedList } from '../../../virtualized-list'
 
 export function SourceControlBranchSection({
@@ -63,6 +64,7 @@ export function SourceControlBranchSection({
   activeOpenRowKeys: ReadonlySet<string>
   activeOpenRowKey: string | null
 }): React.JSX.Element {
+  const revealRequestId = useSourceControlRowRevealRequestId(activeOpenRowKey)
   const baseRef = branchSummary.baseRef?.trim()
   const fileCount = filteredBranchEntries.length
   // Why: the heading counts files that differ from the compare base, not every
@@ -119,6 +121,7 @@ export function SourceControlBranchSection({
             scrollElement={fileListScrollElement}
             getRowKey={(node) => node.key}
             scrollToRowKey={activeOpenRowKey}
+            scrollToRowRequestId={revealRequestId}
             renderRow={(node) => {
               if (node.type === 'directory') {
                 return (
@@ -133,6 +136,7 @@ export function SourceControlBranchSection({
               return (
                 <BranchEntryRow
                   key={node.key}
+                  rowKey={node.key}
                   entry={node.entry}
                   currentWorktreeId={currentWorktreeId}
                   worktreePath={worktreePath}
@@ -155,9 +159,11 @@ export function SourceControlBranchSection({
             scrollElement={fileListScrollElement}
             getRowKey={(entry) => `branch::${entry.path}`}
             scrollToRowKey={activeOpenRowKey}
+            scrollToRowRequestId={revealRequestId}
             renderRow={(entry) => (
               <BranchEntryRow
                 key={`branch::${entry.path}`}
+                rowKey={`branch::${entry.path}`}
                 entry={entry}
                 currentWorktreeId={currentWorktreeId}
                 worktreePath={worktreePath}

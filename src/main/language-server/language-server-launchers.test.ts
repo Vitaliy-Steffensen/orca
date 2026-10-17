@@ -68,6 +68,38 @@ describe('language server launchers', () => {
     ).toMatchObject({ program: '/opt/pyright/bin/pyright-langserver', args: ['--stdio'] })
   })
 
+  it('resolves a relative custom path against the worktree, not the project root', () => {
+    expect(
+      resolveLaunch(
+        { ...python, command: 'apps/backend/.venv/bin/pyrefly' },
+        existsIn([...backend, '/repo/apps/backend/.venv/bin/pyrefly'])
+      )
+    ).toMatchObject({
+      projectRoot: '/repo/apps/backend',
+      program: '/repo/apps/backend/.venv/bin/pyrefly'
+    })
+  })
+
+  it('falls back to the main checkout for a relative path the worktree does not have', () => {
+    expect(
+      resolveLaunch(
+        {
+          ...python,
+          filePath: '/wt/apps/backend/a.py',
+          worktreeRoot: '/wt',
+          command: 'apps/backend/.venv/bin/pyrefly'
+        },
+        existsIn(['/wt/apps/backend/pyproject.toml', '/repo/apps/backend/.venv/bin/pyrefly'])
+      ).program
+    ).toBe('/repo/apps/backend/.venv/bin/pyrefly')
+  })
+
+  it('leaves a bare custom command for PATH to resolve', () => {
+    expect(resolveLaunch({ ...python, command: 'pyrefly' }, existsIn(backend)).program).toBe(
+      'pyrefly'
+    )
+  })
+
   it('expands a custom path that starts at the home directory', () => {
     expect(
       resolveLaunch(

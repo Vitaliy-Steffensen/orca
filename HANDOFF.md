@@ -59,14 +59,14 @@ it after a release and check the version it reports.
 Three feature groups, all working and covered by tests:
 
 1. **Changed-file navigation.** `editor.previousFile` / `editor.nextFile` step through the Source
-   Control panel's *visible* order, honouring filter, collapsed directories and tree/list mode. The
+   Control panel's _visible_ order, honouring filter, collapsed directories and tree/list mode. The
    open file's row highlights (including branch/PR rows, which had no highlight at all before) and
    scrolls into view, kept clear of the sticky Commits header. Holding the chord keeps stepping,
    one file per 50ms, and stops at the first/last file; a single press still wraps.
 2. **Change navigation stops at the ends.** `editor.nextChange` / `editor.previousChange` (F7 /
    Shift+F7) and the header arrows do nothing at the last/first change instead of Monaco's wrap.
 3. **Review-comment links.** The `file.ts:L208` badge in the checks panel opens that file's diff at
-   that line. This was a *gap*, not a feature: the sibling Source Control panel already did it for
+   that line. This was a _gap_, not a feature: the sibling Source Control panel already did it for
    its own notes; the checks panel just never wired it up.
 
 Plus the fork update channel — see [`FORK.md`](./FORK.md#1-fork-update-channel--keep-and-check-carefully).
@@ -88,7 +88,7 @@ first.
   created two releases with the assets split across them — one without `latest-mac.yml`, which the
   updater feed needs. The workflow now refuses to publish if that file is missing.
 - **Release version can be overridden** via the workflow's `version` input
-  (`-c.extraMetadata.version`), because the notice only fires for a version *higher* than the
+  (`-c.extraMetadata.version`), because the notice only fires for a version _higher_ than the
   installed build, and the fork otherwise rides upstream's version. Do not edit `package.json`.
   See [Versioning](#versioning) — this is no longer optional now that the fork is ahead of upstream.
 - **Keyboard defaults are `Alt+F7` / `Alt+Shift+F7`, not Shift+Arrow.** Shift+Arrow is Monaco's
@@ -110,7 +110,7 @@ first.
   blur, a fresh press, or a repeat that no longer matches (released modifier). Repeats are
   throttled by wall-clock, so ones that queued behind a slow diff mount are dropped rather than
   replayed as an overshooting burst.
-- **Review order is keyed `<area>::<path>`, never by path.** A file changed in the working tree *and*
+- **Review order is keyed `<area>::<path>`, never by path.** A file changed in the working tree _and_
   on the branch has a row in both sections; deduping by path made the branch row unreachable.
 
 ## Versioning
@@ -179,7 +179,7 @@ in a way that looks like a real break but is not.
 gh workflow run fork-release.yml --repo frbarbre/orca --ref main -f version=<see Versioning>
 ```
 
-Omitting `version` builds at `package.json`'s version, which now tracks *behind* the fork's published
+Omitting `version` builds at `package.json`'s version, which now tracks _behind_ the fork's published
 releases — read [Versioning](#versioning) before cutting one.
 
 Builds on a hosted macOS runner, publishes one release with all artifacts to this fork. The installed

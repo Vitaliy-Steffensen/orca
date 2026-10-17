@@ -3,16 +3,17 @@ import {
   LANGUAGE_SERVER_LANGUAGES,
   LANGUAGE_SERVERS,
   languageServerForMonacoLanguage,
-  languageServerOptions,
   languageServerSettings,
   type LanguageServerLanguage,
   type LanguageServerLocation,
   type LanguageServerRequest
 } from '../../../shared/language-server'
-import { toast } from 'sonner'
-import { translate } from '@/i18n/i18n'
 import { useAppStore } from '@/store'
 import { definitionOpenTarget, toEditorPosition } from './language-server-editor'
+import {
+  forgetLanguageServerFailures,
+  reportLanguageServerFailure
+} from './language-server-failure-toast'
 import { fileSource } from './language-server-file-source'
 import { RENDERER_LANGUAGE_SERVERS, type LanguageServerFallback } from './language-server-languages'
 import {
@@ -75,25 +76,6 @@ function referenceLocations(
   })
 }
 
-const reportedFailures = new Set<string>()
-
-// Why once per message: hover fires constantly, and a missing server would otherwise fail silently.
-function reportServerFailure(request: SourcedRequest, error: string): void {
-  const key = `${request.language}:${request.server}:${error}`
-  if (reportedFailures.has(key)) {
-    return
-  }
-  reportedFailures.add(key)
-  const server = languageServerOptions(request.language)[request.server]?.name ?? request.server
-  toast.error(
-    translate(
-      'languageServers.unavailable',
-      '{{server}} is unavailable ({{error}}). Install it in the project, or choose another server or its path in Settings → Language Servers.',
-      { server, error }
-    )
-  )
-}
-
 function installLanguageProviders(
   monaco: typeof Monaco,
   languageId: string,
@@ -105,7 +87,7 @@ function installLanguageProviders(
       if (request) {
         const result = await window.api.languageServer.definition(request)
         if (!result.ok) {
-          reportServerFailure(request, result.error)
+          reportLanguageServerFailure(request, result.error)
         }
         const location = result.ok ? result.locations[0] : undefined
         if (location) {
@@ -157,7 +139,7 @@ function installLanguageProviders(
         if (result.ok) {
           return referenceLocations(monaco, model, request, result.locations, result.files)
         }
-        reportServerFailure(request, result.error)
+        reportLanguageServerFailure(request, result.error)
       }
       return fallback ? fallback.references(model, position) : null
     }
@@ -193,6 +175,7 @@ export function installLanguageServerProviders(
       const next = settingsKey(language)
       if (keys.get(language) !== next) {
         keys.set(language, next)
+        forgetLanguageServerFailures([language])
         void window.api.languageServer.stop({ language })
       }
     }

@@ -1,5 +1,5 @@
 import { homedir } from 'node:os'
-import { join } from 'node:path'
+import { isAbsolute, join, resolve } from 'node:path'
 import {
   LANGUAGE_SERVERS,
   languageServerOptions,
@@ -62,6 +62,28 @@ function expandHome(command: string, home: string): string {
   return command === '~' || command.startsWith('~/') ? join(home, command.slice(1)) : command
 }
 
+// Why the worktree and not the spawn cwd: the server runs in its project root, so a typed
+// `apps/backend/.venv/bin/pyrefly` would otherwise be looked for under `apps/backend`.
+function resolveCommand(
+  command: string,
+  request: LanguageServerRequest,
+  exists: (path: string) => boolean,
+  home: string
+): string {
+  const expanded = expandHome(command, home)
+  // A bare name means PATH; only a path-shaped entry names a file in the checkout.
+  if (isAbsolute(expanded) || !/[\\/]/.test(expanded)) {
+    return expanded
+  }
+  const { worktreeRoot, repoRoot } = request
+  const inWorktree = resolve(worktreeRoot, expanded)
+  // Why the main checkout too: new worktrees rarely get their own venv or node_modules.
+  const inMainCheckout = repoRoot && repoRoot !== worktreeRoot ? resolve(repoRoot, expanded) : null
+  return !exists(inWorktree) && inMainCheckout && exists(inMainCheckout)
+    ? inMainCheckout
+    : inWorktree
+}
+
 export function resolveLaunch(
   request: LanguageServerRequest,
   exists: (path: string) => boolean,
@@ -72,7 +94,7 @@ export function resolveLaunch(
   const server = servers[request.server] ?? servers[LANGUAGE_SERVERS[language].defaultServer]
   const { binDirs, ...project } = PROJECTS[language](request, exists)
   const program = request.command
-    ? expandHome(request.command, home)
+    ? resolveCommand(request.command, request, exists, home)
     : (binDirs.map((dir) => join(dir, server.command)).find(exists) ?? server.command)
   return { language, serverName: server.name, program, args: [...server.args], ...project }
 }

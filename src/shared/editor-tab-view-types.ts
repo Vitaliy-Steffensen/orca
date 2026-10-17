@@ -29,6 +29,16 @@ export type DiffSource =
   | 'combined-branch'
   | 'combined-commit'
 
+/** Combined sources render one viewer over many files, so the tab's path is the worktree root. */
+export function isCombinedDiffSource(source: DiffSource | undefined): boolean {
+  return (
+    source === 'combined-all' ||
+    source === 'combined-uncommitted' ||
+    source === 'combined-branch' ||
+    source === 'combined-commit'
+  )
+}
+
 export type BranchCompareSnapshot = Pick<
   GitBranchCompareSummary,
   'baseRef' | 'baseOid' | 'compareRef' | 'headOid' | 'mergeBase'

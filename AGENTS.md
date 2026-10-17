@@ -14,6 +14,10 @@ Use the `$electron` skill and Playwright CDP for rendered Orca UI checks. Do not
 
 # Style
 
+## Log Custom Features
+
+A change that adds or alters a feature also appends one line to [`CUSTOM-FEATURES.md`](./CUSTOM-FEATURES.md) — see the rule in [`CLAUDE.md`](./CLAUDE.md), which is authoritative.
+
 ## Reuse Before Reimplementing
 
 Before writing new logic at any scale — a function, component, IPC channel, state store, or whole subsystem/flow — check whether an existing implementation already does the job (or nearly does). Extend or generalize it instead of building a parallel version; only write from scratch when nothing fits. Keep the check proportionate: a quick search for trivial code, a real one before building anything substantial.

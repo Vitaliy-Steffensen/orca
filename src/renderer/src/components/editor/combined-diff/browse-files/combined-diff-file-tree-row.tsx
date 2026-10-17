@@ -5,6 +5,7 @@ import { STATUS_COLORS, STATUS_LABELS } from '@/components/right-sidebar/status-
 import type { SourceControlTreeNode } from '@/components/right-sidebar/source-control-tree'
 import { getFileTypeIcon } from '@/lib/file-type-icons'
 import { basename, dirname, joinPath } from '@/lib/path'
+import { REVEAL_FLASH_CLASS } from '@/lib/reveal-flash-class'
 import { cn } from '@/lib/utils'
 import { WORKSPACE_FILE_PATH_MIME } from '@/lib/workspace-file-drag'
 import { writeWorkspaceFileDragSourceForWorkspace } from '@/lib/workspace-file-drag-source'
@@ -41,6 +42,7 @@ export const CombinedDiffFileTreeRow = memo(function CombinedDiffFileTreeRow({
   activeSectionKey,
   sectionIndexByKey,
   isCollapsed,
+  isFlashing = false,
   visibleFileCount,
   onToggleDirectory,
   onNavigate
@@ -52,6 +54,7 @@ export const CombinedDiffFileTreeRow = memo(function CombinedDiffFileTreeRow({
   activeSectionKey: string | null
   sectionIndexByKey: ReadonlyMap<string, number>
   isCollapsed: boolean
+  isFlashing?: boolean
   visibleFileCount?: number
   onToggleDirectory: (key: string) => void
   onNavigate: (entry: CombinedDiffFileTreeEntry) => void
@@ -104,7 +107,8 @@ export const CombinedDiffFileTreeRow = memo(function CombinedDiffFileTreeRow({
       type="button"
       className={cn(
         'group flex w-full min-w-0 cursor-pointer items-center gap-1 py-1 pr-3 text-left text-xs transition-colors hover:bg-accent/40 disabled:cursor-default disabled:opacity-50 disabled:hover:bg-transparent',
-        activeSectionKey === sectionKey && 'bg-accent/60'
+        activeSectionKey === sectionKey && 'bg-accent/60',
+        isFlashing && REVEAL_FLASH_CLASS
       )}
       style={{
         paddingLeft: `${node.depth * COMBINED_DIFF_TREE_INDENT_PX + COMBINED_DIFF_TREE_FILE_PADDING_PX}px`

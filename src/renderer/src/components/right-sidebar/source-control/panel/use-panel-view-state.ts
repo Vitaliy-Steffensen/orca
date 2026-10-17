@@ -1,5 +1,7 @@
-import { useCallback, useMemo, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { useSourceControlRowReveal } from '@/lib/source-control-row-reveal'
 import { resolveSourceControlGroupOrder } from '../listing/section-order'
+import { collapsedDirsHidingRow, revealTargetSection } from './source-control-reveal-expansion'
 import { getNextSourceControlViewMode } from './header-toolbar'
 import { normalizeSourceControlViewMode } from '../commit/commit-drafts'
 import type { SourceControlStoreActions } from '../listing/use-store-actions'
@@ -108,6 +110,37 @@ export function useSourceControlPanelViewState({
     },
     [activeWorktreeId]
   )
+
+  // A reveal must out-rank a collapse: the row the user asked for cannot be behind one.
+  const reveal = useSourceControlRowReveal(activeWorktreeId)
+  const revealRowKey = reveal?.rowKey ?? null
+  useEffect(() => {
+    if (!revealRowKey) {
+      return
+    }
+    const section = revealTargetSection(revealRowKey)
+    if (section) {
+      setCollapsedSections((prev) => {
+        if (!prev.has(section)) {
+          return prev
+        }
+        const next = new Set(prev)
+        next.delete(section)
+        return next
+      })
+    }
+    setCollapsedTreeDirs((prev) => {
+      const hiding = collapsedDirsHidingRow(prev, revealRowKey)
+      if (hiding.length === 0) {
+        return prev
+      }
+      const next = new Set(prev)
+      for (const key of hiding) {
+        next.delete(key)
+      }
+      return next
+    })
+  }, [revealRowKey])
 
   const toggleTreeDir = useCallback((key: string) => {
     setCollapsedTreeDirs((prev) => {

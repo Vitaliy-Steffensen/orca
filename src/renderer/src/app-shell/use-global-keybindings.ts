@@ -3,7 +3,6 @@ import { toast } from 'sonner'
 import { translate } from '@/i18n/i18n'
 import { canShowRightSidebarForView } from '@/lib/right-sidebar-visibility'
 import { fileSearchClaimsTextKey } from '../lib/file-search-shortcut-policy'
-import { getSelectedTextForFileSearch } from '../lib/file-search-selection'
 import { registerAppCommandDispatcher } from '@/lib/app-command-dispatch'
 import { executePluginCommand } from '@/lib/plugin-command-execution'
 import { findPluginCommandForKeybinding } from '@/lib/plugin-command-keybindings'
@@ -14,10 +13,7 @@ import {
   shouldMinimizeFloatingWorkspacePanelOnCloseShortcut
 } from '@/lib/floating-workspace-terminal-actions'
 import { showTerminalShortcutCaptureNotification } from '@/lib/terminal-shortcut-capture-notification'
-import {
-  folderRelativePathToIncludeGlob,
-  selectedExplorerFolderRelativePath
-} from '../components/right-sidebar/file-search-include-pattern'
+import { takeSearchFromSelectionShortcut } from './search-from-selection-shortcut'
 import { usePluginCommands } from '@/store/plugin-panels'
 import { useAppStore } from '../store'
 import { takeSourceControlShortcut } from './source-control-shortcuts'
@@ -139,28 +135,14 @@ export function useGlobalKeybindings(args: {
 
       const canRevealRightSidebar = !creationLayoutActive && canShowRightSidebarForView(activeView)
 
-      if (matchShortcut('sidebar.search.toggle') && canRevealRightSidebar) {
-        // With a folder selected in the explorer, Cmd/Ctrl+Shift+F means "Find in Folder" — seed the include pattern with it, not a text search.
-        const selectedFolderRelativePath =
-          document.activeElement instanceof Element
-            ? selectedExplorerFolderRelativePath(document.activeElement)
-            : null
-        if (selectedFolderRelativePath !== null && activeWorktreeId) {
-          input.preventDefault()
-          notifyTerminalCapture('sidebar.search.toggle')
-          actions.showRightSidebarSearch({
-            includePattern: folderRelativePathToIncludeGlob(selectedFolderRelativePath)
-          })
-          return
-        }
-
-        const selectedText = getSelectedTextForFileSearch()
-        if (selectedText) {
-          input.preventDefault()
-          notifyTerminalCapture('sidebar.search.toggle')
-          actions.showRightSidebarSearch({ query: selectedText })
-          return
-        }
+      if (
+        matchShortcut('sidebar.search.toggle') &&
+        canRevealRightSidebar &&
+        takeSearchFromSelectionShortcut({ activeWorktreeId, actions })
+      ) {
+        input.preventDefault()
+        notifyTerminalCapture('sidebar.search.toggle')
+        return
       }
 
       // An empty floating workspace has no tab to close, so Cmd/Ctrl+W hides the overlay before other surfaces act.
@@ -199,6 +181,14 @@ export function useGlobalKeybindings(args: {
       if (groupFocus && matchShortcut(groupFocus)) {
         createAppCommandHandlers(state, input, context).get(groupFocus)?.()
         return
+      }
+
+      // Why before the editable bail: "where is this file" is asked while editing it, and no editor
+      // claims this chord — unlike the formatting chords that bail exists for.
+      if (matchShortcut('view.revealActiveFile')) {
+        if (createAppCommandHandlers(state, input, context).get('view.revealActiveFile')?.()) {
+          return
+        }
       }
 
       // Skip editable surfaces so TipTap's Cmd+B bold works; this renderer-side fallback covers the blur→press IPC race (docs/markdown-cmd-b-bold-design.md).
