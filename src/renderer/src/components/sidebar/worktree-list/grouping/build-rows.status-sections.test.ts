@@ -1,3 +1,4 @@
+import { CircleAlert, CirclePlay, Layers } from 'lucide-react'
 import { describe, expect, it } from 'vitest'
 import { buildRows } from './build-rows'
 import { getGroupKeysForWorktree } from './worktree-group-keys'
@@ -66,6 +67,37 @@ describe('workspace-status sections', () => {
       `header workspace-status:implementing <${getWorkspaceStatusSectionGroupKey('Autonomous')}`,
       'item wt-impl'
     ])
+  })
+
+  it('uses a configured icon and color on the outer section header', () => {
+    const rows = rowsFor({
+      statuses: SECTIONED_STATUSES.map((status) =>
+        status.section === 'Needs me'
+          ? { ...status, sectionIcon: 'circle-alert', sectionColor: 'rose' }
+          : status.section === 'Autonomous'
+            ? { ...status, sectionIcon: 'circle-play', sectionColor: 'sky' }
+            : status
+      )
+    })
+
+    expect(
+      rows.find((row) => row.type === 'header' && row.statusSection === 'Needs me')
+    ).toMatchObject({
+      tone: 'text-rose-600 dark:text-rose-300',
+      icon: CircleAlert
+    })
+    expect(
+      rows.find((row) => row.type === 'header' && row.statusSection === 'Autonomous')
+    ).toMatchObject({
+      tone: 'text-sky-600 dark:text-sky-300',
+      icon: CirclePlay
+    })
+    expect(
+      rows.find((row) => row.type === 'header' && row.statusSection === 'Research')
+    ).toMatchObject({
+      tone: 'text-foreground',
+      icon: Layers
+    })
   })
 
   it('counts every workspace in the section on its header', () => {

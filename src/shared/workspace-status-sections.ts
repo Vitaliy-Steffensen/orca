@@ -1,5 +1,10 @@
 import type { WorkspaceStatus, WorkspaceStatusDefinition } from './worktree/types'
 
+export type WorkspaceStatusSectionAppearance = {
+  icon?: string
+  color?: string
+}
+
 const WORKSPACE_STATUS_SECTION_GROUP_PREFIX = 'workspace-status-section:'
 export const MAX_WORKSPACE_STATUS_SECTION_LENGTH = 32
 
@@ -39,6 +44,102 @@ export function hasWorkspaceStatusSections(
   statuses: readonly WorkspaceStatusDefinition[]
 ): boolean {
   return statuses.some((status) => status.section !== undefined)
+}
+
+/** First configured icon and color among the lanes that belong to `section`. */
+export function getWorkspaceStatusSectionAppearance(
+  section: string,
+  statuses: readonly WorkspaceStatusDefinition[]
+): WorkspaceStatusSectionAppearance {
+  let icon: string | undefined
+  let color: string | undefined
+  for (const status of statuses) {
+    if (status.section !== section) {
+      continue
+    }
+    icon ??= status.sectionIcon
+    color ??= status.sectionColor
+    if (icon !== undefined && color !== undefined) {
+      break
+    }
+  }
+  return {
+    ...(icon === undefined ? {} : { icon }),
+    ...(color === undefined ? {} : { color })
+  }
+}
+
+function laneWithoutSection(status: WorkspaceStatusDefinition): WorkspaceStatusDefinition {
+  const {
+    section: _section,
+    sectionIcon: _sectionIcon,
+    sectionColor: _sectionColor,
+    ...lane
+  } = status
+  return lane
+}
+
+function withSectionAppearance(
+  status: WorkspaceStatusDefinition,
+  section: string,
+  appearance: { sectionIcon?: string; sectionColor?: string }
+): WorkspaceStatusDefinition {
+  const lane = laneWithoutSection(status)
+  return {
+    ...lane,
+    section,
+    ...(appearance.sectionIcon === undefined ? {} : { sectionIcon: appearance.sectionIcon }),
+    ...(appearance.sectionColor === undefined ? {} : { sectionColor: appearance.sectionColor })
+  }
+}
+
+/**
+ * Move one lane into a section, or out of every section.
+ *
+ * A lane that joins an existing section picks up that section's icon and color.
+ * Renaming the only lane in a section keeps the look. Splitting one lane off
+ * into a new name starts that name without a custom look.
+ */
+export function assignWorkspaceStatusSection(
+  statuses: readonly WorkspaceStatusDefinition[],
+  statusId: string,
+  section: string | undefined
+): WorkspaceStatusDefinition[] {
+  const current = statuses.find((status) => status.id === statusId)
+  if (!current) {
+    return [...statuses]
+  }
+  if (section === undefined) {
+    return statuses.map((status) => (status.id === statusId ? laneWithoutSection(status) : status))
+  }
+  const peer = statuses.find((status) => status.id !== statusId && status.section === section)
+  const othersRemain =
+    current.section !== undefined &&
+    statuses.some((status) => status.id !== statusId && status.section === current.section)
+  const appearance = peer
+    ? { sectionIcon: peer.sectionIcon, sectionColor: peer.sectionColor }
+    : othersRemain
+      ? {}
+      : { sectionIcon: current.sectionIcon, sectionColor: current.sectionColor }
+  return statuses.map((status) =>
+    status.id === statusId ? withSectionAppearance(status, section, appearance) : status
+  )
+}
+
+/** Write an icon and/or color onto every lane that already belongs to `section`. */
+export function updateWorkspaceStatusSectionAppearance(
+  statuses: readonly WorkspaceStatusDefinition[],
+  section: string,
+  appearance: WorkspaceStatusSectionAppearance
+): WorkspaceStatusDefinition[] {
+  return statuses.map((status) => {
+    if (status.section !== section) {
+      return status
+    }
+    const sectionIcon = appearance.icon ?? status.sectionIcon
+    const sectionColor = appearance.color ?? status.sectionColor
+    return withSectionAppearance(status, section, { sectionIcon, sectionColor })
+  })
 }
 
 /**

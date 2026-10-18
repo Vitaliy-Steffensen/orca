@@ -202,6 +202,8 @@ function WorkspaceKanbanDrawerContent({
     handleChangeStatusColor,
     handleChangeStatusIcon,
     handleChangeStatusSection,
+    handleChangeSectionColor,
+    handleChangeSectionIcon,
     handleMoveStatus,
     handleAddStatus,
     handleRemoveStatus
@@ -269,6 +271,8 @@ function WorkspaceKanbanDrawerContent({
         onChangeStatusColor: handleChangeStatusColor,
         onChangeStatusIcon: handleChangeStatusIcon,
         onChangeStatusSection: handleChangeStatusSection,
+        onChangeSectionColor: handleChangeSectionColor,
+        onChangeSectionIcon: handleChangeSectionIcon,
         sections: sectionFilter.sections,
         hiddenSections: sectionFilter.hiddenSections,
         onToggleSection: sectionFilter.toggleSection,

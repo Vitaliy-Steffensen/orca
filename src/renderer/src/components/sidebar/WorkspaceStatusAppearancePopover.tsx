@@ -3,7 +3,6 @@ import { Button } from '@/components/ui/button'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
 import { cn } from '@/lib/utils'
-import type { WorkspaceStatusDefinition } from '../../../../shared/worktree/types'
 import {
   getWorkspaceStatusColorOptions,
   getWorkspaceStatusIconOptions,
@@ -12,17 +11,35 @@ import {
 import { translate } from '@/i18n/i18n'
 
 type WorkspaceStatusAppearancePopoverProps = {
-  status: WorkspaceStatusDefinition
-  onChangeColor: (statusId: string, color: string) => void
-  onChangeIcon: (statusId: string, icon: string) => void
+  label: string
+  color?: string
+  icon?: string
+  onChangeColor: (color: string) => void
+  onChangeIcon: (icon: string) => void
+  /** Shown when no icon is chosen. Lane buttons omit this and use the default icon. */
+  unsetIcon?: React.ComponentType<{ className?: string }>
+  tooltip?: string
+  ariaLabel?: string
 }
 
 export default function WorkspaceStatusAppearancePopover({
-  status,
+  label,
+  color,
+  icon,
   onChangeColor,
-  onChangeIcon
+  onChangeIcon,
+  unsetIcon,
+  tooltip,
+  ariaLabel
 }: WorkspaceStatusAppearancePopoverProps): React.JSX.Element {
-  const meta = getWorkspaceStatusVisualMeta(status)
+  const meta = getWorkspaceStatusVisualMeta({
+    id: label,
+    label,
+    ...(color === undefined ? {} : { color }),
+    ...(icon === undefined ? {} : { icon })
+  })
+  const PreviewIcon = icon === undefined && unsetIcon ? unsetIcon : meta.icon
+  const tone = color === undefined && unsetIcon ? 'text-muted-foreground' : meta.tone
 
   return (
     <Popover modal={false}>
@@ -34,22 +51,26 @@ export default function WorkspaceStatusAppearancePopover({
               variant="ghost"
               size="icon-xs"
               className="relative size-7"
-              aria-label={translate(
-                'auto.components.sidebar.WorkspaceStatusAppearancePopover.ccbd1e2c69',
-                'Customize {{value0}} appearance',
-                { value0: status.label }
-              )}
+              aria-label={
+                ariaLabel ??
+                translate(
+                  'auto.components.sidebar.WorkspaceStatusAppearancePopover.ccbd1e2c69',
+                  'Customize {{value0}} appearance',
+                  { value0: label }
+                )
+              }
             >
               <span className={cn('absolute size-4 rounded-full opacity-20', meta.swatch)} />
-              <meta.icon className={cn('relative size-3.5', meta.tone)} />
+              <PreviewIcon className={cn('relative size-3.5', tone)} />
             </Button>
           </PopoverTrigger>
         </TooltipTrigger>
         <TooltipContent side="top" sideOffset={4}>
-          {translate(
-            'auto.components.sidebar.WorkspaceStatusAppearancePopover.74b1413279',
-            'Appearance'
-          )}
+          {tooltip ??
+            translate(
+              'auto.components.sidebar.WorkspaceStatusAppearancePopover.74b1413279',
+              'Appearance'
+            )}
         </TooltipContent>
       </Tooltip>
 
@@ -68,27 +89,27 @@ export default function WorkspaceStatusAppearancePopover({
           )}
         </div>
         <div className="grid grid-cols-8 gap-1">
-          {getWorkspaceStatusColorOptions().map((color) => (
-            <Tooltip key={color.id}>
+          {getWorkspaceStatusColorOptions().map((colorOption) => (
+            <Tooltip key={colorOption.id}>
               <TooltipTrigger asChild>
                 <button
                   type="button"
                   className={cn(
                     'flex size-8 items-center justify-center rounded-md border border-transparent outline-none transition-colors hover:bg-accent focus-visible:ring-1 focus-visible:ring-ring',
-                    status.color === color.id && 'border-ring bg-accent'
+                    color === colorOption.id && 'border-ring bg-accent'
                   )}
-                  onClick={() => onChangeColor(status.id, color.id)}
+                  onClick={() => onChangeColor(colorOption.id)}
                   aria-label={translate(
                     'auto.components.sidebar.WorkspaceStatusAppearancePopover.514be2f569',
                     'Set {{value0}} color to {{value1}}',
-                    { value0: status.label, value1: color.label }
+                    { value0: label, value1: colorOption.label }
                   )}
                 >
-                  <span className={cn('size-3.5 rounded-full', color.swatch)} />
+                  <span className={cn('size-3.5 rounded-full', colorOption.swatch)} />
                 </button>
               </TooltipTrigger>
               <TooltipContent side="top" sideOffset={4}>
-                {color.label}
+                {colorOption.label}
               </TooltipContent>
             </Tooltip>
           ))}
@@ -98,26 +119,26 @@ export default function WorkspaceStatusAppearancePopover({
           {translate('auto.components.sidebar.WorkspaceStatusAppearancePopover.8be427206b', 'Icon')}
         </div>
         <div className="grid grid-cols-6 gap-1">
-          {getWorkspaceStatusIconOptions().map((icon) => (
-            <Tooltip key={icon.id}>
+          {getWorkspaceStatusIconOptions().map((iconOption) => (
+            <Tooltip key={iconOption.id}>
               <TooltipTrigger asChild>
                 <Button
                   type="button"
-                  variant={status.icon === icon.id ? 'secondary' : 'ghost'}
+                  variant={icon === iconOption.id ? 'secondary' : 'ghost'}
                   size="icon-xs"
                   className="size-8"
-                  onClick={() => onChangeIcon(status.id, icon.id)}
+                  onClick={() => onChangeIcon(iconOption.id)}
                   aria-label={translate(
                     'auto.components.sidebar.WorkspaceStatusAppearancePopover.514be2f569',
                     'Set {{value0}} icon to {{value1}}',
-                    { value0: status.label, value1: icon.label }
+                    { value0: label, value1: iconOption.label }
                   )}
                 >
-                  <icon.icon className="size-3.5" />
+                  <iconOption.icon className="size-3.5" />
                 </Button>
               </TooltipTrigger>
               <TooltipContent side="top" sideOffset={4}>
-                {icon.label}
+                {iconOption.label}
               </TooltipContent>
             </Tooltip>
           ))}

@@ -94,3 +94,4 @@ Taken whole with every mirror; the fork lineage's work on top of upstream.
 56. A review summary shows the verdict it was submitted with. (§56)
 57. `orca file open --line/--column` opens a file with the cursor on that spot. (§57)
 58. Group workspace status lanes into collapsible sidebar sections, each header counting what it holds. (§58)
+59. Give a sidebar status section its own icon and color, and count the workspaces in each nested lane. (§59)

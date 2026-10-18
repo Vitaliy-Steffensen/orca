@@ -1,11 +1,14 @@
 import { describe, expect, it } from 'vitest'
 import {
+  assignWorkspaceStatusSection,
   getWorkspaceStatusSection,
+  getWorkspaceStatusSectionAppearance,
   getWorkspaceStatusSectionFromGroupKey,
   getWorkspaceStatusSectionGroupKey,
   getWorkspaceStatusSectionOrder,
   hasWorkspaceStatusSections,
-  sanitizeWorkspaceStatusSection
+  sanitizeWorkspaceStatusSection,
+  updateWorkspaceStatusSectionAppearance
 } from './workspace-status-sections'
 import {
   cloneDefaultWorkspaceStatuses,
@@ -77,5 +80,107 @@ describe('persisted normalization', () => {
       { id: 'a', label: 'A', color: 'neutral', icon: 'circle-dot', section: 'Needs me' },
       { id: 'b', label: 'B', color: 'blue', icon: 'circle-dot' }
     ])
+  })
+
+  it('keeps a valid section icon and color and drops anything else', () => {
+    expect(
+      normalizePersistedWorkspaceStatuses([
+        {
+          id: 'a',
+          label: 'A',
+          section: 'Needs me',
+          sectionIcon: 'circle-alert',
+          sectionColor: 'rose'
+        },
+        {
+          id: 'b',
+          label: 'B',
+          section: 'Autonomous',
+          sectionIcon: 'not-an-icon',
+          sectionColor: 'nope'
+        },
+        { id: 'c', label: 'C', section: '   ', sectionIcon: 'circle-play', sectionColor: 'sky' }
+      ])
+    ).toEqual([
+      {
+        id: 'a',
+        label: 'A',
+        color: 'neutral',
+        icon: 'circle-dot',
+        section: 'Needs me',
+        sectionIcon: 'circle-alert',
+        sectionColor: 'rose'
+      },
+      { id: 'b', label: 'B', color: 'blue', icon: 'circle-dot', section: 'Autonomous' },
+      { id: 'c', label: 'C', color: 'sky', icon: 'circle-dot' }
+    ])
+  })
+})
+
+describe('section appearance', () => {
+  const needsMe = {
+    id: 'a',
+    label: 'A',
+    section: 'Needs me',
+    sectionIcon: 'circle-alert',
+    sectionColor: 'rose'
+  }
+  const review = {
+    id: 'b',
+    label: 'B',
+    section: 'Needs me',
+    sectionIcon: 'circle-alert',
+    sectionColor: 'rose'
+  }
+  const autonomous = {
+    id: 'c',
+    label: 'C',
+    section: 'Autonomous',
+    sectionIcon: 'circle-play',
+    sectionColor: 'sky'
+  }
+
+  it('reads the shared icon and color for a section', () => {
+    expect(getWorkspaceStatusSectionAppearance('Needs me', [needsMe, autonomous])).toEqual({
+      icon: 'circle-alert',
+      color: 'rose'
+    })
+    expect(getWorkspaceStatusSectionAppearance('Research', [needsMe])).toEqual({})
+  })
+
+  it('gives a lane that joins a section that section’s look', () => {
+    expect(assignWorkspaceStatusSection([needsMe, autonomous], 'c', 'Needs me')[1]).toMatchObject({
+      section: 'Needs me',
+      sectionIcon: 'circle-alert',
+      sectionColor: 'rose'
+    })
+  })
+
+  it('keeps the look when the only lane in a section is renamed', () => {
+    expect(assignWorkspaceStatusSection([needsMe], 'a', 'Attention')).toEqual([
+      { ...needsMe, section: 'Attention' }
+    ])
+  })
+
+  it('starts a split-off section without a custom look', () => {
+    expect(assignWorkspaceStatusSection([needsMe, review], 'b', 'Later')[1]).toEqual({
+      id: 'b',
+      label: 'B',
+      section: 'Later'
+    })
+  })
+
+  it('drops the section look when a lane leaves every section', () => {
+    expect(assignWorkspaceStatusSection([needsMe], 'a', undefined)).toEqual([
+      { id: 'a', label: 'A' }
+    ])
+  })
+
+  it('writes an appearance onto every lane in the section', () => {
+    expect(
+      updateWorkspaceStatusSectionAppearance([needsMe, review, autonomous], 'Needs me', {
+        icon: 'flag'
+      })
+    ).toEqual([{ ...needsMe, sectionIcon: 'flag' }, { ...review, sectionIcon: 'flag' }, autonomous])
   })
 })

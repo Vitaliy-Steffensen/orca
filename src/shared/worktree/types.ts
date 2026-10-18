@@ -91,6 +91,13 @@ export type WorkspaceStatusDefinition = {
   icon?: string
   /** Outer band this lane belongs to. Absent means the lane sits at top level. */
   section?: string
+  /**
+   * Icon for that outer band. Stored on each lane so the band's look travels
+   * with its lanes instead of a second list that can drift from them.
+   */
+  sectionIcon?: string
+  /** Color for that outer band. Shared by every lane in the section. */
+  sectionColor?: string
 }
 
 export type Worktree = {

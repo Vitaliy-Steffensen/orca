@@ -116,6 +116,13 @@ function sanitizeWorkspaceStatusColor(
   return WORKSPACE_STATUS_COLOR_IDS[index % WORKSPACE_STATUS_COLOR_IDS.length]
 }
 
+function sanitizeOptionalWorkspaceStatusVisual(
+  value: unknown,
+  allowed: readonly string[]
+): string | undefined {
+  return typeof value === 'string' && allowed.some((id) => id === value) ? value : undefined
+}
+
 function sanitizeWorkspaceStatusIcon(
   value: unknown,
   statusId: string,
@@ -182,6 +189,16 @@ function normalizeWorkspaceStatusesInternal(
     }
     usedIds.add(id)
     const section = sanitizeWorkspaceStatusSection(raw.section)
+    // Why: section visuals are meaningless without a section, and an invalid id
+    // must disappear so a typo cannot stick in the payload.
+    const sectionIcon =
+      section === undefined
+        ? undefined
+        : sanitizeOptionalWorkspaceStatusVisual(raw.sectionIcon, WORKSPACE_STATUS_ICON_IDS)
+    const sectionColor =
+      section === undefined
+        ? undefined
+        : sanitizeOptionalWorkspaceStatusVisual(raw.sectionColor, WORKSPACE_STATUS_COLOR_IDS)
     statuses.push({
       id,
       label,
@@ -189,7 +206,9 @@ function normalizeWorkspaceStatusesInternal(
       icon: sanitizeWorkspaceStatusIcon(raw.icon, id, label, options),
       // Why spread: an absent section must stay absent so an untouched install
       // round-trips to a byte-identical payload.
-      ...(section === undefined ? {} : { section })
+      ...(section === undefined ? {} : { section }),
+      ...(sectionIcon === undefined ? {} : { sectionIcon }),
+      ...(sectionColor === undefined ? {} : { sectionColor })
     })
   }
 
