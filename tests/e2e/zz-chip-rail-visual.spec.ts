@@ -2,7 +2,7 @@ import { test, expect } from './helpers/orca-app'
 import { waitForActiveWorktree, waitForSessionReady } from './helpers/store'
 import { worktreeRow } from './worktree-row-locators'
 
-test('workspace card chip rail', async ({ page }, testInfo) => {
+test('workspace card chip rail', async ({ orcaPage: page }, testInfo) => {
   await waitForSessionReady(page)
   const worktreeId = await waitForActiveWorktree(page)
 
