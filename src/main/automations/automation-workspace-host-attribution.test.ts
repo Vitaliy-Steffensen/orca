@@ -21,7 +21,10 @@ import type { ProjectHostSetup } from '../../shared/project-types'
 import type { Repo } from '../../shared/repo-types'
 import type { SshTarget } from '../../shared/ssh-types'
 import { getDefaultPersistedState } from '../../shared/constants'
-import { AUTOMATION_ORPHAN_ISSUES } from '../../shared/automation-list-scope'
+import {
+  AUTOMATION_ORPHAN_ISSUES,
+  type AutomationListScopeSelector
+} from '../../shared/automation-list-scope'
 import { AutomationService } from './service'
 import { installFakeAppEnvironment } from '../../../config/scripts/vitest-host-ports-setup'
 
@@ -145,12 +148,23 @@ afterEach(async () => {
 })
 
 describe('folder-workspace host attribution', () => {
+  // The seeded pull-request check belongs to Self and has no workspace, so it is
+  // never the row these cases are about.
+  const scopedIds = (
+    store: Awaited<ReturnType<typeof createStore>>,
+    selector: AutomationListScopeSelector
+  ): string[] =>
+    store
+      .listAutomationsForScope({ selector })
+      .automations.filter((entry) => entry.kind !== 'pull_request_sync')
+      .map((entry) => entry.id)
+
   // The stored pin is `connectionId`; `executionHostId` is a renderer-side stamp that
   // normalization drops, so main can only ever see this form.
   it('files a pinned workspace under its SSH host instead of Self', async () => {
     const store = await createStore([folderWorkspace({ connectionId: 'ssh-1' })], [])
 
-    expect(store.listAutomationsForScope({ selector: { kind: 'self' } }).automations).toEqual([])
+    expect(scopedIds(store, { kind: 'self' })).toEqual([])
     const scoped = store.listAutomationsForScope({
       selector: { kind: 'ssh', targetId: 'ssh-1', expectedTargetGeneration: 7 }
     })
@@ -165,7 +179,7 @@ describe('folder-workspace host attribution', () => {
   it('orphans a workspace whose scope spans two hosts rather than showing a healthy Self row', async () => {
     const store = await createStore([folderWorkspace({})], AMBIGUOUS_REPOS)
 
-    expect(store.listAutomationsForScope({ selector: { kind: 'self' } }).automations).toEqual([])
+    expect(scopedIds(store, { kind: 'self' })).toEqual([])
     const orphans = store.listAutomationsForScope({ selector: { kind: 'orphan' } })
     expect(orphans.items[0]?.selector).toEqual({
       kind: 'orphan',
@@ -176,9 +190,7 @@ describe('folder-workspace host attribution', () => {
   it('leaves an unpinned local workspace on Self', async () => {
     const store = await createStore([folderWorkspace({})])
 
-    expect(
-      store.listAutomationsForScope({ selector: { kind: 'self' } }).automations.map((e) => e.id)
-    ).toEqual(['pinned-1'])
+    expect(scopedIds(store, { kind: 'self' })).toEqual(['pinned-1'])
   })
 })
 

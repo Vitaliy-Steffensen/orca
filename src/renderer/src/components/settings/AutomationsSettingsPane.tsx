@@ -65,7 +65,7 @@ export function AutomationsSettingsPane({
               <p className="text-xs leading-relaxed text-muted-foreground">
                 {translate(
                   'auto.components.settings.automations.defineStepDescription',
-                  'Choose a project, agent, prompt, and schedule.'
+                  'Choose a project, agent, prompt, and schedule — or a built-in check, which needs none of them.'
                 )}
               </p>
             </div>
@@ -84,7 +84,7 @@ export function AutomationsSettingsPane({
               <p className="text-xs leading-relaxed text-muted-foreground">
                 {translate(
                   'auto.components.settings.automations.runStepDescription',
-                  'The selected agent gets a fresh workspace when the schedule is due.'
+                  'When the schedule is due, an agent run gets a fresh workspace; a built-in check runs without one.'
                 )}
               </p>
             </div>

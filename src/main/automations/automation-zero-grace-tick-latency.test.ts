@@ -68,7 +68,14 @@ describe('AutomationService zero-grace tick latency', () => {
     service.start()
     service.setRendererReady()
     await vi.waitFor(() => {
-      if (store.listAutomations().some((automation) => automation.nextRunAt <= at)) {
+      // The seeded pull-request check ticks every minute, so it is never settled.
+      if (
+        store
+          .listAutomations()
+          .some(
+            (automation) => automation.kind !== 'pull_request_sync' && automation.nextRunAt <= at
+          )
+      ) {
         throw new Error('Automation evaluation is still saving its next occurrence')
       }
     })
