@@ -2028,8 +2028,9 @@ To release off-cycle, run it by hand — `gh workflow run fork-release.yml --ref
 `v*` tag to release that exact version. A merge and a hand-run both queue rather than cancel each
 other, so two merges in a row publish two versions.
 
-Note a full macOS build per merge is not free: it is up to 120 runner-minutes at the macOS billing
-multiplier, and a docs-only merge costs the same as a feature one.
+Note a full macOS build per merge is not free: about 10 wall-clock minutes, which macOS runners
+bill at a 10x multiplier — roughly 100 billable minutes a merge, and a docs-only merge costs the
+same as a feature one.
 
 **Versions.** The fork keeps its own version line: each release is the previous fork release plus
 one patch, unless `-f version=` overrides it. It cannot follow upstream's number, because the
