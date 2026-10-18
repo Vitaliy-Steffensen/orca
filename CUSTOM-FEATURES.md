@@ -19,6 +19,9 @@ Adding a feature here? See the rule at the top of [`CLAUDE.md`](./CLAUDE.md).
   saying so instead of going quiet after its first warning.
 - Shift+Tab in the chat composer turns Claude's Plan mode on and off, the composer names the mode
   you are in, and the next chat starts in the one you left off in.
+- A plan waiting on you reads in the transcript instead of a cramped card, and the composer carries
+  the decision: Copy, Approve (⌘⇧↵), and a field where what you type is sent back as the changes to
+  make.
 
 ## Inherited from `frbarbre/orca`
 

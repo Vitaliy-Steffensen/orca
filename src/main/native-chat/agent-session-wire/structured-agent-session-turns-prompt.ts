@@ -35,6 +35,8 @@ export type AgentSessionPromptRequest = {
   /** A decision id; or, from a client that predates `answers`, a question answer packed into one id. */
   optionId?: string
   answers?: AgentSessionQuestionAnswer[]
+  /** Free text left beside an approval decision; what to change about a denied plan. */
+  note?: string
 }
 
 function invalid(
@@ -51,8 +53,14 @@ function readPromptChoice(
 ): { response: AgentSessionPromptResponse; selectedOptionId: string } | null {
   if (prompt.kind === 'approval') {
     const optionId = input.optionId
+    // An adapter that reads no note still gets a well-formed decision, so a note it ignores is
+    // never a refusal the user cannot act on.
+    const note = input.note?.trim()
     return optionId !== undefined && prompt.options.some((option) => option.id === optionId)
-      ? { response: { kind: 'option', optionId }, selectedOptionId: optionId }
+      ? {
+          response: { kind: 'option', optionId, ...(note ? { note } : {}) },
+          selectedOptionId: optionId
+        }
       : null
   }
   const answers =
@@ -83,6 +91,8 @@ function resolvedWithSameChoice(
   }
   const { item, prompt } = settled
   const choice = readPromptChoice(prompt, input)
+  // Compared by option alone: the provider already has its reply, so a retry carrying different
+  // text replays the first resolution rather than sending the text nowhere.
   return choice?.selectedOptionId === prompt.resolution.selectedOptionId
     ? { itemId: item.itemId, revision: item.revision, resolution: prompt.resolution }
     : null
@@ -118,6 +128,7 @@ export async function performPrompt(
     state: 'resolved',
     selectedOptionId: choice.selectedOptionId,
     ...(response.kind === 'answers' ? { answers: response.answers } : {}),
+    ...(response.kind === 'option' && response.note ? { note: response.note } : {}),
     resolvedBy: ctx.resolvedBy,
     resolvedAt: ctx.now()
   }

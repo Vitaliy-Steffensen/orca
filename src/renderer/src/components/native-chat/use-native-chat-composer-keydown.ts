@@ -33,6 +33,8 @@ export type UseNativeChatComposerKeyDownArgs = {
   /** Shift+Tab: turn the live session's Plan mode on or off; false falls through to
    *  focus traversal. */
   togglePlanMode?: (() => boolean) | undefined
+  /** Cmd/Ctrl+Shift+Enter while a plan waits: approve it. */
+  approvePlan?: (() => void) | undefined
   /** Cmd/Ctrl+Enter from an empty composer: send the newest queued draft now; false falls
    *  through to send. */
   steerQueued?: (() => boolean) | undefined
@@ -56,6 +58,7 @@ export function useNativeChatComposerKeyDown({
   interrupt,
   send,
   togglePlanMode,
+  approvePlan,
   steerQueued,
   setActiveSuggestion,
   setDraft,
@@ -133,6 +136,15 @@ export function useNativeChatComposerKeyDown({
         interrupt()
         return
       }
+      // Before the plain-Enter send, which this chord is not: Shift would otherwise make it a newline.
+      if (event.key === 'Enter' && event.shiftKey && approvePlan) {
+        const approveChord = isMacPlatform() ? event.metaKey : event.ctrlKey
+        if (approveChord) {
+          event.preventDefault()
+          approvePlan()
+          return
+        }
+      }
       if (event.key === 'Enter' && !event.shiftKey) {
         // Platform primary modifier only (AGENTS.md): ⌘ on Mac, Ctrl elsewhere.
         const steerChord = isMacPlatform() ? event.metaKey : event.ctrlKey
@@ -187,6 +199,7 @@ export function useNativeChatComposerKeyDown({
       interrupt,
       isComposing,
       mentionFiles,
+      approvePlan,
       send,
       steerQueued,
       togglePlanMode,

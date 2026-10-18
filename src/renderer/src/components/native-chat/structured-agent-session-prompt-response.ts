@@ -1,5 +1,8 @@
 import type { RuntimeClientTarget } from '../../../../shared/runtime-client-target'
-import { supportsStructuredAgentSessionQuestionAnswers } from '@/runtime/structured-agent-session-client'
+import {
+  supportsStructuredAgentSessionApprovalNote,
+  supportsStructuredAgentSessionQuestionAnswers
+} from '@/runtime/structured-agent-session-client'
 import {
   legacyAgentSessionSelectedOptionId,
   type AgentSessionPromptResponse
@@ -22,7 +25,16 @@ export async function respondToStructuredAgentSessionPrompt({
   const promptTarget = { itemId: item.itemId, expectedRevision: item.revision }
   let fields: Record<string, unknown>
   if (response.kind === 'option') {
-    fields = { ...promptTarget, optionId: response.optionId }
+    // Refuse rather than strip: dropping the note would deny the plan without the feedback the
+    // user typed. A null releases the submit hold, so the text stays on screen.
+    if (response.note && !(await supportsStructuredAgentSessionApprovalNote(target))) {
+      return null
+    }
+    fields = {
+      ...promptTarget,
+      optionId: response.optionId,
+      ...(response.note ? { note: response.note } : {})
+    }
   } else if (await supportsStructuredAgentSessionQuestionAnswers(target)) {
     // Negotiated before mutate fingerprints the call: older hosts reject the strict field.
     fields = { ...promptTarget, answers: response.answers }

@@ -71,7 +71,8 @@ const NativeChatComposerPane = forwardRef<NativeChatComposerHandle, NativeChatCo
       steerQueued,
       recallSource,
       inputOwnedByCard = false,
-      notices: chatNotices
+      notices: chatNotices,
+      planApproval
     },
     ref
   ): React.JSX.Element {
@@ -301,7 +302,8 @@ const NativeChatComposerPane = forwardRef<NativeChatComposerHandle, NativeChatCo
       sendPty,
       sendStructured,
       setDraft,
-      setCaret
+      setCaret,
+      ...(planApproval ? { planApproval } : {})
     })
 
     const interrupt = useNativeChatComposerInterrupt({
@@ -338,6 +340,7 @@ const NativeChatComposerPane = forwardRef<NativeChatComposerHandle, NativeChatCo
       interrupt,
       send,
       togglePlanMode,
+      ...(planApproval ? { approvePlan: planApproval.approve } : {}),
       hasAttachments: imageAttachments.length > 0,
       ...(steerQueued ? { steerQueued } : {}),
       setActiveSuggestion,
@@ -367,6 +370,7 @@ const NativeChatComposerPane = forwardRef<NativeChatComposerHandle, NativeChatCo
         mentionFiles={mentionFiles}
         activeSuggestion={activeSuggestion}
         notices={notices}
+        {...(planApproval ? { planApproval } : {})}
         imageAttachments={imageAttachments}
         attachmentEnvironmentId={structuredTransport?.runtimeEnvironmentId ?? undefined}
         sendButtonDisabled={sendButtonDisabled}

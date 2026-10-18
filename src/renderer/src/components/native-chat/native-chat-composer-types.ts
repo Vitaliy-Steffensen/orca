@@ -1,4 +1,5 @@
 import type { NativeChatQueueResume } from './native-chat-composer-primary-action'
+import type { NativeChatPlanApproval } from './use-native-chat-plan-approval'
 import type { NativeChatComposerNotice } from './native-chat-composer-notice'
 import type { AgentSessionConversationCommand } from '../../../../shared/agent-session-conversation-command'
 import type { StructuredAgentContextUsage } from '../../../../shared/structured-agent-session-context-usage'
@@ -132,6 +133,8 @@ export type NativeChatComposerProps = {
   steerQueued?: () => boolean
   /** The chat's own notices, shown in the composer's notice card above its input. */
   notices?: readonly NativeChatComposerNotice[]
+  /** A plan waiting on the user: the composer carries its decision and takes the adjustments. */
+  planApproval?: NativeChatPlanApproval
   /** The conversation Up/Down recalls prompts from. */
   recallSource?: NativeChatRecallSource
 }

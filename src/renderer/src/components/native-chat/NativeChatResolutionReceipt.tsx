@@ -1,6 +1,9 @@
 import { translate } from '@/i18n/i18n'
 import { NativeChatMessageTimestamp } from './NativeChatMessageTimestamp'
 import { NativeChatAwaitingInputRow } from './NativeChatAwaitingInputRow'
+import { NativeChatPendingPlan } from './NativeChatPendingPlan'
+import { isPlanApprovalSubject } from '../../../../shared/agent-session-approval-subject'
+import type { CommentMarkdownLinkClickHandler } from '@/components/sidebar/CommentMarkdown'
 import type { NativeChatAskRowSubject } from '../../../../shared/native-chat-ask-row'
 import {
   nativeChatReceiptAnswers,
@@ -9,11 +12,15 @@ import {
 
 export function NativeChatResolutionReceipt({
   body,
-  disclosureId
+  disclosureId,
+  onLinkClick,
+  allowFileUriLinks = false
 }: {
   body: NativeChatResolvedPrompt
   /** Message this receipt stands in for; keys the question row's disclosure. */
   disclosureId?: string
+  onLinkClick?: CommentMarkdownLinkClickHandler
+  allowFileUriLinks?: boolean
 }): React.JSX.Element | null {
   const askDisclosureKey = disclosureId === undefined ? undefined : `ask:${disclosureId}`
   const subject: NativeChatAskRowSubject | null =
@@ -34,8 +41,18 @@ export function NativeChatResolutionReceipt({
                 : (body.questions?.[0]?.question ?? body.question)
           }
   if (body.resolution.state === 'pending') {
-    return body.kind === 'question' ? (
-      <NativeChatAwaitingInputRow subject={subject} pending disclosureKey={askDisclosureKey} />
+    if (body.kind === 'question') {
+      return (
+        <NativeChatAwaitingInputRow subject={subject} pending disclosureKey={askDisclosureKey} />
+      )
+    }
+    // Only a plan draws while pending; every other approval is still the card's to show.
+    return isPlanApprovalSubject(body.subject) ? (
+      <NativeChatPendingPlan
+        subject={body.subject}
+        {...(onLinkClick ? { onLinkClick } : {})}
+        allowFileUriLinks={allowFileUriLinks}
+      />
     ) : null
   }
   const { resolution } = body

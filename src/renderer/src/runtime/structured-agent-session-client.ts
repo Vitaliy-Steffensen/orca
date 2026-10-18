@@ -10,6 +10,7 @@ import {
   AGENT_SESSION_ATTENTION_ACK_RUNTIME_CAPABILITY,
   AGENT_SESSION_CONVERSATION_OUTLINE_RUNTIME_CAPABILITY,
   AGENT_SESSION_PROMPT_CANCEL_RUNTIME_CAPABILITY,
+  AGENT_SESSION_APPROVAL_NOTE_RUNTIME_CAPABILITY,
   AGENT_SESSION_QUESTION_ANSWERS_RUNTIME_CAPABILITY,
   AGENT_SESSION_REWIND_RUNTIME_CAPABILITY,
   AGENT_SESSION_REPEATED_STOP_RUNTIME_CAPABILITY,
@@ -68,6 +69,14 @@ export function supportsStructuredAgentSessionQuestionAnswers(
     target,
     AGENT_SESSION_QUESTION_ANSWERS_RUNTIME_CAPABILITY
   )
+}
+
+/** Whether the host takes free text beside an approval decision. An approval has no packed
+ *  fallback, so a client that cannot send one hides the field rather than drop what was typed. */
+export function supportsStructuredAgentSessionApprovalNote(
+  target: RuntimeClientTarget
+): Promise<boolean> {
+  return structuredAgentSessionHostSupports(target, AGENT_SESSION_APPROVAL_NOTE_RUNTIME_CAPABILITY)
 }
 
 /** Null when the host predates the outline, without calling it. A failed read
