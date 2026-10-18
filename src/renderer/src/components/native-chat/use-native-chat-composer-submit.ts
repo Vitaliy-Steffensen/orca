@@ -1,3 +1,4 @@
+import type { NativeChatPlanApproval } from './use-native-chat-plan-approval'
 import { useCallback, useMemo, useState } from 'react'
 import { translate } from '@/i18n/i18n'
 import { applyPickerSuggestion, type NativeChatPickerItem } from './native-chat-picker-items'
@@ -41,9 +42,10 @@ export function useNativeChatComposerSubmit(args: {
   sendStructured: (text: string, attachments: readonly NativeChatComposerImageAttachment[]) => void
   setDraft: (value: string) => void
   setCaret: (caret: number) => void
+  planApproval?: NativeChatPlanApproval
 }): { send: () => void; goalMode: NativeChatComposerGoalMode } {
   const { caret, disabled, draft, draftScopeKey, imageAttachments, sendPty, sendStructured } = args
-  const { setCaret, setDraft, structuredTransport } = args
+  const { planApproval, setCaret, setDraft, structuredTransport } = args
   const threadGoal = structuredTransport?.threadGoal
   const [entered, setEntered] = useState(false)
   const active = entered && threadGoal !== undefined
@@ -112,6 +114,11 @@ export function useNativeChatComposerSubmit(args: {
       if (!disabled) {
         setGoal()
       }
+    } else if (planApproval?.acceptsNote && draft.trim() !== '') {
+      // A plan is waiting: what the user typed is what to change about it, not a new turn.
+      planApproval.revise(draft)
+      setDraft('')
+      setCaret(0)
     } else if (!structuredTransport) {
       sendPty()
     } else if ((draft.trim() !== '' || imageAttachments.length > 0) && !disabled) {
@@ -122,6 +129,7 @@ export function useNativeChatComposerSubmit(args: {
     disabled,
     draft,
     imageAttachments,
+    planApproval,
     sendPty,
     sendStructured,
     setCaret,

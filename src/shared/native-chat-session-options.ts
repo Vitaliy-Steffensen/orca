@@ -96,6 +96,17 @@ export function isDefaultServiceTier(
   )
 }
 
+/** Like Fast off, the normal permission mode adds nothing to a summary pill. */
+export function isDefaultPermissionMode(
+  descriptor: Pick<SessionOptionDescriptor, 'id' | 'kind'>
+): boolean {
+  return (
+    descriptor.id === 'permissionMode' &&
+    descriptor.kind.type === 'select' &&
+    descriptor.kind.currentValue === 'default'
+  )
+}
+
 export type SessionOptionSetResult = {
   snapshot: SessionOptionDescriptor[]
 }

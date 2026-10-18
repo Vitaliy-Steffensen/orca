@@ -100,7 +100,22 @@ export function decodeClaudeQuestionOptionId(
   }
 }
 
-function approvalResponse(prompt: ClaudePendingPrompt, optionId: string): PermissionResult {
+/** The deny Claude is sent. With nothing typed this is the standing literal; with feedback the
+ *  text is passed through verbatim, because it is deliberately model input. */
+function denyMessage(prompt: ClaudePendingPrompt, note: string | undefined): string {
+  if (prompt.subject?.kind === 'plan') {
+    return note
+      ? `The user asked you to keep planning and left this feedback:\n\n${note}\n\nRevise the plan to address that feedback and call ExitPlanMode again.`
+      : 'The user asked you to keep planning. Revise the plan and call ExitPlanMode again.'
+  }
+  return note ? `User denied this action: ${note}` : 'User denied this action.'
+}
+
+function approvalResponse(
+  prompt: ClaudePendingPrompt,
+  optionId: string,
+  note: string | undefined
+): PermissionResult {
   if (!isClaudeApprovalDecision(optionId)) {
     throw new Error(`${optionId} is not a Claude approval decision`)
   }
@@ -122,10 +137,7 @@ function approvalResponse(prompt: ClaudePendingPrompt, optionId: string): Permis
   }
   return {
     behavior: 'deny',
-    message:
-      prompt.subject?.kind === 'plan'
-        ? 'The user asked you to keep planning. Revise the plan and call ExitPlanMode again.'
-        : 'User denied this action.',
+    message: denyMessage(prompt, note),
     toolUseID: prompt.toolUseId
   }
 }
@@ -181,7 +193,7 @@ export function buildClaudePromptReply(
     if (response.kind !== 'option') {
       throw new Error(`Claude prompt ${prompt.promptKey} takes a decision, not answers`)
     }
-    return approvalResponse(prompt, response.optionId)
+    return approvalResponse(prompt, response.optionId, response.note)
   }
   if (response.kind !== 'answers') {
     throw new Error(`Claude prompt ${prompt.promptKey} takes answers, not a decision`)

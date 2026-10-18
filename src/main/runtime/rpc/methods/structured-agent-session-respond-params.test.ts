@@ -90,6 +90,26 @@ describe('prompt response parameters', () => {
     await rejects('agentSession.respondToApproval', { ...base, optionId: 'x'.repeat(1025) })
   })
 
+  it('takes the adjustments typed beside an approval, and bounds them', async () => {
+    const base = { envelope: envelope(), itemId: 'item-1', expectedRevision: 1, optionId: 'deny' }
+    const response = await call(
+      'agentSession.respondToApproval',
+      { ...base, note: 'Split step 3 in two.' },
+      STRUCTURED_CLIENT
+    )
+    expect(response).toMatchObject({ ok: true })
+    expect(hostCalls.respondToPrompt).toHaveBeenCalledWith(
+      expect.anything(),
+      expect.objectContaining({ kind: 'approval', note: 'Split step 3 in two.' })
+    )
+
+    await rejects('agentSession.respondToApproval', { ...base, note: 'x'.repeat(64 * 1024 + 1) })
+    // Multi-byte text passes `.max()` on code units and must still fail on bytes.
+    await rejects('agentSession.respondToApproval', { ...base, note: 'é'.repeat(40 * 1024) })
+    // Still strict: the note is the only field the approval gained.
+    await rejects('agentSession.respondToApproval', { ...base, revisions: 'typo' })
+  })
+
   it('takes a question id exactly as the agent wrote it, including edge spaces', async () => {
     const answers = [{ questionId: 'scope ', optionIds: [], other: 'mine' }]
     const response = await call(

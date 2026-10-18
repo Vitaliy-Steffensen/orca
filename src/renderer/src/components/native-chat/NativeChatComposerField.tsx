@@ -9,6 +9,8 @@ import type { ComposerAutocomplete, NativeChatPickerItem } from './native-chat-c
 import { NativeChatMentionMenu, NativeChatPickerMenu } from './NativeChatAutocompleteMenus'
 import type { NativeChatMentionFiles } from './use-native-chat-mention-files'
 import { NativeChatComposerActions } from './NativeChatComposerActions'
+import { NativeChatPlanApprovalBar } from './NativeChatPlanApprovalBar'
+import type { NativeChatPlanApproval } from './use-native-chat-plan-approval'
 import { NativeChatComposerNotices } from './NativeChatComposerNotices'
 import type { NativeChatComposerNotice } from './native-chat-composer-notice'
 import type { NativeChatContextUsageSummary } from './native-chat-context-usage-summary'
@@ -46,6 +48,7 @@ export type NativeChatComposerFieldProps = {
   mentionFiles: NativeChatMentionFiles
   activeSuggestion: number
   notices: readonly NativeChatComposerNotice[]
+  planApproval?: NativeChatPlanApproval
   imageAttachments: readonly NativeChatComposerImageAttachment[]
   /** The paired server a structured chat runs on, which reads back files stored there. */
   attachmentEnvironmentId?: string
@@ -136,6 +139,7 @@ export function NativeChatComposerField({
   mentionFiles,
   activeSuggestion,
   notices,
+  planApproval,
   imageAttachments,
   attachmentEnvironmentId,
   sendButtonDisabled,
@@ -269,7 +273,8 @@ export function NativeChatComposerField({
               // Why: always-on hairline (token-level border, not focus ring) —
               // no focus/click border flash. The box is a container, not a
               // focus target.
-              'rounded-xl border border-chat-composer-border p-1.5 shadow-xs',
+              'rounded-xl border p-1.5 shadow-xs',
+              planApproval ? 'border-chat-plan-border' : 'border-chat-composer-border',
               'bg-chat-composer-surface',
               // Why (#10481): the native caret blink invalidates paint up to the
               // nearest containment boundary; without this the whole transcript
@@ -293,6 +298,7 @@ export function NativeChatComposerField({
                 ))}
               </div>
             ) : null}
+            {planApproval ? <NativeChatPlanApprovalBar plan={planApproval} /> : null}
             <NativeChatPromptEditor
               key={draftScopeKey}
               scopeKey={draftScopeKey}
@@ -339,12 +345,17 @@ export function NativeChatComposerField({
                   : undefined
               }
               placeholder={
-                goalMode?.active
+                planApproval?.acceptsNote
                   ? translate(
-                      'components.native-chat.goal.placeholder',
-                      'Describe your goal, define measurable outcomes for best results'
+                      'components.native-chat.plan.adjustmentsPlaceholder',
+                      'Enter your plan adjustments here…'
                     )
-                  : nativeChatComposerPlaceholder(hasPty, canSend, afterStop)
+                  : goalMode?.active
+                    ? translate(
+                        'components.native-chat.goal.placeholder',
+                        'Describe your goal, define measurable outcomes for best results'
+                      )
+                    : nativeChatComposerPlaceholder(hasPty, canSend, afterStop)
               }
               // Why: coarse-pointer min-height follows the app's touch target convention.
               // Editable content grows naturally; the 8lh cap (plus
@@ -354,7 +365,8 @@ export function NativeChatComposerField({
               className={cn(
                 'min-h-12 w-full bg-transparent px-2 py-1 text-sm text-chat-foreground-strong outline-none pointer-coarse:min-h-14',
                 'max-h-[calc(8lh+0.5rem)] overflow-y-auto scrollbar-sleek',
-                'placeholder:text-chat-foreground-faint disabled:cursor-not-allowed disabled:opacity-50'
+                'placeholder:text-chat-foreground-faint disabled:cursor-not-allowed disabled:opacity-50',
+                planApproval?.acceptsNote && 'native-chat-plan-hatch'
               )}
             />
             <div className="flex flex-wrap items-center gap-2 pt-0.5">

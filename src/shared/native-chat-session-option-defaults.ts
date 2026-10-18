@@ -39,7 +39,8 @@ export const STRUCTURED_LAUNCH_SEED_OPTION_IDS = [
   'model',
   'effort',
   'fastMode',
-  'serviceTier'
+  'serviceTier',
+  'permissionMode'
 ] as const
 
 /** Any chosen option set narrowed to what a structured create may seed: the seedable ids only,

@@ -292,6 +292,7 @@ export function claudeStructuredSessionOptionsFrom(
     session.options.get('effort') ??
     session.reportedOptions.effort ??
     session.appliedOptions?.effort
+  const permissionMode = session.options.get('permissionMode')
   let desiredFastMode = decodedFastMode(session)
   if (
     desiredFastMode === true &&
@@ -328,6 +329,7 @@ export function claudeStructuredSessionOptionsFrom(
       model,
       ...(effort ? { effort } : {}),
       ...(fastMode !== undefined ? { fastMode } : {}),
+      ...(permissionMode ? { permissionMode } : {}),
       ...(session.fastModeState ? { fastModeState: session.fastModeState } : {}),
       ...(confirmed.length > 0 ? { confirmed } : {})
     },
