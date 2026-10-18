@@ -166,6 +166,8 @@ export type PreloadApi = {
     hover: (args: LanguageServerRequest) => Promise<LanguageServerHoverResult>
     references: (args: LanguageServerRequest) => Promise<LanguageServerReferencesResult>
     stop: (args: { language: LanguageServerLanguage }) => Promise<void>
+    /** Release every server started for this checkout; used when a workspace is archived or deleted. */
+    stopWorktree: (args: { worktreeRoot: string }) => Promise<void>
   }
   materialIcons: {
     read: () => Promise<MaterialIconConfigSnapshot>

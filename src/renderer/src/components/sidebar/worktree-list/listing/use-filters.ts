@@ -125,6 +125,11 @@ export function useSidebarWorktreeFilters() {
         state.setHideWorkspacesFromOtherDevices(false)
       }
     }
+    // Why: an archived workspace is hidden by a reveal toggle rather than a
+    // filter, so Clear Filters cannot bring it back — revealing it must.
+    if (worktree.isArchived && !state.showArchivedWorkspaces) {
+      state.setShowArchivedWorkspaces(true)
+    }
     if (!state.showSleepingWorkspaces) {
       const tabsByWorktree = getVisibleWorktreeTerminalActivityTabs(state.tabsByWorktree)
       const browserTabsByWorktree = getVisibleWorktreeBrowserActivityTabs(

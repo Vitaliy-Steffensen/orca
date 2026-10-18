@@ -24,6 +24,9 @@ Adding a feature here? See the rule at the top of [`CLAUDE.md`](./CLAUDE.md).
   make.
 - Mark a workspace Autonomous or Supervised from its card menu or `orca worktree set --autonomy`;
   autonomous ones carry a quiet marker on the card, and the setting never leaves Orca.
+- Right-click a workspace to Archive it: everything it is running shuts down and it leaves the
+  sidebar, keeping the checkout. Cmd+J's "View Archived Workspaces" brings them back to unarchive,
+  and a merged or closed pull request can archive its workspace instead of deleting it.
 
 ## Inherited from `frbarbre/orca`
 

@@ -44,6 +44,14 @@ function readRequest(value: unknown): LanguageServerRequest | null {
   }
 }
 
+function readWorktreeRoot(value: unknown): string | null {
+  if (typeof value !== 'object' || value === null || !('worktreeRoot' in value)) {
+    return null
+  }
+  const { worktreeRoot } = value
+  return typeof worktreeRoot === 'string' && worktreeRoot ? worktreeRoot : null
+}
+
 const PREVIEW_LINES = 10
 const MAX_PREVIEW_FILE_BYTES = 5_000_000
 
@@ -94,6 +102,12 @@ export function registerLanguageServerHandlers(): void {
     const language = (args as { language?: unknown } | null)?.language
     if (isLanguageServerLanguage(language)) {
       service.stopLanguage(language)
+    }
+  })
+  ipcMain.handle('languageServer:stopWorktree', (_event, args: unknown) => {
+    const worktreeRoot = readWorktreeRoot(args)
+    if (worktreeRoot) {
+      service.stopWorktree(worktreeRoot)
     }
   })
   app.once('will-quit', () => service.disposeAll())

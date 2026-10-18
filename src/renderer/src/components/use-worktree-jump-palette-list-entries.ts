@@ -4,21 +4,27 @@ import {
   CREATE_WORKTREE_ITEM_ID
 } from '@/lib/worktree-palette-create-action'
 import { translate } from '@/i18n/i18n'
+import { buildArchivedWorkspacePaletteEntries } from '@/components/cmd-j/archived-workspace-palette'
+import { buildPaletteListEntryRenderKeys } from '@/components/cmd-j/palette-list-entry-render-keys'
 import {
   appendPaletteListEntries,
   CONTINUED_SECTION_HEADER_ID_SUFFIX,
   type PaletteItem,
   type PaletteListEntry
 } from './worktree-jump-palette-model'
-import { buildPaletteListEntryRenderKeys } from '@/components/cmd-j/palette-list-entry-render-keys'
 import type { WorktreeJumpPaletteSections } from './use-worktree-jump-palette-sections'
 import type { WorktreeJumpPaletteWorktrees } from './use-worktree-jump-palette-worktrees'
 import type { WorktreeJumpPaletteLocalState } from './use-worktree-jump-palette-local-state'
+import type { WorktreeJumpPaletteStoreState } from './use-worktree-jump-palette-store-state'
 
 type WorktreeJumpPaletteListEntriesInput = WorktreeJumpPaletteSections &
   Pick<WorktreeJumpPaletteWorktrees, 'hasQuery'> &
-  Pick<WorktreeJumpPaletteLocalState, 'autoSelectedItemIdRef' | 'taskSourceUrl'> &
-  Pick<WorktreeJumpPaletteSections, 'middleLeadsSections' | 'handleExpandSection'>
+  Pick<
+    WorktreeJumpPaletteLocalState,
+    'autoSelectedItemIdRef' | 'query' | 'taskSourceUrl' | 'viewingArchivedWorkspaces'
+  > &
+  Pick<WorktreeJumpPaletteSections, 'middleLeadsSections' | 'handleExpandSection'> &
+  Pick<WorktreeJumpPaletteStoreState, 'allWorktrees' | 'lastVisitedAtByWorktreeId' | 'repos'>
 
 export function useWorktreeJumpPaletteListEntries({
   hasQuery,
@@ -28,9 +34,22 @@ export function useWorktreeJumpPaletteListEntries({
   autoSelectedItemIdRef,
   taskSourceUrl,
   handleExpandSection,
-  middleLeadsSections
+  middleLeadsSections,
+  viewingArchivedWorkspaces,
+  allWorktrees,
+  lastVisitedAtByWorktreeId,
+  repos,
+  query
 }: WorktreeJumpPaletteListEntriesInput) {
   const listEntries = useMemo<PaletteListEntry[]>(() => {
+    if (viewingArchivedWorkspaces) {
+      return buildArchivedWorkspacePaletteEntries({
+        worktrees: allWorktrees,
+        lastVisitedAtByWorktreeId,
+        repos,
+        query
+      })
+    }
     const entries: PaletteListEntry[] = []
     const {
       visibleWorktreeItems,
@@ -228,13 +247,18 @@ export function useWorktreeJumpPaletteListEntries({
     }
     return entries
   }, [
+    allWorktrees,
     handleExpandSection,
     hasQuery,
+    lastVisitedAtByWorktreeId,
     middleLeadsSections,
     openTabsLeadSections,
     paletteSections,
+    query,
+    repos,
     showCreateAction,
-    taskSourceUrl
+    taskSourceUrl,
+    viewingArchivedWorkspaces
   ])
   const selectableItems = useMemo<PaletteItem[]>(
     () =>

@@ -32,7 +32,13 @@ export function NativeChatPlanApprovalBar({
       {plan.acceptsNote ? null : (
         // This host takes no adjustments with the denial, so the way back to planning has to be a
         // button rather than what the user types.
-        <Button type="button" size="sm" variant="ghost" onClick={plan.keepPlanning} disabled={plan.isSubmitting}>
+        <Button
+          type="button"
+          size="sm"
+          variant="ghost"
+          onClick={plan.keepPlanning}
+          disabled={plan.isSubmitting}
+        >
           {translate('components.native-chat.plan.keepPlanning', 'Keep planning')}
         </Button>
       )}

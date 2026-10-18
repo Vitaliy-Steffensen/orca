@@ -3,6 +3,7 @@ import { useAppStore } from '@/store'
 import type { WorkspaceStatusRuleConfig } from '../../../../shared/workspace-status-rule-config'
 import type { WorkspaceStatusRulePlan } from '../../../../shared/workspace-status-rule-plan'
 import { createReviewWorkspace } from './create-review-workspace'
+import { runArchiveWorktrees } from '../sidebar/archive-worktree-flow'
 import { translate } from '@/i18n/i18n'
 
 async function applyStatusUpdates(plan: WorkspaceStatusRulePlan): Promise<void> {
@@ -42,6 +43,36 @@ async function applyRemovals(plan: WorkspaceStatusRulePlan): Promise<void> {
     // checkout survives would have the inbox build a second one beside it.
     if (removal.forgetHandledKey) {
       forget.push(removal.forgetHandledKey)
+    }
+  }
+  if (forget.length > 0) {
+    forgetPullRequestHandled(forget)
+  }
+}
+
+async function applyArchives(plan: WorkspaceStatusRulePlan): Promise<void> {
+  if (plan.archives.length === 0) {
+    return
+  }
+  const { forgetPullRequestHandled } = useAppStore.getState()
+  // Why one batch: the teardown clears the active workspace once for the whole
+  // set rather than flickering the content panel per archive.
+  await runArchiveWorktrees(plan.archives.map((archive) => archive.worktreeId))
+  const stillPresent = new Set(
+    useAppStore
+      .getState()
+      .allWorktrees()
+      .filter((worktree) => !worktree.isArchived)
+      .map((worktree) => worktree.id)
+  )
+  const forget: string[] = []
+  for (const archive of plan.archives) {
+    if (stillPresent.has(archive.worktreeId)) {
+      // Why no toast: runArchiveWorktrees already said what went wrong.
+      continue
+    }
+    if (archive.forgetHandledKey) {
+      forget.push(archive.forgetHandledKey)
     }
   }
   if (forget.length > 0) {
@@ -104,5 +135,6 @@ export async function applyWorkspaceStatusRulePlan(
 ): Promise<void> {
   await applyStatusUpdates(plan)
   await applyRemovals(plan)
+  await applyArchives(plan)
   await applyCreations(plan, config)
 }

@@ -41,10 +41,15 @@ export function createLanguageServerService({
   hover: (request: LanguageServerRequest) => Promise<LanguageServerHoverResult>
   references: (request: LanguageServerRequest) => Promise<LanguageServerReferencesResult>
   stopLanguage: (language: LanguageServerLanguage) => void
+  stopWorktree: (worktreeRoot: string) => void
   disposeAll: () => void
 } {
   const launches = new Map<string, LanguageServerLaunch>()
   const lastLaunchByWorktree = new Map<string, LanguageServerLaunch>()
+  // Why not derivable from the key: the key holds the project root, which in a
+  // monorepo is a package inside the checkout, and a server started from a file
+  // outside the checkout keeps the project that led there.
+  const worktreeRootsByKey = new Map<string, Set<string>>()
   const pool = createLspSessionPool<Session>({
     start: (key) => {
       const launch = launches.get(key)
@@ -81,6 +86,9 @@ export function createLanguageServerService({
     }
     const key = sessionKey(launch)
     launches.set(key, launch)
+    const roots = worktreeRootsByKey.get(key) ?? new Set<string>()
+    roots.add(worktreeRoot)
+    worktreeRootsByKey.set(key, roots)
     try {
       return { ok: true, value: await ask(pool.acquire(key)) }
     } catch (error) {
@@ -135,6 +143,26 @@ export function createLanguageServerService({
       return { ok: true, locations: result.value, files }
     },
     stopLanguage: (language) => pool.disposeMatching((key) => key.startsWith(`${language}\0`)),
+    // Why only when no other checkout shares the session: two worktrees can
+    // resolve the same project root, and stopping one must not blind the other.
+    stopWorktree: (worktreeRoot) => {
+      for (const [key, roots] of worktreeRootsByKey) {
+        if (!roots.delete(worktreeRoot)) {
+          continue
+        }
+        if (roots.size > 0) {
+          continue
+        }
+        worktreeRootsByKey.delete(key)
+        launches.delete(key)
+        pool.disposeMatching((candidate) => candidate === key)
+      }
+      for (const key of lastLaunchByWorktree.keys()) {
+        if (key.endsWith(`\0${worktreeRoot}`)) {
+          lastLaunchByWorktree.delete(key)
+        }
+      }
+    },
     disposeAll: () => pool.disposeAll()
   }
 }

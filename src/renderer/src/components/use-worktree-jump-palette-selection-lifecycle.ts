@@ -67,7 +67,9 @@ export function useWorktreeJumpPaletteSelectionLifecycle({
   prefetchCreateWorkspaceBaseForComposer,
   fallbackFocusOuterFrameRef,
   fallbackFocusInnerFrameRef,
-  closeModal
+  closeModal,
+  viewingArchivedWorkspaces,
+  setViewingArchivedWorkspaces
 }: WorktreeJumpPaletteSelectionLifecycleInput) {
   const hasAnyWorktrees = visibleWorktreesForState.length > 0
   const hasAnySearchableWorktrees = hasQuery ? searchScopeWorktrees.length > 0 : hasAnyWorktrees
@@ -213,6 +215,14 @@ export function useWorktreeJumpPaletteSelectionLifecycle({
       if (open) {
         return
       }
+      if (viewingArchivedWorkspaces) {
+        setViewingArchivedWorkspaces(false)
+        latestQueryRef.current = ''
+        setQuery('')
+        setSelectedItemId('')
+        listRef.current?.scrollTo(0, 0)
+        return
+      }
       closeModal()
       if (skipRestoreFocusRef.current) {
         return
@@ -229,7 +239,7 @@ export function useWorktreeJumpPaletteSelectionLifecycle({
       }
     },
     // oxlint-disable-next-line react-hooks/exhaustive-deps -- controller refs preserve their original stable identities.
-    [closeModal, focusFallbackSurface, requestBrowserFocus]
+    [closeModal, focusFallbackSurface, requestBrowserFocus, viewingArchivedWorkspaces]
   )
   return {
     hasAnyWorktrees,
