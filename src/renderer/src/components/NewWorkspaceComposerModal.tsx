@@ -1,3 +1,9 @@
+import {
+  DEFAULT_WORKSPACE_MODE,
+  WORKSPACE_MODE_VALUES,
+  type WorkspaceMode
+} from '../../../shared/workspace-mode'
+import { resolveWorkspaceModeAgent } from '../../../shared/workspace-mode-launch-defaults'
 import React, { Suspense, useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useAppStore } from '@/store'
 import { lazyWithRetry } from '@/lib/lazy-with-retry'
@@ -167,6 +173,7 @@ function QuickTabBody({
   // override rather than an effect that mirrors a prop into state — deriving
   // during render keeps the selection in sync with the detected set without
   // triggering an extra commit.
+  const [workspaceMode, setWorkspaceMode] = useState<WorkspaceMode>(DEFAULT_WORKSPACE_MODE)
   const [quickAgentOverride, setQuickAgentOverride] = useState<TuiAgent | null | undefined>(
     undefined
   )
@@ -174,8 +181,18 @@ function QuickTabBody({
     const pref = settings?.defaultTuiAgent
     // Why: detection can still be pending when quick-create submits; keep the
     // prior catalog fallback while filtering disabled agents out of that choice.
-    return pickQuickWorkspaceAgent(pref, cardProps.detectedAgentIds, settings?.disabledTuiAgents)
-  }, [cardProps.detectedAgentIds, settings?.defaultTuiAgent, settings?.disabledTuiAgents])
+    return resolveWorkspaceModeAgent(
+      workspaceMode,
+      cardProps.detectedAgentIds,
+      settings?.disabledTuiAgents,
+      pickQuickWorkspaceAgent(pref, cardProps.detectedAgentIds, settings?.disabledTuiAgents)
+    )
+  }, [
+    workspaceMode,
+    cardProps.detectedAgentIds,
+    settings?.defaultTuiAgent,
+    settings?.disabledTuiAgents
+  ])
   const resolvedQuickAgentSelection = resolveQuickWorkspaceAgentSelection({
     quickAgentOverride,
     preferredQuickAgent,
@@ -214,8 +231,8 @@ function QuickTabBody({
       }
       return
     }
-    await submitQuick(quickAgent, launchSeedRef.current)
-  }, [onClose, quickAgent, submitQuick])
+    await submitQuick(quickAgent, launchSeedRef.current, workspaceMode)
+  }, [onClose, quickAgent, submitQuick, workspaceMode])
   // Why: Add Project layers over the composer as a nested dialog instead of
   // replacing it in the activeModal slot — closing the composer mid-flow (and
   // losing the typed name/prompt) was the old, abrupt behavior. Once opened it
@@ -279,6 +296,14 @@ function QuickTabBody({
       return
     }
     const onKeyDown = (event: KeyboardEvent): void => {
+      const modifier = navigator.userAgent.includes('Mac') ? event.metaKey : event.ctrlKey
+      const nextMode = WORKSPACE_MODE_VALUES[Number(event.key) - 1]
+      if (modifier && !event.altKey && !event.shiftKey && !event.isComposing && nextMode) {
+        event.preventDefault()
+        event.stopPropagation()
+        setWorkspaceMode(nextMode)
+        return
+      }
       // Why: workspace creation is screen-local submit behavior, not a
       // user-configurable app command.
       if (!isScreenSubmitShortcut(event)) {
@@ -330,6 +355,8 @@ function QuickTabBody({
         composerRef={composerRef}
         onComposerNodeChange={onComposerNodeChange}
         nameInputRef={nameInputRef}
+        workspaceMode={workspaceMode}
+        onWorkspaceModeChange={setWorkspaceMode}
         quickAgent={quickAgent}
         onQuickAgentChange={handleQuickAgentChange}
         {...cardProps}

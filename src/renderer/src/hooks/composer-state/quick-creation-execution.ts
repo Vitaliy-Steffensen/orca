@@ -1,3 +1,10 @@
+import { workspaceAutonomyForMode, workspaceIntentForMode } from '../../../../shared/workspace-mode'
+import { promptForWorkspaceMode } from '../../../../shared/workspace-mode-prompts'
+import {
+  normalizeNativeChatPromptMarks,
+  SIMPLIFY_PROMPT_MARK_ID
+} from '../../../../shared/native-chat-prompt-marks'
+import type { WorkspaceMode } from '../../../../shared/workspace-mode'
 import type { ComposerModel } from './composer-model'
 
 type QuickCreationExecutionInput = Pick<
@@ -87,7 +94,8 @@ export function useQuickCreationExecution(input: QuickCreationExecutionInput) {
       workspaceNameSeed: string,
       workspaceRunContext: WorktreeCreationRequest['workspaceRunContext'],
       repoId: string,
-      launchSeedOverlay?: Readonly<Record<string, string>>
+      launchSeedOverlay?: Readonly<Record<string, string>>,
+      workspaceMode?: WorkspaceMode
     ): Promise<void> => {
       const prepared = await prepareQuickSubmit(
         smartGitHubResolution,
@@ -127,7 +135,7 @@ export function useQuickCreationExecution(input: QuickCreationExecutionInput) {
       const userPrompt = agentPrompt.trim()
       const promptIsOnlyTaskLink =
         userPrompt.length > 0 && extractWorkspacePromptTaskLink(userPrompt)?.url === userPrompt
-      const { prompt: quickPrompt, draftPrompt: quickDraftPrompt } =
+      const { prompt: mergedPrompt, draftPrompt: mergedDraftPrompt } =
         userPrompt && !promptIsOnlyTaskLink
           ? {
               prompt: linkedPrompt.draftPrompt
@@ -137,6 +145,16 @@ export function useQuickCreationExecution(input: QuickCreationExecutionInput) {
             }
           : linkedPrompt
 
+      const simplifyMark = normalizeNativeChatPromptMarks(settings?.nativeChatPromptMarks).find(
+        (mark) => mark.id === SIMPLIFY_PROMPT_MARK_ID
+      )
+      const wrapPrompt = (prompt: string): string =>
+        workspaceMode && !promptIsOnlyTaskLink
+          ? promptForWorkspaceMode(workspaceMode, prompt, simplifyMark)
+          : prompt
+      const quickPrompt = wrapPrompt(mergedPrompt)
+      const quickDraftPrompt = mergedDraftPrompt ? wrapPrompt(mergedDraftPrompt) : mergedDraftPrompt
+
       const {
         startupPlan,
         backendStartup,
@@ -144,6 +162,7 @@ export function useQuickCreationExecution(input: QuickCreationExecutionInput) {
       } = buildQuickComposerStartup({
         agent,
         prompt: quickPrompt,
+        sessionOptions: launchSeedOverlay,
         draftPrompt: quickDraftPrompt,
         settings,
         launchHost: selectedRepoAgentLaunchFact,
@@ -234,6 +253,12 @@ export function useQuickCreationExecution(input: QuickCreationExecutionInput) {
         branchNameOverride: effectiveBranchNameOverride,
         parentWorktreeId,
         workspaceStatus: resolvedInitialWorkspaceStatus,
+        ...(workspaceMode
+          ? {
+              workspaceAutonomy: workspaceAutonomyForMode(workspaceMode),
+              workspaceIntent: workspaceIntentForMode(workspaceMode)
+            }
+          : {}),
         linkedGitLabMR,
         linkedGitLabIssue,
         includeGitLabLinks: smartGitHubResolution.kind === 'none',

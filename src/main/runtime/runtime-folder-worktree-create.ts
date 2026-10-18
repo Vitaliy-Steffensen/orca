@@ -115,6 +115,10 @@ export async function createRuntimeFolderWorktree(args: {
     ...(args.createdWithAgent ? { createdWithAgent: args.createdWithAgent } : {}),
     ...(request.comment !== undefined ? { comment: request.comment } : {}),
     ...(request.manualOrder !== undefined ? { manualOrder: request.manualOrder } : {}),
+    ...(request.workspaceAutonomy !== undefined
+      ? { workspaceAutonomy: request.workspaceAutonomy }
+      : {}),
+    ...(request.workspaceIntent !== undefined ? { workspaceIntent: request.workspaceIntent } : {}),
     ...(request.workspaceStatus !== undefined ? { workspaceStatus: request.workspaceStatus } : {})
   })
   const worktree = mergeRuntimeFolderWorkspace(repo, worktreeId, meta)

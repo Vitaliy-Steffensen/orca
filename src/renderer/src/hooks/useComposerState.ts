@@ -1,3 +1,4 @@
+import type { WorkspaceMode } from '../../../shared/workspace-mode'
 import type { RefObject } from 'react'
 import '@/lib/new-workspace'
 import type { LinkedWorkItemSummary } from '@/lib/new-workspace'
@@ -70,7 +71,8 @@ export type UseComposerStateResult = {
   nameInputRef: RefObject<HTMLInputElement | null>
   submitQuick: (
     agent: TuiAgent | null,
-    launchSeedOverlay?: Readonly<Record<string, string>>
+    launchSeedOverlay?: Readonly<Record<string, string>>,
+    workspaceMode?: WorkspaceMode
   ) => Promise<void>
   createDisabled: boolean
   selectAddedProjectRepo: (repoId: string) => void

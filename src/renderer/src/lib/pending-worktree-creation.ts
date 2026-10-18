@@ -3,6 +3,7 @@ import type { FolderWorkspaceLinkedTask } from '../../../shared/folder-workspace
 import type { TuiAgent } from '../../../shared/tui-agent'
 import type { WorkspaceSource as WorkspaceCreateTelemetrySource } from '../../../shared/workspace-source'
 import type {
+  CreateWorktreeArgs,
   CreateSparseCheckoutRequest,
   SetupDecision
 } from '../../../shared/worktree/create-types'
@@ -95,6 +96,8 @@ export type WorktreeCreationRequest = {
   /** Parent picked in the composer's Advanced drawer. Sidebar nesting only, no git effect. */
   parentWorktreeId?: string
   workspaceStatus?: WorkspaceStatus
+  workspaceAutonomy?: CreateWorktreeArgs['workspaceAutonomy']
+  workspaceIntent?: CreateWorktreeArgs['workspaceIntent']
   linkedGitLabMR?: number
   linkedGitLabIssue?: number
   linkedBitbucketPR?: number | null

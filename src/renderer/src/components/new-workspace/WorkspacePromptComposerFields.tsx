@@ -1,3 +1,4 @@
+import { SegmentedTabs } from '@/components/ui/segmented-tabs'
 import { useCallback, useEffect } from 'react'
 import { ChevronDown } from 'lucide-react'
 import { Button } from '@/components/ui/button'
@@ -8,7 +9,7 @@ import type { NewWorkspaceProjectOption } from '@/lib/new-workspace-project-opti
 import type { WorkspacePromptTaskLink } from '@/lib/workspace-prompt-task-link'
 import type { Worktree } from '../../../../shared/worktree/types'
 import type { NewWorkspaceComposerCardProps } from './new-workspace-composer-card-props'
-import { useWorkspacePromptPlanMode } from './use-workspace-prompt-plan-mode'
+import { useWorkspacePromptSessionOptions } from './use-workspace-prompt-session-options'
 import { useWorkspacePromptTaskLink } from './use-workspace-prompt-task-link'
 import { WorkspacePromptComposer } from './WorkspacePromptComposer'
 import { WorkspacePromptProjectSwitcher } from './WorkspacePromptProjectSwitcher'
@@ -73,7 +74,11 @@ export function WorkspacePromptComposerFields({
   selectedProjectName: string
 }): React.JSX.Element {
   const agentPrompt = card.agentPrompt ?? ''
-  const planMode = useWorkspacePromptPlanMode()
+  const planMode = useWorkspacePromptSessionOptions(
+    card.quickAgent,
+    card.workspaceMode,
+    card.selectedRepoExecutionHostId
+  )
   const { link, match } = useWorkspacePromptTaskLink({
     prompt: agentPrompt,
     repoId,
@@ -122,7 +127,7 @@ export function WorkspacePromptComposerFields({
           onClick={card.onToggleAdvanced}
           disabled={sparseEditing}
           aria-expanded={card.advancedOpen}
-          className="-mr-1 text-xs focus-visible:ring-inset"
+          className="-mr-1"
         >
           {translate('auto.components.NewWorkspaceComposerCard.f0470c7383', 'Advanced')}
           <ChevronDown
@@ -130,6 +135,25 @@ export function WorkspacePromptComposerFields({
           />
         </Button>
       </div>
+      {card.workspaceMode && card.onWorkspaceModeChange ? (
+        <SegmentedTabs
+          fullWidth
+          ariaLabel="Workspace mode"
+          value={card.workspaceMode}
+          onChange={card.onWorkspaceModeChange}
+          options={[
+            { id: 'ask', label: `Ask ${navigator.userAgent.includes('Mac') ? '⌘' : 'Ctrl+'}1` },
+            {
+              id: 'supervised',
+              label: `Supervised ${navigator.userAgent.includes('Mac') ? '⌘' : 'Ctrl+'}2`
+            },
+            {
+              id: 'autonomous',
+              label: `Autonomous ${navigator.userAgent.includes('Mac') ? '⌘' : 'Ctrl+'}3`
+            }
+          ]}
+        />
+      ) : null}
       {sparseEditing ? null : (
         <WorkspacePromptComposer
           prompt={agentPrompt}

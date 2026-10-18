@@ -11,6 +11,7 @@ import type { WorktreeScanFailureKind } from '../worktree-scan-failure'
 import type { PendingReviewComment } from '../github/pending-review-comment'
 import type { WorkspaceStatusManualOverride } from '../workspace-status-manual-override'
 import type { WorkspaceAutonomy } from '../workspace-autonomy'
+import type { WorkspaceIntent } from '../workspace-intent'
 
 export type WorkspaceAttachmentOrigin = {
   kind: 'observed'
@@ -180,6 +181,7 @@ export type Worktree = {
   /** Clearance for unattended work. Absent (from an older host or an unset workspace) reads as
    *  `supervised` — go through `resolveWorkspaceAutonomy`, never the raw field. */
   workspaceAutonomy?: WorkspaceAutonomy
+  workspaceIntent?: WorkspaceIntent
   diffComments?: DiffComment[]
   agentNotes?: DiffComment[]
   /** Review comments queued locally, not yet submitted to the provider. */

@@ -28,6 +28,8 @@ export const WorktreeAdoptProvisionedRoot = z.object({
   linkedItems: create.linkedItems,
   linkedTaskSourceContext: create.linkedTaskSourceContext,
   workspaceStatus: create.workspaceStatus,
+  workspaceAutonomy: create.workspaceAutonomy,
+  workspaceIntent: create.workspaceIntent,
   manualOrder: create.manualOrder,
   pushTarget: create.pushTarget,
   createdWithAgent: create.createdWithAgent,

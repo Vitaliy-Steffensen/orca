@@ -574,3 +574,13 @@ describe('runtime create setup decision', () => {
     expect(mocks.consume).toHaveBeenCalledOnce()
   })
 })
+
+it.each(['task', 'question'] as const)(
+  'persists %s intent and autonomy before returning a new worktree',
+  async (workspaceIntent) => {
+    await createWorktree({ workspaceIntent, workspaceAutonomy: 'autonomous' })
+    expect(writtenMeta).toContainEqual(
+      expect.objectContaining({ workspaceIntent, workspaceAutonomy: 'autonomous' })
+    )
+  }
+)

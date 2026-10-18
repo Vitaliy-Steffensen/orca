@@ -1,3 +1,4 @@
+import type { WorkspaceMode } from '../../../../shared/workspace-mode'
 import { useCallback } from 'react'
 import type { TuiAgent } from '../../../../shared/tui-agent'
 import type { WorktreeCreationRequest } from '@/lib/pending-worktree-creation'
@@ -70,10 +71,11 @@ export function useQuickSubmitAction(input: QuickSubmitActionInput) {
   const submitQuick = useCallback(
     async (
       requestedAgent: TuiAgent | null,
-      launchSeedOverlay?: Readonly<Record<string, string>>
+      launchSeedOverlay?: Readonly<Record<string, string>>,
+      workspaceMode?: WorkspaceMode
     ): Promise<void> => {
       if (isProjectGroupTarget) {
-        await submitFolderTarget(requestedAgent, launchSeedOverlay)
+        await submitFolderTarget(requestedAgent, launchSeedOverlay, workspaceMode)
         return
       }
 
@@ -149,7 +151,8 @@ export function useQuickSubmitAction(input: QuickSubmitActionInput) {
           workspaceNameSeed,
           workspaceRunContext,
           repoId,
-          launchSeedOverlay
+          launchSeedOverlay,
+          workspaceMode
         )
       } catch (error) {
         if (isSubmissionCancelled()) {

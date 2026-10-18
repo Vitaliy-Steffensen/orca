@@ -7,9 +7,9 @@ import { Button } from '@/components/ui/button'
 import { ButtonKeyHint } from '@/components/ButtonKeyHint'
 import { useImeEnterGestureOwnership } from '@/lib/ime-composition-keyboard-event'
 import { cn } from '@/lib/utils'
-import type { useWorkspacePromptPlanMode } from './use-workspace-prompt-plan-mode'
+import type { useWorkspacePromptSessionOptions } from './use-workspace-prompt-session-options'
 
-type PlanMode = ReturnType<typeof useWorkspacePromptPlanMode>
+type PlanMode = ReturnType<typeof useWorkspacePromptSessionOptions>
 
 /**
  * The same prompt editor, plan-mode switch, and session-option picker the chat

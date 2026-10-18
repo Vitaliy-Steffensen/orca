@@ -1,3 +1,4 @@
+import type { WorkspaceMode } from '../../../../shared/workspace-mode'
 import type RepoCombobox from '@/components/repo/RepoCombobox'
 import type { NewWorkspaceProjectOption } from '@/lib/new-workspace-project-options'
 import type {
@@ -37,6 +38,8 @@ export type NewWorkspaceComposerCardProps = {
   composerRef?: React.RefObject<HTMLDivElement | null>
   onComposerNodeChange?: (node: HTMLDivElement | null) => void
   nameInputRef?: React.RefObject<HTMLInputElement | null>
+  workspaceMode?: WorkspaceMode
+  onWorkspaceModeChange?: (mode: WorkspaceMode) => void
   quickAgent: TuiAgent | null
   onQuickAgentChange: (agent: TuiAgent | null) => void
   eligibleRepos: readonly RepoOption[]

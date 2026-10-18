@@ -1,3 +1,4 @@
+import type { WorkspaceMode } from '../../../../shared/workspace-mode'
 import type { TuiAgent } from '../../../../shared/tui-agent'
 import type { GitPushTarget } from '../../../../shared/worktree/types'
 import type { SetupDecision } from '../../../../shared/worktree/create-types'
@@ -47,7 +48,8 @@ export type ComposerSubmitModel = {
     workspaceNameSeed: string,
     workspaceRunContext: WorktreeCreationRequest['workspaceRunContext'],
     repoId: string,
-    launchSeedOverlay?: Readonly<Record<string, string>>
+    launchSeedOverlay?: Readonly<Record<string, string>>,
+    workspaceMode?: WorkspaceMode
   ) => Promise<void>
   prepareQuickSubmit: (
     resolution: PendingSmartGitHubSubmitResolution,
@@ -62,10 +64,12 @@ export type ComposerSubmitModel = {
   resetForNextCreate: () => void
   submitQuick: (
     agent: TuiAgent | null,
-    launchSeedOverlay?: Readonly<Record<string, string>>
+    launchSeedOverlay?: Readonly<Record<string, string>>,
+    workspaceMode?: WorkspaceMode
   ) => Promise<void>
   submitFolderTarget: (
     requestedAgent: TuiAgent | null,
-    launchSeedOverlay?: Readonly<Record<string, string>>
+    launchSeedOverlay?: Readonly<Record<string, string>>,
+    workspaceMode?: WorkspaceMode
   ) => Promise<void>
 }

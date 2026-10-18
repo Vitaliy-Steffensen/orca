@@ -1565,6 +1565,8 @@ async function performLocalWorktreeCreate(
     ...(args.linkedTaskSourceContext !== undefined
       ? { linkedTaskSourceContext: args.linkedTaskSourceContext }
       : {}),
+    ...(args.workspaceAutonomy !== undefined ? { workspaceAutonomy: args.workspaceAutonomy } : {}),
+    ...(args.workspaceIntent !== undefined ? { workspaceIntent: args.workspaceIntent } : {}),
     ...(args.workspaceStatus !== undefined ? { workspaceStatus: args.workspaceStatus } : {})
   }
   const { worktree } = timing.timeSync('persist_metadata', () => {

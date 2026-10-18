@@ -37,6 +37,8 @@ export type QuickCreationRequestInput = {
   branchNameOverride: string | undefined
   parentWorktreeId: string | null
   workspaceStatus: WorktreeCreationRequest['workspaceStatus']
+  workspaceAutonomy?: WorktreeCreationRequest['workspaceAutonomy']
+  workspaceIntent?: WorktreeCreationRequest['workspaceIntent']
   linkedGitLabMR: number | null
   linkedGitLabIssue: number | null
   includeGitLabLinks: boolean
@@ -97,6 +99,8 @@ export function buildQuickCreationRequest(
       : {}),
     ...(input.branchNameOverride ? { branchNameOverride: input.branchNameOverride } : {}),
     ...(input.parentWorktreeId ? { parentWorktreeId: input.parentWorktreeId } : {}),
+    ...(input.workspaceAutonomy ? { workspaceAutonomy: input.workspaceAutonomy } : {}),
+    ...(input.workspaceIntent ? { workspaceIntent: input.workspaceIntent } : {}),
     ...(input.workspaceStatus ? { workspaceStatus: input.workspaceStatus } : {}),
     ...(input.includeGitLabLinks && input.linkedGitLabMR != null
       ? { linkedGitLabMR: input.linkedGitLabMR }

@@ -1,3 +1,8 @@
+import {
+  normalizeNativeChatPromptMarks,
+  SIMPLIFY_PROMPT_MARK_ID
+} from '../../../../shared/native-chat-prompt-marks'
+import type { WorkspaceMode } from '../../../../shared/workspace-mode'
 import type { ComposerModel } from './composer-model'
 
 type FolderSubmitOrchestrationInput = Pick<
@@ -74,7 +79,8 @@ export function useFolderSubmitOrchestration(input: FolderSubmitOrchestrationInp
   const submitFolderTarget = useCallback(
     async (
       requestedAgent: TuiAgent | null,
-      launchSeedOverlay?: Readonly<Record<string, string>>
+      launchSeedOverlay?: Readonly<Record<string, string>>,
+      workspaceMode?: WorkspaceMode
     ): Promise<void> => {
       if (!selectedProjectGroup?.parentPath || folderCreateDisabled) {
         return
@@ -112,6 +118,10 @@ export function useFolderSubmitOrchestration(input: FolderSubmitOrchestrationInp
           linkedWorkItem: submitLinkedWorkItem,
           linkedTaskSourceContext: taskSourceContext,
           note: agentPrompt.trim() || note,
+          workspaceMode,
+          simplifyMark: normalizeNativeChatPromptMarks(settings?.nativeChatPromptMarks).find(
+            (mark) => mark.id === SIMPLIFY_PROMPT_MARK_ID
+          ),
           ...(launchSeedOverlay ? { launchSeedOverlay } : {}),
           quickAgent: agent,
           autoRenameBranchFromWork: settings?.autoRenameBranchFromWork,
