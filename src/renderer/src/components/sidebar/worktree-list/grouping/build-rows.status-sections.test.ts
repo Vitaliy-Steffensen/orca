@@ -53,16 +53,51 @@ function summarize(rows: ReturnType<typeof buildRows>) {
 }
 
 describe('workspace-status sections', () => {
-  it('nests lanes under their section header in lane order', () => {
+  it('nests lanes under their section header in attention order', () => {
     expect(summarize(rowsFor({}))).toEqual([
       `header ${RESEARCH_KEY}`,
       `header workspace-status:scoping <${RESEARCH_KEY}`,
       'item wt-scope',
       `header ${NEEDS_ME_KEY}`,
-      `header workspace-status:my-review <${NEEDS_ME_KEY}`,
-      'item wt-review',
       `header workspace-status:flagged <${NEEDS_ME_KEY}`,
       'item wt-flag',
+      `header workspace-status:my-review <${NEEDS_ME_KEY}`,
+      'item wt-review',
+      `header ${getWorkspaceStatusSectionGroupKey('Autonomous')}`,
+      `header workspace-status:implementing <${getWorkspaceStatusSectionGroupKey('Autonomous')}`,
+      'item wt-impl'
+    ])
+  })
+
+  it('keeps Ask above Needs me and Autonomous at the bottom when the saved order is reversed', () => {
+    const statuses: WorkspaceStatusDefinition[] = [
+      { id: 'implementing', label: 'Implementing', section: 'Autonomous' },
+      { id: 'skim-implementation', label: 'Skim implementation', section: 'Needs me' },
+      { id: 'review-other', label: 'Review other', section: 'Needs me' },
+      { id: 'research', label: 'Research', section: 'Ask' }
+    ]
+    const askKey = getWorkspaceStatusSectionGroupKey('Ask')
+    expect(
+      summarize(
+        rowsFor({
+          statuses,
+          worktrees: [
+            workspace('wt-impl', 'implementing'),
+            workspace('wt-skim', 'skim-implementation'),
+            workspace('wt-other', 'review-other'),
+            workspace('wt-ask', 'research')
+          ]
+        })
+      )
+    ).toEqual([
+      `header ${askKey}`,
+      `header workspace-status:research <${askKey}`,
+      'item wt-ask',
+      `header ${NEEDS_ME_KEY}`,
+      `header workspace-status:review-other <${NEEDS_ME_KEY}`,
+      'item wt-other',
+      `header workspace-status:skim-implementation <${NEEDS_ME_KEY}`,
+      'item wt-skim',
       `header ${getWorkspaceStatusSectionGroupKey('Autonomous')}`,
       `header workspace-status:implementing <${getWorkspaceStatusSectionGroupKey('Autonomous')}`,
       'item wt-impl'
@@ -127,9 +162,9 @@ describe('workspace-status sections', () => {
       `header workspace-status:scoping <${RESEARCH_KEY}`,
       'item wt-scope',
       `header ${NEEDS_ME_KEY}`,
-      `header workspace-status:my-review <${NEEDS_ME_KEY}`,
       `header workspace-status:flagged <${NEEDS_ME_KEY}`,
       'item wt-flag',
+      `header workspace-status:my-review <${NEEDS_ME_KEY}`,
       `header ${getWorkspaceStatusSectionGroupKey('Autonomous')}`,
       `header workspace-status:implementing <${getWorkspaceStatusSectionGroupKey('Autonomous')}`,
       'item wt-impl'

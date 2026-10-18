@@ -7,6 +7,7 @@ import {
   getWorkspaceStatusSectionGroupKey,
   getWorkspaceStatusSectionOrder,
   hasWorkspaceStatusSections,
+  orderWorkspaceStatusesByAttention,
   sanitizeWorkspaceStatusSection,
   updateWorkspaceStatusSectionAppearance
 } from './workspace-status-sections'
@@ -48,8 +49,44 @@ describe('section group keys', () => {
 })
 
 describe('section membership', () => {
-  it('orders sections by first appearance in the lane order', () => {
+  it('orders sections by attention, with first appearance breaking ties', () => {
     expect(getWorkspaceStatusSectionOrder(SECTIONED)).toEqual(['Needs me', 'Autonomous'])
+    expect(
+      getWorkspaceStatusSectionOrder([
+        { id: 'implementing', label: 'Implementing', section: 'Autonomous' },
+        { id: 'later', label: 'Later', section: 'Later' },
+        { id: 'ask', label: 'Ask', section: 'Ask' },
+        { id: 'flagged', label: 'Flagged', section: 'Needs me' }
+      ])
+    ).toEqual(['Ask', 'Needs me', 'Later', 'Autonomous'])
+  })
+
+  it('puts the lanes that need a look above the ones that can wait', () => {
+    expect(
+      orderWorkspaceStatusesByAttention([
+        { id: 'implementing', label: 'Implementing', section: 'Autonomous' },
+        { id: 'loose', label: 'Loose' },
+        { id: 'skim-implementation', label: 'Skim implementation', section: 'Needs me' },
+        { id: 'review-other', label: 'Review other', section: 'Needs me' },
+        { id: 'candidates', label: 'Candidates', section: 'Needs me' },
+        { id: 'research', label: 'Research', section: 'Ask' }
+      ]).map((status) => status.id)
+    ).toEqual([
+      'research',
+      'loose',
+      'review-other',
+      'skim-implementation',
+      'candidates',
+      'implementing'
+    ])
+  })
+
+  it('leaves an already-attentive list untouched', () => {
+    const ordered = [
+      { id: 'research', label: 'Research', section: 'Research' },
+      { id: 'flagged', label: 'Flagged', section: 'Needs me' }
+    ]
+    expect(orderWorkspaceStatusesByAttention(ordered)).toBe(ordered)
   })
 
   it('reports no sections for the stock lanes', () => {

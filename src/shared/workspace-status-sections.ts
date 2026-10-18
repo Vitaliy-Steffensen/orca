@@ -142,12 +142,71 @@ export function updateWorkspaceStatusSectionAppearance(
   })
 }
 
+const UNRANKED_LANE_ATTENTION = Number.MAX_SAFE_INTEGER
+/** A section the workflow does not name sits above Autonomous, which is always last. */
+const CUSTOM_SECTION_ATTENTION_RANK = 3
+
 /**
- * Section names in render order — first appearance in the lane order wins.
+ * Ask is the question in front of you. Research is that same band under the
+ * name it has today. Needs me is the action list. Autonomous needs nothing
+ * from you, so it stays at the bottom even when its lanes were saved first.
+ */
+const SECTION_ATTENTION_RANK = new Map<string, number>([
+  ['ask', 0],
+  ['research', 1],
+  ['needs me', 2],
+  ['autonomous', 4]
+])
+
+/**
+ * Within a section, smaller ranks render higher. A lane this map does not
+ * name keeps its saved position after the named ones.
  *
- * Why derived rather than stored: the lane list is already the user's ordering,
+ * Needs me is ordered by who is stuck: an open question, then stopped work,
+ * then a person waiting, then your own review, then optional new work.
+ */
+const LANE_ATTENTION_RANK = new Map<string, number>([
+  ['research', 0],
+  ['potential tasks', 1],
+  ['weekly recap', 2],
+  ['answer questions', 0],
+  ['flagged', 1],
+  ['incoming comments', 2],
+  ['review other', 3],
+  ['skim implementation', 4],
+  ['my review', 5],
+  ['autonomous review', 6],
+  ['needs merge', 7],
+  ['candidates', 8],
+  ['scoping', 0],
+  ['implementing', 1],
+  ['agent review', 2],
+  ['waiting on ci', 3],
+  ['waiting on reviewers', 4]
+])
+
+function attentionKey(value: string): string {
+  return value.trim().toLowerCase().replace(/[-_]+/g, ' ').replace(/\s+/g, ' ')
+}
+
+function sectionAttentionRank(section: string): number {
+  return SECTION_ATTENTION_RANK.get(attentionKey(section)) ?? CUSTOM_SECTION_ATTENTION_RANK
+}
+
+function laneAttentionRank(status: Pick<WorkspaceStatusDefinition, 'id' | 'label'>): number {
+  return (
+    LANE_ATTENTION_RANK.get(attentionKey(status.id)) ??
+    LANE_ATTENTION_RANK.get(attentionKey(status.label)) ??
+    UNRANKED_LANE_ATTENTION
+  )
+}
+
+/**
+ * Section names in sidebar order.
+ *
+ * Why derived rather than stored: the lane list is already the user's pipeline,
  * so a second ordered list could disagree with it and leave a section with no
- * lanes (or a lane in a section that no longer exists).
+ * lanes. Attention rank picks the order; first appearance breaks ties.
  */
 export function getWorkspaceStatusSectionOrder(
   statuses: readonly WorkspaceStatusDefinition[]
@@ -159,4 +218,55 @@ export function getWorkspaceStatusSectionOrder(
     }
   }
   return sections
+    .map((section, index) => ({ section, index }))
+    .sort(
+      (a, b) =>
+        sectionAttentionRank(a.section) - sectionAttentionRank(b.section) || a.index - b.index
+    )
+    .map(({ section }) => section)
+}
+
+/**
+ * Sidebar lane order. The board keeps the saved pipeline; this is only the
+ * list that answers what to look at first.
+ *
+ * Sectionless lanes keep the slots they were saved in. Sectioned lanes are
+ * rewritten into those slots, so Autonomous saved first still renders last.
+ */
+export function orderWorkspaceStatusesByAttention(
+  statuses: readonly WorkspaceStatusDefinition[]
+): readonly WorkspaceStatusDefinition[] {
+  const sectionedSlots: number[] = []
+  for (let index = 0; index < statuses.length; index += 1) {
+    if (statuses[index]?.section !== undefined) {
+      sectionedSlots.push(index)
+    }
+  }
+  if (sectionedSlots.length < 2) {
+    return statuses
+  }
+  const sectionRank = new Map(
+    getWorkspaceStatusSectionOrder(statuses).map((section, index) => [section, index])
+  )
+  const ordered = sectionedSlots
+    .map((slot) => ({ status: statuses[slot]!, index: slot }))
+    .sort((a, b) => {
+      const bySection =
+        (sectionRank.get(a.status.section ?? '') ?? 0) -
+        (sectionRank.get(b.status.section ?? '') ?? 0)
+      if (bySection !== 0) {
+        return bySection
+      }
+      const byLane = laneAttentionRank(a.status) - laneAttentionRank(b.status)
+      return byLane !== 0 ? byLane : a.index - b.index
+    })
+    .map(({ status }) => status)
+  if (ordered.every((status, index) => status === statuses[sectionedSlots[index]!])) {
+    return statuses
+  }
+  const result = statuses.slice()
+  sectionedSlots.forEach((slot, index) => {
+    result[slot] = ordered[index]!
+  })
+  return result
 }
