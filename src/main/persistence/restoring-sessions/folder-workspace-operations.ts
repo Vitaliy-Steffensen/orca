@@ -136,6 +136,7 @@ export class FolderWorkspacePersistenceOperations {
         | 'sortOrder'
         | 'manualOrder'
         | 'workspaceStatus'
+        | 'workspaceAutonomy'
         | 'createdWithAgent'
         | 'pendingFirstAgentMessageRename'
         | 'firstAgentMessageRenameError'
@@ -224,6 +225,9 @@ export class FolderWorkspacePersistenceOperations {
     }
     if (updates.workspaceStatus !== undefined) {
       workspace.workspaceStatus = updates.workspaceStatus
+    }
+    if (updates.workspaceAutonomy !== undefined) {
+      workspace.workspaceAutonomy = updates.workspaceAutonomy
     }
     if (updates.createdWithAgent !== undefined) {
       workspace.createdWithAgent = updates.createdWithAgent

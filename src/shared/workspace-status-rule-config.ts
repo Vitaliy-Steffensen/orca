@@ -52,6 +52,15 @@ export const REVIEW_AGENT_VIEWS: readonly ReviewAgentView[] = [
   'default'
 ]
 
+/** 'archive' shuts the workspace down and hides it; 'delete' removes the checkout. */
+export type WorkspaceStatusRuleResolution = 'delete' | 'archive' | 'none'
+
+function readResolution(value: unknown): WorkspaceStatusRuleResolution {
+  // Why the explicit fallback: a config written by a newer build can name a
+  // resolution this one has never heard of, and doing nothing is the safe read.
+  return value === 'delete' || value === 'archive' ? value : 'none'
+}
+
 export type WorkspaceStatusRuleReviewInbox = {
   enabled: boolean
   agent: TuiAgent
@@ -79,9 +88,9 @@ export type WorkspaceStatusRuleConfig = {
   /** `org/team-slug`, or null when PM approval is not in use. */
   pmApprovalTeam: string | null
   /** What to do once a pull request is merged or closed without merging. */
-  onResolved: 'delete' | 'none'
+  onResolved: WorkspaceStatusRuleResolution
   /** What to do once you have approved or requested changes on someone else's pull request. */
-  onReviewed: 'delete' | 'none'
+  onReviewed: WorkspaceStatusRuleResolution
   /** Starts an agent to merge the base branch and push when your pull request lands in Conflicts. */
   resolveConflictsWithAgent: boolean
   /** The conflict agent's prompt; empty uses the built-in one. */
@@ -310,8 +319,8 @@ export function normalizeWorkspaceStatusRuleConfig(value: unknown): WorkspaceSta
     ),
     ...sanitizeNewWorkspaceStatus(raw.newWorkspaceStatus, raw.newWorkspaceStatusSince),
     pmApprovalTeam,
-    onResolved: raw.onResolved === 'delete' ? 'delete' : 'none',
-    onReviewed: raw.onReviewed === 'delete' ? 'delete' : 'none',
+    onResolved: readResolution(raw.onResolved),
+    onReviewed: readResolution(raw.onReviewed),
     resolveConflictsWithAgent: raw.resolveConflictsWithAgent === true,
     conflictPromptTemplate:
       typeof raw.conflictPromptTemplate === 'string'

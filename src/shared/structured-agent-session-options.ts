@@ -23,19 +23,37 @@ import {
   encodeStructuredAgentSessionOptionValue
 } from './structured-agent-session-option-codec'
 
+/** A discovered model's options come from the host's report, which describes only what the
+ *  provider lists per model. Options the session owns rather than the model are re-attached
+ *  here, or a real model list silently drops them. */
+function withStructuredSessionOptions(
+  seed: AgentSessionOptionCatalog,
+  model: CatalogModel
+): CatalogModel {
+  const sessionOptions = seed.structuredSessionOptions ?? []
+  return sessionOptions.length > 0
+    ? { ...model, options: [...model.options, ...sessionOptions] }
+    : model
+}
+
 export function structuredAgentSessionOptionCatalog(
   seed: AgentSessionOptionCatalog,
   result: AgentSessionOptionsResult
 ): AgentSessionOptionCatalog {
   const models: CatalogModel[] = result.models.map((model) =>
-    discoveredModel(model, result.fastModeSupport?.supported === true)
+    withStructuredSessionOptions(
+      seed,
+      discoveredModel(model, result.fastModeSupport?.supported === true)
+    )
   )
   if (result.current.model && !models.some((model) => model.id === result.current.model)) {
-    models.push({
-      id: result.current.model,
-      label: result.current.model,
-      options: seed.unknownModelOptions ?? []
-    })
+    models.push(
+      withStructuredSessionOptions(seed, {
+        id: result.current.model,
+        label: result.current.model,
+        options: seed.unknownModelOptions ?? []
+      })
+    )
   }
   return { ...seed, models, defaultModelIsCliDefault: true }
 }
@@ -91,7 +109,10 @@ export function applyStructuredAgentSessionModelCatalog(
     catalog.origin === 'unknown'
       ? []
       : catalog.models.map((model) =>
-          discoveredModel(model, catalog.fastModeSupport?.supported === true)
+          withStructuredSessionOptions(
+            seed,
+            discoveredModel(model, catalog.fastModeSupport?.supported === true)
+          )
         )
   if (catalog.origin === 'unknown' || models.length === 0) {
     return settleStructuredAgentSessionBuiltinCatalog(state)
@@ -131,7 +152,10 @@ export function applyStructuredAgentSessionOptions(
       ...(result.current.model ? { model: result.current.model } : {}),
       ...(result.current.effort ? { effort: result.current.effort } : {}),
       ...(result.current.fastMode !== undefined ? { fastMode: result.current.fastMode } : {}),
-      ...(result.current.serviceTier ? { serviceTier: result.current.serviceTier } : {})
+      ...(result.current.serviceTier ? { serviceTier: result.current.serviceTier } : {}),
+      // No clear-on-absent sibling above: an older host reports nothing, and dropping
+      // the value there would blank a mode the session really holds.
+      ...(result.current.permissionMode ? { permissionMode: result.current.permissionMode } : {})
     },
     result.current.confirmed ?? []
   )

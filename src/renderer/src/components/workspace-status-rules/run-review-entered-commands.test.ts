@@ -34,6 +34,7 @@ function planWith(condition: WorkspaceStatusRuleCondition, executionHostId = 'lo
   return {
     statusUpdates: [{ worktreeId: 'wt', executionHostId, status: 'review', condition }],
     removals: [],
+    archives: [],
     creations: []
   }
 }

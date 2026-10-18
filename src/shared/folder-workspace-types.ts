@@ -2,6 +2,7 @@ import type { ExecutionHostId } from './execution-host'
 import type { TaskSourceContext } from './task-source-context'
 import type { TuiAgent } from './tui-agent'
 import type { DiffComment } from './diff-comment-types'
+import type { WorkspaceAutonomy } from './workspace-autonomy'
 import type {
   WorkspaceCreatorProvenance,
   WorkspaceLinkedItem,
@@ -37,6 +38,8 @@ export type FolderWorkspace = {
   /** User-authored sidebar ordering. Higher values render earlier in Manual sort. */
   manualOrder?: number
   workspaceStatus?: WorkspaceStatus
+  /** See {@link Worktree.workspaceAutonomy}. Absent means unset, which reads as supervised. */
+  workspaceAutonomy?: WorkspaceAutonomy
   createdWithAgent?: TuiAgent
   pendingFirstAgentMessageRename?: boolean
   firstAgentMessageRenameError?: string | null

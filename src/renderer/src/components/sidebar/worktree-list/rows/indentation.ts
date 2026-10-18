@@ -33,6 +33,20 @@ export function getProjectGroupHeaderPaddingLeft(depth: number): number {
   )
 }
 
+/** Left padding for a sidebar group header, project nesting or status section. */
+export function getWorktreeGroupHeaderPaddingLeft(args: {
+  isProjectHeader: boolean
+  projectGroupDepth?: number
+  hasParentSection: boolean
+}): number {
+  if (args.isProjectHeader) {
+    return getProjectGroupHeaderPaddingLeft(args.projectGroupDepth ?? 0)
+  }
+  // Why: flat-list headers like "All" claim no hierarchy indent until a status
+  // section nests them one step in.
+  return getProjectGroupHeaderPaddingLeft(args.hasParentSection ? 1 : 0)
+}
+
 export function getWorktreeCardContentIndent(args: {
   isGrouped: boolean
   groupDepth: number

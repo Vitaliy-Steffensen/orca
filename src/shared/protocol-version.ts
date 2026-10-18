@@ -44,6 +44,9 @@ export {
 import { AGENT_SESSION_RESUME_RUNTIME_CAPABILITIES } from './agent-session-resume-runtime-capabilities'
 import { QODER_OWNED_TERMINAL_CREATE_CAPABILITY } from './qoder-terminal-create-capability'
 import { AGENT_SESSION_CONTINUE_INTERRUPTED_RUNTIME_CAPABILITY } from './agent-session-continue-interrupted-capability'
+import { AGENT_SESSION_STRICT_RESPOND_RUNTIME_CAPABILITIES } from './agent-session-strict-respond-capabilities'
+// Why a star: both strict-respond capabilities stay part of the runtime contract this module re-exports.
+export * from './agent-session-strict-respond-capabilities'
 import { ORCAD_RUNTIME_CAPABILITIES } from './orcad-runtime-capabilities'
 import { DEVICE_KEY_RUNTIME_CAPABILITIES } from './device-key-capability'
 // Why a star: every resume capability is part of the runtime contract this module re-exports.
@@ -283,10 +286,6 @@ export const AGENT_SESSION_REWIND_RECOVERY_CAPABILITY = 'agent-session.rewind-re
 export const AGENT_SESSION_TURN_ITEM_CAPABILITY = 'agent-session.turn-item.v1' as const
 export const AGENT_SESSION_BACKGROUND_TASK_STOP_CAPABILITY =
   'agent-session.background-task-stop.v1' as const
-// Why: agentSession.respondToQuestion has a strict schema, so clients must not send structured
-// `answers` to an older host; they fall back to the answer packed into `optionId`.
-export const AGENT_SESSION_QUESTION_ANSWERS_RUNTIME_CAPABILITY =
-  'agent-session.question-answers.v1' as const
 // Why: a structured chat on a paired server stores attached files on that server
 // (agentSessionAttachment.*); an older server has no store, so clients must refuse
 // the attach rather than hand the agent a path from this machine.
@@ -426,7 +425,7 @@ export const RUNTIME_CAPABILITIES = [
   AGENT_SESSION_REWIND_RECOVERY_CAPABILITY,
   AGENT_SESSION_CONVERSATION_OUTLINE_RUNTIME_CAPABILITY,
   AGENT_SESSION_BACKGROUND_TASK_STOP_CAPABILITY,
-  AGENT_SESSION_QUESTION_ANSWERS_RUNTIME_CAPABILITY,
+  ...AGENT_SESSION_STRICT_RESPOND_RUNTIME_CAPABILITIES,
   AGENT_SESSION_ATTACHMENTS_RUNTIME_CAPABILITY,
   AGENT_SESSION_TURN_ITEM_CAPABILITY,
   AGENT_SESSION_BACKGROUND_TASK_ROW_STOP_CAPABILITY,

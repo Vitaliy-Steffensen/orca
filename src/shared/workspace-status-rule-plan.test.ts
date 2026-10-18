@@ -213,6 +213,33 @@ describe('buildWorkspaceStatusRulePlan — closed without merging', () => {
     })
 
     expect(plan.removals).toEqual([])
+    expect(plan.archives).toEqual([])
+  })
+
+  it('archives instead of deleting when the resolution is archive', () => {
+    const plan = buildWorkspaceStatusRulePlan({
+      targets: [makeTarget()],
+      snapshot: closed,
+      config: { ...enabled, onResolved: 'archive' },
+      existingBranches: noBranches
+    })
+
+    expect(plan.archives).toEqual([
+      { worktreeId: 'repo::/w/one', executionHostId: 'local', displayName: 'one' }
+    ])
+    expect(plan.removals).toEqual([])
+    expect(plan.statusUpdates).toEqual([])
+  })
+
+  it('keeps a workspace that is not at the pull request head from being archived either', () => {
+    const plan = buildWorkspaceStatusRulePlan({
+      targets: [makeTarget({ headOid: 'local-work' })],
+      snapshot: closed,
+      config: { ...enabled, onResolved: 'archive' },
+      existingBranches: noBranches
+    })
+
+    expect(plan.archives).toEqual([])
   })
 })
 

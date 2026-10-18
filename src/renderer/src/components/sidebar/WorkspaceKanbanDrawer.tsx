@@ -10,6 +10,7 @@ import { useWorkspaceKanbanSelection } from './use-workspace-kanban-selection'
 import { useWorkspaceKanbanShiftWheelScroll } from './use-workspace-kanban-shift-wheel-scroll'
 import { useWorkspaceKanbanOutsideDismiss } from './use-workspace-kanban-outside-dismiss'
 import { useWorkspaceBoardTaskStatusSync } from './use-workspace-board-task-status-sync'
+import { useWorkspaceKanbanSectionFilter } from './workspace-kanban-section-filter'
 import { useWorkspaceKanbanStatusActions } from './use-workspace-kanban-status-actions'
 import { useWorkspaceKanbanWorktreeActions } from './use-workspace-kanban-worktree-actions'
 import type { Worktree } from '../../../../shared/worktree/types'
@@ -200,6 +201,7 @@ function WorkspaceKanbanDrawerContent({
     handleRenameStatus,
     handleChangeStatusColor,
     handleChangeStatusIcon,
+    handleChangeStatusSection,
     handleMoveStatus,
     handleAddStatus,
     handleRemoveStatus
@@ -209,6 +211,7 @@ function WorkspaceKanbanDrawerContent({
     setWorkspaceStatuses,
     updateWorktreeMeta
   })
+  const sectionFilter = useWorkspaceKanbanSectionFilter(workspaceStatuses)
 
   useWorkspaceStatusDocumentDrop(
     boardRef,
@@ -265,6 +268,11 @@ function WorkspaceKanbanDrawerContent({
         onRenameStatus: handleRenameStatus,
         onChangeStatusColor: handleChangeStatusColor,
         onChangeStatusIcon: handleChangeStatusIcon,
+        onChangeStatusSection: handleChangeStatusSection,
+        sections: sectionFilter.sections,
+        hiddenSections: sectionFilter.hiddenSections,
+        onToggleSection: sectionFilter.toggleSection,
+        onShowAllSections: sectionFilter.showAllSections,
         onMoveStatus: handleMoveStatus,
         onRemoveStatus: handleRemoveStatus,
         onAddStatus: handleAddStatus,
@@ -273,7 +281,7 @@ function WorkspaceKanbanDrawerContent({
       }}
       laneGridProps={{
         laneScrollerRef,
-        statuses: workspaceStatuses,
+        statuses: sectionFilter.visibleStatuses,
         laneViews,
         laneFullWorktreeIds,
         hasQuery,

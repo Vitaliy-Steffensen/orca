@@ -95,6 +95,27 @@ const CLAUDE_FAST_MODE: CatalogOption = {
   apply: { midSession: { kind: 'toggle-command', command: '/fast' } }
 }
 
+// Bypass is absent on purpose: a session that has left it cannot switch back
+// (claude-structured-spawn-options.ts), so the position would be one-way.
+const CLAUDE_PERMISSION_MODE: CatalogOption = {
+  id: 'permissionMode',
+  label: 'Permission mode',
+  category: 'mode',
+  kind: {
+    type: 'select',
+    choices: [
+      { value: 'default', label: 'Normal' },
+      { value: 'acceptEdits', label: 'Accept edits' },
+      { value: 'plan', label: 'Plan' }
+    ],
+    defaultValue: 'default'
+  },
+  // No launch flag and no PTY command: `--permission-mode` would collide with the
+  // yolo setting's `--dangerously-skip-permissions`. The structured lane writes it
+  // over the control protocol, which `settableState` admits on its own.
+  apply: { midSession: { kind: 'unsupported' } }
+}
+
 export const CLAUDE_SESSION_OPTION_CATALOG: AgentSessionOptionCatalog = {
   supportsWorkerLaunchPreferences: true,
   // Why: these ids are Claude CLI aliases that resolve to the newest model of
@@ -142,6 +163,7 @@ export const CLAUDE_SESSION_OPTION_CATALOG: AgentSessionOptionCatalog = {
     }
   },
   unknownModelOptions: [claudeEffort(true)],
+  structuredSessionOptions: [CLAUDE_PERMISSION_MODE],
   listModels: {
     command: `echo '${CLAUDE_MODEL_LIST_STDIN.trim()}' | claude ${CLAUDE_MODEL_LIST_ARGS.join(' ')}`,
     parse: parseClaudeCatalogModels

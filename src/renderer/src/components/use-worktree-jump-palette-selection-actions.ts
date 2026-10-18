@@ -16,6 +16,7 @@ import type { Worktree } from '../../../shared/worktree/types'
 import { useAppStore } from '@/store'
 import { getPaletteWorktreeExecutionHostId } from '@/lib/palette-repo-resolution'
 import { translate } from '@/i18n/i18n'
+import { runUnarchiveWorktrees } from './sidebar/archive-worktree-flow'
 import type { PaletteItem } from './worktree-jump-palette-model'
 import type { WorktreeJumpPaletteLocalState } from './use-worktree-jump-palette-local-state'
 import type { WorktreeJumpPaletteQuickActions } from './use-worktree-jump-palette-quick-actions'
@@ -53,10 +54,25 @@ export function useWorktreeJumpPaletteSelectionActions({
   previousBrowserPageIdRef,
   previousBrowserFocusTargetRef,
   previousWorktreeIdRef,
-  previousFocusElementRef
+  previousFocusElementRef,
+  viewingArchivedWorkspaces,
+  setViewingArchivedWorkspaces,
+  setQuery,
+  latestQueryRef,
+  setExpandedSectionCaps,
+  listRef,
+  inputRef
 }: WorktreeJumpPaletteSelectionActionsInput) {
   const handleSelectWorktree = useCallback(
     (worktree: Worktree) => {
+      if (viewingArchivedWorkspaces) {
+        const executionHostId = getPaletteWorktreeExecutionHostId(worktree)
+        void runUnarchiveWorktrees(
+          [worktree.id],
+          executionHostId ? { [worktree.id]: executionHostId } : undefined
+        )
+        return
+      }
       const executionHostId = getPaletteWorktreeExecutionHostId(worktree)
       const current = useAppStore.getState().getKnownWorktreeById(worktree.id, executionHostId)
       if (!current) {
@@ -78,7 +94,7 @@ export function useWorktreeJumpPaletteSelectionActions({
       }
     },
     // oxlint-disable-next-line react-hooks/exhaustive-deps -- controller refs and setters preserve their original stable identities.
-    [closeModal, focusFallbackSurface, recordFeatureInteraction]
+    [closeModal, focusFallbackSurface, recordFeatureInteraction, viewingArchivedWorkspaces]
   )
   const handleSelectBrowserPage = useCallback(
     (result: BrowserPaletteSearchResult) => {
@@ -172,6 +188,17 @@ export function useWorktreeJumpPaletteSelectionActions({
   )
   const handleSelectQuickAction = useCallback(
     (action: CmdJActionResult) => {
+      if (action.keepPaletteOpen) {
+        latestQueryRef.current = ''
+        setQuery('')
+        setSelectedItemId('')
+        setExpandedSectionCaps({})
+        setViewingArchivedWorkspaces(true)
+        listRef.current?.scrollTo(0, 0)
+        inputRef.current?.focus()
+        recordFeatureInteraction('cmd-j-quick-action')
+        return
+      }
       skipRestoreFocusRef.current = true
       closeModal()
       setSelectedItemId('')

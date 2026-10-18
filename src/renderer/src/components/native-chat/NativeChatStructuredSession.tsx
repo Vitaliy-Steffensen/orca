@@ -54,6 +54,7 @@ import { useNativeChatHostOutage } from './use-native-chat-host-outage'
 import { useNativeChatHostOutageNotice } from './use-native-chat-host-outage-notice'
 import { useNativeChatAvailabilityNotice } from './use-native-chat-availability-notice'
 import { useStructuredAgentSessionStartFailureFacts } from './use-structured-agent-session-start-failure-facts'
+import { useNativeChatPlanApproval } from './use-native-chat-plan-approval'
 import { pendingPromptsAllUnanswerableHere } from '../../../../shared/agent-session-approval-subject'
 import {
   isClaudeSignInFailureKind,
@@ -189,8 +190,18 @@ export function NativeChatStructuredSession(
   // Prompts this build cannot answer leave the composer open: a send starts a turn, whose card
   // cancel then works.
   const promptsUnanswerable = pendingPromptsAllUnanswerableHere(controller.prompts)
-  const composerShown = (prompt === null || promptsUnanswerable) && !readFailedFinally
-  const approval = prompt?.body.kind === 'approval' ? chatApprovalFromJournal(prompt.body) : null
+  // A waiting plan keeps the composer: the plan reads in the transcript and the composer carries
+  // Approve plus the adjustments, so its card is suppressed below.
+  const planApproval = useNativeChatPlanApproval({
+    prompts: controller.prompts,
+    target: props.target,
+    respond: (item, response) => void promptResponse.respond(item, response),
+    holds: promptResponse.holds
+  })
+  const composerShown =
+    (prompt === null || promptsUnanswerable || planApproval !== null) && !readFailedFinally
+  const approval =
+    prompt?.body.kind === 'approval' && !planApproval ? chatApprovalFromJournal(prompt.body) : null
   const cancelPrompt = () => {
     if (prompt && (controller.turnId || props.agent === 'pi')) {
       void controller.cancel(controller.turnId ?? undefined, {
@@ -386,6 +397,7 @@ export function NativeChatStructuredSession(
               structuredTransport={structuredTransport}
               launchSeed={{ ...launchDraftSignal, ownsTabWideLaunchDraft: true }}
               notices={notices}
+              {...(planApproval ? { planApproval } : {})}
               recallSource={{ messages: session.messages }}
             />
           ) : null}

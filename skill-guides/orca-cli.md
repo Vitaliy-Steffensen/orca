@@ -91,6 +91,7 @@ ORCA worktree create --name independent-task --no-parent --json
 ORCA worktree set --worktree id:<repoId>::<worktreePath> --display-name "My Task" --json
 ORCA worktree set --worktree active --comment "reproduced bug; testing fix" --json
 ORCA worktree set --worktree active --workspace-status in-review --json
+ORCA worktree set --worktree active --autonomy autonomous --json
 ORCA worktree set --worktree active --unread --json
 ORCA worktree create --repo id:<repoId> --name review-task --pr 123 --json
 ORCA worktree set --worktree active --gitlab-issue '#42' --gitlab-mr '!77' --json

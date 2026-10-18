@@ -156,6 +156,32 @@ describe('journal row validation', () => {
     expect(parse({ ...BASE, kind: 'epoch', reason: 'session_created' })).toBe(false)
   })
 
+  it('reads an approval resolution carrying adjustments, and one with a key it does not know', () => {
+    // Resolution has never been strict, which is what makes a new optional key safe for clients
+    // that predate it: they ignore it rather than refuse the row.
+    const resolved = (resolution: Record<string, unknown>) => ({
+      ...BASE,
+      kind: 'item',
+      itemId: 'i-1',
+      revision: 2,
+      body: {
+        kind: 'approval',
+        title: 'Review proposed plan',
+        detail: null,
+        options: [{ id: 'deny', label: 'Keep planning' }],
+        resolution: {
+          state: 'resolved',
+          selectedOptionId: 'deny',
+          resolvedBy: 'c',
+          resolvedAt: 1,
+          ...resolution
+        }
+      }
+    })
+    expect(parse(resolved({ note: 'Split step 3 in two.' }))).toBe(true)
+    expect(parse(resolved({ somethingNewer: 'from a later build' }))).toBe(true)
+  })
+
   it('rejects JSON-valid nested body corruption that would throw during render', () => {
     const item = (body: unknown) => ({ ...BASE, kind: 'item', itemId: 'i-1', revision: 1, body })
     // A resolved question's options are mapped by the projection; null throws there.

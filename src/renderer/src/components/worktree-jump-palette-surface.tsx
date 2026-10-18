@@ -53,10 +53,17 @@ export function WorktreeJumpPaletteSurface({
     >
       <CommandInput
         ref={controller.inputRef}
-        placeholder={translate(
-          'auto.components.WorktreeJumpPalette.27f10cca63',
-          'Search chats, terminals, worktrees, settings, and actions...'
-        )}
+        placeholder={
+          controller.viewingArchivedWorkspaces
+            ? translate(
+                'auto.components.WorktreeJumpPalette.archivedSearchPlaceholder',
+                'Search archived workspaces...'
+              )
+            : translate(
+                'auto.components.WorktreeJumpPalette.27f10cca63',
+                'Search chats, terminals, worktrees, settings, and actions...'
+              )
+        }
         value={controller.query}
         onValueChange={controller.emojiInput.handleValueChange}
         onClick={(event) => controller.emojiInput.syncCursor(event.currentTarget)}
@@ -66,15 +73,19 @@ export function WorktreeJumpPaletteSurface({
         iconClassName="mr-2.5 h-4 w-4 text-muted-foreground/60"
         className="h-12 min-w-0 flex-1"
         trailing={
-          <div ref={controller.setDialogElementFromNode} className="shrink-0">
-            <PaletteFilterMenu
-              model={controller.filterModel}
-              filter={controller.filter}
-              onFilterChange={controller.setFilter}
-              onRequestInputFocus={controller.focusPaletteInput}
-              portalContainer={controller.dialogElement}
-            />
-          </div>
+          controller.viewingArchivedWorkspaces ? (
+            <div ref={controller.setDialogElementFromNode} className="shrink-0" />
+          ) : (
+            <div ref={controller.setDialogElementFromNode} className="shrink-0">
+              <PaletteFilterMenu
+                model={controller.filterModel}
+                filter={controller.filter}
+                onFilterChange={controller.setFilter}
+                onRequestInputFocus={controller.focusPaletteInput}
+                portalContainer={controller.dialogElement}
+              />
+            </div>
+          )
         }
       />
       <WorkspaceEmojiSuggestionPopover
@@ -90,11 +101,13 @@ export function WorktreeJumpPaletteSurface({
         side="bottom"
         contentClassName="w-80"
       />
-      <PaletteFilterChips
-        model={controller.filterModel}
-        filter={controller.filter}
-        onFilterChange={controller.setFilter}
-      />
+      {controller.viewingArchivedWorkspaces ? null : (
+        <PaletteFilterChips
+          model={controller.filterModel}
+          filter={controller.filter}
+          onFilterChange={controller.setFilter}
+        />
+      )}
       <CommandList
         ref={controller.listRef}
         onPointerDownCapture={() => {
@@ -137,15 +150,27 @@ export function WorktreeJumpPaletteSurface({
           <FooterKey>
             {translate('auto.components.WorktreeJumpPalette.f65d992a11', 'Enter')}
           </FooterKey>
-          <span>{translate('auto.components.WorktreeJumpPalette.45def60329', 'Open')}</span>
+          <span>
+            {controller.viewingArchivedWorkspaces
+              ? translate('auto.components.WorktreeJumpPalette.unarchive', 'Unarchive')
+              : translate('auto.components.WorktreeJumpPalette.45def60329', 'Open')}
+          </span>
           <FooterKey>
             {translate('auto.components.WorktreeJumpPalette.66b5a67bee', 'Esc')}
           </FooterKey>
-          <span>{translate('auto.components.WorktreeJumpPalette.75499e01d9', 'Close')}</span>
+          <span>
+            {controller.viewingArchivedWorkspaces
+              ? translate('auto.components.WorktreeJumpPalette.back', 'Back')
+              : translate('auto.components.WorktreeJumpPalette.75499e01d9', 'Close')}
+          </span>
           <FooterKey>↑↓</FooterKey>
           <span>{translate('auto.components.WorktreeJumpPalette.ac037cfac2', 'Move')}</span>
-          <FooterKey>{translate('worktreeJumpPalette.filter.tabKey', 'Tab')}</FooterKey>
-          <span>{translate('worktreeJumpPalette.filter.label', 'Filter')}</span>
+          {controller.viewingArchivedWorkspaces ? null : (
+            <>
+              <FooterKey>{translate('worktreeJumpPalette.filter.tabKey', 'Tab')}</FooterKey>
+              <span>{translate('worktreeJumpPalette.filter.label', 'Filter')}</span>
+            </>
+          )}
         </div>
       </div>
       <div aria-live="polite" className="sr-only">

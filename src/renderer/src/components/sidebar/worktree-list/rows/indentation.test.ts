@@ -6,6 +6,7 @@ import {
   LINEAGE_CHILDREN_INLINE_OFFSET,
   LINEAGE_NESTED_ROW_SURFACE_INSET,
   WORKTREE_CARD_SURFACE_MARGIN,
+  getWorktreeGroupHeaderPaddingLeft,
   WORKTREE_SECTION_HEADER_PADDING_LEFT,
   getFolderBackedRepoWorktreeCardContentIndent,
   getFolderBackedRepoWorktreeCardSurfaceInset,
@@ -206,6 +207,25 @@ describe('worktree list indentation', () => {
 
   it('aligns flat section headers with top-level project headers', () => {
     expect(WORKTREE_SECTION_HEADER_PADDING_LEFT).toBe(getProjectGroupHeaderPaddingLeft(0))
+  })
+
+  it('steps a status lane header in once its section nests it', () => {
+    expect(
+      getWorktreeGroupHeaderPaddingLeft({ isProjectHeader: false, hasParentSection: false })
+    ).toBe(getProjectGroupHeaderPaddingLeft(0))
+    expect(
+      getWorktreeGroupHeaderPaddingLeft({ isProjectHeader: false, hasParentSection: true })
+    ).toBe(getProjectGroupHeaderPaddingLeft(1))
+  })
+
+  it('keeps project headers on their own depth, ignoring section nesting', () => {
+    expect(
+      getWorktreeGroupHeaderPaddingLeft({
+        isProjectHeader: true,
+        projectGroupDepth: 2,
+        hasParentSection: true
+      })
+    ).toBe(getProjectGroupHeaderPaddingLeft(2))
   })
 
   it('keeps root repo cards flush but insets cards inside project groups', () => {

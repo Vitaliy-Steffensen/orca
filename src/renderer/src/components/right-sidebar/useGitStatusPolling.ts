@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef } from 'react'
+import { useCallback, useEffect, useMemo, useRef } from 'react'
 import { useAppStore } from '@/store'
 import { useAllWorktrees, useRepoById, useRepoMap, useWorktreeById } from '@/store/selectors'
 import { isGitRepoKind } from '../../../../shared/repo-kind'
@@ -49,7 +49,13 @@ export function useGitStatusPolling(options: { enabled?: boolean } = {}): void {
   const activeExecutionHostId = useAppStore((s) =>
     getExecutionHostIdForWorktree(s, activeWorktreeId)
   )
-  const allWorktrees = useAllWorktrees()
+  const everyWorktree = useAllWorktrees()
+  // Why: an archived workspace is shut down on purpose; polling its conflict
+  // state would spawn Git on a checkout nothing is showing.
+  const allWorktrees = useMemo(
+    () => everyWorktree.filter((worktree) => !worktree.isArchived),
+    [everyWorktree]
+  )
   const updateWorktreeGitIdentity = useAppStore((s) => s.updateWorktreeGitIdentity)
   const setGitStatus = useAppStore((s) => s.setGitStatus)
   const gitStatusHugeByWorktree = useAppStore((s) => s.gitStatusHugeByWorktree)

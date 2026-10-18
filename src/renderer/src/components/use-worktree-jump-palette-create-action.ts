@@ -27,6 +27,7 @@ export function useWorktreeJumpPaletteCreateAction({
   visible,
   hasQuery,
   query,
+  viewingArchivedWorkspaces,
   handleSelectItem,
   inputRef,
   setDialogElement,
@@ -36,7 +37,7 @@ export function useWorktreeJumpPaletteCreateAction({
     digitShortcutItemsRef.current = paletteSections.visibleOpenTabItems
   }, [digitShortcutItemsRef, paletteSections])
   useEffect(() => {
-    if (!visible || hasQuery || query.length > 0) {
+    if (!visible || hasQuery || query.length > 0 || viewingArchivedWorkspaces) {
       return
     }
     return subscribeCmdJRowIndexJump((index) => {
@@ -45,7 +46,14 @@ export function useWorktreeJumpPaletteCreateAction({
         handleSelectItem(item)
       }
     })
-  }, [digitShortcutItemsRef, handleSelectItem, hasQuery, query.length, visible])
+  }, [
+    digitShortcutItemsRef,
+    handleSelectItem,
+    hasQuery,
+    query.length,
+    viewingArchivedWorkspaces,
+    visible
+  ])
 
   const handleCreateWorktree = createWorktreeJumpPaletteWorktreeHandler(createWorktreeInput)
 

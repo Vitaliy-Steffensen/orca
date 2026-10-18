@@ -1,6 +1,7 @@
 import { randomUUID } from 'node:crypto'
 import type { Repo } from '../../../shared/repo-types'
 import { DEFAULT_WORKSPACE_STATUS_ID } from '../../../shared/workspace-statuses'
+import { resolveWorkspaceAutonomy } from '../../../shared/workspace-autonomy'
 import { FOLDER_WORKSPACE_INSTANCE_SEPARATOR } from '../../../shared/worktree/id'
 import type { WorktreeMeta } from '../../../shared/worktree/meta-types'
 import type { Worktree } from '../../../shared/worktree/types'
@@ -70,6 +71,7 @@ export function mergeFolderWorkspace(repo: Repo, worktreeId: string, meta: Workt
     ...(meta.cliProvenance !== undefined ? { cliProvenance: meta.cliProvenance } : {}),
     ...(meta.priorWorktreeIds !== undefined ? { priorWorktreeIds: meta.priorWorktreeIds } : {}),
     workspaceStatus: meta.workspaceStatus ?? DEFAULT_WORKSPACE_STATUS_ID,
+    workspaceAutonomy: resolveWorkspaceAutonomy(meta.workspaceAutonomy),
     diffComments: meta.diffComments,
     pendingReviewComments: meta.pendingReviewComments,
     mobileDiffReview: meta.mobileDiffReview

@@ -15,6 +15,7 @@ import type { OrcaWorkspaceLayout } from '../global-settings-types'
 import type { DiffComment, MobileDiffReviewState } from '../diff-comment-types'
 import type { WorkspaceStatusManualOverride } from '../workspace-status-manual-override'
 import type { PendingReviewComment } from '../github/pending-review-comment'
+import type { WorkspaceAutonomy } from '../workspace-autonomy'
 
 // ─── Worktree metadata (persisted user-authored fields only) ─────────
 export type WorktreeMeta = {
@@ -87,6 +88,8 @@ export type WorktreeMeta = {
   workspaceStatus?: WorkspaceStatus
   /** See {@link Worktree.agentRuleManualOverride}. */
   agentRuleManualOverride?: WorkspaceStatusManualOverride
+  /** See {@link Worktree.workspaceAutonomy}. Absent means unset, which reads as supervised. */
+  workspaceAutonomy?: WorkspaceAutonomy
   diffComments?: DiffComment[]
   /** Fork: kept apart from diffComments so the renderer's whole-list note saves never drop them. */
   agentNotes?: DiffComment[]

@@ -57,6 +57,7 @@ function planWith(condition: 'conflicts' | 'review') {
       { worktreeId: 'wt', executionHostId: 'local' as const, status: condition, condition }
     ],
     removals: [],
+    archives: [],
     creations: []
   }
 }

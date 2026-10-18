@@ -10,6 +10,7 @@ import type { WorktreeIdentity } from './identity'
 import type { WorktreeScanFailureKind } from '../worktree-scan-failure'
 import type { PendingReviewComment } from '../github/pending-review-comment'
 import type { WorkspaceStatusManualOverride } from '../workspace-status-manual-override'
+import type { WorkspaceAutonomy } from '../workspace-autonomy'
 
 export type WorkspaceAttachmentOrigin = {
   kind: 'observed'
@@ -89,6 +90,8 @@ export type WorkspaceStatusDefinition = {
   label: string
   color?: string
   icon?: string
+  /** Outer band this lane belongs to. Absent means the lane sits at top level. */
+  section?: string
 }
 
 export type Worktree = {
@@ -174,6 +177,9 @@ export type Worktree = {
   workspaceStatus?: WorkspaceStatus
   /** The lane the user last chose by hand, so agent-state rules do not move the card back. */
   agentRuleManualOverride?: WorkspaceStatusManualOverride
+  /** Clearance for unattended work. Absent (from an older host or an unset workspace) reads as
+   *  `supervised` — go through `resolveWorkspaceAutonomy`, never the raw field. */
+  workspaceAutonomy?: WorkspaceAutonomy
   diffComments?: DiffComment[]
   agentNotes?: DiffComment[]
   /** Review comments queued locally, not yet submitted to the provider. */

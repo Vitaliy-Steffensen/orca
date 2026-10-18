@@ -1,6 +1,7 @@
 import { Textarea } from '@/components/ui/textarea'
 import { SegmentedTabs } from '@/components/ui/segmented-tabs'
 import { translate } from '@/i18n/i18n'
+import { WorkspaceResolutionSettingRow } from './WorkspaceResolutionSettingRow'
 import type {
   ReviewAgentView,
   WorkspaceStatusRuleConfig
@@ -110,17 +111,17 @@ export function ReviewingRuleSettings({
           />
         </>
       ) : null}
-      <SettingsSwitchRow
+      <WorkspaceResolutionSettingRow
         label={translate(
-          'auto.components.settings.prRules.deleteOnReviewed',
-          'Close a review workspace once you have reviewed'
+          'auto.components.settings.prRules.onReviewed',
+          'Once you have reviewed a review workspace'
         )}
         description={translate(
-          'auto.components.settings.prRules.deleteOnReviewedDescription',
+          'auto.components.settings.prRules.onReviewedDescription',
           'Applies to pull requests you did not write, once you have approved or requested changes. A workspace holding unsent review comments, uncommitted work or a running agent is kept. If the author asks you again, the workspace comes back with the diff pointed at the commit you last reviewed.'
         )}
-        checked={config.onReviewed === 'delete'}
-        onChange={() => patch({ onReviewed: config.onReviewed === 'delete' ? 'none' : 'delete' })}
+        value={config.onReviewed}
+        onChange={(onReviewed) => patch({ onReviewed })}
       />
     </>
   )

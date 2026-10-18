@@ -68,6 +68,17 @@ describe('normalizeWorkspaceStatusRuleConfig', () => {
     ).toBe('')
   })
 
+  it('reads archive as a resolution and anything unknown as none', () => {
+    expect(
+      normalizeWorkspaceStatusRuleConfig({ onResolved: 'archive', onReviewed: 'archive' })
+    ).toMatchObject({ onResolved: 'archive', onReviewed: 'archive' })
+    // Why: a config written by a newer build must degrade to doing nothing
+    // rather than falling through to a delete.
+    expect(
+      normalizeWorkspaceStatusRuleConfig({ onResolved: 'incinerate', onReviewed: 7 })
+    ).toMatchObject({ onResolved: 'none', onReviewed: 'none' })
+  })
+
   it('discards a ledger written before the seeding step was removed', () => {
     const config = normalizeWorkspaceStatusRuleConfig({
       ...cloneDefaultWorkspaceStatusRuleConfig(),
