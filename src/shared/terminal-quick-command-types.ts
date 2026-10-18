@@ -15,6 +15,8 @@ export type WorkspaceRunService = {
   label: string
   command: string
   readyPort?: number
+  /** Env name in the workspace's fnox.local.toml, used when readyPort is omitted. */
+  readyPortEnv?: string
 }
 
 export type WorkspaceRunLoginConfig = {

@@ -61,6 +61,7 @@ function normalizeService(input: unknown): WorkspaceRunService | null {
     return null
   }
   const readyPort = normalizeReadyPort(record.readyPort)
+  const readyPortEnv = normalizeReadyPortEnv(record.readyPortEnv)
   const service: WorkspaceRunService = {
     label:
       typeof record.label === 'string'
@@ -71,7 +72,17 @@ function normalizeService(input: unknown): WorkspaceRunService | null {
   if (readyPort !== undefined) {
     service.readyPort = readyPort
   }
+  if (readyPortEnv !== undefined) {
+    service.readyPortEnv = readyPortEnv
+  }
   return service
+}
+
+function normalizeReadyPortEnv(value: unknown): string | undefined {
+  if (typeof value !== 'string' || !/^[A-Z][A-Z0-9_]{0,63}$/.test(value)) {
+    return undefined
+  }
+  return value
 }
 
 function normalizeOptionalText(value: unknown, maxLength: number): string | undefined {
@@ -160,7 +171,14 @@ export function normalizeWorkspaceRunQuickCommand(
 }
 
 function serviceKeys(service: WorkspaceRunService): readonly string[] {
-  return service.readyPort !== undefined ? ['label', 'command', 'readyPort'] : ['label', 'command']
+  const keys = ['label', 'command']
+  if (service.readyPort !== undefined) {
+    keys.push('readyPort')
+  }
+  if (service.readyPortEnv !== undefined) {
+    keys.push('readyPortEnv')
+  }
+  return keys
 }
 
 function isNormalizedService(value: unknown, expected: WorkspaceRunService): boolean {
@@ -171,7 +189,8 @@ function isNormalizedService(value: unknown, expected: WorkspaceRunService): boo
     hasExactKeys(value, serviceKeys(expected)) &&
     value.label === expected.label &&
     value.command === expected.command &&
-    (expected.readyPort === undefined || value.readyPort === expected.readyPort)
+    (expected.readyPort === undefined || value.readyPort === expected.readyPort) &&
+    (expected.readyPortEnv === undefined || value.readyPortEnv === expected.readyPortEnv)
   )
 }
 

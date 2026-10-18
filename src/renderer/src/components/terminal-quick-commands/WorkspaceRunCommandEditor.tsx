@@ -67,7 +67,9 @@ export function WorkspaceRunCommandEditor({
     }
     return id
   }
-  const noReadyPort = services.every((service) => service.readyPort === undefined)
+  const noReadyPort = services.every(
+    (service) => service.readyPort === undefined && service.readyPortEnv === undefined
+  )
 
   const setServices = (next: WorkspaceRunService[]): void => {
     updateRun(setDraft, (current) => ({ ...current, services: next }))

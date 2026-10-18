@@ -9,9 +9,41 @@ import { useAppStore } from '@/store'
 import { singlePaneLayoutSnapshot } from '@/store/slices/terminal-helpers'
 import { toast } from 'sonner'
 import { translate } from '@/i18n/i18n'
-import type { WorkspaceRunQuickCommand } from '../../../shared/terminal-quick-command-types'
+import type {
+  WorkspaceRunQuickCommand,
+  WorkspaceRunService
+} from '../../../shared/terminal-quick-command-types'
+import { readWorkspaceRunReadyPortFromToml } from '../../../shared/workspace-run-ready-port'
 import { DEFAULT_WORKSPACE_RUN_READY_TIMEOUT_SECONDS } from '../../../shared/workspace-run-quick-command'
 import { stopWorkspaceRunNow } from '@/lib/stop-workspace-run'
+
+function decodeBase64(value: string): string {
+  const binary = atob(value)
+  const bytes = Uint8Array.from(binary, (char) => char.charCodeAt(0))
+  return new TextDecoder().decode(bytes)
+}
+
+async function readyPortForService(
+  worktreePath: string,
+  service: WorkspaceRunService
+): Promise<number | undefined> {
+  if (service.readyPort !== undefined) {
+    return service.readyPort
+  }
+  if (!service.readyPortEnv) {
+    return undefined
+  }
+  try {
+    const chunk = await window.api.fs.readFileChunk({
+      filePath: `${worktreePath}/fnox.local.toml`,
+      offset: 0,
+      length: 16_384
+    })
+    return readWorkspaceRunReadyPortFromToml(decodeBase64(chunk.contentBase64), service.readyPortEnv)
+  } catch {
+    return undefined
+  }
+}
 
 async function launchWorkspaceRun(
   worktreeId: string,
@@ -70,10 +102,11 @@ async function launchWorkspaceRun(
       if (!attached) {
         throw new Error('The terminal tab was closed before its session finished starting.')
       }
+      const readyPort = await readyPortForService(worktree.path, service)
       services.push({
         label,
         tabId: tab.id,
-        ...(service.readyPort !== undefined ? { readyPort: service.readyPort } : {}),
+        ...(readyPort !== undefined ? { readyPort } : {}),
         ready: false
       })
     }
