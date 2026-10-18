@@ -115,6 +115,8 @@ export async function executeWorktreeCreation(
             ? { startupDraft: preparedRequest.launchDraftPrompt }
             : {}),
           ...(provisionedRoot ? { provisionedRoot } : {}),
+          workspaceAutonomy: preparedRequest.workspaceAutonomy,
+          workspaceIntent: preparedRequest.workspaceIntent,
           ...(preparedRequest.parentWorktreeId
             ? { parentWorktreeId: preparedRequest.parentWorktreeId }
             : {})

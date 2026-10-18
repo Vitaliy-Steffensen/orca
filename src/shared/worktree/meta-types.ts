@@ -16,6 +16,7 @@ import type { DiffComment, MobileDiffReviewState } from '../diff-comment-types'
 import type { WorkspaceStatusManualOverride } from '../workspace-status-manual-override'
 import type { PendingReviewComment } from '../github/pending-review-comment'
 import type { WorkspaceAutonomy } from '../workspace-autonomy'
+import type { WorkspaceIntent } from '../workspace-intent'
 
 // ─── Worktree metadata (persisted user-authored fields only) ─────────
 export type WorktreeMeta = {
@@ -90,6 +91,7 @@ export type WorktreeMeta = {
   agentRuleManualOverride?: WorkspaceStatusManualOverride
   /** See {@link Worktree.workspaceAutonomy}. Absent means unset, which reads as supervised. */
   workspaceAutonomy?: WorkspaceAutonomy
+  workspaceIntent?: WorkspaceIntent
   diffComments?: DiffComment[]
   /** Fork: kept apart from diffComments so the renderer's whole-list note saves never drop them. */
   agentNotes?: DiffComment[]

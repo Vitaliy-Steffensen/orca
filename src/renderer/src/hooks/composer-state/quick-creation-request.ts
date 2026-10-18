@@ -37,6 +37,8 @@ export type QuickCreationRequestInput = {
   branchNameOverride: string | undefined
   parentWorktreeId: string | null
   workspaceStatus: WorktreeCreationRequest['workspaceStatus']
+  workspaceAutonomy?: WorktreeCreationRequest['workspaceAutonomy']
+  workspaceIntent?: WorktreeCreationRequest['workspaceIntent']
   linkedGitLabMR: number | null
   linkedGitLabIssue: number | null
   includeGitLabLinks: boolean
@@ -51,6 +53,7 @@ export type QuickCreationRequestInput = {
   promptDelivery: 'draft' | 'auto-submit'
   quickTelemetry: AgentStartedTelemetry | null
   suppressTerminalFocusOnCompletion: boolean
+  launchSeedOverlay?: Readonly<Record<string, string>>
 }
 
 export function buildQuickCreationRequest(
@@ -96,6 +99,8 @@ export function buildQuickCreationRequest(
       : {}),
     ...(input.branchNameOverride ? { branchNameOverride: input.branchNameOverride } : {}),
     ...(input.parentWorktreeId ? { parentWorktreeId: input.parentWorktreeId } : {}),
+    ...(input.workspaceAutonomy ? { workspaceAutonomy: input.workspaceAutonomy } : {}),
+    ...(input.workspaceIntent ? { workspaceIntent: input.workspaceIntent } : {}),
     ...(input.workspaceStatus ? { workspaceStatus: input.workspaceStatus } : {}),
     ...(input.includeGitLabLinks && input.linkedGitLabMR != null
       ? { linkedGitLabMR: input.linkedGitLabMR }
@@ -113,6 +118,7 @@ export function buildQuickCreationRequest(
     ...(input.launchDraftPrompt ? { launchDraftPrompt: input.launchDraftPrompt } : {}),
     promptDelivery: input.promptDelivery,
     quickTelemetry: input.quickTelemetry,
-    ...(input.suppressTerminalFocusOnCompletion ? { suppressTerminalFocusOnCompletion: true } : {})
+    ...(input.suppressTerminalFocusOnCompletion ? { suppressTerminalFocusOnCompletion: true } : {}),
+    ...(input.launchSeedOverlay ? { launchSeedOverlay: input.launchSeedOverlay } : {})
   }
 }

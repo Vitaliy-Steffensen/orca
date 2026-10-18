@@ -46,8 +46,10 @@ type FolderWorkspaceUpdates = Partial<
     | 'lastActivityAt'
     | 'diffComments'
   >
-> &
-  WorkspaceAttachmentMutation
+> & {
+  workspaceAutonomy?: FolderWorkspace['workspaceAutonomy'] | null
+  workspaceIntent?: FolderWorkspace['workspaceIntent'] | null
+} & WorkspaceAttachmentMutation
 
 export class RuntimeProjectGroupController {
   constructor(private readonly deps: RuntimeProjectGroupDependencies) {}
@@ -132,6 +134,8 @@ export class RuntimeProjectGroupController {
     linkedTask?: FolderWorkspace['linkedTask']
     linkedItems?: FolderWorkspace['linkedItems']
     linkedTaskSourceContext?: FolderWorkspace['linkedTaskSourceContext']
+    workspaceAutonomy?: FolderWorkspace['workspaceAutonomy']
+    workspaceIntent?: FolderWorkspace['workspaceIntent']
     createdWithAgent?: FolderWorkspace['createdWithAgent']
     pendingFirstAgentMessageRename?: boolean
   }): Promise<FolderWorkspace> {

@@ -80,6 +80,7 @@ export type FolderWorkspaceUpdates = Partial<
     | 'manualOrder'
     | 'workspaceStatus'
     | 'workspaceAutonomy'
+    | 'workspaceIntent'
     | 'createdWithAgent'
     | 'pendingFirstAgentMessageRename'
     | 'firstAgentMessageRenameError'
@@ -222,6 +223,8 @@ export type RepoSlice = {
       linkedTask?: FolderWorkspace['linkedTask']
       linkedItems?: FolderWorkspace['linkedItems']
       linkedTaskSourceContext?: FolderWorkspace['linkedTaskSourceContext']
+      workspaceAutonomy?: FolderWorkspace['workspaceAutonomy']
+      workspaceIntent?: FolderWorkspace['workspaceIntent']
       createdWithAgent?: FolderWorkspace['createdWithAgent']
       pendingFirstAgentMessageRename?: boolean
     },

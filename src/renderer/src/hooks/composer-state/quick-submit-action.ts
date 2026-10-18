@@ -1,3 +1,4 @@
+import type { WorkspaceMode } from '../../../../shared/workspace-mode'
 import { useCallback } from 'react'
 import type { TuiAgent } from '../../../../shared/tui-agent'
 import type { WorktreeCreationRequest } from '@/lib/pending-worktree-creation'
@@ -22,6 +23,7 @@ type QuickSubmitActionInput = Pick<
   | 'isSubmissionCancelled'
   | 'linkedPR'
   | 'name'
+  | 'agentPrompt'
   | 'onCreated'
   | 'parsedLinkedIssueNumber'
   | 'repoId'
@@ -46,6 +48,7 @@ export function useQuickSubmitAction(input: QuickSubmitActionInput) {
     fallbackCreatureName,
     isProjectGroupTarget,
     isSubmissionCancelled,
+    agentPrompt,
     linkedPR,
     name,
     onCreated,
@@ -66,15 +69,19 @@ export function useQuickSubmitAction(input: QuickSubmitActionInput) {
   } = input
 
   const submitQuick = useCallback(
-    async (requestedAgent: TuiAgent | null): Promise<void> => {
+    async (
+      requestedAgent: TuiAgent | null,
+      launchSeedOverlay?: Readonly<Record<string, string>>,
+      workspaceMode?: WorkspaceMode
+    ): Promise<void> => {
       if (isProjectGroupTarget) {
-        await submitFolderTarget(requestedAgent)
+        await submitFolderTarget(requestedAgent, launchSeedOverlay, workspaceMode)
         return
       }
 
       const workspaceNameSeed = getWorkspaceSeedName({
         explicitName: name,
-        prompt: '',
+        prompt: agentPrompt,
         linkedIssueNumber: parsedLinkedIssueNumber,
         linkedPR,
         fallbackName: fallbackCreatureName
@@ -143,7 +150,9 @@ export function useQuickSubmitAction(input: QuickSubmitActionInput) {
           requestedAgent,
           workspaceNameSeed,
           workspaceRunContext,
-          repoId
+          repoId,
+          launchSeedOverlay,
+          workspaceMode
         )
       } catch (error) {
         if (isSubmissionCancelled()) {
@@ -162,6 +171,7 @@ export function useQuickSubmitAction(input: QuickSubmitActionInput) {
       fallbackCreatureName,
       isProjectGroupTarget,
       isSubmissionCancelled,
+      agentPrompt,
       linkedPR,
       name,
       onCreated,

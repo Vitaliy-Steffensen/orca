@@ -53,6 +53,7 @@ export default function WorktreeContextMenuView({ model }: { model: WorktreeCont
     contextDeletePending,
     contextMenuOpenedAtRef,
     contextWorkspaceAutonomy,
+    contextWorkspaceIntent,
     contextWorkspaceStatus,
     deleteLabel,
     deletingContext,
@@ -62,6 +63,7 @@ export default function WorktreeContextMenuView({ model }: { model: WorktreeCont
     effectiveSelectedWorktrees,
     folderWorkspaceId,
     handleAssignWorkspaceAutonomy,
+    handleAssignWorkspaceIntent,
     handleAssignWorkspaceStatus,
     handleCloseAutoFocus,
     handleCloseTerminals,
@@ -160,11 +162,13 @@ export default function WorktreeContextMenuView({ model }: { model: WorktreeCont
         >
           <WorktreeContextMenuWorkspaceSection
             contextWorkspaceAutonomy={contextWorkspaceAutonomy}
+            contextWorkspaceIntent={contextWorkspaceIntent}
             contextWorkspaceStatus={contextWorkspaceStatus}
             deletingContext={deletingContext}
             isDeleting={isDeleting}
             isMultiContext={isMultiContext}
             onAssignWorkspaceAutonomy={handleAssignWorkspaceAutonomy}
+            onAssignWorkspaceIntent={handleAssignWorkspaceIntent}
             onAssignWorkspaceStatus={handleAssignWorkspaceStatus}
             onRename={handleRename}
             workspaceStatuses={workspaceStatuses}
