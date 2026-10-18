@@ -393,6 +393,78 @@ describe('orca cli worktree awareness', () => {
   })
 
   it.each([
+    ['autonomous', 'autonomous'],
+    ['supervised', 'supervised'],
+    ['null', null]
+  ])('passes --autonomy %s through worktree.set', async (flagValue, workspaceAutonomy) => {
+    queueFixtures(
+      callMock,
+      okFixture('req_set_autonomy', {
+        worktree: { ...buildWorktree('/tmp/repo/child', 'feature/child'), workspaceAutonomy }
+      })
+    )
+    vi.spyOn(console, 'log').mockImplementation(() => {})
+
+    await main(
+      [
+        'worktree',
+        'set',
+        '--worktree',
+        'id:repo::/tmp/repo/child',
+        '--autonomy',
+        flagValue,
+        '--json'
+      ],
+      '/tmp/repo'
+    )
+
+    expect(callMock).toHaveBeenCalledExactlyOnceWith('worktree.set', {
+      worktree: 'id:repo::/tmp/repo/child',
+      displayName: undefined,
+      linkedIssue: undefined,
+      comment: undefined,
+      workspaceStatus: undefined,
+      workspaceAutonomy,
+      parentWorktree: undefined,
+      noParent: false
+    })
+  })
+
+  it('leaves autonomy unchanged when --autonomy is not passed', async () => {
+    queueFixtures(
+      callMock,
+      okFixture('req_set_comment', { worktree: buildWorktree('/tmp/repo/child', 'feature/child') })
+    )
+    vi.spyOn(console, 'log').mockImplementation(() => {})
+
+    await main(
+      ['worktree', 'set', '--worktree', 'id:repo::/tmp/repo/child', '--comment', 'hi', '--json'],
+      '/tmp/repo'
+    )
+
+    expect(JSON.stringify(callMock.mock.calls[0]?.[1])).not.toContain('workspaceAutonomy')
+  })
+
+  it('rejects an unknown --autonomy value before RPC', async () => {
+    const logSpy = vi.spyOn(console, 'log').mockImplementation(() => {})
+    const errSpy = vi.spyOn(console, 'error').mockImplementation(() => {})
+    const priorExitCode = process.exitCode
+
+    await main(
+      ['worktree', 'set', '--worktree', 'id:repo::/tmp/repo/child', '--autonomy', 'afk', '--json'],
+      '/tmp/repo'
+    )
+
+    expect(callMock).not.toHaveBeenCalled()
+    expect([...logSpy.mock.calls, ...errSpy.mock.calls].flat().join('\n')).toContain(
+      '--autonomy accepts autonomous, supervised or null.'
+    )
+    expect(process.exitCode).toBe(1)
+
+    process.exitCode = priorExitCode
+  })
+
+  it.each([
     ['id:repo::/tmp/repo/child', '--unread', true],
     ['id:repo::/tmp/repo/child', '--read', false],
     ['id:folder-repo::/tmp/notes', '--unread', true],

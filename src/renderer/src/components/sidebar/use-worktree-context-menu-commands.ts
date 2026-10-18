@@ -3,6 +3,7 @@ import type { useAppStore } from '@/store'
 import type { Repo } from '../../../../shared/repo-types'
 import { getRepoExecutionHostId } from '../../../../shared/execution-host'
 import type { WorkspaceStatusDefinition, Worktree } from '../../../../shared/worktree/types'
+import type { WorkspaceAutonomy } from '../../../../shared/workspace-autonomy'
 import {
   createWorktreeContextMenuDeleteIntent,
   deferWorktreeContextMenuDeleteIntent
@@ -132,6 +133,21 @@ export function useWorktreeContextMenuCommands(args: {
     },
     [args]
   )
+  const handleAssignWorkspaceAutonomy = useCallback(
+    (autonomy: WorkspaceAutonomy) => {
+      args.setMenuOpenState(false)
+      void Promise.all(
+        args.activeContextWorktrees.map((worktree) =>
+          args.updateWorktreeMeta(
+            worktree.id,
+            { workspaceAutonomy: autonomy },
+            { executionHostId: worktree.hostId ?? 'local' }
+          )
+        )
+      )
+    },
+    [args]
+  )
   const handleRename = useCallback(() => {
     args.openModal('edit-meta', {
       worktreeId: args.worktree.id,
@@ -189,6 +205,7 @@ export function useWorktreeContextMenuCommands(args: {
   }, [args.validParentWorktreeId])
   return {
     handleArchive,
+    handleAssignWorkspaceAutonomy,
     handleAssignWorkspaceStatus,
     handleCloseTerminals,
     handleCopyName,

@@ -78,6 +78,8 @@ export const FLAG_HELP_TEXT: Record<string, string> = {
   workspace: '--workspace <selector> Existing worktree selector for automation runs',
   'workspace-status':
     '--workspace-status <id> Board status id (defaults: todo, in-progress, in-review, completed)',
+  autonomy:
+    '--autonomy <autonomous|supervised|null> Clearance for unattended work; null clears it (unset reads as supervised)',
   staged: '--staged               Open staged source-control changes',
   provider: '--provider <agent>     Agent id such as codex, claude, or gemini',
   'source-context':

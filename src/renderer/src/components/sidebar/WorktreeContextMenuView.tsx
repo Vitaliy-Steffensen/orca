@@ -2,7 +2,6 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
-  DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuShortcut,
   DropdownMenuSub,
@@ -16,7 +15,6 @@ import {
   Bell,
   BellOff,
   CircleX,
-  Pencil,
   Pin,
   PinOff,
   Trash2,
@@ -35,7 +33,7 @@ import { isEventTargetInsideCurrentTarget } from './worktree-card-dom-events'
 import { translate } from '@/i18n/i18n'
 import { useOptionalShortcutLabel } from '@/hooks/useShortcutLabel'
 import type { WorktreeContextMenuModel } from './use-worktree-context-menu-model'
-import { WorktreeStatusMenuItems } from './WorktreeStatusMenuItems'
+import { WorktreeContextMenuWorkspaceSection } from './WorktreeContextMenuWorkspaceSection'
 import { WorktreeContextMenuOverlays } from './WorktreeContextMenuOverlays'
 import {
   WORKTREE_CONTEXT_MENU_SCOPE_ATTR,
@@ -54,6 +52,7 @@ export default function WorktreeContextMenuView({ model }: { model: WorktreeCont
     contentClassName,
     contextDeletePending,
     contextMenuOpenedAtRef,
+    contextWorkspaceAutonomy,
     contextWorkspaceStatus,
     deleteLabel,
     deletingContext,
@@ -62,6 +61,7 @@ export default function WorktreeContextMenuView({ model }: { model: WorktreeCont
     eligibleParentCount,
     effectiveSelectedWorktrees,
     folderWorkspaceId,
+    handleAssignWorkspaceAutonomy,
     handleAssignWorkspaceStatus,
     handleCloseAutoFocus,
     handleCloseTerminals,
@@ -158,20 +158,15 @@ export default function WorktreeContextMenuView({ model }: { model: WorktreeCont
           onClickCapture={suppressOpeningPointerEvent}
           onCloseAutoFocus={handleCloseAutoFocus}
         >
-          <DropdownMenuLabel className="px-2 py-1 text-[11px] font-medium text-muted-foreground">
-            {translate('auto.components.sidebar.WorktreeContextMenu.workspaceSection', 'Workspace')}
-          </DropdownMenuLabel>
-          {!isMultiContext && (
-            <DropdownMenuItem onSelect={handleRename} disabled={isDeleting}>
-              <Pencil className="size-3.5" />
-              {translate('auto.components.sidebar.WorktreeContextMenu.439fa94d53', 'Update')}
-            </DropdownMenuItem>
-          )}
-          <WorktreeStatusMenuItems
+          <WorktreeContextMenuWorkspaceSection
+            contextWorkspaceAutonomy={contextWorkspaceAutonomy}
             contextWorkspaceStatus={contextWorkspaceStatus}
             deletingContext={deletingContext}
+            isDeleting={isDeleting}
             isMultiContext={isMultiContext}
+            onAssignWorkspaceAutonomy={handleAssignWorkspaceAutonomy}
             onAssignWorkspaceStatus={handleAssignWorkspaceStatus}
+            onRename={handleRename}
             workspaceStatuses={workspaceStatuses}
           />
           <DropdownMenuSeparator />

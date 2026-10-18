@@ -1,4 +1,5 @@
 import type { GitPushTarget, Worktree } from '../../shared/worktree/types'
+import type { WorkspaceAutonomy } from '../../shared/workspace-autonomy'
 import type { WorktreeMeta } from '../../shared/worktree/meta-types'
 import { worktreeWorkspaceKey } from '../../shared/workspace-scope'
 import { splitWorktreeId } from '../../shared/worktree/id'
@@ -9,10 +10,15 @@ import type { RuntimeStore } from './runtime-store-contract'
 import { RuntimeLineageError } from './runtime-worktree-lineage-resolution'
 import type { ResolvedWorktree } from './runtime-worktree-path-identity'
 
-type Updates = Omit<Partial<WorktreeMeta>, 'pushTarget'> & {
+type Updates = Omit<Partial<WorktreeMeta>, 'pushTarget' | 'workspaceAutonomy'> & {
   pushTarget?: GitPushTarget | null
+  workspaceAutonomy?: WorkspaceAutonomy | null
   lineage?: { parentWorktree?: string; noParent?: boolean }
 }
+
+// Why: `undefined` means "leave unchanged" and is stripped before the merge, so an explicit
+// `null` is how a caller clears one of these slots back to unset.
+const NULL_CLEARABLE_FIELDS = ['pushTarget', 'workspaceAutonomy'] as const
 
 type Ports = {
   resolveWorktree: (selector: string) => Promise<ResolvedWorktree>
@@ -35,11 +41,14 @@ export async function updateRuntimeManagedWorktreeMetadata(args: {
     args.ports.invalidateResolved()
     args.ports.invalidateScan(worktree.repoId)
   }
-  const clearPushTarget =
-    Object.hasOwn(metaUpdates, 'pushTarget') && metaUpdates.pushTarget === null
-  const normalized: Partial<WorktreeMeta> = clearPushTarget
-    ? { ...metaUpdates, pushTarget: undefined }
-    : (metaUpdates as Partial<WorktreeMeta>)
+  const clearedFields = NULL_CLEARABLE_FIELDS.filter(
+    (field) => Object.hasOwn(metaUpdates, field) && metaUpdates[field] === null
+  )
+  const normalized: Partial<WorktreeMeta> = {
+    ...metaUpdates,
+    pushTarget: metaUpdates.pushTarget ?? undefined,
+    workspaceAutonomy: metaUpdates.workspaceAutonomy ?? undefined
+  }
   const persisted: Partial<WorktreeMeta> = omitUndefinedProperties(
     normalized.displayName !== undefined
       ? {
@@ -49,8 +58,8 @@ export async function updateRuntimeManagedWorktreeMetadata(args: {
         }
       : normalized
   )
-  if (clearPushTarget) {
-    persisted.pushTarget = undefined
+  for (const field of clearedFields) {
+    persisted[field] = undefined
   }
   if (lineage?.noParent === true) {
     args.store.removeWorktreeLineage?.(worktree.id)
