@@ -33,21 +33,36 @@ export async function listProjects(
   query: string | undefined,
   limit = 20,
   workspaceId?: LinearWorkspaceSelection | null,
-  force = false
+  force = false,
+  lead?: 'me'
 ): Promise<LinearCollectionResult<LinearProjectSummary>> {
   const first = clampLimit(limit)
-  const trimmed = query?.trim()
-  const key = `listProjects:${workspaceId ?? 'default'}:${trimmed ?? ''}:${first}`
+  const trimmed = lead === 'me' ? '' : (query?.trim() ?? '')
+  const key = `listProjects:${workspaceId ?? 'default'}:${trimmed}:${first}:${lead ?? ''}`
   return readCollection(
     key,
     workspaceId,
     async (entry) => {
-      const variables = trimmed ? { term: trimmed, first } : { first, orderBy: 'updatedAt' }
+      const name = query?.trim()
+      const variables =
+        lead === 'me'
+          ? {
+              first,
+              orderBy: 'updatedAt',
+              filter: {
+                lead: { isMe: { eq: true } },
+                ...(name ? { name: { containsIgnoreCase: name } } : {})
+              }
+            }
+          : trimmed
+            ? { term: trimmed, first }
+            : { first, orderBy: 'updatedAt' }
       const result = await entry.client.client.rawRequest<
         ProjectConnectionResponse,
         LinearRawVariables
-      >(trimmed ? SEARCH_PROJECTS_QUERY : PROJECTS_QUERY, variables)
-      const connection = trimmed ? result.data?.searchProjects : result.data?.projects
+      >(lead === 'me' || !trimmed ? PROJECTS_QUERY : SEARCH_PROJECTS_QUERY, variables)
+      const connection =
+        lead === 'me' || !trimmed ? result.data?.projects : result.data?.searchProjects
       return {
         items: (connection?.nodes ?? []).map((project) => mapProjectForWorkspace(entry, project)),
         hasMore: !!connection?.pageInfo?.hasNextPage

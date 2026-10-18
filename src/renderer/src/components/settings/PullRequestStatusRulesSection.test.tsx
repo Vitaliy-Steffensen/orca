@@ -11,7 +11,8 @@ import {
 
 const mocks = vi.hoisted(() => ({
   config: null as WorkspaceStatusRuleConfig | null,
-  setWorkspaceStatusRules: vi.fn()
+  setWorkspaceStatusRules: vi.fn(),
+  openAutomationsPage: vi.fn()
 }))
 
 vi.mock('@/i18n/i18n', () => ({
@@ -23,7 +24,8 @@ vi.mock('@/store', () => ({
       workspaceStatusRules: mocks.config,
       workspaceStatuses: [{ id: 'review', label: 'Review' }],
       repos: [],
-      setWorkspaceStatusRules: mocks.setWorkspaceStatusRules
+      setWorkspaceStatusRules: mocks.setWorkspaceStatusRules,
+      openAutomationsPage: mocks.openAutomationsPage
     })
 }))
 vi.mock('./WorkspaceActionPromptsSection', () => ({
@@ -34,8 +36,9 @@ import { PullRequestStatusRulesSection } from './PullRequestStatusRulesSection'
 
 describe('PR rules settings', () => {
   beforeEach(() => {
-    mocks.config = { ...cloneDefaultWorkspaceStatusRuleConfig(), enabled: true }
+    mocks.config = cloneDefaultWorkspaceStatusRuleConfig()
     mocks.setWorkspaceStatusRules.mockReset()
+    mocks.openAutomationsPage.mockReset()
   })
 
   afterEach(cleanup)
@@ -43,6 +46,7 @@ describe('PR rules settings', () => {
   it('opens on General, with a tab for every pull request state', () => {
     render(<PullRequestStatusRulesSection />)
 
+    expect(screen.getByText('Scheduled by the Pull request sync automation')).toBeInTheDocument()
     expect(screen.getByText('New workspaces start in')).toBeInTheDocument()
     for (const tab of ['Reviewing', 'Conflicts', 'Review', 'Merge gate', 'PM approval']) {
       expect(screen.getByRole('tab', { name: tab })).toBeInTheDocument()

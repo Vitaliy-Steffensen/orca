@@ -51,7 +51,6 @@ export type WorkspaceStatusRuleReviewInbox = {
 }
 
 export type WorkspaceStatusRuleConfig = {
-  enabled: boolean
   /** Projects the rules act on. Empty means the rules do nothing. */
   repoIds: string[]
   statusByCondition: Partial<Record<WorkspaceStatusRuleCondition, WorkspaceStatus>>
@@ -122,7 +121,6 @@ const MAX_COMMAND_LENGTH = 1000
 
 export function cloneDefaultWorkspaceStatusRuleConfig(): WorkspaceStatusRuleConfig {
   return {
-    enabled: false,
     repoIds: [],
     statusByCondition: {},
     mergingCheckName: DEFAULT_MERGING_CHECK_NAME,
@@ -254,7 +252,6 @@ export function normalizeWorkspaceStatusRuleConfig(value: unknown): WorkspaceSta
       ? raw.pmApprovalTeam.trim().slice(0, MAX_TEAM_LENGTH)
       : null
   return {
-    enabled: raw.enabled === true,
     repoIds: Array.isArray(raw.repoIds)
       ? [
           ...new Set(

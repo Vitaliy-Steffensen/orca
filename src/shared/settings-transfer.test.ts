@@ -80,7 +80,6 @@ describe('settings transfer', () => {
       'worktreeCardProperties'
     ])
     expect(bundle.ui.workspaceStatusRules).toEqual({
-      enabled: true,
       statusByCondition: { reviewing: 'review' },
       actionPrompts: { reviewPullRequest: 'Review it' }
     })

@@ -322,6 +322,9 @@ orca linear team list --json
 orca linear team states --team ENG --json
 orca linear team labels --team ENG --json
 orca linear project list --query launch --json
+orca linear project list --lead me --json
+orca linear project show <id> --json
+orca linear project update post --project <id> --body "Shipped the sync." --health onTrack --json
 ```
 
 `--full` expands comments, children, attachments, relations, and activity. Section flags (`--comments`, `--children`, `--attachments`, `--relations`, `--activity`) work individually.

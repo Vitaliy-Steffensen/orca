@@ -24,6 +24,7 @@ import {
   resolveAutomationEditDestination,
   saveExistingAutomation
 } from './automation-orca-save-operations'
+import { savePullRequestSyncAutomation } from './automation-orca-save-pull-request-sync'
 import type { AutomationSaveContext } from './automation-save-context'
 
 /** Saves an Orca automation, including destination validation and host moves. */
@@ -78,6 +79,9 @@ export async function saveOrcaAutomation(
           minute: time.minute,
           dayOfWeek: Number(draft.dayOfWeek)
         })
+  if (await savePullRequestSyncAutomation(context, rrule, time.now)) {
+    return
+  }
   const rawGrace = Number(draft.missedRunGraceMinutes)
   const missedRunGraceMinutes = Number.isFinite(rawGrace) ? Math.max(0, rawGrace) : 720
   const precheck = buildDraftPrecheck(draft)

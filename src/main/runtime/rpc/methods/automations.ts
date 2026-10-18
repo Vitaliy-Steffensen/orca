@@ -8,6 +8,8 @@ import {
   AutomationRuns,
   AutomationUpdate
 } from '../../../../shared/rpc-contract/automation-params'
+import type { RuntimeAutomationCreateInput } from '../../runtime-automation-controller'
+import type { z } from 'zod'
 
 function mutationOwner(
   id: string,
@@ -23,6 +25,24 @@ function mutationOwner(
   }
   // Legacy clients cannot echo owner metadata, so snapshot it at the RPC boundary.
   return context.runtime.automationOwnerPrecondition(id) ?? undefined
+}
+
+function coerceAutomationCreate(
+  params: z.infer<typeof AutomationCreate>
+): RuntimeAutomationCreateInput {
+  if (params.kind === 'pull_request_sync') {
+    return {
+      ...params,
+      kind: 'pull_request_sync',
+      prompt: params.prompt ?? '',
+      agentId: params.agentId ?? 'claude'
+    }
+  }
+  return {
+    ...params,
+    prompt: params.prompt ?? '',
+    agentId: params.agentId ?? 'claude'
+  }
 }
 
 export const AUTOMATION_METHODS = [
@@ -51,7 +71,7 @@ export const AUTOMATION_METHODS = [
     permission: 'workspace',
     params: AutomationCreate,
     handler: async (params, { runtime }) => ({
-      automation: await runtime.createAutomation(params)
+      automation: await runtime.createAutomation(coerceAutomationCreate(params))
     })
   }),
   defineMethod({

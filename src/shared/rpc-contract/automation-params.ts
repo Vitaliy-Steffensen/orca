@@ -21,6 +21,8 @@ export const TuiAgent = requiredString('Missing provider').refine(isTuiAgent, {
 
 export const AutomationWorkspaceMode = z.enum(['existing', 'new_per_run']).optional()
 
+export const AutomationKind = z.enum(['agent_prompt', 'pull_request_sync']).optional()
+
 export const SetupDecision = z.enum(['inherit', 'run', 'skip']).optional()
 
 export const ExecutionHostId = requiredString('Missing host id').transform((value, ctx) => {
@@ -186,30 +188,44 @@ export const AutomationRuns = z.object({
 // Why strict: null or a non-string must fail rather than fall back to "omitted", which preserves.
 const ExtraAgentArgs = z.string({ message: 'Extra agent arguments must be text.' }).optional()
 
-export const AutomationCreate = z.object({
-  creationKey: OptionalString,
-  name: requiredString('Missing automation name'),
-  prompt: requiredString('Missing automation prompt'),
-  precheck: AutomationPrecheck,
-  agentId: TuiAgent,
-  extraAgentArgs: ExtraAgentArgs,
-  runContext: WorkspaceRunContext,
-  sourceContext: TaskSourceContext,
-  repo: OptionalString,
-  workspace: OptionalString,
-  workspaceMode: AutomationWorkspaceMode,
-  baseBranch: OptionalPlainString,
-  setupDecision: SetupDecision,
-  reuseSession: OptionalBoolean,
-  timezone: OptionalString,
-  rrule: AutomationSchedule,
-  dtstart: requiredNumber('Missing trigger start time'),
-  enabled: OptionalBoolean,
-  missedRunGraceMinutes: OptionalPositiveInt,
-  destination: Destination
-})
+export const AutomationCreate = z
+  .object({
+    creationKey: OptionalString,
+    kind: AutomationKind,
+    name: requiredString('Missing automation name'),
+    prompt: z.string().optional(),
+    precheck: AutomationPrecheck,
+    agentId: TuiAgent.optional(),
+    extraAgentArgs: ExtraAgentArgs,
+    runContext: WorkspaceRunContext,
+    sourceContext: TaskSourceContext,
+    repo: OptionalString,
+    workspace: OptionalString,
+    workspaceMode: AutomationWorkspaceMode,
+    baseBranch: OptionalPlainString,
+    setupDecision: SetupDecision,
+    reuseSession: OptionalBoolean,
+    timezone: OptionalString,
+    rrule: AutomationSchedule,
+    dtstart: requiredNumber('Missing trigger start time'),
+    enabled: OptionalBoolean,
+    missedRunGraceMinutes: OptionalPositiveInt,
+    destination: Destination
+  })
+  .superRefine((value, ctx) => {
+    if (value.kind === 'pull_request_sync') {
+      return
+    }
+    if (!value.prompt?.trim()) {
+      ctx.addIssue({ code: 'custom', message: 'Missing automation prompt', path: ['prompt'] })
+    }
+    if (!value.agentId) {
+      ctx.addIssue({ code: 'custom', message: 'Missing provider', path: ['agentId'] })
+    }
+  })
 
 export const AutomationUpdateFields = z.object({
+  kind: AutomationKind,
   name: OptionalString,
   prompt: OptionalString,
   precheck: AutomationPrecheck,

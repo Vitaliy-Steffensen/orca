@@ -60,9 +60,25 @@ export const ListProjects = z
     query: OptionalString,
     limit: OptionalFiniteNumber,
     workspaceId: OptionalString,
-    force: z.boolean().optional()
+    force: z.boolean().optional(),
+    lead: z.enum(['me']).optional()
   })
   .optional()
+
+export const ProjectUpdateHealth = z.enum(['onTrack', 'atRisk', 'offTrack'])
+
+export const ProjectUpdateCreate = z.object({
+  projectId: requiredString('Project ID is required'),
+  body: requiredString('Project update body is required'),
+  health: ProjectUpdateHealth.optional(),
+  workspaceId: OptionalString
+})
+
+export const ProjectShow = z.object({
+  id: requiredString('Project ID is required'),
+  workspaceId: OptionalString,
+  force: z.boolean().optional()
+})
 
 export const ProjectId = z.object({
   id: requiredString('Project ID is required'),

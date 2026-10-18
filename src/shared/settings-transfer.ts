@@ -158,7 +158,8 @@ const LOCAL_STATUS_RULE_KEYS = new Set([
   'repoIds',
   'handledPullRequests',
   'ledgerVersion',
-  'newWorkspaceStatusSince'
+  'newWorkspaceStatusSince',
+  'enabled'
 ])
 
 function pickPortableStatusRules(rules: unknown): Record<string, unknown> | null {

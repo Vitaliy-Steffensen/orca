@@ -43,6 +43,7 @@ import {
   resolveProjectCreateTarget
 } from '../worktree-project-target'
 import {
+  getAutomationKindFlag,
   getEnabledFlag,
   getOptionalProviderFlag,
   getPrecheckFlag,
@@ -191,6 +192,25 @@ export const AUTOMATION_HANDLERS: Record<string, CommandHandler> = {
     printResult(result, json, formatAutomationShow)
   },
   'automations create': async ({ flags, client, cwd, json }) => {
+    if (getAutomationKindFlag(flags) === 'pull_request_sync') {
+      const schedule = getScheduleFlag(flags, false) ?? {
+        rrule: '* * * * *',
+        dtstart: Date.now()
+      }
+      const result = await client.call<{ automation: Automation }>('automation.create', {
+        kind: 'pull_request_sync',
+        name: getOptionalStringFlag(flags, 'name') ?? 'Pull request sync',
+        prompt: '',
+        agentId: 'claude',
+        timezone: getOptionalStringFlag(flags, 'timezone'),
+        enabled: getEnabledFlag(flags),
+        missedRunGraceMinutes:
+          getOptionalPositiveIntegerFlag(flags, 'missed-run-grace-minutes') ?? 5,
+        ...schedule
+      })
+      printResult(result, json, formatAutomationShow)
+      return
+    }
     const schedule = getScheduleFlag(flags, true)
     if (!schedule) {
       throw new RuntimeClientError('invalid_argument', 'Missing required --trigger')

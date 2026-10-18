@@ -107,6 +107,11 @@ export function normalizeLoadedProfileState(
     legacyPaneKeyAliasEntries: normalizeLegacyPaneKeyAliasEntries(parsed.legacyPaneKeyAliasEntries),
     automations: Array.isArray(parsed.automations) ? parsed.automations : [],
     automationRuns: normalizeLoadedAutomationRuns(parsed, markNeedsSave),
+    seededAutomationCreationKeys: Array.isArray(parsed.seededAutomationCreationKeys)
+      ? parsed.seededAutomationCreationKeys.filter(
+          (key): key is string => typeof key === 'string' && key.length > 0
+        )
+      : [],
     orcadMigrationImportReceipts: normalizeOrcadMigrationImportReceipts(
       parsed.orcadMigrationImportReceipts
     ),

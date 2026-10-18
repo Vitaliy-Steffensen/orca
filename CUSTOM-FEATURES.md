@@ -8,6 +8,9 @@ Adding a feature here? See the rule at the top of [`CLAUDE.md`](./CLAUDE.md).
 
 ## Added in this repo
 
+- Pull request sync is an automation: it runs on a schedule even when the window is hidden, and each check shows up in the run history.
+- A Monday weekly recap template writes what landed on the default branch into the run's workspace and its history.
+- A Wednesday template posts a Linear project status update for the projects you lead.
 - ⇧⌘H reveals the file you are looking at in whichever list is in front of you — the Source Control
   changes, the Explorer tree, or the combined diff's own file tree — and flashes the row.
 - Your `~/.orca/themes/` VS Code theme also colours notebook cells, code excerpts, combined-diff

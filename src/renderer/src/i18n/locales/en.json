@@ -2656,7 +2656,15 @@
         "recentChatsTerminalsHeader": "Recent Chats & Terminals",
         "27f10cca63": "Search chats, terminals, worktrees, settings, and actions...",
         "2770f02910": "Search chats, terminals, worktrees, settings, and actions",
-        "lastActiveTime": "Last active {{value0}} ago"
+        "lastActiveTime": "Last active {{value0}} ago",
+        "archivedWorkspacesHeader": "Archived workspaces",
+        "archivedSearchEmptyTitle": "No archived workspaces match your search",
+        "archivedSearchEmptySubtitle": "Try another name, branch, or project.",
+        "archivedEmptyTitle": "No archived workspaces",
+        "archivedEmptySubtitle": "Archive a workspace from its menu to find it here.",
+        "archivedSearchPlaceholder": "Search archived workspaces...",
+        "unarchive": "Unarchive",
+        "back": "Back"
       },
       "github": {
         "pr": {
@@ -5798,7 +5806,9 @@
           "keepDefaultBranchAria": "Keep the default branch visible while hiding sleeping workspaces",
           "otherClients": "Hide other-client workspaces",
           "otherClientsAria": "Hide workspaces created from other Orca clients on shared remote servers",
-          "temporaryCheckouts": "Hide temporary checkouts"
+          "temporaryCheckouts": "Hide temporary checkouts",
+          "showArchived": "Show archived",
+          "showArchivedAria": "Show archived workspaces in the sidebar so they can be restored"
         },
         "sidebarHostOptions": {
           "3e102f111c": "All hosts",
@@ -5897,7 +5907,9 @@
           "34f03eb0de": "Board settings",
           "26cbc92150": "Workspace board settings",
           "87d24a0c2f": "Sync board and issue status",
-          "4c2eaa78cc": "Moving a linked workspace updates its Linear issue status when a matching workflow state exists."
+          "4c2eaa78cc": "Moving a linked workspace updates its Linear issue status when a matching workflow state exists.",
+          "4f1c0a7b91": "Section (optional)",
+          "2d6b4e8c13": "Section for {{value0}}"
         },
         "WorkspaceKanbanStatusLane": {
           "8ad104642b": "Empty",
@@ -6044,7 +6056,9 @@
           "deleteWorktree": "Delete Worktree",
           "sleepWithDescendants": "Sleep with Descendants ({{value0}})",
           "sleepWithDescendantsDescription": "Close active panels in this workspace and every nested descendant to free up memory and CPU.",
-          "deleteWithDescendants": "Delete with Descendants…"
+          "deleteWithDescendants": "Delete with Descendants…",
+          "unarchiveDescription": "Put the workspace back in the sidebar. Its terminals wake the next time you open it.",
+          "archiveDescription": "Shut everything the workspace is running down and hide it, keeping the checkout and its branch. Unarchive brings it back."
         },
         "WorktreeList": {
           "7a8b9c0d1e": "Update required",
@@ -6477,7 +6491,8 @@
         },
         "WorktreeCardStatusSlot": {
           "branchIdentity": "Branch",
-          "sleeping": "Sleeping"
+          "sleeping": "Sleeping",
+          "archived": "Archived"
         },
         "NewExternalWorktreesInboxLine": {
           "9f2d4c8b17": "Hide external worktrees permanently for {{value0}}",
@@ -6744,6 +6759,20 @@
           "title": "Sort changed to Manual",
           "description": "Manual keeps workspaces where you drop them.",
           "restore": "Back to {{label}}"
+        },
+        "WorkspaceKanbanSectionFilterMenu": {
+          "0c1e2f3a4b": "Sections",
+          "5d6e7f8a9b": "Show all sections"
+        },
+        "archive": {
+          "worktree": {
+            "flow": {
+              "saveFailed": "Failed to archive",
+              "restoreFailed": "Failed to unarchive",
+              "failed": "Failed to archive workspace",
+              "failedSome": "Failed to archive some workspaces"
+            }
+          }
         }
       },
       "shared": {
@@ -12859,7 +12888,19 @@
           "pmApproval": "Waiting on PM approval",
           "pmApprovalDescription": "Every reviewer still to respond belongs to the team below.",
           "review": "Ready for review",
-          "reviewDescription": "Open, not a draft, and none of the conditions above apply."
+          "reviewDescription": "Open, not a draft, and none of the conditions above apply.",
+          "onMerge": "When a pull request is merged or closed",
+          "onMergeDescription": "Archive shuts the workspace down and hides it, keeping the checkout. Delete removes it and runs your orca.yaml archive script first. Either way a workspace with uncommitted work or a running agent is kept, and Orca says so; the branch itself stays on the remote.",
+          "scheduledBy": "Scheduled by the Pull request sync automation",
+          "scheduledByDescription": "When it runs, and whether it runs, is on the Automations page. The rules below are what each check does.",
+          "openAutomation": "Open automation",
+          "onReviewed": "Once you have reviewed a review workspace",
+          "onReviewedDescription": "Applies to pull requests you did not write, once you have approved or requested changes. A workspace holding unsent review comments, uncommitted work or a running agent is kept. If the author asks you again, the workspace comes back with the diff pointed at the commit you last reviewed.",
+          "resolution": {
+            "none": "Keep",
+            "archive": "Archive",
+            "delete": "Delete"
+          }
         },
         "PythonEnvironmentSection": {
           "placeholder": ".venv",
@@ -12906,7 +12947,8 @@
           "ready": "Ready for review",
           "review": "Review",
           "title": "Top bar actions",
-          "description": "Prompts for the buttons beside the right sidebar toggle. Supports {{branch}}, {{baseRef}}, {{worktreePath}}, {{prNumber}}, {{prUrl}}, {{prTitle}}, {{draftMode}}, {{templateRule}} and {{prInstructions}}. Resolve conflicts uses the Source Control conflict template. Clear a box to go back to the built-in prompt."
+          "description": "Prompts for the buttons beside the right sidebar toggle. Supports {{branch}}, {{baseRef}}, {{worktreePath}}, {{prNumber}}, {{prUrl}}, {{prTitle}}, {{draftMode}}, {{templateRule}} and {{prInstructions}}. Resolve conflicts uses the Source Control conflict template. Clear a box to go back to the built-in prompt.",
+          "reReview": "Re-review"
         }
       },
       "right": {
@@ -16607,12 +16649,18 @@
                 "chatPaneRight": "chat pane right",
                 "splitChatDown": "split chat down",
                 "moveChatDown": "move chat down",
-                "chatPaneBelow": "chat pane below"
+                "chatPaneBelow": "chat pane below",
+                "viewArchived": "view archived",
+                "archived": "archived",
+                "unarchive": "unarchive",
+                "restoreWorkspace": "restore workspace"
               },
               "splitChatRight": "Split Chat Right",
               "splitChatRightDescription": "Open the active chat in a split pane to the right.",
               "splitChatDown": "Split Chat Down",
-              "splitChatDownDescription": "Open the active chat in a split pane below."
+              "splitChatDownDescription": "Open the active chat in a split pane below.",
+              "viewArchivedWorkspaces": "View Archived Workspaces",
+              "viewArchivedWorkspacesDescription": "Browse archived workspaces and restore one."
             }
           },
           "palette": {
@@ -17198,6 +17246,20 @@
               "category": "Maintenance",
               "name": "Hourly maintenance check",
               "prompt": "Check for stuck work, stale generated files, failing validation, and anything that needs human attention. Report only actionable issues."
+            },
+            "weeklyRecap": {
+              "category": "Weekly recap",
+              "label": "Monday weekly recap",
+              "description": "Every Monday, writes what landed on the default branch into a dated file in the run workspace and prints it so it lands in the run history.",
+              "name": "Monday weekly recap",
+              "prompt": "Write a short recap of what landed on the default branch since the previous Monday. Use git log on the default branch for that window, and the pull requests merged in it. Cover behaviour changes, new commands and flags, and how the codebase is worked. Skip refactors, dependency bumps, and mirror merges. Write the recap to a dated file under .context/ in this workspace (for example .context/weekly-recap-YYYY-MM-DD.md) and print the same text, so it is saved in the automation run history."
+            },
+            "linearStatus": {
+              "category": "Linear",
+              "label": "Wednesday Linear status",
+              "description": "Every Wednesday, posts a Linear project status update for the projects you lead. To keep a draft instead, change the last step of the prompt to write it under .context/ and stop. That is a text edit, not a code change.",
+              "name": "Wednesday Linear status",
+              "prompt": "Post a short Linear project status update for each project you lead. List them with `orca linear project list --lead me --json`. For each project, read `orca linear project show <id> --json` and its issues with `orca linear list-issues --project <id> --json`. Write a short update covering what moved, what is blocked, and what is next. Post it with `orca linear project update post --project <id> --body <text> --health <onTrack|atRisk|offTrack>`. Choose the health from the evidence in the issues, and say why in the body. This posts directly. To keep a draft instead, write it under .context/ and stop."
             }
           },
           "list": {
@@ -17410,6 +17472,10 @@
           "useFreshSessions": "Use fresh sessions",
           "helper": "Added to this host's default arguments for each fresh session.",
           "detailLabel": "Extra arguments"
+        },
+        "pullRequestSync": {
+          "configure": "Configure what it does → Settings → Automations → Pull request rules",
+          "enabled": "Enabled"
         }
       },
       "agent": {
@@ -18269,7 +18335,9 @@
         "conflictsTab": "Resolve conflicts",
         "readyTab": "Ready for review",
         "createPrTab": "Create PR",
-        "launchFailed": "Could not start the agent: {{reason}}"
+        "launchFailed": "Could not start the agent: {{reason}}",
+        "reReview": "Re-review",
+        "reReviewTab": "Re-review #{{number}}"
       },
       "workspaceStatusRules": {
         "kept": "Kept {{name}}: {{reason}}",
@@ -18690,7 +18758,8 @@
         "attachmentUnreadable": "Couldn't read the dropped files.",
         "tooManyAttachments": "Attach {{value0}} or fewer files at a time.",
         "pasteFailed": "Paste failed.",
-        "commandAttachmentsUnsupported": "Remove attachments before using a chat-session command."
+        "commandAttachmentsUnsupported": "Remove attachments before using a chat-session command.",
+        "permissionMode": "Permission mode"
       },
       "tool": {
         "exitCode": "exit {{value0}}",
@@ -19090,6 +19159,12 @@
       },
       "claudeSignIn": {
         "signingIn": "Signing in…"
+      },
+      "plan": {
+        "adjustmentsPlaceholder": "Enter your plan adjustments here…",
+        "copy": "Copy plan",
+        "keepPlanning": "Keep planning",
+        "approve": "Approve"
       }
     },
     "tab": {
@@ -20156,6 +20231,14 @@
     "attachments": {
       "updateRuntime": "Update the remote runtime to change workspace links",
       "updateRuntimeSafely": "Update the remote runtime to safely change workspace links"
+    },
+    "autonomy": {
+      "menuMulti": "Set Autonomy",
+      "menu": "Autonomy",
+      "autonomous": "Autonomous",
+      "supervised": "Supervised",
+      "cardMarker": "Autonomous workspace",
+      "cardMarkerTooltip": "Autonomous: work here runs without the scoping gate"
     }
   },
   "settings.agents.environmentName": "Environment variable name",

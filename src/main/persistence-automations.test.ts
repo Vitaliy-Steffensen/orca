@@ -107,7 +107,9 @@ describe('Store', () => {
     const retry = store.createAutomation({ ...input, name: 'Changed by a retry' })
 
     expect(retry.id).toBe(first.id)
-    expect(store.listAutomations()).toHaveLength(1)
+    expect(
+      store.listAutomations().filter((entry) => entry.creationKey === 'move-retry-1')
+    ).toHaveLength(1)
   })
 
   it('persists session reuse only for existing-workspace automations', async () => {
@@ -321,7 +323,7 @@ describe('Store', () => {
     })
     const persisted = readDataFile() as { automations: Record<string, unknown>[] }
     // A record a pre-fix host stored from a paired client's create input.
-    persisted.automations[0].runContext = {
+    persisted.automations.find((entry) => entry.id === automation.id)!.runContext = {
       kind: 'workspace-run',
       projectId: 'github:stablyai/orca',
       hostId: toRuntimeExecutionHostId('client-env'),
@@ -332,15 +334,17 @@ describe('Store', () => {
     writeDataFile(persisted)
 
     const reloaded = await createStore()
-    expect(reloaded.listAutomationsForScope().items[0]?.selector.kind).toBe('orphan')
+    const selectorFor = (id: string) =>
+      reloaded.listAutomationsForScope().items.find((item) => item.automationId === id)?.selector
+    expect(selectorFor(automation.id)?.kind).toBe('orphan')
 
     // A toggle is not a move: the record must not silently re-adopt.
     reloaded.updateAutomation(automation.id, { enabled: false })
-    expect(reloaded.listAutomationsForScope().items[0]?.selector.kind).toBe('orphan')
+    expect(selectorFor(automation.id)?.kind).toBe('orphan')
 
     const healed = reloaded.updateAutomation(automation.id, { projectId: 'r1' })
     expect(healed.runContext).toMatchObject({ hostId: 'local', repoId: 'r1' })
-    expect(reloaded.listAutomationsForScope().items[0]?.selector).toEqual({ kind: 'self' })
+    expect(selectorFor(automation.id)).toEqual({ kind: 'self' })
   })
 
   it('marks runtime-owned automations as remote-host scheduled', async () => {
