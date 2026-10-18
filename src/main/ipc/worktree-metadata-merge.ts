@@ -103,6 +103,9 @@ export function mergeWorktree(
     ...(meta?.pushTarget !== undefined ? { pushTarget: meta.pushTarget } : {}),
     ...(meta?.priorWorktreeIds !== undefined ? { priorWorktreeIds: meta.priorWorktreeIds } : {}),
     workspaceStatus: meta?.workspaceStatus ?? DEFAULT_WORKSPACE_STATUS_ID,
+    ...(meta?.agentRuleManualOverride !== undefined
+      ? { agentRuleManualOverride: meta.agentRuleManualOverride }
+      : {}),
     // Why: diff comments and queued review comments are persisted on WorktreeMeta and
     // forwarded verbatim so the renderer store mirrors on-disk state. A field left out here
     // is written on every change and then silently dropped on the next start.

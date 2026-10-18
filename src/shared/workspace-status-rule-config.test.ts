@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import {
   cloneDefaultWorkspaceStatusRuleConfig,
+  DEFAULT_AGENT_RULE_DWELL_MS,
   normalizeWorkspaceStatusRuleConfig
 } from './workspace-status-rule-config'
 
@@ -108,6 +109,34 @@ describe('normalizeWorkspaceStatusRuleConfig', () => {
 
     expect(config.newWorkspaceStatus).toBe('todo')
     expect(config.newWorkspaceStatusSince).toBe(1_700_000_000_000)
+  })
+
+  it('defaults agent rules to off with the built-in dwell', () => {
+    const config = normalizeWorkspaceStatusRuleConfig({})
+
+    expect(config.agentRulesEnabled).toBe(false)
+    expect(config.statusByAgentCondition).toEqual({})
+    expect(config.agentRuleDwellMs).toBe(DEFAULT_AGENT_RULE_DWELL_MS)
+  })
+
+  it('keeps only recognized agent conditions', () => {
+    const config = normalizeWorkspaceStatusRuleConfig({
+      agentRulesEnabled: true,
+      statusByAgentCondition: { 'agent-failed': ' flagged ', 'agent-vibing': 'nowhere' }
+    })
+
+    expect(config.agentRulesEnabled).toBe(true)
+    expect(config.statusByAgentCondition).toEqual({ 'agent-failed': 'flagged' })
+  })
+
+  it('clamps an out-of-range dwell', () => {
+    expect(normalizeWorkspaceStatusRuleConfig({ agentRuleDwellMs: -5 }).agentRuleDwellMs).toBe(0)
+    expect(
+      normalizeWorkspaceStatusRuleConfig({ agentRuleDwellMs: 60 * 60_000 }).agentRuleDwellMs
+    ).toBe(600_000)
+    expect(normalizeWorkspaceStatusRuleConfig({ agentRuleDwellMs: 'soon' }).agentRuleDwellMs).toBe(
+      DEFAULT_AGENT_RULE_DWELL_MS
+    )
   })
 
   it('clears the new-workspace time when no column is chosen', () => {

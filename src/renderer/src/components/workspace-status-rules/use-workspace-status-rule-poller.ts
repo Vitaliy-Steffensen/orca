@@ -16,6 +16,7 @@ import { launchConflictAgents } from './launch-conflict-agents'
 import { runReviewEnteredCommands } from './run-review-entered-commands'
 import { planNewWorkspaceStatusUpdates } from '../../../../shared/workspace-new-status-plan'
 import { loadPendingReviewDrafts } from '../pending-review/pending-review-draft-store'
+import { runWorkspaceAgentRuleTick } from './run-workspace-agent-rule-tick'
 
 /** Matches the active-workspace review tier; a board does not change faster than this. */
 const POLL_INTERVAL_MS = 60_000
@@ -68,6 +69,9 @@ async function runWorkspaceStatusRuleTick(): Promise<void> {
   // empty and let a workspace with unsent comments be deleted.
   await loadPendingReviewDrafts()
   const scope = collectWorkspaceStatusRuleScope(state, config.repoIds)
+  // Why before the repoPath guard: agent rules need no GitHub call, and a project with no
+  // local checkout for `gh` to run in still has workspaces whose agents move lanes.
+  await runWorkspaceAgentRuleTick(new Set(scope.targets.map((target) => target.worktreeId)))
   if (!scope.repoPath) {
     return
   }

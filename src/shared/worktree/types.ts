@@ -9,6 +9,7 @@ import type { BuiltInWorktreeVisibilitySourceId } from '../repo-types'
 import type { WorktreeIdentity } from './identity'
 import type { WorktreeScanFailureKind } from '../worktree-scan-failure'
 import type { PendingReviewComment } from '../github/pending-review-comment'
+import type { WorkspaceStatusManualOverride } from '../workspace-status-manual-override'
 
 export type WorkspaceAttachmentOrigin = {
   kind: 'observed'
@@ -171,6 +172,8 @@ export type Worktree = {
   /** Path-derived worktree ids this worktree had before folder renames. */
   priorWorktreeIds?: string[]
   workspaceStatus?: WorkspaceStatus
+  /** The lane the user last chose by hand, so agent-state rules do not move the card back. */
+  agentRuleManualOverride?: WorkspaceStatusManualOverride
   diffComments?: DiffComment[]
   agentNotes?: DiffComment[]
   /** Review comments queued locally, not yet submitted to the provider. */

@@ -13,6 +13,7 @@ import type {
 import type { TuiAgent } from '../tui-agent'
 import type { OrcaWorkspaceLayout } from '../global-settings-types'
 import type { DiffComment, MobileDiffReviewState } from '../diff-comment-types'
+import type { WorkspaceStatusManualOverride } from '../workspace-status-manual-override'
 import type { PendingReviewComment } from '../github/pending-review-comment'
 
 // ─── Worktree metadata (persisted user-authored fields only) ─────────
@@ -84,6 +85,8 @@ export type WorktreeMeta = {
   orcaCreationWorkspaceLayout?: OrcaWorkspaceLayout
   /** User-assigned workspace board status for manual sidebar organization. */
   workspaceStatus?: WorkspaceStatus
+  /** See {@link Worktree.agentRuleManualOverride}. */
+  agentRuleManualOverride?: WorkspaceStatusManualOverride
   diffComments?: DiffComment[]
   /** Fork: kept apart from diffComments so the renderer's whole-list note saves never drop them. */
   agentNotes?: DiffComment[]
