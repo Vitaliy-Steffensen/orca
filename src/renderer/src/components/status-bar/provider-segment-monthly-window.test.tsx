@@ -145,6 +145,45 @@ describe('ProviderSegment monthly window', () => {
     }
   })
 
+  it('shows Claude session usage in the compact footer even when weekly is higher', async () => {
+    const { ProviderSegment } = await import('./StatusBar')
+    const { getUsageHeadlineSection, getTightestUsageSection } = await import('./UsageRosterPanel')
+
+    const limits: ProviderRateLimits = {
+      provider: 'claude',
+      session: windowOf(12, 300),
+      weekly: windowOf(80, 10080),
+      updatedAt: Date.now(),
+      error: null,
+      status: 'ok'
+    }
+
+    const markup = renderToStaticMarkup(
+      <ProviderSegment p={limits} compact={false} display="used" mode="compact" />
+    )
+
+    expect(markup).toContain('>12% 5h<')
+    expect(markup).not.toContain('>80%')
+    expect(markup).not.toContain('wk')
+    expect(getUsageHeadlineSection(limits)?.window.usedPercent).toBe(12)
+    // Urgency still follows the most consumed window so an exhausted weekly limit stays visible.
+    expect(getTightestUsageSection(limits)?.window.usedPercent).toBe(80)
+  })
+
+  it('falls back to Claude weekly usage when the session window is missing', async () => {
+    const { getUsageHeadlineSection } = await import('./UsageRosterPanel')
+    const limits: ProviderRateLimits = {
+      provider: 'claude',
+      session: null,
+      weekly: windowOf(64, 10080),
+      updatedAt: Date.now(),
+      error: null,
+      status: 'ok'
+    }
+
+    expect(getUsageHeadlineSection(limits)?.window.usedPercent).toBe(64)
+  })
+
   it('shows the footer bar only in verbose mode', async () => {
     const { ProviderSegment } = await import('./StatusBar')
     const limits = grokMonthlyLimits('ok')
