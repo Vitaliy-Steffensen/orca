@@ -8,6 +8,7 @@ Adding a feature here? See the rule at the top of [`CLAUDE.md`](./CLAUDE.md).
 
 ## Added in this repo
 
+- ⇧⌘W closes every other tab and keeps the one you are in.
 - ⇧⌘H reveals the file you are looking at in whichever list is in front of you — the Source Control
   changes, the Explorer tree, or the combined diff's own file tree — and flashes the row.
 - Your `~/.orca/themes/` VS Code theme also colours notebook cells, code excerpts, combined-diff
@@ -27,6 +28,23 @@ Adding a feature here? See the rule at the top of [`CLAUDE.md`](./CLAUDE.md).
 - A workspace card shows the pull request diff (`+`/`−`), a frontend/backend/e2e/CI pie, Linear
   priority, GitHub stack position, unresolved review comments, and `Nd` once the pull request has
   been open longer than 3 days.
+- An agent can stage inline review comments and the review summary with `orca review comment add`
+  and `orca review summary set`, marked as its drafts in the pending-review shelf, for you to accept
+  and submit as your own review.
+- A review comment an agent stages is a proposal with an Accept and a Reject on it; only what you
+  accept is submitted, and the rest stay waiting.
+- A Re-review button beside Review re-checks a pull request against the comments you already left.
+- Shift+Tab in the chat composer turns Claude's Plan mode on and off, the composer names the mode
+  you are in, and the next chat starts in the one you left off in.
+- A plan waiting on you reads in the transcript instead of a cramped card, and the composer carries
+  the decision: Copy, Approve (⌘⇧↵), and a field where what you type is sent back as the changes to
+  make.
+- Mark a workspace Autonomous or Supervised from its card menu or `orca worktree set --autonomy`;
+  autonomous ones carry a quiet marker on the card, and the setting never leaves Orca.
+- Right-click a workspace to Archive it: everything it is running shuts down and it leaves the
+  sidebar, keeping the checkout. Cmd+J's "View Archived Workspaces" brings them back to unarchive,
+  and a merged or closed pull request can archive its workspace instead of deleting it.
+- Group workspace status lanes into collapsible sidebar sections, each header counting what it holds.
 
 ## Inherited from `frbarbre/orca`
 

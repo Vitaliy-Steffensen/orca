@@ -2,6 +2,7 @@ import { useCallback } from 'react'
 import { useAppStore } from '@/store'
 import { getWorkspaceStatus } from './workspace-status'
 import { makeWorkspaceStatusId } from '../../../../shared/workspace-statuses'
+import { sanitizeWorkspaceStatusSection } from '../../../../shared/workspace-status-sections'
 import type { Worktree } from '../../../../shared/worktree/types'
 
 type WorkspaceStatuses = ReturnType<typeof useAppStore.getState>['workspaceStatuses']
@@ -47,6 +48,22 @@ export function useWorkspaceKanbanStatusActions(args: {
         args.workspaceStatuses.map((status) =>
           status.id === statusId ? { ...status, icon } : status
         )
+      )
+      recordInteraction()
+    },
+    [args]
+  )
+  const handleChangeStatusSection = useCallback(
+    (statusId: string, section: string) => {
+      const sanitized = sanitizeWorkspaceStatusSection(section)
+      args.setWorkspaceStatuses(
+        args.workspaceStatuses.map((status) => {
+          if (status.id !== statusId) {
+            return status
+          }
+          const { section: _previous, ...rest } = status
+          return sanitized === undefined ? rest : { ...rest, section: sanitized }
+        })
       )
       recordInteraction()
     },
@@ -104,6 +121,7 @@ export function useWorkspaceKanbanStatusActions(args: {
     handleRenameStatus,
     handleChangeStatusColor,
     handleChangeStatusIcon,
+    handleChangeStatusSection,
     handleMoveStatus,
     handleAddStatus,
     handleRemoveStatus

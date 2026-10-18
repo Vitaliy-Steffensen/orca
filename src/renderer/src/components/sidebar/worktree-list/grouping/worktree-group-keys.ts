@@ -4,6 +4,10 @@ import type { WorkspaceStatusDefinition, Worktree } from '../../../../../../shar
 import { getWorkspaceStatus, getWorkspaceStatusGroupKey } from '../../workspace-status'
 import { cloneDefaultWorkspaceStatuses } from '../../../../../../shared/workspace-statuses'
 import type { AppState } from '../../../../store/types'
+import {
+  getWorkspaceStatusSection,
+  getWorkspaceStatusSectionGroupKey
+} from '../../../../../../shared/workspace-status-sections'
 import { ALL_GROUP_KEY, getPRGroupKey, getProjectGroupHeaderKey } from './group-keys'
 import { buildProjectGroupingIndex, getProjectGroupingForRepo } from './project-grouping'
 import type { ProjectGroupingModel } from './project-grouping'
@@ -55,6 +59,15 @@ export function getGroupKeysForWorktree(
   )
   if (!groupKey) {
     return []
+  }
+  if (groupBy === 'workspace-status') {
+    // Why: a collapsed section hides the lane outright, so reveal has to open
+    // the section first or the row stays invisible with its lane expanded.
+    const section = getWorkspaceStatusSection(
+      getWorkspaceStatus(worktree, workspaceStatuses),
+      workspaceStatuses
+    )
+    return section === null ? [groupKey] : [getWorkspaceStatusSectionGroupKey(section), groupKey]
   }
   if (groupBy !== 'repo') {
     return [groupKey]

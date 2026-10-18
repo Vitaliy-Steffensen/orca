@@ -21,10 +21,7 @@ import { getVirtualRowTransform } from '../viewport/virtual-rows'
 import { resolveProjectGroupHeaderColor } from '../../project-header-color'
 import { getRepoHeaderCreateState } from '../../repo-header-create-state'
 import { ProjectHeaderActions } from '../../ProjectHeaderActions'
-import {
-  getProjectGroupHeaderPaddingLeft,
-  WORKTREE_SECTION_HEADER_PADDING_LEFT
-} from './indentation'
+import { getWorktreeGroupHeaderPaddingLeft } from './indentation'
 import { FolderPathStatusIndicator } from './FolderPathStatusIndicator'
 import { RepoScanUnavailableIndicator } from './RepoScanUnavailableIndicator'
 import {
@@ -143,6 +140,7 @@ export function renderWorktreeSectionHeaderRow(args: {
       ? getWorkspaceStatusFromGroupKey(row.key, ctx.workspaceStatuses)
       : null
   const isPinnedHeader = row.key === PINNED_GROUP_KEY
+  const isStatusSectionHeader = row.statusSection !== undefined
   const repoHeaderColor = resolveProjectGroupHeaderColor({
     groupBy: ctx.groupBy,
     headerKey: row.key,
@@ -174,7 +172,11 @@ export function renderWorktreeSectionHeaderRow(args: {
   // Why: repo/project/status/pinned share compact section chrome; flat "All" stays a simple label.
   const showHeaderCollapseAffordance =
     row.count > 0 &&
-    (isRepoHeader || isProjectGroupHeader || headerWorkspaceStatus !== null || isPinnedHeader)
+    (isRepoHeader ||
+      isProjectGroupHeader ||
+      headerWorkspaceStatus !== null ||
+      isPinnedHeader ||
+      isStatusSectionHeader)
   return (
     <div
       key={vItem.key}
@@ -246,11 +248,11 @@ export function renderWorktreeSectionHeaderRow(args: {
           row.repo && 'overflow-hidden'
         )}
         style={{
-          // Why: non-project headers like "All" are flat-list labels; don't reserve project hierarchy indent.
-          paddingLeft:
-            isRepoHeader || isProjectGroupHeader
-              ? getProjectGroupHeaderPaddingLeft(row.projectGroupDepth ?? 0)
-              : WORKTREE_SECTION_HEADER_PADDING_LEFT
+          paddingLeft: getWorktreeGroupHeaderPaddingLeft({
+            isProjectHeader: isRepoHeader || isProjectGroupHeader,
+            projectGroupDepth: row.projectGroupDepth,
+            hasParentSection: row.parentKey !== undefined
+          })
         }}
         onDragOver={
           isPinnedHeader
@@ -332,6 +334,11 @@ export function renderWorktreeSectionHeaderRow(args: {
               <div className="min-w-0 truncate text-[13px] font-semibold leading-none">
                 {row.label}
               </div>
+              {isStatusSectionHeader ? (
+                <span className="shrink-0 rounded-full bg-worktree-sidebar-accent px-1.5 text-[10px] font-medium leading-4 text-muted-foreground tabular-nums">
+                  {row.count}
+                </span>
+              ) : null}
               <RepoForkIndicator upstream={row.repo?.upstream} />
               <FolderPathStatusIndicator status={projectGroupPathStatus} />
               {isRepoHeader ? <RepoScanUnavailableIndicator repo={row.repo!} /> : null}

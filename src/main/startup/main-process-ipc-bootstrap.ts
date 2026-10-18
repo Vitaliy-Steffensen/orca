@@ -17,6 +17,7 @@ import {
   readPendingReviewSummaries,
   writePendingReviewSummary
 } from '../github/pending-review-draft-store'
+import { setPendingReviewDraftSurface } from '../github/pending-review-draft-surface'
 import type {
   PendingReviewComment,
   SubmitReviewVerdictRequest,
@@ -70,6 +71,21 @@ export function registerMainProcessIpcHandlers(): void {
     (_event, worktreeId: string, comments: PendingReviewComment[]) =>
       writePendingReviewDrafts(pendingReviewDraftFile(), worktreeId, comments)
   )
+
+  // Why only outside serve mode: the queue belongs to the device the reviewer submits from, and a
+  // headless server has no reviewer — an agent staging there would write where nobody looks.
+  if (!state.isServeMode) {
+    setPendingReviewDraftSurface({
+      file: pendingReviewDraftFile,
+      announceChange: (change) => {
+        const window = state.mainWindow
+        if (!window || window.isDestroyed() || window.webContents.isDestroyed()) {
+          return
+        }
+        window.webContents.send('pending-review:drafts-changed', change)
+      }
+    })
+  }
 
   // Why the registered-path check: the path comes from the renderer, and git runs in it.
   ipcMain.handle(

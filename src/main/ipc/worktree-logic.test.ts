@@ -605,6 +605,7 @@ describe('mergeWorktree', () => {
       sortOrder: 5,
       lastActivityAt: 1000,
       workspaceStatus: 'in-review',
+      workspaceAutonomy: 'supervised',
       diffComments: [],
       priorWorktreeIds: ['repo1::/workspaces/old-feature'],
       automationProvenance: {

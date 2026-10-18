@@ -1,4 +1,4 @@
-import { CircleX, FolderTree, List, Pin } from 'lucide-react'
+import { CircleX, FolderTree, Layers, List, Pin } from 'lucide-react'
 import type React from 'react'
 import type { Repo } from '../../../../../../shared/repo-types'
 import type { Worktree } from '../../../../../../shared/worktree/types'
@@ -69,6 +69,11 @@ export const PR_GROUP_META: Record<
 export const PROJECT_GROUP_META = {
   tone: 'text-foreground',
   icon: FolderTree
+} as const
+
+export const WORKSPACE_STATUS_SECTION_META = {
+  tone: 'text-foreground',
+  icon: Layers
 } as const
 
 export function getProjectGroupHeaderKey(groupId: string | null): string {

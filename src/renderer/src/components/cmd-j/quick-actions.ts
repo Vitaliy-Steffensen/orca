@@ -1,4 +1,4 @@
-import { FileText, FolderPlus, Globe, Play, SquareTerminal, Trash2 } from 'lucide-react'
+import { Archive, FileText, FolderPlus, Globe, Play, SquareTerminal, Trash2 } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 import type { CmdJQuickActionAvailability, CmdJQuickActionContext } from './quick-action-context'
 import {
@@ -26,6 +26,8 @@ export type CmdJQuickAction = {
   verbKeywords: string[]
   isAvailable: (ctx: CmdJQuickActionContext) => CmdJQuickActionAvailability
   run: (ctx: CmdJQuickActionContext) => Promise<CmdJQuickActionRunResult>
+  /** Leave the palette open and let the palette switch views instead of running a side effect. */
+  keepPaletteOpen?: boolean
 }
 
 export const CREATE_WORKSPACE_QUICK_ACTION_ID = 'create-workspace'
@@ -174,6 +176,30 @@ export const getCmdJQuickActions = createLocalizedCatalog((): CmdJQuickAction[] 
       ctx.deleteActiveWorkspace()
       return { status: 'ok' }
     }
+  },
+  {
+    // Why the palette stays open: restoring an archive is picking a row, not
+    // flipping the sidebar filter. The palette lists them and unarchives on select.
+    id: 'view-archived-workspaces',
+    kind: 'action',
+    title: translate(
+      'auto.components.cmd.j.quick.actions.viewArchivedWorkspaces',
+      'View Archived Workspaces'
+    ),
+    description: translate(
+      'auto.components.cmd.j.quick.actions.viewArchivedWorkspacesDescription',
+      'Browse archived workspaces and restore one.'
+    ),
+    icon: Archive,
+    verbKeywords: [
+      translate('auto.components.cmd.j.quick.actions.verbs.viewArchived', 'view archived'),
+      translate('auto.components.cmd.j.quick.actions.verbs.archived', 'archived'),
+      translate('auto.components.cmd.j.quick.actions.verbs.unarchive', 'unarchive'),
+      translate('auto.components.cmd.j.quick.actions.verbs.restoreWorkspace', 'restore workspace')
+    ],
+    isAvailable: () => ({ available: true }),
+    keepPaletteOpen: true,
+    run: async () => ({ status: 'ok' })
   },
   {
     id: 'add-quick-command',

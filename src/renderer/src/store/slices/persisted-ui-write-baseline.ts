@@ -26,6 +26,7 @@ export type PersistedUIWriteBaseline = {
   hideDefaultBranchWorkspace: boolean
   hideAutomationGeneratedWorkspaces: boolean
   hideCliCreatedWorkspaces: boolean
+  showArchivedWorkspaces?: boolean
   hideDetachedHeadWorkspaces: boolean
   hideTemporaryCheckoutWorkspaces?: boolean
   hideWorkspacesFromOtherDevices: boolean
@@ -60,6 +61,7 @@ const PERSISTED_UI_WRITE_BASELINE_FIELD_SET = {
   hideDefaultBranchWorkspace: true,
   hideAutomationGeneratedWorkspaces: true,
   hideCliCreatedWorkspaces: true,
+  showArchivedWorkspaces: true,
   hideDetachedHeadWorkspaces: true,
   hideTemporaryCheckoutWorkspaces: true,
   hideWorkspacesFromOtherDevices: true,

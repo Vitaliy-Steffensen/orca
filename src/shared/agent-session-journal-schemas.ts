@@ -174,6 +174,7 @@ const Resolution = z.object({
       })
     )
     .optional(),
+  note: z.string().optional(),
   resolvedBy: z.string().nullable(),
   resolvedAt: z.number().nullable()
 })

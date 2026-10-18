@@ -14,6 +14,7 @@ import { nativeChatImageSendBlock } from './native-chat-image-reattach'
 import { useNativeChatComposerHandle } from './use-native-chat-composer-handle'
 import { useNativeChatFileDrops } from './use-native-chat-file-drops'
 import { useNativeChatComposerKeyDown } from './use-native-chat-composer-keydown'
+import { useNativeChatPlanModeToggle } from './native-chat-plan-mode-toggle'
 import { useNativeChatSendLifecycle } from './use-native-chat-send-lifecycle'
 import { useNativeChatSessionOptions } from './use-native-chat-session-options'
 import { useNativeChatDictation } from './use-native-chat-dictation'
@@ -70,7 +71,8 @@ const NativeChatComposerPane = forwardRef<NativeChatComposerHandle, NativeChatCo
       steerQueued,
       recallSource,
       inputOwnedByCard = false,
-      notices: chatNotices
+      notices: chatNotices,
+      planApproval
     },
     ref
   ): React.JSX.Element {
@@ -245,6 +247,11 @@ const NativeChatComposerPane = forwardRef<NativeChatComposerHandle, NativeChatCo
     const contextUsageSummary = useNativeChatContextUsageSummary(structuredTransport)
     const sessionOptionsSnapshot = structuredTransport?.optionSnapshot ?? ptySessionOptionsSnapshot
 
+    const togglePlanMode = useNativeChatPlanModeToggle(
+      sessionOptionsSurface,
+      sessionOptionsSnapshot
+    )
+
     const { send: sendStructured, fieldProps: queue } = useNativeChatHeldQueueComposerSend({
       agent,
       draftScopeKey,
@@ -295,7 +302,8 @@ const NativeChatComposerPane = forwardRef<NativeChatComposerHandle, NativeChatCo
       sendPty,
       sendStructured,
       setDraft,
-      setCaret
+      setCaret,
+      ...(planApproval ? { planApproval } : {})
     })
 
     const interrupt = useNativeChatComposerInterrupt({
@@ -331,6 +339,8 @@ const NativeChatComposerPane = forwardRef<NativeChatComposerHandle, NativeChatCo
       dismissPicker: dismiss,
       interrupt,
       send,
+      togglePlanMode,
+      ...(planApproval ? { approvePlan: planApproval.approve } : {}),
       hasAttachments: imageAttachments.length > 0,
       ...(steerQueued ? { steerQueued } : {}),
       setActiveSuggestion,
@@ -360,6 +370,7 @@ const NativeChatComposerPane = forwardRef<NativeChatComposerHandle, NativeChatCo
         mentionFiles={mentionFiles}
         activeSuggestion={activeSuggestion}
         notices={notices}
+        {...(planApproval ? { planApproval } : {})}
         imageAttachments={imageAttachments}
         attachmentEnvironmentId={structuredTransport?.runtimeEnvironmentId ?? undefined}
         sendButtonDisabled={sendButtonDisabled}

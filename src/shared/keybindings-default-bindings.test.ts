@@ -322,6 +322,33 @@ describe('keybindings', () => {
     })
   })
 
+  it('binds close-other tabs to Mod+Shift+W', () => {
+    expect(getEffectiveKeybindingsForAction('tab.closeOthers', 'darwin')).toEqual(['Mod+Shift+W'])
+    expect(getEffectiveKeybindingsForAction('tab.closeOthers', 'linux')).toEqual(['Mod+Shift+W'])
+    expect(getEffectiveKeybindingsForAction('tab.closeOthers', 'win32')).toEqual(['Mod+Shift+W'])
+    expect(formatKeybindingList(['Mod+Shift+W'], 'darwin')).toBe('⌘⇧W')
+    expect(formatKeybindingList(['Mod+Shift+W'], 'linux')).toBe('Ctrl+Shift+W')
+
+    const macCloseOthers = {
+      key: 'w',
+      code: 'KeyW',
+      meta: true,
+      control: false,
+      alt: false,
+      shift: true
+    }
+    const ctrlCloseOthers = { ...macCloseOthers, meta: false, control: true }
+    expect(keybindingMatchesAction('tab.closeOthers', macCloseOthers, 'darwin')).toBe(true)
+    expect(keybindingMatchesAction('tab.closeOthers', ctrlCloseOthers, 'linux')).toBe(true)
+    expect(keybindingMatchesAction('tab.closeOthers', ctrlCloseOthers, 'win32')).toBe(true)
+    expect(keybindingMatchesAction('tab.close', macCloseOthers, 'darwin')).toBe(false)
+    expect(keybindingMatchesAction('tab.closeAll', macCloseOthers, 'darwin')).toBe(false)
+
+    const definition = getKeybindingDefinition('tab.closeOthers')
+    expect(definition?.group).toBe('Tabs')
+    expect(definition?.scope).toBe('tabs')
+  })
+
   it('defines floating workspace panel action metadata', () => {
     const actionIds = [
       'floatingWorkspace.maximize' as KeybindingActionId,

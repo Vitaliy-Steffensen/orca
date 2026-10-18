@@ -154,6 +154,7 @@ export function WorktreeCardParentContent({
             prDisplay={statusLaneReview}
             reviewChecks={reviewChecks.total > 0 ? reviewChecks : undefined}
             hasBranchIdentity={Boolean(branchIdentityDisplay)}
+            isArchived={worktree.isArchived}
           />
         </div>
       ) : null}

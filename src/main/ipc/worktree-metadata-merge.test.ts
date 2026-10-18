@@ -124,7 +124,14 @@ describe('review state that must survive a restart', () => {
   // on disk — and only the read back dropped them, so nothing failed until the next launch.
   it('carries queued review comments back out of persisted metadata', () => {
     const pendingReviewComments = [
-      { id: 'draft-1', path: 'src/a.ts', line: 12, body: 'a queued note', createdAt: 1 }
+      {
+        id: 'draft-1',
+        path: 'src/a.ts',
+        line: 12,
+        body: 'a queued note',
+        createdAt: 1,
+        status: 'accepted' as const
+      }
     ]
     expect(
       mergeWorktree('repo-1', git, { ...meta, pendingReviewComments }).pendingReviewComments

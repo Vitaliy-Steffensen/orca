@@ -9,6 +9,7 @@ import type { BuiltInWorktreeVisibilitySourceId } from '../repo-types'
 import type { WorktreeIdentity } from './identity'
 import type { WorktreeScanFailureKind } from '../worktree-scan-failure'
 import type { PendingReviewComment } from '../github/pending-review-comment'
+import type { WorkspaceAutonomy } from '../workspace-autonomy'
 
 export type WorkspaceAttachmentOrigin = {
   kind: 'observed'
@@ -88,6 +89,8 @@ export type WorkspaceStatusDefinition = {
   label: string
   color?: string
   icon?: string
+  /** Outer band this lane belongs to. Absent means the lane sits at top level. */
+  section?: string
 }
 
 export type Worktree = {
@@ -171,6 +174,9 @@ export type Worktree = {
   /** Path-derived worktree ids this worktree had before folder renames. */
   priorWorktreeIds?: string[]
   workspaceStatus?: WorkspaceStatus
+  /** Clearance for unattended work. Absent (from an older host or an unset workspace) reads as
+   *  `supervised` — go through `resolveWorkspaceAutonomy`, never the raw field. */
+  workspaceAutonomy?: WorkspaceAutonomy
   diffComments?: DiffComment[]
   agentNotes?: DiffComment[]
   /** Review comments queued locally, not yet submitted to the provider. */

@@ -23,6 +23,7 @@ import { ARTIFACT_COMMAND_SPECS } from './artifacts'
 import { SEARCH_COMMAND_SPECS } from './search'
 import { PROFILE_STATE_COMMAND_SPECS } from './profile-state'
 import { NOTES_COMMAND_SPECS } from './notes'
+import { REVIEW_COMMAND_SPECS } from './review'
 import { REFERENCE_COMMAND_SPECS } from './reference'
 
 export const COMMAND_SPECS: CommandSpec[] = [
@@ -50,5 +51,6 @@ export const COMMAND_SPECS: CommandSpec[] = [
   ...SKILL_COMMAND_SPECS,
   ...SEARCH_COMMAND_SPECS,
   ...PROFILE_STATE_COMMAND_SPECS,
-  ...NOTES_COMMAND_SPECS
+  ...NOTES_COMMAND_SPECS,
+  ...REVIEW_COMMAND_SPECS
 ]

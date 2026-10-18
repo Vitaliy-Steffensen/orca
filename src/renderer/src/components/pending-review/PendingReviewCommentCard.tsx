@@ -3,7 +3,9 @@ import { CommentRow } from '@/components/right-sidebar/checks-panel/comment-row'
 import { getPRCommentPresentationClasses } from '@/components/right-sidebar/pr-comment-presentation'
 import { useChecksPanelCommentLocationOpening } from '@/components/right-sidebar/checks-panel/use-comment-location-opening'
 import { cn } from '@/lib/utils'
+import { translate } from '@/i18n/i18n'
 import type { PendingReviewComment } from '../../../../shared/github/pending-review-comment'
+import { PendingReviewProposalActions } from './PendingReviewProposalActions'
 import { projectPendingReviewComment } from './pending-review-comment-projection'
 import { useGitHubViewer } from './use-github-viewer'
 
@@ -21,12 +23,15 @@ export function PendingReviewCommentCard({
   comment,
   onChangeBody,
   onRemove,
+  onAccept,
   inDiff = false,
   onContentResize
 }: {
   comment: PendingReviewComment
   onChangeBody: (body: string) => void
   onRemove: () => void
+  /** Absent while a surface has not been taught to accept; the proposal row then stays hidden. */
+  onAccept?: () => void
   /** In a diff the card is framed and capped, the way a posted thread is. */
   inDiff?: boolean
   /** A Monaco view zone fixes its height at insertion, so it has to be told to grow. */
@@ -85,6 +90,16 @@ export function PendingReviewCommentCard({
           onDeleteComment={() => onRemove()}
           onOpenLocation={openLocation}
         />
+        {comment.status === 'proposed' && onAccept ? (
+          <PendingReviewProposalActions
+            agentName={
+              comment.agentAuthor?.name ??
+              translate('auto.components.pendingReview.anAgent', 'an agent')
+            }
+            onAccept={onAccept}
+            onReject={onRemove}
+          />
+        ) : null}
       </div>
     </div>
   )

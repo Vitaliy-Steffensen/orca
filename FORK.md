@@ -1720,6 +1720,41 @@ rides the existing open path as an optional `RuntimeFileReveal` and ends in the 
 | `src/preload/api/ui-command-event-api.ts`, `ui-bridge-terminal-and-session-tabs.ts`                                                                                                                                       | `reveal` on the open-file payload.                                                 |
 | `src/renderer/src/hooks/ipc-events/mobile-terminal-close-ipc-bridge.ts`                                                                                                                                                   | Calls `revealOpenedFile` after the open.                                           |
 
+### 58. A staged agent comment is a proposal you accept
+
+A comment an agent stages with `orca review comment add` is marked `proposed` and is **not** part of
+the review. The card carries an Accept and a Reject, and only an accepted comment is submitted; the
+proposals that are left survive the submit instead of being cleared with the rest of the queue.
+
+**Why the file grew a second key rather than just a status field.** `pending-review-drafts.json` now
+holds `drafts` (accepted) and `proposals` separately, at `version: 2`. A build older than this one
+reads `drafts` and submits everything in it, so a proposal left there would reach a public pull
+request under the reviewer's name without them ever having read it; another key is invisible to it.
+The price, accepted deliberately: that older build rewrites the file without `proposals`, so a
+downgrade loses the unaccepted ones. Losing a local draft beats publishing one.
+
+**Why the status is derived rather than defaulted.** `sanitizeStatus` reads a missing status off
+`agentAuthor`, so the agent comments already sitting in a version 1 `drafts` come back as proposals
+and move to the new key on the next write. No migration step, and the invariant is enforced on every
+read rather than once.
+
+The gate that matters is `buildReviewVerdictMutation`: it filters to accepted comments itself, so it
+is the last pure choke point before the wire and no renderer bug can leak a proposal.
+
+| File                                                                                                         | What is ours                                                                                           |
+| ------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------ |
+| `src/shared/github/pending-review-comment.ts`                                                                | `PendingReviewCommentStatus`, `status` on the comment, the accept/proposed helpers, `sanitizeStatus`.  |
+| `src/main/github/pending-review-draft-store.ts`                                                              | `FILE_VERSION = 2`, reading `drafts` + `proposals` into one list, `serializeDraftFile` splitting them. |
+| `src/main/github/review-verdict-mutation.ts`                                                                 | `acceptedPendingReviewComments` before the threads are built.                                          |
+| `src/main/runtime/rpc/methods/review-drafts.ts`                                                              | `status: 'proposed'` on what the CLI stages; `pendingCount` counts proposals.                          |
+| `src/cli/handlers/review.ts`                                                                                 | The `proposed`/`accepted` column, and "waiting for the user to accept".                                |
+| `src/renderer/src/components/pending-review/PendingReviewProposalActions.tsx`                                | New. Accept / Reject, outside `CommentRow` because a posted comment cannot be accepted.                |
+| `src/renderer/src/components/pending-review/PendingReviewCommentCard.tsx`                                    | The optional `onAccept` and the proposal row.                                                          |
+| `src/renderer/src/components/pending-review/use-pending-review-queue.ts`                                     | `accept`, `acceptAll`, `discardProposals`, `keepProposals`; `add` stamps `accepted`.                   |
+| `src/renderer/src/components/pending-review/use-submit-review-verdict.ts`                                    | Sends the accepted ones and calls `keepProposals()` instead of `clear()`.                              |
+| `source-control/pending-review/pending-review-shelf.tsx`                                                     | The verdict gate and the standing banner read the accepted count, not the queue length.                |
+| `PendingReviewPanelSection.tsx`, `pending-comments-section.tsx`, `diff-comments/useInlinePRCommentZones.tsx` | `onAccept` threaded to the three surfaces that render the card.                                        |
+
 ## Verify
 
 Verify runs on GitHub, not locally: `fork-verify.yml` runs it on every pull request against `main`,

@@ -48,6 +48,15 @@ export type WorkspaceStatusRulePlan = {
     /** Set when the pull request should be eligible for the inbox again later. */
     forgetHandledKey?: string
   }[]
+  /** Shut down and hidden, not removed; kept apart from `removals` because the
+   *  delete-only ledger and force semantics do not transfer. */
+  archives: {
+    worktreeId: string
+    executionHostId: ExecutionHostId
+    displayName: string
+    /** Set when the pull request should be eligible for the inbox again later. */
+    forgetHandledKey?: string
+  }[]
   creations: {
     pr: ReviewSnapshotPullRequest
     handledKey: string
@@ -60,6 +69,7 @@ function emptyPlan(): WorkspaceStatusRulePlan {
   return {
     statusUpdates: [],
     removals: [],
+    archives: [],
     creations: []
   }
 }
@@ -107,8 +117,8 @@ export function buildWorkspaceStatusRulePlan(args: {
     const isResolved = condition === 'merged' || condition === 'closed'
     // Why the head check: a branch can resolve to a pull request it never was (an upstream tracking the
     // trunk finds an old PR whose head is the trunk), and deleting would discard the workspace's own work.
-    if (isResolved && config.onResolved === 'delete' && target.headOid === pr.headRefOid) {
-      plan.removals.push({
+    if (isResolved && config.onResolved !== 'none' && target.headOid === pr.headRefOid) {
+      ;(config.onResolved === 'archive' ? plan.archives : plan.removals).push({
         worktreeId: target.worktreeId,
         executionHostId: target.executionHostId,
         displayName: target.displayName
@@ -117,11 +127,11 @@ export function buildWorkspaceStatusRulePlan(args: {
     }
     if (
       condition === 'reviewing' &&
-      config.onReviewed === 'delete' &&
+      config.onReviewed !== 'none' &&
       !target.hasPendingReviewComments &&
       readViewerReviewStanding(pr, snapshot.viewerLogin).isFinished
     ) {
-      plan.removals.push({
+      ;(config.onReviewed === 'archive' ? plan.archives : plan.removals).push({
         worktreeId: target.worktreeId,
         executionHostId: target.executionHostId,
         displayName: target.displayName,

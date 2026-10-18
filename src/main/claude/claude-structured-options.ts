@@ -44,6 +44,24 @@ export function isClaudeStructuredOptionKey(key: string): boolean {
   return CLAUDE_STRUCTURED_OPTION_KEYS.has(key)
 }
 
+/**
+ * An approved plan leaves plan mode. The CLI drops it on its own when `ExitPlanMode`
+ * is allowed, so this is a confirmation — but main would otherwise keep reporting
+ * `plan` from `session.options` and the composer would name a mode the session left.
+ * Best effort: the plan is already approved, so a failed write cannot undo it.
+ */
+export async function leaveClaudeStructuredPlanMode(
+  session: ClaudeSession,
+  timeoutMs?: number
+): Promise<void> {
+  if (session.options.get('permissionMode') !== 'plan') {
+    return
+  }
+  await setClaudeStructuredOption(session, { key: 'permissionMode', value: 'default' }, timeoutMs)
+    .then(() => {})
+    .catch(() => {})
+}
+
 /** A client's write to a live session. */
 export function setClaudeStructuredSessionOption(
   session: ClaudeSession,

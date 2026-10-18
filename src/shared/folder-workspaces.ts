@@ -6,6 +6,7 @@ import { normalizeWorkspaceLinkedItem } from './workspace-linked-item'
 import { isWorkspaceLinkedItemSourceContextMatch } from './workspace-linked-item-source-context'
 import { normalizeWorkspaceCreatorProvenance } from './workspace-creator-provenance'
 import { getWorkspaceAttachments } from './workspace-attachments'
+import { isWorkspaceAutonomyValue } from './workspace-autonomy'
 
 export function normalizeFolderWorkspaceName(
   name: string | null | undefined,
@@ -100,6 +101,9 @@ export function normalizeFolderWorkspaces(
         : {}),
       ...(typeof raw.workspaceStatus === 'string' && raw.workspaceStatus.trim().length > 0
         ? { workspaceStatus: raw.workspaceStatus }
+        : {}),
+      ...(isWorkspaceAutonomyValue(raw.workspaceAutonomy)
+        ? { workspaceAutonomy: raw.workspaceAutonomy }
         : {}),
       ...(isTuiAgent(raw.createdWithAgent) ? { createdWithAgent: raw.createdWithAgent } : {}),
       ...(raw.pendingFirstAgentMessageRename === true

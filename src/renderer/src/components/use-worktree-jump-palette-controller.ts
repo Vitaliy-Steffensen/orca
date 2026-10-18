@@ -111,7 +111,10 @@ export function useWorktreeJumpPaletteController({
     ...worktrees,
     ...openTabs,
     ...sections,
-    ...taskUrl
+    ...taskUrl,
+    allWorktrees: storeState.allWorktrees,
+    repos: storeState.repos,
+    lastVisitedAtByWorktreeId: storeState.lastVisitedAtByWorktreeId
   })
   const selectionLifecycle = useWorktreeJumpPaletteSelectionLifecycle({
     ...storeState,
@@ -165,7 +168,8 @@ export function useWorktreeJumpPaletteController({
     ...selectionActions,
     paletteNowMs: worktrees.hasQuery ? paletteSearchContext.nowMs : storeState.paletteNowMs,
     emojiInput,
-    ...createAction
+    ...createAction,
+    showCreateAction: localState.viewingArchivedWorkspaces ? false : localState.showCreateAction
   }
 }
 

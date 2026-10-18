@@ -1,5 +1,5 @@
 import React from 'react'
-import { GitBranch, Moon } from 'lucide-react'
+import { Archive, GitBranch, Moon } from 'lucide-react'
 import { translate } from '@/i18n/i18n'
 import { cn } from '@/lib/utils'
 import { getWorktreeStatusLabel, type WorktreeStatus } from '@/lib/worktree-status'
@@ -22,6 +22,8 @@ type WorktreeCardStatusSlotProps = {
   reviewChecks?: WorkspaceReviewChecksSummary
   hasBranchIdentity?: boolean
   branchIdentityLabel?: string
+  /** Archived rows only render while "Show archived" is on; the glyph says why they look idle. */
+  isArchived?: boolean
   className?: string
 }
 
@@ -33,6 +35,9 @@ function getDefaultBranchIdentityLabel(): string {
 }
 function getSleepingStatusLabel(): string {
   return translate('auto.components.sidebar.WorktreeCardStatusSlot.sleeping', 'Sleeping')
+}
+function getArchivedStatusLabel(): string {
+  return translate('auto.components.sidebar.WorktreeCardStatusSlot.archived', 'Archived')
 }
 // Why: branch-style SVGs are optically left-heavy; this keeps them aligned with
 // the centered activity dots in the shared status column.
@@ -96,6 +101,7 @@ export function WorktreeCardStatusSlot({
   reviewChecks,
   hasBranchIdentity = false,
   branchIdentityLabel,
+  isArchived = false,
   className
 }: WorktreeCardStatusSlotProps): React.JSX.Element | null {
   const collectionChecks = reviewChecks && reviewChecks.total > 1 ? reviewChecks : undefined
@@ -105,11 +111,19 @@ export function WorktreeCardStatusSlot({
   // Why: sleep must stay distinct from awake completion; a sleeping workspace
   // never collapses into branch/PR, even when retained done rows keep its
   // status at 'done'. Attention states keep their own glyphs by construction.
+  // Why archived outranks sleeping: an archived workspace is always asleep, and
+  // the moon would say nothing about why it is in the list at all. An archived
+  // row only renders while "Show archived" is on, so the glyph says why.
+  const canShowArchivedStatus = showStatus && isArchived
   const canShowSleepingStatus =
-    showStatus && isSleeping && QUIET_REVIEW_REPLACEABLE_STATUSES.has(status)
+    showStatus &&
+    !canShowArchivedStatus &&
+    isSleeping &&
+    QUIET_REVIEW_REPLACEABLE_STATUSES.has(status)
   const canShowReviewStatus =
     showStatus &&
     (prDisplay !== null || Boolean(collectionChecks)) &&
+    !canShowArchivedStatus &&
     !canShowSleepingStatus &&
     QUIET_REVIEW_REPLACEABLE_STATUSES.has(status)
   const canShowBranchStatus =
@@ -117,21 +131,26 @@ export function WorktreeCardStatusSlot({
     hasBranchIdentity &&
     prDisplay === null &&
     !collectionChecks &&
+    !canShowArchivedStatus &&
     !canShowSleepingStatus &&
     QUIET_REVIEW_REPLACEABLE_STATUSES.has(status)
-  const passiveStatusLabel = canShowSleepingStatus
-    ? getSleepingStatusLabel()
-    : canShowReviewStatus && collectionChecks
-      ? workspaceReviewChecksLabel(collectionChecks)
-      : canShowReviewStatus && prDisplay
-        ? getReviewStatusLabel(prDisplay)
-        : canShowBranchStatus
-          ? (branchIdentityLabel ?? getDefaultBranchIdentityLabel())
-          : statusLabel
+  const passiveStatusLabel = canShowArchivedStatus
+    ? getArchivedStatusLabel()
+    : canShowSleepingStatus
+      ? getSleepingStatusLabel()
+      : canShowReviewStatus && collectionChecks
+        ? workspaceReviewChecksLabel(collectionChecks)
+        : canShowReviewStatus && prDisplay
+          ? getReviewStatusLabel(prDisplay)
+          : canShowBranchStatus
+            ? (branchIdentityLabel ?? getDefaultBranchIdentityLabel())
+            : statusLabel
   const passiveStatusAnnouncement = isUnread ? `${passiveStatusLabel} · Unread` : passiveStatusLabel
   // Why: working and permission already own the status lane, but unread state
   // should still surface to assistive technology and reappear afterward.
-  const showUnreadAlert = isUnread && showStatus && status !== 'working' && status !== 'permission'
+  // Why archived opts out: nothing in an archived workspace can go unread.
+  const showUnreadAlert =
+    isUnread && showStatus && !isArchived && status !== 'working' && status !== 'permission'
   const branchStatusIcon = <GitBranch className={branchStatusIconClassName} aria-hidden="true" />
   const sleepingStatusIcon = <Moon className={sleepingStatusIconClassName} aria-hidden="true" />
 
@@ -139,7 +158,12 @@ export function WorktreeCardStatusSlot({
     return null
   }
 
-  const passiveStatus = canShowSleepingStatus ? (
+  const passiveStatus = canShowArchivedStatus ? (
+    <span className={cn('inline-flex size-5 items-center justify-center p-0.5', className)}>
+      <Archive className={sleepingStatusIconClassName} aria-hidden="true" />
+      <span className="sr-only">{passiveStatusAnnouncement}</span>
+    </span>
+  ) : canShowSleepingStatus ? (
     <span className={cn('inline-flex size-5 items-center justify-center p-0.5', className)}>
       {sleepingStatusIcon}
       <span className="sr-only">{passiveStatusAnnouncement}</span>
