@@ -36,9 +36,9 @@ describe('listRecentArchivedWorkspaces', () => {
       lastActivityAt: 20
     })
 
-    expect(
-      listRecentArchivedWorkspaces([older, newer], {}).map((worktree) => worktree.id)
-    ).toEqual(['newer', 'older'])
+    expect(listRecentArchivedWorkspaces([older, newer], {}).map((worktree) => worktree.id)).toEqual(
+      ['newer', 'older']
+    )
   })
 })
 
@@ -74,11 +74,7 @@ describe('buildArchivedWorkspacePaletteEntries', () => {
       query: 'archive'
     })
 
-    expect(entries.map((entry) => entry.type)).toEqual([
-      'section-header',
-      'worktree',
-      'worktree'
-    ])
+    expect(entries.map((entry) => entry.type)).toEqual(['section-header', 'worktree', 'worktree'])
     expect(
       entries
         .filter((entry): entry is WorktreePaletteItem => entry.type === 'worktree')

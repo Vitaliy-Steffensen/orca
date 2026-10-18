@@ -3,7 +3,15 @@ import type { PendingReviewComment } from '../../shared/github/pending-review-co
 import { buildPullRequestNodeIdQuery, buildReviewVerdictMutation } from './review-verdict-mutation'
 
 function draft(overrides: Partial<PendingReviewComment> = {}): PendingReviewComment {
-  return { id: 'a', path: 'src/app.ts', line: 12, body: 'this leaks', createdAt: 1, ...overrides }
+  return {
+    id: 'a',
+    path: 'src/app.ts',
+    line: 12,
+    body: 'this leaks',
+    createdAt: 1,
+    status: 'accepted',
+    ...overrides
+  }
 }
 
 const base = { pullRequestId: 'PR_abc', body: 'looks good' } as const
@@ -79,5 +87,33 @@ describe('buildPullRequestNodeIdQuery', () => {
     expect(buildPullRequestNodeIdQuery({ owner: 'o', repo: 'r', number: 1 })).toContain(
       'reviews(last: 100) { nodes { state body submittedAt author { login } commit { oid } comments(first: 10) { nodes { replyTo { id } } } } }'
     )
+  })
+})
+
+describe('what the mutation is allowed to carry', () => {
+  const proposal = draft({
+    id: 'p1',
+    body: 'an agent found this',
+    status: 'proposed',
+    agentAuthor: { kind: 'agent', name: 'Claude Code' }
+  })
+
+  it('leaves a proposal the reviewer never accepted out of the review', () => {
+    const query = buildReviewVerdictMutation({
+      ...base,
+      verdict: 'comment',
+      comments: [draft(), proposal]
+    })
+    expect(query).toContain('this leaks')
+    expect(query).not.toContain('an agent found this')
+  })
+
+  it('sends no threads at all when every comment is still a proposal', () => {
+    const query = buildReviewVerdictMutation({
+      ...base,
+      verdict: 'approve',
+      comments: [proposal]
+    })
+    expect(query).not.toContain('threads:')
   })
 })

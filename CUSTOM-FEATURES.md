@@ -8,6 +8,7 @@ Adding a feature here? See the rule at the top of [`CLAUDE.md`](./CLAUDE.md).
 
 ## Added in this repo
 
+- ⇧⌘W closes every other tab and keeps the one you are in.
 - ⇧⌘H reveals the file you are looking at in whichever list is in front of you — the Source Control
   changes, the Explorer tree, or the combined diff's own file tree — and flashes the row.
 - Your `~/.orca/themes/` VS Code theme also colours notebook cells, code excerpts, combined-diff
@@ -17,6 +18,22 @@ Adding a feature here? See the rule at the top of [`CLAUDE.md`](./CLAUDE.md).
 - The app releases and auto-updates from this repository instead of upstream's or Frederik's.
 - A relative language server Path is read from the worktree root, and one that never starts keeps
   saying so instead of going quiet after its first warning.
+- Workspace cards come in one style, and carry chips that appear only when something is wrong —
+  failing checks, a conflict with the base, or a branch left behind it.
+- A workspace card shows the pull request author's face when that pull request was opened by someone else.
+- Right-clicking a workspace card lists its linked pull request and issues under "Open in", so the
+  GitHub or Linear page is one menu away.
+- Workspace cards you were asked to review show how long ago the review was asked for, and say when
+  it is a re-request with its own fresh clock.
+- A workspace card shows the pull request diff (`+`/`−`), a frontend/backend/e2e/CI pie, Linear
+  priority, GitHub stack position, unresolved review comments, and `Nd` once the pull request has
+  been open longer than 3 days.
+- An agent can stage inline review comments and the review summary with `orca review comment add`
+  and `orca review summary set`, marked as its drafts in the pending-review shelf, for you to accept
+  and submit as your own review.
+- A review comment an agent stages is a proposal with an Accept and a Reject on it; only what you
+  accept is submitted, and the rest stay waiting.
+- A Re-review button beside Review re-checks a pull request against the comments you already left.
 - Shift+Tab in the chat composer turns Claude's Plan mode on and off, the composer names the mode
   you are in, and the next chat starts in the one you left off in.
 - A plan waiting on you reads in the transcript instead of a cramped card, and the composer carries
@@ -27,6 +44,7 @@ Adding a feature here? See the rule at the top of [`CLAUDE.md`](./CLAUDE.md).
 - Right-click a workspace to Archive it: everything it is running shuts down and it leaves the
   sidebar, keeping the checkout. Cmd+J's "View Archived Workspaces" brings them back to unarchive,
   and a merged or closed pull request can archive its workspace instead of deleting it.
+- Group workspace status lanes into collapsible sidebar sections, each header counting what it holds.
 
 ## Inherited from `frbarbre/orca`
 

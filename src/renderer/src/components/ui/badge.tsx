@@ -22,6 +22,14 @@ const badgeVariants = cva(
          *  so it reads as context beside a workspace name rather than as a status of its own. */
         hostContext:
           'h-4 rounded border-border bg-accent px-1.5 text-[10px] leading-none text-muted-foreground dark:border-border/50 dark:bg-accent/80',
+        /** The workspace card's exception chips. Three tones for one shape: a card only
+         *  shows these when something is wrong, so the tone carries how wrong. */
+        cardChipAlert:
+          'h-4 rounded border-destructive/30 bg-destructive/10 px-1.5 text-[10px] leading-none text-destructive',
+        cardChipWarn:
+          'h-4 rounded border-status-warning-border bg-status-warning-background px-1.5 text-[10px] leading-none text-status-warning',
+        cardChipQuiet:
+          'h-4 rounded border-border bg-transparent px-1.5 text-[10px] leading-none text-muted-foreground',
         /** A skill or file sitting inline in the chat message box, ringed while selected. */
         promptPill:
           'max-w-full border-border bg-secondary px-1.5 py-0 align-baseline text-muted-foreground data-[selected=true]:ring-1 data-[selected=true]:ring-ring'

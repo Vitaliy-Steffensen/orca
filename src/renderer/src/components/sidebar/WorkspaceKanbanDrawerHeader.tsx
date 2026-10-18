@@ -5,6 +5,7 @@ import { SheetDescription, SheetHeader, SheetTitle } from '@/components/ui/sheet
 import type { WorkspaceStatusDefinition } from '../../../../shared/worktree/types'
 import SidebarFilter from './SidebarFilter'
 import WorkspaceKanbanSearchField from './WorkspaceKanbanSearchField'
+import WorkspaceKanbanSectionFilterMenu from './WorkspaceKanbanSectionFilterMenu'
 import WorkspaceKanbanSettingsMenu from './WorkspaceKanbanSettingsMenu'
 import { translate } from '@/i18n/i18n'
 
@@ -23,6 +24,11 @@ type WorkspaceKanbanDrawerHeaderProps = {
   onRenameStatus: (statusId: string, label: string) => void
   onChangeStatusColor: (statusId: string, color: string) => void
   onChangeStatusIcon: (statusId: string, icon: string) => void
+  onChangeStatusSection: (statusId: string, section: string) => void
+  sections: readonly string[]
+  hiddenSections: ReadonlySet<string>
+  onToggleSection: (section: string) => void
+  onShowAllSections: () => void
   onMoveStatus: (statusId: string, direction: -1 | 1) => void
   onRemoveStatus: (statusId: string) => void
   onAddStatus: () => void
@@ -45,6 +51,11 @@ export default function WorkspaceKanbanDrawerHeader({
   onRenameStatus,
   onChangeStatusColor,
   onChangeStatusIcon,
+  onChangeStatusSection,
+  sections,
+  hiddenSections,
+  onToggleSection,
+  onShowAllSections,
   onMoveStatus,
   onRemoveStatus,
   onAddStatus,
@@ -100,6 +111,12 @@ export default function WorkspaceKanbanDrawerHeader({
           contentSide="bottom"
           onMenuOpenChange={onFilterMenuOpenChange}
         />
+        <WorkspaceKanbanSectionFilterMenu
+          sections={sections}
+          hiddenSections={hiddenSections}
+          onToggleSection={onToggleSection}
+          onShowAllSections={onShowAllSections}
+        />
         <WorkspaceKanbanSettingsMenu
           workspaceStatuses={workspaceStatuses}
           syncTaskStatusFromWorkspaceBoard={syncTaskStatusFromWorkspaceBoard}
@@ -107,6 +124,7 @@ export default function WorkspaceKanbanDrawerHeader({
           onRenameStatus={onRenameStatus}
           onChangeStatusColor={onChangeStatusColor}
           onChangeStatusIcon={onChangeStatusIcon}
+          onChangeStatusSection={onChangeStatusSection}
           onMoveStatus={onMoveStatus}
           onRemoveStatus={onRemoveStatus}
           onAddStatus={onAddStatus}

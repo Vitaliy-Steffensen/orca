@@ -60,7 +60,6 @@ export const VirtualizedWorktreeViewport = React.memo(function VirtualizedWorktr
   const worktreeVisibilityDefaultsByHost = useAppStore((s) => s.worktreeVisibilityDefaultsByHost)
   const sshConnectionStates = useAppStore((s) => s.sshConnectionStates)
   const getRepoSshGate = useRepoSshGateResolver()
-  const newCardStyle = settings?.experimentalNewWorktreeCardStyle === true
 
   const reveal = useSidebarRevealHighlight()
   const scrollSuppression = useWorktreeSidebarScrollSuppression(scrollRef)
@@ -248,7 +247,6 @@ export const VirtualizedWorktreeViewport = React.memo(function VirtualizedWorktr
     currentWorktreeId: props.currentWorktreeId,
     worktreeMap,
     groupBy,
-    newCardStyle,
     renderRows,
     virtualItems,
     scrollRef
@@ -304,7 +302,6 @@ export const VirtualizedWorktreeViewport = React.memo(function VirtualizedWorktr
     settings,
     worktreeVisibilityDefaultsByHost,
     getRepoSshGate,
-    newCardStyle,
     folderBackedProjectGroupIds,
     projectGroups,
     session,

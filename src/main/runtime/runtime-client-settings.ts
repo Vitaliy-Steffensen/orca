@@ -135,12 +135,13 @@ export class RuntimeClientSettingsController {
         ? settings.defaultLinearTeamSelection.filter((id): id is string => typeof id === 'string')
         : null,
       githubProjects: settings.githubProjects,
-      experimentalNewWorktreeCardStyle: settings.experimentalNewWorktreeCardStyle === true,
+      // Why: retired locally, still projected so an older client renders the one card this host does.
+      experimentalNewWorktreeCardStyle: true,
       experimentalNativeChat: settings.experimentalNativeChat === true,
       // Older clients use this key to fall back to terminal-backed chat. Keep their default terminal.
       openAgentTabsInChatByDefault: false,
       experimentalStructuredNativeChat: settings.experimentalNativeChat === true,
-      compactWorktreeCards: settings.compactWorktreeCards === true,
+      compactWorktreeCards: false,
       minimaxGroupId: settings.minimaxGroupId ?? '',
       minimaxUsageModels: settings.minimaxUsageModels ?? 'general',
       minimaxEndpoint: settings.minimaxEndpoint ?? 'overseas',

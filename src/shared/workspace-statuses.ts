@@ -4,6 +4,7 @@ import {
   isKnownBadPRReorderedDefaultStatusPayload,
   isLegacyDefaultWorkflowStatusPayload
 } from './workspace-status-default-migration'
+import { sanitizeWorkspaceStatusSection } from './workspace-status-sections'
 
 export { DEFAULT_WORKSPACE_STATUSES } from './workspace-status-defaults'
 
@@ -180,11 +181,15 @@ function normalizeWorkspaceStatusesInternal(
       id = makeWorkspaceStatusId(label, statuses)
     }
     usedIds.add(id)
+    const section = sanitizeWorkspaceStatusSection(raw.section)
     statuses.push({
       id,
       label,
       color: sanitizeWorkspaceStatusColor(raw.color, id, label, statuses.length, options),
-      icon: sanitizeWorkspaceStatusIcon(raw.icon, id, label, options)
+      icon: sanitizeWorkspaceStatusIcon(raw.icon, id, label, options),
+      // Why spread: an absent section must stay absent so an untouched install
+      // round-trips to a byte-identical payload.
+      ...(section === undefined ? {} : { section })
     })
   }
 

@@ -26,7 +26,7 @@ import {
   type WorkspaceActionContext
 } from './workspace-action-context'
 
-export type WorkspaceActionLaunch = 'primary' | 'review'
+export type WorkspaceActionLaunch = 'primary' | 'review' | 're-review'
 
 const PROMPT_BY_ACTION: Record<
   Exclude<NonNullable<WorkspaceActionContext['action']>, 'resolve-conflicts'>,
@@ -104,6 +104,11 @@ function actionTitle(kind: WorkspaceActionLaunch, context: WorkspaceActionContex
       number: context.pr?.number ?? ''
     })
   }
+  if (kind === 're-review') {
+    return translate('auto.components.workspaceActions.reReviewTab', 'Re-review #{{number}}', {
+      number: context.pr?.number ?? ''
+    })
+  }
   switch (context.action) {
     case 'commit-and-push':
       return translate('auto.components.workspaceActions.commitTab', 'Commit & push')
@@ -120,15 +125,17 @@ function actionTitle(kind: WorkspaceActionLaunch, context: WorkspaceActionContex
 export async function launchWorkspaceAction(kind: WorkspaceActionLaunch): Promise<void> {
   const state = useAppStore.getState()
   const context = selectWorkspaceActionContext(state)
-  if (!context || (kind === 'primary' && !context.action) || (kind === 'review' && !context.pr)) {
+  if (!context || (kind === 'primary' ? !context.action : !context.pr)) {
     return
   }
   const prompt =
     kind === 'review'
       ? buildTemplatePrompt(context, 'reviewPullRequest')
-      : context.action === 'resolve-conflicts'
-        ? buildConflictPrompt(context)
-        : buildTemplatePrompt(context, PROMPT_BY_ACTION[context.action ?? 'create-pull-request'])
+      : kind === 're-review'
+        ? buildTemplatePrompt(context, 'reReviewPullRequest')
+        : context.action === 'resolve-conflicts'
+          ? buildConflictPrompt(context)
+          : buildTemplatePrompt(context, PROMPT_BY_ACTION[context.action ?? 'create-pull-request'])
   try {
     const launched = await launchAgentBackgroundSession({
       agent: state.workspaceStatusRules.reviewInbox.agent,
