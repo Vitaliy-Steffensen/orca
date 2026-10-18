@@ -44,8 +44,26 @@ describe('transitionWorkspaceRun', () => {
     })
     expect(result.entry?.state).toBe('running')
     expect(result.shouldOpenBrowser).toBe(true)
-    expect(result.entry?.openedBrowser).toBe(true)
+    expect(result.entry?.openedBrowser).toBe(false)
     expect(result.toast).toBeUndefined()
+  })
+
+  it('asks again while the browser has not opened yet', () => {
+    const running = entry({
+      state: 'running',
+      openedBrowser: false,
+      services: [
+        { label: 'Web', tabId: 'web', readyPort: 5173, ready: true },
+        { label: 'Api', tabId: 'api', ready: true }
+      ]
+    })
+    const result = transitionWorkspaceRun({
+      entry: running,
+      now: 5_000,
+      observations: [observe('web', { portListening: true }), observe('api', { ptyAliveSince: 0 })]
+    })
+    expect(result.shouldOpenBrowser).toBe(true)
+    expect(result.entry).toBe(running)
   })
 
   it('does not ask to open the browser twice', () => {

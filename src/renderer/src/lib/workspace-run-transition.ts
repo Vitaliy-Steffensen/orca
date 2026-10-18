@@ -91,21 +91,30 @@ export function transitionWorkspaceRun(args: {
   }
 
   const allReady = services.every((service) => service.ready)
-  if (entry.state === 'booting' && allReady) {
-    return {
-      entry: { ...entry, state: 'running', services, openedBrowser: true },
-      shouldOpenBrowser: !entry.openedBrowser
-    }
-  }
-
-  const unchanged =
+  const servicesUnchanged =
     services.length === entry.services.length &&
+    present.length === entry.services.length &&
     services.every(
       (service, index) =>
         service.ready === entry.services[index]?.ready &&
         service.tabId === entry.services[index]?.tabId
     )
-  if (unchanged && present.length === entry.services.length) {
+  // Leave openedBrowser false until the browser port is actually found. A
+  // Docker/OrbStack listener can show up a scan later than the other service.
+  if (allReady && entry.state === 'booting') {
+    return {
+      entry: { ...entry, state: 'running', services, openedBrowser: entry.openedBrowser },
+      shouldOpenBrowser: !entry.openedBrowser
+    }
+  }
+  if (allReady && entry.state === 'running' && !entry.openedBrowser) {
+    return {
+      entry: servicesUnchanged ? entry : { ...entry, services },
+      shouldOpenBrowser: true
+    }
+  }
+
+  if (servicesUnchanged) {
     return { entry, shouldOpenBrowser: false }
   }
   return { entry: { ...entry, services }, shouldOpenBrowser: false }

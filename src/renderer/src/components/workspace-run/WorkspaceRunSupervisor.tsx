@@ -12,7 +12,11 @@ import {
   findWorkspaceRunCommandById,
   workspaceRunCommandsForWorktree
 } from '@/lib/workspace-run-command'
-import { openWorkspaceRunBrowser } from '@/lib/open-workspace-run-browser'
+import {
+  openWorkspaceRunBrowser,
+  workspaceRunBrowserOpenPlan
+} from '@/lib/open-workspace-run-browser'
+import { listeningPortNumbers } from '@/lib/workspace-run-ports'
 import { workspaceRunAdoptionBlocked } from '@/lib/workspace-run-adoption'
 import type { WorkspaceRunQuickCommand } from '../../../../shared/terminal-quick-command-types'
 
@@ -36,7 +40,10 @@ function observeServices(
 ): WorkspaceRunServiceObservation[] {
   const state = useAppStore.getState()
   const present = new Set((state.tabsByWorktree[worktreeId] ?? []).map((tab) => tab.id))
-  const ports = portsForWorktree(worktreeId)
+  // Why: a service published by Docker/OrbStack listens as the container
+  // runtime, not as a process whose cwd is the worktree, so a workspace-only
+  // match never sees it and the browser stays closed after boot.
+  const ports = listeningPortNumbers(state.workspacePortScansByKey)
   return entry.services.map((service) => {
     const ptyIds = state.ptyIdsByTabId[service.tabId] ?? []
     const ptyAlive = ptyIds.length > 0
@@ -154,10 +161,30 @@ function reconcileWorkspaceRuns(): number | null {
     if (result.entry !== current) {
       useAppStore.getState().setWorkspaceRun(worktreeId, result.entry)
     }
-    if (result.shouldOpenBrowser) {
-      const command = findWorkspaceRunCommandById(useAppStore.getState(), result.entry.commandId)
-      if (command?.openBrowser) {
-        void openWorkspaceRunBrowser({ worktreeId, command })
+    if (result.shouldOpenBrowser && result.entry) {
+      const command = findWorkspaceRunCommandById(
+        useAppStore.getState(),
+        result.entry.commandId
+      )
+      const plan = workspaceRunBrowserOpenPlan({
+        command,
+        services: result.entry.services,
+        worktreeId,
+        scans: useAppStore.getState().workspacePortScansByKey
+      })
+      if (plan.markOpened) {
+        useAppStore.getState().setWorkspaceRun(worktreeId, {
+          ...result.entry,
+          openedBrowser: true
+        })
+      }
+      if (command && plan.port) {
+        void openWorkspaceRunBrowser({
+          worktreeId,
+          command,
+          services: result.entry.services,
+          port: plan.port
+        })
       }
     }
     const delay = nextWorkspaceRunWakeMs({ entry: result.entry, now, observations })

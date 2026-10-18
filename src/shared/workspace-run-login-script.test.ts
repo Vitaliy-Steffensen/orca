@@ -57,6 +57,19 @@ describe('workspace run login script', () => {
     expect(inputValue('input[name="newsletter"]')).toBe('')
   })
 
+  it('fills an email and password login page and submits Login', () => {
+    const result = run(`
+      <form id="login">
+        <input type="email" name="email" autocomplete="email" />
+        <input type="password" name="password" autocomplete="current-password" />
+        <button type="submit">Login</button>
+      </form>
+    `)
+    expect(result.ok).toBe(true)
+    expect(inputValue('input[name="email"]')).toBe(EMAIL)
+    expect(inputValue('input[type="password"]')).toBe(PASSWORD)
+  })
+
   it('reports a missing password field', () => {
     expect(
       run(`<form><input type="email" /><button type="submit">Sign in</button></form>`).reason

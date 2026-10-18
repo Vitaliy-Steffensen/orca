@@ -6,60 +6,128 @@ import {
 import { browserUrlForPort } from '@/lib/workspace-port-urls'
 import { runtimeTargetForOwnerEnvironment } from '@/runtime/runtime-client-target'
 import { getRuntimeEnvironmentIdForWorktree } from '@/lib/worktree-runtime-owner'
-import type { WorkspacePort } from '../../../shared/workspace-ports'
+import type { WorkspacePort, WorkspacePortScanResult } from '../../../shared/workspace-ports'
 import type { WorkspaceRunQuickCommand } from '../../../shared/terminal-quick-command-types'
 import { runWorkspaceAutoLogin } from '@/lib/run-workspace-auto-login'
 
-function portWithPath(port: WorkspacePort, browserPath: string | undefined): WorkspacePort {
+type ResolvedRunService = {
+  readyPort?: number
+}
+
+export function resolveWorkspaceRunBrowserPort(
+  command: WorkspaceRunQuickCommand,
+  services: readonly ResolvedRunService[]
+): number | undefined {
+  const index = command.browserServiceIndex
+  if (index !== undefined) {
+    return services[index]?.readyPort ?? command.services[index]?.readyPort
+  }
+  return (
+    services.find((service) => service.readyPort !== undefined)?.readyPort ??
+    command.services.find((service) => service.readyPort !== undefined)?.readyPort
+  )
+}
+
+export function findWorkspaceRunBrowserPort(args: {
+  command: WorkspaceRunQuickCommand
+  services: readonly ResolvedRunService[]
+  worktreeId: string
+  scans: Record<string, Pick<WorkspacePortScanResult, 'ports'> | undefined>
+}): WorkspacePort | null {
+  const readyPort = resolveWorkspaceRunBrowserPort(args.command, args.services)
+  if (readyPort === undefined) {
+    return null
+  }
+  let fallback: WorkspacePort | null = null
+  for (const scan of Object.values(args.scans)) {
+    if (!scan) {
+      continue
+    }
+    for (const port of scan.ports) {
+      if (port.port !== readyPort) {
+        continue
+      }
+      if (port.kind === 'workspace' && port.owner.worktreeId === args.worktreeId) {
+        return port
+      }
+      fallback ??= port
+    }
+  }
+  return fallback
+}
+
+export function workspaceRunBrowserOpenPlan(args: {
+  command: WorkspaceRunQuickCommand | null
+  services: readonly ResolvedRunService[]
+  worktreeId: string
+  scans: Record<string, Pick<WorkspacePortScanResult, 'ports'> | undefined>
+}): { markOpened: boolean; port: WorkspacePort | null } {
+  if (!args.command?.openBrowser) {
+    return { markOpened: true, port: null }
+  }
+  const port = findWorkspaceRunBrowserPort(args)
+  return { markOpened: port !== null, port }
+}
+
+export function workspaceRunLoginPageId(
+  tabs: readonly { id: string; activePageId?: string | null }[],
+  activeTabId: string | undefined
+): string | null {
+  if (!activeTabId) {
+    return null
+  }
+  return tabs.find((tab) => tab.id === activeTabId)?.activePageId ?? null
+}
+
+function portWithPath(
+  port: WorkspacePort,
+  browserPath: string | undefined,
+  worktreeId: string
+): WorkspacePort {
   const suffix = browserPath?.trim()
-  if (!suffix || port.kind !== 'workspace') {
+  if (!suffix) {
     return port
   }
   const extra = suffix.startsWith('/') ? suffix : `/${suffix}`
   try {
     const url = new URL(browserUrlForPort(port))
     url.pathname = `${url.pathname.replace(/\/$/, '')}${extra}`.replace(/\/{2,}/g, '/')
-    return { ...port, advertisedUrl: url.toString() }
+    const advertisedUrl = url.toString()
+    if (port.kind === 'workspace') {
+      return { ...port, advertisedUrl }
+    }
+    return {
+      ...port,
+      protocol: url.protocol === 'https:' ? 'https' : 'http',
+      kind: 'workspace',
+      owner: {
+        worktreeId,
+        repoId: '',
+        displayName: '',
+        path: '',
+        confidence: 'none'
+      },
+      advertisedUrl
+    }
   } catch {
     return port
   }
 }
 
-function portForCommand(
-  command: WorkspaceRunQuickCommand,
-  worktreeId: string
-): WorkspacePort | null {
-  const indexed =
-    command.browserServiceIndex !== undefined
-      ? command.services[command.browserServiceIndex]
-      : undefined
-  const service =
-    indexed?.readyPort !== undefined
-      ? indexed
-      : command.services.find((candidate) => candidate.readyPort !== undefined)
-  if (!service?.readyPort) {
-    return null
-  }
-  const scans = useAppStore.getState().workspacePortScansByKey
-  for (const scan of Object.values(scans)) {
-    for (const port of scan.ports) {
-      if (
-        port.kind === 'workspace' &&
-        port.owner.worktreeId === worktreeId &&
-        port.port === service.readyPort
-      ) {
-        return port
-      }
-    }
-  }
-  return null
-}
-
 export async function openWorkspaceRunBrowser(args: {
   worktreeId: string
   command: WorkspaceRunQuickCommand
+  services?: readonly ResolvedRunService[]
+  port?: WorkspacePort | null
 }): Promise<void> {
-  const port = portForCommand(args.command, args.worktreeId)
+  const port =
+    args.port ??
+    findWorkspaceRunBrowserPort({
+      command: args.command,
+      services: args.services ?? [],
+      worktreeId: args.worktreeId,
+      scans: useAppStore.getState().workspacePortScansByKey
+    })
   if (!port) {
     return
   }
@@ -71,7 +139,7 @@ export async function openWorkspaceRunBrowser(args: {
     ? true
     : shouldOpenWorkspacePortInOrcaBrowser(store.settings)
   const opened = await openWorkspacePortInBrowser({
-    port: portWithPath(port, args.command.browserPath),
+    port: portWithPath(port, args.command.browserPath, args.worktreeId),
     activeWorktreeId: args.worktreeId,
     runtimeTarget,
     createBrowserTab: store.createBrowserTab,
@@ -81,9 +149,11 @@ export async function openWorkspaceRunBrowser(args: {
   if (!opened.ok || !args.command.autoLogin || runtimeTarget?.kind !== 'local') {
     return
   }
-  const browserTabs = store.browserTabsByWorktree[args.worktreeId] ?? []
-  const activeId = useAppStore.getState().activeBrowserTabIdByWorktree[args.worktreeId]
-  const pageId = browserTabs.find((tab) => tab.id === activeId)?.activePageId
+  const latest = useAppStore.getState()
+  const pageId = workspaceRunLoginPageId(
+    latest.browserTabsByWorktree[args.worktreeId] ?? [],
+    latest.activeBrowserTabIdByWorktree[args.worktreeId]
+  )
   if (!pageId) {
     return
   }
