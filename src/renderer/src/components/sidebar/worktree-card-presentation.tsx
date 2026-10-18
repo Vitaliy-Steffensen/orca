@@ -38,6 +38,7 @@ export function buildWorktreeCardPresentation(card: WorktreeCardController) {
     workspacePorts,
     referenceDetails,
     showPR,
+    viewerReviewRequest,
     showIssue,
     showLinearIssue,
     showJiraIssue,
@@ -67,6 +68,7 @@ export function buildWorktreeCardPresentation(card: WorktreeCardController) {
   const showCombinedStatusSlot = showStatus
   const chips = resolveWorktreeCardChips(card)
   const showTitleRowIndicators = hasDetails || hasPorts || chips.length > 0
+  const showReviewRequestAge = showPR && viewerReviewRequest !== null
   // Why: grouped views can hide the repo badge; don't reserve a blank metadata lane unless there's real content.
   const hasMetaRow = Boolean(
     showHostContextBadge ||
@@ -74,6 +76,7 @@ export function buildWorktreeCardPresentation(card: WorktreeCardController) {
     showIdentityInNewCard ||
     showDetachedHeadInMetaRow ||
     showConflictOperationBadge ||
+    showReviewRequestAge ||
     cacheStartedAt != null
   )
   const showHeaderActions = showDeleteQuickAction
@@ -161,6 +164,7 @@ export function buildWorktreeCardPresentation(card: WorktreeCardController) {
     showHostContextBadge,
     showIdentityInNewCard,
     showDetachedHeadInMetaRow,
+    showReviewRequestAge,
     showConflictOperationBadge,
     showCombinedStatusSlot,
     showTitleRowIndicators,

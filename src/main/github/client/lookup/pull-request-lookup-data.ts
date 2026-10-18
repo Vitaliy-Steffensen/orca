@@ -22,6 +22,8 @@ export type PullRequestLookupData = {
   title: string
   state: string
   url: string
+  /** `gh pr view --json author` returns `{ login }`. REST maps `user.login` into the same shape. */
+  author?: { login?: string | null } | null
   statusCheckRollup: unknown[]
   updatedAt: string
   isDraft?: boolean
@@ -62,6 +64,7 @@ export type RestPullRequest = {
   mergeable?: boolean | null
   mergeable_state?: string | null
   base?: { ref?: string; sha?: string }
+  user?: { login?: string } | null
   head?: {
     ref?: string
     sha?: string
@@ -77,10 +80,10 @@ export type RestPullRequest = {
 }
 
 export const PR_LOOKUP_JSON_FIELDS =
-  'number,title,state,url,statusCheckRollup,updatedAt,isDraft,mergeable,reviewDecision,mergeStateStatus,autoMergeRequest,baseRefName,headRefName,baseRefOid,headRefOid,headRepositoryOwner,headRepository'
+  'number,title,state,url,author,statusCheckRollup,updatedAt,isDraft,mergeable,reviewDecision,mergeStateStatus,autoMergeRequest,baseRefName,headRefName,baseRefOid,headRefOid,headRepositoryOwner,headRepository'
 
 export const PR_BRANCH_LIST_JSON_FIELDS =
-  'number,title,state,url,statusCheckRollup,updatedAt,isDraft,mergeable,baseRefName,headRefName,baseRefOid,headRefOid,headRepositoryOwner,headRepository'
+  'number,title,state,url,author,statusCheckRollup,updatedAt,isDraft,mergeable,baseRefName,headRefName,baseRefOid,headRefOid,headRepositoryOwner,headRepository'
 
 export type GitHubPRBranchLookupOptions = HostedReviewExecutionOptions & {
   acceptMergedFallbackPR?: boolean
@@ -121,6 +124,7 @@ export function mapRestPullRequest(pr: RestPullRequest): PullRequestLookupData {
           ...(typeof pr.stack.base.sha === 'string' ? { baseSha: pr.stack.base.sha } : {})
         }
       : undefined
+  const restAuthor = pr.user?.login?.trim()
   return {
     number: pr.number,
     title: pr.title,
@@ -137,6 +141,7 @@ export function mapRestPullRequest(pr: RestPullRequest): PullRequestLookupData {
     headRepositoryOwner: pr.head?.repo?.owner ?? pr.head?.user,
     headRepository: pr.head?.repo,
     headDefaultBranchName: pr.head?.repo?.default_branch,
+    ...(restAuthor ? { author: { login: restAuthor } } : {}),
     stackMetadataChecked: true,
     ...(stack ? { stack } : {})
   }
@@ -200,6 +205,14 @@ export async function linkedMergedPRDivergedHeadOid(
     return null
   }
   return (await containsHead(data, currentHeadOid)) === 'not-contained' ? currentHeadOid : null
+}
+
+/** Login of whoever opened the pull request, when the lookup asked GitHub for it. */
+export function pullRequestAuthorLogin(data: {
+  author?: { login?: string | null } | null
+}): string | null {
+  const login = data.author?.login?.trim()
+  return login ? login : null
 }
 
 export function normalizePullRequestLookupData(data: PullRequestLookupData): PullRequestLookupData {

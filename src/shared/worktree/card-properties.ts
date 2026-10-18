@@ -14,6 +14,7 @@ export const DEFAULT_WORKTREE_CARD_PROPERTIES: WorktreeCardProperty[] = [
   'conflict',
   ...TASK_WORKTREE_CARD_PROPERTIES,
   'pr',
+  'pr-author',
   'automation',
   'cli',
   'comment',

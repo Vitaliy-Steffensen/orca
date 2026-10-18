@@ -53,6 +53,8 @@ export type PRInfo = {
   title: string
   state: PRState
   url: string
+  /** GitHub login of the person who opened the pull request. */
+  author?: string
   checksStatus: CheckStatus
   updatedAt: string
   mergeable: PRMergeableState

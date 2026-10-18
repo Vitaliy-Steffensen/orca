@@ -7,6 +7,7 @@ import CacheTimer from './CacheTimer'
 import { WorktreeHostContextBadge } from './WorktreeHostContextBadge'
 import { CONFLICT_OPERATION_LABELS } from './WorktreeCardHelpers'
 import { TruncatedSidebarLabel } from './truncated-sidebar-label'
+import { WorktreeCardReviewRequestAge } from './worktree-card-review-request-age'
 import type { WorktreeCardPresentation } from './worktree-card-presentation'
 import type { WorktreeCardController } from './use-worktree-card-controller'
 
@@ -30,7 +31,8 @@ export function WorktreeCardMetaRow({
     showIdentityInNewCard,
     hasHoverDetails,
     showDetachedHeadInMetaRow,
-    showConflictOperationBadge
+    showConflictOperationBadge,
+    showReviewRequestAge
   } = presentation
 
   return (
@@ -66,6 +68,8 @@ export function WorktreeCardMetaRow({
 
         {cacheStartedAt != null && <CacheTimer startedAt={cacheStartedAt} ttlMs={cacheTtlMs} />}
       </div>
+
+      <WorktreeCardReviewRequestAge worktreeId={card.worktree.id} enabled={showReviewRequestAge} />
     </div>
   )
 }

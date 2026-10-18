@@ -19,6 +19,11 @@ Adding a feature here? See the rule at the top of [`CLAUDE.md`](./CLAUDE.md).
   saying so instead of going quiet after its first warning.
 - Workspace cards come in one style, and carry chips that appear only when something is wrong —
   failing checks, a conflict with the base, or a branch left behind it.
+- A workspace card shows the pull request author's face when that pull request was opened by someone else.
+- Right-clicking a workspace card lists its linked pull request and issues under "Open in", so the
+  GitHub or Linear page is one menu away.
+- Workspace cards you were asked to review show how long ago the review was asked for, and say when
+  it is a re-request with its own fresh clock.
 
 ## Inherited from `frbarbre/orca`
 

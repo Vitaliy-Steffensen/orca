@@ -13,7 +13,7 @@ import { formatSparseDirectoryPreview, shouldBeginWorktreeRename } from './workt
 import type { WorktreeCardPresentation } from './worktree-card-presentation'
 import { WorktreeCardSshHostControl } from './WorktreeCardSshHostControl'
 import { WorktreeTitleInlineRename } from './WorktreeTitleInlineRename'
-import { WorktreeCardPrAuthor } from './worktree-card-pr-author'
+import { displayedPullRequestAuthor, WorktreeCardPrAuthor } from './worktree-card-pr-author'
 import type { WorktreeCardController } from './use-worktree-card-controller'
 
 // Why: pinned repo icon and compact inline badge share this chip shell so both repo cues read as the same affordance.
@@ -263,6 +263,7 @@ export function WorktreeCardHeader({
         <WorktreeCardPrAuthor
           worktreeId={card.worktree.id}
           enabled={card.showPrAuthor}
+          authorLogin={displayedPullRequestAuthor(card.prDisplay)}
           className={showTitleRowIndicators ? 'mr-1.5' : 'ml-auto mr-1.5'}
         />
       </div>

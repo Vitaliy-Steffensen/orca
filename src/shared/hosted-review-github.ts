@@ -8,6 +8,7 @@ export function hostedReviewInfoFromGitHubPRInfo(pr: PRInfo): HostedReviewInfo {
     title: pr.title,
     state: pr.state,
     url: pr.url,
+    ...(pr.author ? { author: pr.author } : {}),
     status: pr.checksStatus,
     updatedAt: pr.updatedAt,
     mergeable: pr.mergeable,

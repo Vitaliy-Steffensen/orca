@@ -1,3 +1,4 @@
+import { useViewerReviewRequest } from '../workspace-status-rules/viewer-review-request-store'
 import { useWorkspaceReferenceDetails } from './use-workspace-reference-details'
 import { getWorkspaceAttachments } from '../../../../shared/workspace-attachments'
 import { summarizeWorkspaceReviewChecks } from '../../../../shared/workspace-review-checks'
@@ -39,6 +40,7 @@ export function useWorktreeCardController(props: ResolvedWorktreeCardProps) {
   const showPrAuthor = foundation.cardProps.includes('pr-author')
   const showJiraIssue = foundation.cardProps.includes('jira-issue')
   const showPR = foundation.cardProps.includes('pr')
+  const viewerReviewRequest = useViewerReviewRequest(worktree.id)
   const showAutomation = foundation.cardProps.includes('automation')
   const showCli = foundation.cardProps.includes('cli')
   const showComment = foundation.cardProps.includes('comment')
@@ -166,6 +168,7 @@ export function useWorktreeCardController(props: ResolvedWorktreeCardProps) {
     showPrAuthor,
     showJiraIssue,
     showPR,
+    viewerReviewRequest,
     showAutomation,
     showCli,
     showComment,

@@ -33,6 +33,8 @@ export type HostedReviewInfo = {
   title: string
   state: HostedReviewState
   url: string
+  /** GitHub login of the person who opened the pull request. Other forges omit it. */
+  author?: string
   status: CheckStatus
   updatedAt: string
   mergeable: PRMergeableState

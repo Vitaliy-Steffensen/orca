@@ -28,5 +28,10 @@ describe('hostedReviewInfoFromGitHubPRInfo', () => {
       headSha: 'abc123',
       githubRepository
     })
+    expect(review.author).toBeUndefined()
+  })
+
+  it('keeps the pull request author so a sidebar card can show their face', () => {
+    expect(hostedReviewInfoFromGitHubPRInfo({ ...pr, author: 'madsenmm' }).author).toBe('madsenmm')
   })
 })
