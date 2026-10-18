@@ -14,6 +14,10 @@ import { resolveNativeChatLaunchDraftSend } from './native-chat-launch-draft-sen
 import { nativeChatComposerTargetIsRemote } from './native-chat-composer-target'
 import type { NativeChatResolvedTarget } from './native-chat-composer-target'
 import { isSlashCommandDraft } from '../../../../shared/native-chat-slash-commands'
+import {
+  messageWithNativeChatPromptMark,
+  type NativeChatPromptMark
+} from '../../../../shared/native-chat-prompt-marks'
 import type { NativeChatPickerState } from './use-native-chat-picker-state'
 import type { NativeChatSendLifecycle } from './use-native-chat-send-lifecycle'
 import type { NativeChatPtySessionOptionsSurface } from './native-chat-pty-session-options'
@@ -47,11 +51,12 @@ export function useNativeChatPtyComposerSend(args: {
   clearSkillOrigin: () => void
   clearImageAttachments: () => void
   setNotice: (notice: string | null) => void
+  promptMark?: NativeChatPromptMark | null
 }): () => void {
   return useCallback(() => {
-    const text = args.draft
+    const raw = args.draft
     const imagePaths = args.imageAttachments.map((attachment) => attachment.path)
-    if ((text.trim() === '' && imagePaths.length === 0) || args.disabled) {
+    if ((raw.trim() === '' && imagePaths.length === 0) || args.disabled) {
       return
     }
     // Why: keep option-command and prompt writes from interleaving on the PTY input line.
@@ -62,7 +67,9 @@ export function useNativeChatPtyComposerSend(args: {
     if (!target) {
       return
     }
-    const classification = args.classifySend(text)
+    const classification = args.classifySend(raw)
+    const text =
+      classification === 'chat' ? messageWithNativeChatPromptMark(raw, args.promptMark) : raw
     if (classification === 'command' && answerNativeChatCommandInComposer(args)) {
       return
     }

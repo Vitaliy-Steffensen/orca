@@ -129,7 +129,7 @@ describe('handleTerminalWorkspaceKeyDown editor.save', () => {
 })
 
 describe('tab.closeOthers', () => {
-  it('asks the active workspace to close every tab but the active one on ⌥⇧⌘W', () => {
+  it('asks the active workspace to close every tab but the active one on ⇧⌘W', () => {
     mocks.state = { activeView: 'terminal', activeWorktreeId: controller.activeWorktreeId }
     const requests: unknown[] = []
     const listener = (event: Event): void => {
@@ -140,7 +140,6 @@ describe('tab.closeOthers', () => {
       key: 'w',
       code: 'KeyW',
       metaKey: true,
-      altKey: true,
       shiftKey: true,
       cancelable: true
     })

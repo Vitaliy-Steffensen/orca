@@ -1209,6 +1209,28 @@
         "openOf": "Open preview of {{sha}}",
         "open": "Open preview",
         "behind": "not the latest commit"
+      },
+      "run": {
+        "workspace": {
+          "auto": {
+            "login": {
+              "noPassword": "no password field",
+              "noEmail": "no email field",
+              "noSubmit": "no submit button",
+              "notVisible": "the login field is hidden",
+              "passwordMissing": "password not set",
+              "error": "the page rejected the login",
+              "failed": "Auto-login failed: {{reason}}"
+            }
+          }
+        }
+      },
+      "start": {
+        "workspace": {
+          "run": {
+            "failed": "Run didn't start"
+          }
+        }
       }
     },
     "hooks": {
@@ -3279,6 +3301,12 @@
               }
             }
           }
+        },
+        "run": {
+          "WorkspaceRunSupervisor": {
+            "exited": "Run exited before it came up",
+            "timedOut": "Run didn't come up in {{duration}} — terminals are still open"
+          }
         }
       },
       "ui": {
@@ -3314,7 +3342,9 @@
               "b0d58e37ed": "Agent Prompt",
               "b5ea4d64f6": "Terminal Command",
               "terminal_short": "Terminal",
-              "agent_short": "Agent"
+              "agent_short": "Agent",
+              "run": "Workspace Run",
+              "run_short": "Run"
             },
             "TerminalQuickCommandAppendEnterSwitch": {
               "e4e5fed3b3": "Toggle append Enter",
@@ -3360,6 +3390,34 @@
               "b83efc79e2": "Global",
               "c25cf350ef": "Scope",
               "f0631e4999": "repo"
+            },
+            "WorkspaceRunCommandEditor": {
+              "password": "Password",
+              "passwordSaved": "Saved",
+              "passwordMissing": "Not set",
+              "passwordPlaceholder": "Write-only. Never shown again.",
+              "savePassword": "Save",
+              "clearPassword": "Clear",
+              "services": "Services",
+              "serviceLabel": "Service label",
+              "serviceLabelPlaceholder": "Backend",
+              "serviceCommand": "Service command",
+              "serviceCommandPlaceholder": "pnpm dev",
+              "readyPort": "Ready port",
+              "readyPortPlaceholder": "Port",
+              "removeService": "Remove service",
+              "addService": "Add service",
+              "noReadyPort": "No ready port set — reports running 3s after launch.",
+              "timeout": "Ready timeout (seconds)",
+              "browserPath": "Browser path",
+              "openBrowser": "Open in browser when the stack is up",
+              "email": "Login email",
+              "loginHint": "Leave the email empty to open the app without signing in. The password stays on this computer.",
+              "advancedSelectors": "Advanced selectors",
+              "emailSelector": "Email selector",
+              "passwordSelector": "Password selector",
+              "submitSelector": "Submit selector",
+              "successSelector": "Success selector"
             }
           }
         },
@@ -5879,7 +5937,8 @@
           "cli": "Orca CLI",
           "workspaceOptions": "Workspace options",
           "linearTitle": "Linear title",
-          "prAuthor": "PR author"
+          "prAuthor": "PR author",
+          "run": "Run"
         },
         "SshTargetRow": {
           "4677394048": "Connecting…",
@@ -6359,6 +6418,13 @@
                 "289a1d2ca7": "Expand {{value0}}. {{value1}}",
                 "0c1debfe84": "Collapse {{value0}}"
               }
+            },
+            "display": {
+              "property": {
+                "options": {
+                  "run": "Run"
+                }
+              }
             }
           },
           "list": {
@@ -6763,6 +6829,18 @@
         "WorkspaceKanbanSectionFilterMenu": {
           "0c1e2f3a4b": "Sections",
           "5d6e7f8a9b": "Show all sections"
+        },
+        "WorktreeCardRunAction": {
+          "stop": "Stop",
+          "run": "Run"
+        },
+        "WorktreeCardRunState": {
+          "booting": "Run starting",
+          "running": "Run is up"
+        },
+        "WorktreeContextMenuRunItem": {
+          "stop": "Stop run",
+          "run": "Run"
         },
         "archive": {
           "worktree": {
@@ -8223,7 +8301,8 @@
           "afec8b03be": "ci"
         },
         "QuickCommandsList": {
-          "noSearchMatches": "No commands match this search."
+          "noSearchMatches": "No commands match this search.",
+          "runMode": "Run"
         },
         "QuickCommandsToolbar": {
           "searchLabel": "Search commands"
@@ -13878,8 +13957,7 @@
             "fc3095d2ed": "explorer",
             "aiVaultSessionHistory": "Agents",
             "folderWorkspaces": "Attached worktrees",
-            "parentPrChecks": "PR Checks",
-            "prDiffViewer": "PR Diff Viewer"
+            "parentPrChecks": "PR Checks"
           },
           "right": {
             "panel": {
@@ -20280,17 +20358,13 @@
     "send": "Send {{count}} queued comments",
     "badge": "{{count}} queued"
   },
-  "prDiff": {
-    "title": "Changed files",
-    "comparedAgainst": "vs {{ref}}",
-    "noWorkspace": "Select a workspace to see its changed files.",
-    "folderWorkspace": "Changed files are only available for Git repositories.",
-    "noMatchingFiles": "No changed files match the filter.",
-    "noChanges": "No changes against the base branch."
-  },
   "allChanges": {
     "lineTotal": "{{added}} lines added, {{removed}} lines deleted in the listed files",
     "title": "Changes",
+    "viewedCount": "{{viewed}}/{{total}} viewed",
+    "viewedCountTitle": "Files you have ticked off in this review",
+    "markViewed": "Viewed",
+    "changedSinceViewed": "This file changed since you ticked it off",
     "showAllChanges": "Show all changes",
     "showOneList": "Show all changes in one list",
     "groupByStatus": "Group by status",
@@ -20303,7 +20377,9 @@
   "sourceControlSections": {
     "hide": "Hide section",
     "pendingComments": "Pending review",
-    "review": "Review"
+    "review": "Review",
+    "staged": "Staged Changes",
+    "unstaged": "Unstaged Changes"
   },
   "languageServers": {
     "restartFailed": "Could not restart the language server.",

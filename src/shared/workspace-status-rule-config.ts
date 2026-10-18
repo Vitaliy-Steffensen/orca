@@ -22,6 +22,26 @@ export const WORKSPACE_STATUS_RULE_CONDITIONS = [
 
 export type WorkspaceStatusRuleCondition = (typeof WORKSPACE_STATUS_RULE_CONDITIONS)[number]
 
+/** Evaluation order for the agent-state rules. The first condition a workspace's own
+ *  main agents satisfy wins. Kept disjoint so the order only decides reporting, never
+ *  which of two simultaneously true conditions is lost. */
+export const WORKSPACE_AGENT_RULE_CONDITIONS = [
+  'agent-blocked',
+  'agent-asked',
+  'agent-failed',
+  'agent-idle-done',
+  'agent-working'
+] as const
+
+export type WorkspaceAgentRuleCondition = (typeof WORKSPACE_AGENT_RULE_CONDITIONS)[number]
+
+/** Default dwell: an agent state must hold this long before it moves a card. The activity
+ *  dot may flicker between states within one turn; a lane that flickers is unreadable. */
+export const DEFAULT_AGENT_RULE_DWELL_MS = 15_000
+
+const MIN_AGENT_RULE_DWELL_MS = 0
+const MAX_AGENT_RULE_DWELL_MS = 10 * 60_000
+
 /** How the review agent's tab opens; 'default' follows the app's own default view. */
 export type ReviewAgentView = 'chat' | 'terminal' | 'claude-web' | 'default'
 
@@ -54,6 +74,11 @@ export type WorkspaceStatusRuleConfig = {
   /** Projects the rules act on. Empty means the rules do nothing. */
   repoIds: string[]
   statusByCondition: Partial<Record<WorkspaceStatusRuleCondition, WorkspaceStatus>>
+  /** Agent-state rules run beside the pull request rules; off leaves today's behaviour exactly. */
+  agentRulesEnabled: boolean
+  statusByAgentCondition: Partial<Record<WorkspaceAgentRuleCondition, WorkspaceStatus>>
+  /** How long an agent condition must hold before it may move a card. */
+  agentRuleDwellMs: number
   mergingCheckName: string
   /** Column a workspace Orca creates in a scoped project starts in, before any rule applies. */
   newWorkspaceStatus: WorkspaceStatus | null
@@ -123,6 +148,9 @@ export function cloneDefaultWorkspaceStatusRuleConfig(): WorkspaceStatusRuleConf
   return {
     repoIds: [],
     statusByCondition: {},
+    agentRulesEnabled: false,
+    statusByAgentCondition: {},
+    agentRuleDwellMs: DEFAULT_AGENT_RULE_DWELL_MS,
     mergingCheckName: DEFAULT_MERGING_CHECK_NAME,
     newWorkspaceStatus: null,
     newWorkspaceStatusSince: null,
@@ -182,6 +210,30 @@ function sanitizeStatusByCondition(
     }
   }
   return mapped
+}
+
+function sanitizeStatusByAgentCondition(
+  value: unknown
+): Partial<Record<WorkspaceAgentRuleCondition, WorkspaceStatus>> {
+  const raw = asRecord(value)
+  if (!raw) {
+    return {}
+  }
+  const mapped: Partial<Record<WorkspaceAgentRuleCondition, WorkspaceStatus>> = {}
+  for (const condition of WORKSPACE_AGENT_RULE_CONDITIONS) {
+    const status = raw[condition]
+    if (typeof status === 'string' && status.trim()) {
+      mapped[condition] = status.trim()
+    }
+  }
+  return mapped
+}
+
+function sanitizeAgentRuleDwellMs(value: unknown): number {
+  if (typeof value !== 'number' || !Number.isFinite(value)) {
+    return DEFAULT_AGENT_RULE_DWELL_MS
+  }
+  return Math.min(Math.max(Math.round(value), MIN_AGENT_RULE_DWELL_MS), MAX_AGENT_RULE_DWELL_MS)
 }
 
 function sanitizeNewWorkspaceStatus(
@@ -260,6 +312,9 @@ export function normalizeWorkspaceStatusRuleConfig(value: unknown): WorkspaceSta
         ]
       : [],
     statusByCondition: sanitizeStatusByCondition(raw.statusByCondition),
+    agentRulesEnabled: raw.agentRulesEnabled === true,
+    statusByAgentCondition: sanitizeStatusByAgentCondition(raw.statusByAgentCondition),
+    agentRuleDwellMs: sanitizeAgentRuleDwellMs(raw.agentRuleDwellMs),
     mergingCheckName: sanitizeString(
       raw.mergingCheckName,
       defaults.mergingCheckName,

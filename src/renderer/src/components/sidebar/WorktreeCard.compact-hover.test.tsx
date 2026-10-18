@@ -382,24 +382,6 @@ describe('WorktreeCard compact hover details', () => {
     expect(markup).toContain('feature/local-branch')
   }, 30_000)
 
-  it('keeps branch identity visible on detailed cards by default', async () => {
-    settings = { compactWorktreeCards: false }
-    worktreeCardProperties = ['status', 'issue', 'linear-issue', 'comment', 'ports']
-    const { default: WorktreeCard } = await import('./WorktreeCard')
-
-    const markup = renderToStaticMarkup(
-      <WorktreeCard
-        worktree={makeWorktree({ displayName: 'Human title' })}
-        repo={makeRepo()}
-        isActive={false}
-      />
-    )
-
-    expect(markup).not.toContain('data-hover-open-delay="100"')
-    expect(markup).toContain('feature/local-branch')
-    expect(markup).toContain('Human title')
-  })
-
   it('uses one identity hover even when detailed metadata icons are visible when new card style is on', async () => {
     settings = { compactWorktreeCards: false, experimentalNewWorktreeCardStyle: true }
     worktreeCardProperties = ['status', 'issue', 'linear-issue', 'comment', 'ports']
@@ -507,86 +489,6 @@ describe('WorktreeCard compact hover details', () => {
 
     expectIdentityBodyIsHoverTrigger(markup)
     expect(markup.match(/feature\/local-branch/g)).toHaveLength(3)
-  })
-
-  it('keeps detailed metadata hover scoped to metadata icons by default', async () => {
-    settings = { compactWorktreeCards: false }
-    worktreeCardProperties = ['status', 'issue', 'linear-issue', 'comment', 'ports']
-    const { default: WorktreeCard } = await import('./WorktreeCard')
-
-    const markup = renderToStaticMarkup(
-      <WorktreeCard
-        worktree={makeWorktree({
-          linkedIssue: 123,
-          linkedLinearIssue: 'ENG-123',
-          linkedPR: 456,
-          comment: 'Reviewer handoff note'
-        })}
-        repo={makeRepo()}
-        isActive={false}
-      />
-    )
-
-    expect(markup).toContain('data-worktree-card-meta-row=""')
-    const surfaceTag = markup.match(/<div[^>]*data-worktree-card-surface="true"[^>]*>/)?.[0]
-    expect(surfaceTag).toBeDefined()
-    expect(surfaceTag).not.toContain('data-hover-card-trigger=""')
-    expect(markup.match(/data-hover-open-delay="250"/g)).toHaveLength(1)
-    expect(markup).toContain('Reviewer handoff note')
-  })
-
-  it('keeps child card markup inside the parent card by default', async () => {
-    settings = { compactWorktreeCards: false }
-    worktreeCardProperties = ['status', 'comment']
-    const { default: WorktreeCard } = await import('./WorktreeCard')
-
-    const markup = renderToStaticMarkup(
-      <WorktreeCard
-        worktree={makeWorktree({ comment: 'Parent note' })}
-        repo={makeRepo()}
-        isActive={false}
-        lineageChildren={<div data-lineage-child-card="">Child card</div>}
-      />
-    )
-    const childIndex = markup.indexOf('data-lineage-child-card=""')
-
-    const surfaceTag = markup.match(/<div[^>]*data-worktree-card-surface="true"[^>]*>/)?.[0]
-    expect(surfaceTag).toBeDefined()
-    expect(surfaceTag).not.toContain('data-hover-card-trigger=""')
-    expect(markup).not.toContain('data-worktree-lineage-children=""')
-    expect(childIndex).toBeGreaterThanOrEqual(0)
-  })
-
-  it('suppresses inline agent rows in compact cards by default', async () => {
-    settings = { compactWorktreeCards: true }
-    worktreeCardProperties = ['status', 'inline-agents']
-    const { default: WorktreeCard } = await import('./WorktreeCard')
-
-    const markup = renderToStaticMarkup(
-      <WorktreeCard worktree={makeWorktree()} repo={makeRepo()} isActive={false} />
-    )
-
-    expect(markup).not.toContain('data-worktree-agents')
-  })
-
-  it('does not create a compact metadata row solely for an aggregate cache timer', async () => {
-    settings = { compactWorktreeCards: true }
-    worktreeCardProperties = ['status']
-    cacheTimerMocks.usePromptCacheCountdownStartedAt.mockImplementation(
-      (_worktreeId: string, active = true) => (active ? 10_000 : null)
-    )
-    const worktree = makeWorktree()
-    const { default: WorktreeCard } = await import('./WorktreeCard')
-
-    const markup = renderToStaticMarkup(
-      <WorktreeCard worktree={worktree} repo={makeRepo()} isActive={false} />
-    )
-
-    expect(cacheTimerMocks.usePromptCacheCountdownStartedAt).toHaveBeenCalledWith(
-      worktree.id,
-      false
-    )
-    expect(markup).not.toContain('data-worktree-card-meta-row=""')
   })
 
   it('keeps unlink available for an auto-detected PR in the identity hover', async () => {
@@ -785,41 +687,6 @@ describe('WorktreeCard compact hover details', () => {
     expect(markup).toContain('data-hover-open-delay="100"')
     expect(markup).toContain('/Users/x/projects/my-app')
     expect(markup).toContain('Docs folder')
-  })
-
-  it('shows the branch row for migrated Default cards with branch enabled', async () => {
-    settings = { compactWorktreeCards: false }
-    worktreeCardProperties = ['status', 'branch']
-    const { default: WorktreeCard } = await import('./WorktreeCard')
-
-    const markup = renderToStaticMarkup(
-      <WorktreeCard
-        worktree={makeWorktree({ displayName: 'Human title' })}
-        repo={makeRepo()}
-        isActive={false}
-      />
-    )
-
-    expect(markup).toContain('data-worktree-card-meta-row=""')
-    expect(markup).toContain('feature/local-branch')
-  })
-
-  it('keeps compact card branch hidden in the row but available from title hover by default', async () => {
-    settings = { compactWorktreeCards: true }
-    worktreeCardProperties = ['status', 'branch']
-    const { default: WorktreeCard } = await import('./WorktreeCard')
-
-    const markup = renderToStaticMarkup(
-      <WorktreeCard
-        worktree={makeWorktree({ displayName: 'Human title' })}
-        repo={makeRepo()}
-        isActive={false}
-      />
-    )
-
-    expect(markup).not.toContain('data-worktree-card-meta-row=""')
-    expect(markup).toContain('data-hover-open-delay="100"')
-    expect(markup).toContain('feature/local-branch')
   })
 
   it('shows the branch row for compact cards when branch is enabled and new card style is on', async () => {

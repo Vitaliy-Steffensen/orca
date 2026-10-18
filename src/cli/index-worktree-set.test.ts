@@ -465,6 +465,78 @@ describe('orca cli worktree awareness', () => {
   })
 
   it.each([
+    ['task', 'task'],
+    ['question', 'question'],
+    ['null', null]
+  ])('passes --intent %s through worktree.set', async (flagValue, workspaceIntent) => {
+    queueFixtures(
+      callMock,
+      okFixture('req_set_intent', {
+        worktree: { ...buildWorktree('/tmp/repo/child', 'feature/child'), workspaceIntent }
+      })
+    )
+    vi.spyOn(console, 'log').mockImplementation(() => {})
+
+    await main(
+      [
+        'worktree',
+        'set',
+        '--worktree',
+        'id:repo::/tmp/repo/child',
+        '--intent',
+        flagValue,
+        '--json'
+      ],
+      '/tmp/repo'
+    )
+
+    expect(callMock).toHaveBeenCalledExactlyOnceWith('worktree.set', {
+      worktree: 'id:repo::/tmp/repo/child',
+      displayName: undefined,
+      linkedIssue: undefined,
+      comment: undefined,
+      workspaceStatus: undefined,
+      workspaceIntent,
+      parentWorktree: undefined,
+      noParent: false
+    })
+  })
+
+  it('leaves intent unchanged when --intent is not passed', async () => {
+    queueFixtures(
+      callMock,
+      okFixture('req_set_comment', { worktree: buildWorktree('/tmp/repo/child', 'feature/child') })
+    )
+    vi.spyOn(console, 'log').mockImplementation(() => {})
+
+    await main(
+      ['worktree', 'set', '--worktree', 'id:repo::/tmp/repo/child', '--comment', 'hi', '--json'],
+      '/tmp/repo'
+    )
+
+    expect(JSON.stringify(callMock.mock.calls[0]?.[1])).not.toContain('workspaceIntent')
+  })
+
+  it('rejects an unknown --intent value before RPC', async () => {
+    const logSpy = vi.spyOn(console, 'log').mockImplementation(() => {})
+    const errSpy = vi.spyOn(console, 'error').mockImplementation(() => {})
+    const priorExitCode = process.exitCode
+
+    await main(
+      ['worktree', 'set', '--worktree', 'id:repo::/tmp/repo/child', '--intent', 'afk', '--json'],
+      '/tmp/repo'
+    )
+
+    expect(callMock).not.toHaveBeenCalled()
+    expect([...logSpy.mock.calls, ...errSpy.mock.calls].flat().join('\n')).toContain(
+      '--intent accepts task, question or null.'
+    )
+    expect(process.exitCode).toBe(1)
+
+    process.exitCode = priorExitCode
+  })
+
+  it.each([
     ['id:repo::/tmp/repo/child', '--unread', true],
     ['id:repo::/tmp/repo/child', '--read', false],
     ['id:folder-repo::/tmp/notes', '--unread', true],

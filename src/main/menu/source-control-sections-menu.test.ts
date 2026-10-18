@@ -21,6 +21,8 @@ describe('buildPanelSectionsSubmenus', () => {
       ['Agent notes', 'checkbox', true],
       ['Agent turns', 'checkbox', true],
       ['Changes', 'checkbox', true],
+      ['Staged Changes', 'checkbox', true],
+      ['Unstaged Changes', 'checkbox', true],
       ['Commits', 'checkbox', false]
     ])
     expect(prPanel.label).toBe('PR Panel Sections')

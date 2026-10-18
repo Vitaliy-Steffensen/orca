@@ -575,7 +575,14 @@ describe('workspace kanban sidebar drop updates', () => {
 
     expect(result.shouldSwitchToManual).toBe(false)
     expect(result.updates).toEqual([
-      { worktreeId: 'todo-a', updates: { workspaceStatus: 'doing' }, executionHostId: 'local' }
+      {
+        worktreeId: 'todo-a',
+        updates: {
+          workspaceStatus: 'doing',
+          agentRuleManualOverride: { status: 'doing', at: 10_000 }
+        },
+        executionHostId: 'local'
+      }
     ])
   })
 
@@ -605,6 +612,7 @@ describe('workspace kanban sidebar drop updates', () => {
     expect(result.shouldSwitchToManual).toBe(true)
     expect(result.updates.find((entry) => entry.worktreeId === 'todo-a')?.updates).toEqual({
       workspaceStatus: 'doing',
+      agentRuleManualOverride: { status: 'doing', at: 10_000 },
       manualOrder: 9000
     })
     expect(result.updates.find((entry) => entry.worktreeId === 'doing-a')?.updates).toEqual({
@@ -671,7 +679,11 @@ describe('workspace kanban sidebar drop updates', () => {
     expect(result.updates).toEqual([
       {
         worktreeId: 'todo-a',
-        updates: { workspaceStatus: 'doing', manualOrder: 1500 },
+        updates: {
+          workspaceStatus: 'doing',
+          agentRuleManualOverride: { status: 'doing', at: 10_000 },
+          manualOrder: 1500
+        },
         executionHostId: 'local'
       }
     ])

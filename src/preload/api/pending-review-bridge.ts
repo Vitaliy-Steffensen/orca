@@ -22,5 +22,8 @@ export const pendingReviewApi: PendingReviewApi = {
   resolveBase: (request) => ipcRenderer.invoke('pending-review:resolve-base', request),
   context: (request) => ipcRenderer.invoke('pending-review:context', request),
   uploadAsset: (request) => ipcRenderer.invoke('pending-review:asset-upload', request),
-  resolveAssetUrl: (href) => ipcRenderer.invoke('pending-review:asset-resolve', href)
+  resolveAssetUrl: (href) => ipcRenderer.invoke('pending-review:asset-resolve', href),
+  readViewedFiles: (worktreeId) => ipcRenderer.invoke('review-viewed:read', worktreeId),
+  writeViewedFiles: (worktreeId, state) =>
+    ipcRenderer.invoke('review-viewed:write', worktreeId, state)
 }

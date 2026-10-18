@@ -82,6 +82,7 @@ export function applyRemoveWorktreeSuccessState(
       defaultTerminalTabsAppliedByWorktreeId: omitByWorktree(
         s.defaultTerminalTabsAppliedByWorktreeId
       ),
+      workspaceRunByWorktreeId: omitByWorktree(s.workspaceRunByWorktreeId),
       activeWorktreeId: removedActiveWorktree ? null : s.activeWorktreeId,
       activeWorkspaceExecutionHostId: removedActiveWorktree
         ? null

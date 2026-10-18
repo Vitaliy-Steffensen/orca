@@ -1,3 +1,5 @@
+import { useAppStore } from '@/store'
+import { useViewerReviewRequest } from '../workspace-status-rules/viewer-review-request-store'
 import { useWorkspaceReferenceDetails } from './use-workspace-reference-details'
 import { getWorkspaceAttachments } from '../../../../shared/workspace-attachments'
 import { summarizeWorkspaceReviewChecks } from '../../../../shared/workspace-review-checks'
@@ -11,6 +13,7 @@ import { useWorktreeCardLinkedDetails } from './use-worktree-card-linked-details
 import { useWorktreeCardReviewDetails } from './use-worktree-card-review-details'
 import { useWorktreeCardSecondaryDetails } from './use-worktree-card-secondary-details'
 import { useWorktreeCardWorkspaceActions } from './use-worktree-card-workspace-actions'
+import { workspaceRunCommandsForWorktree } from '@/lib/workspace-run-command'
 
 export function useWorktreeCardController(props: ResolvedWorktreeCardProps) {
   const { worktree, repo } = props
@@ -20,12 +23,10 @@ export function useWorktreeCardController(props: ResolvedWorktreeCardProps) {
     repo,
     settings: foundation.settings,
     projectGroups: foundation.projectGroups,
-    cardProps: foundation.cardProps,
-    newCardStyle: foundation.newCardStyle
+    cardProps: foundation.cardProps
   })
   const linked = useWorktreeCardLinkedDetails({
     worktree,
-    newCardStyle: foundation.newCardStyle,
     deleteState: foundation.deleteState,
     branch: review.branch,
     issueEntry: review.issueEntry,
@@ -38,14 +39,27 @@ export function useWorktreeCardController(props: ResolvedWorktreeCardProps) {
   const showIssue = foundation.cardProps.includes('issue')
   const showLinearIssue = foundation.cardProps.includes('linear-issue')
   const showLinearTitle = foundation.cardProps.includes('linear-title')
+  const showLinearPriority = foundation.cardProps.includes('linear-priority')
   const showPrAuthor = foundation.cardProps.includes('pr-author')
+  const branchLineTotal = useAppStore(
+    (state) => state.gitBranchLineTotalByWorktree[worktree.id] ?? null
+  )
   const showJiraIssue = foundation.cardProps.includes('jira-issue')
   const showPR = foundation.cardProps.includes('pr')
+  const viewerReviewRequest = useViewerReviewRequest(worktree.id)
   const showAutomation = foundation.cardProps.includes('automation')
   const showCli = foundation.cardProps.includes('cli')
   const showComment = foundation.cardProps.includes('comment')
   const showPorts = foundation.cardProps.includes('ports')
-  const shouldRefreshHostedReview = foundation.newCardStyle ? showStatus : showPR
+  const workspaceRunEntry = useAppStore(
+    (state) => state.workspaceRunByWorktreeId[worktree.id] ?? null
+  )
+  const workspaceRunCommand = useAppStore(
+    (state) => workspaceRunCommandsForWorktree(state, worktree.repoId)[0] ?? null
+  )
+  const showRun = foundation.cardProps.includes('run') && workspaceRunEntry !== null
+  const hasWorkspaceRunAction = workspaceRunCommand !== null || workspaceRunEntry !== null
+  const shouldRefreshHostedReview = showStatus
   const detailsHoverControl = useWorktreeCardDetailsHoverControl()
   const hoverDetailsOpen = detailsHoverControl.hoverOpen
   const referenceDetails = useWorkspaceReferenceDetails(
@@ -72,12 +86,11 @@ export function useWorktreeCardController(props: ResolvedWorktreeCardProps) {
     branch: review.branch,
     fetchHostedReviewForBranch: foundation.fetchHostedReviewForBranch,
     shouldRefreshHostedReview,
-    newCardStyle: foundation.newCardStyle,
     hoverDetailsOpen,
     showIssue,
     issueCacheKey: review.issueCacheKey,
     fetchIssue: foundation.fetchIssue,
-    showLinearIssue: showLinearIssue || showLinearTitle,
+    showLinearIssue: showLinearIssue || showLinearTitle || showLinearPriority,
     linearSourceContext: review.linearSourceContext,
     linearWorkspaceId: review.linearWorkspaceId,
     fetchLinearIssue: foundation.fetchLinearIssue
@@ -133,7 +146,6 @@ export function useWorktreeCardController(props: ResolvedWorktreeCardProps) {
     showIssue,
     showLinearIssue,
     showJiraIssue,
-    showPR,
     showAutomation,
     showCli,
     showComment,
@@ -148,8 +160,6 @@ export function useWorktreeCardController(props: ResolvedWorktreeCardProps) {
     linkedAzureDevOpsPR: review.linkedAzureDevOpsPR,
     linkedGiteaPR: review.linkedGiteaPR,
     cardProps: foundation.cardProps,
-    newCardStyle: foundation.newCardStyle,
-    compactCards: foundation.compactCards,
     agentActivityDisplayMode: foundation.agentActivityDisplayMode,
     workspacePorts: foundation.workspacePorts,
     openTaskPage: foundation.openTaskPage,
@@ -169,13 +179,20 @@ export function useWorktreeCardController(props: ResolvedWorktreeCardProps) {
     showIssue,
     showLinearIssue,
     showLinearTitle,
+    showLinearPriority,
+    branchLineTotal,
     showPrAuthor,
     showJiraIssue,
     showPR,
+    viewerReviewRequest,
     showAutomation,
     showCli,
     showComment,
     showPorts,
+    showRun,
+    runState: workspaceRunEntry?.state ?? null,
+    hasWorkspaceRunAction,
+    workspaceRunCommand,
     shouldRefreshHostedReview,
     ...activation,
     showDeleteQuickAction,

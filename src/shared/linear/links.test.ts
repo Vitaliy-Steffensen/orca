@@ -7,7 +7,9 @@ import {
   buildLinearTeamUrl,
   buildLinearWorkspaceApiSettingsUrl,
   getLinearOrganizationUrlKeyFromIssueUrl,
-  parseLinearIssueInput
+  linearIssueIntentFromReview,
+  parseLinearIssueInput,
+  parseLinearReviewUrlIntent
 } from './links'
 
 describe('linear links', () => {
@@ -108,6 +110,26 @@ describe('linear links', () => {
     ]) {
       expect(parseLinearIssueInput(input)).toBeNull()
     }
+  })
+})
+
+describe('parseLinearReviewUrlIntent', () => {
+  it('reads a review URL and the issue key embedded in its slug', () => {
+    const intent = parseLinearReviewUrlIntent(
+      'https://linear.app/stably/review/sta-4084-restore-shell'
+    )
+    expect(intent).toEqual({
+      organizationUrlKey: 'stably',
+      reviewId: 'sta-4084-restore-shell'
+    })
+    expect(intent && linearIssueIntentFromReview(intent)).toEqual({
+      identifier: 'STA-4084',
+      organizationUrlKey: 'stably'
+    })
+  })
+
+  it('rejects review URLs that are not on linear.app', () => {
+    expect(parseLinearReviewUrlIntent('https://example.com/stably/review/sta-1')).toBeNull()
   })
 })
 

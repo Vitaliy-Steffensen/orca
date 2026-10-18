@@ -34,8 +34,6 @@ type SourceControlHeaderToolbarProps = {
   onChangeBaseRef: () => void
   onRefreshBranchCompare: () => void
   branchCompareRefreshDisabled: boolean
-  sourceControlGrouping?: 'all' | 'status'
-  onToggleGrouping?: () => void
   branchSummary: GitBranchCompareSummary | null
   compareBaseRef: string | null
   headDisplay?: WorktreeGitIdentityDisplay | null
@@ -132,8 +130,6 @@ function renderOverflowMenu(
     | 'onChangeBaseRef'
     | 'onRefreshBranchCompare'
     | 'branchCompareRefreshDisabled'
-    | 'sourceControlGrouping'
-    | 'onToggleGrouping'
   >
 ): React.JSX.Element {
   return <SourceControlHeaderOverflowMenu {...props} />
@@ -157,8 +153,6 @@ export function SourceControlHeaderToolbar({
   onChangeBaseRef,
   onRefreshBranchCompare,
   branchCompareRefreshDisabled,
-  sourceControlGrouping,
-  onToggleGrouping,
   branchSummary,
   compareBaseRef,
   headDisplay = null,
@@ -172,9 +166,7 @@ export function SourceControlHeaderToolbar({
     onToggleViewMode,
     onChangeBaseRef,
     onRefreshBranchCompare,
-    branchCompareRefreshDisabled,
-    sourceControlGrouping,
-    onToggleGrouping
+    branchCompareRefreshDisabled
   }
 
   const filterToggleTitle = normalizedFilter

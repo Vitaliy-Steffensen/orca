@@ -118,8 +118,7 @@ function resetState(overrides: Partial<Record<string, unknown>> = {}): void {
     remoteStatusesByWorktree: {},
     isRemoteOperationActive: false,
     inFlightRemoteOpKind: null,
-    // Fork: these cover the status sections; the all-changes list is the fork's default.
-    settings: { sourceControlGrouping: 'status' },
+    settings: {},
     hostedReviewCache: {},
     prCache: {},
     commitMessageGenerationRecords: {},
@@ -419,7 +418,7 @@ describe('SourceControl open-file highlight', () => {
     renderSourceControl()
 
     const changesHeader = Array.from(container.querySelectorAll('button')).find((button) =>
-      button.textContent?.includes('Changes')
+      button.textContent?.includes('Unstaged Changes')
     )
     expect(changesHeader).toBeTruthy()
     act(() => {

@@ -44,8 +44,6 @@ export function useWorktreeCardFoundation({
   const agentActivityDisplayMode =
     useAppStore((s) => s.agentActivityDisplayMode) ?? DEFAULT_AGENT_ACTIVITY_DISPLAY_MODE
   const projectGroups = useAppStore((s) => s.projectGroups)
-  const newCardStyle = settings?.experimentalNewWorktreeCardStyle === true
-  const compactCards = !newCardStyle && settings?.compactWorktreeCards === true
   const handleEditIssue = useCallback(
     (e: React.MouseEvent) => {
       e.stopPropagation()
@@ -232,8 +230,6 @@ export function useWorktreeCardFoundation({
     cardProps,
     agentActivityDisplayMode,
     projectGroups,
-    newCardStyle,
-    compactCards,
     handleEditIssue,
     handleManageLinks,
     handleEditComment,

@@ -10,7 +10,7 @@ describe('ACP agents in the runtime registrations', () => {
   it('registers Grok beside Claude and Codex with its declared capabilities', () => {
     expect(
       STRUCTURED_AGENT_RUNTIME_REGISTRATIONS.map(({ definition }) => definition.agent)
-    ).toEqual(['pi', 'codex', 'claude', 'grok', 'opencode', 'omp'])
+    ).toEqual(['pi', 'codex', 'claude', 'grok', 'opencode', 'omp', 'cursor'])
     expect(structuredAgentRuntimeRegistration('grok')?.definition).toMatchObject({
       handleTransport: 'acp',
       accountHomeVariable: 'GROK_HOME',
@@ -124,6 +124,64 @@ describe('ACP agents in the runtime registrations', () => {
     })
     await expect(resolve({ GROK_HOME: 'relative/grok' })).resolves.toMatchObject({
       path: expect.stringMatching(/\.grok$/)
+    })
+  })
+
+  it('opens Cursor as a structured chat with Chat UI on, on a build that serves ACP', () => {
+    const registration = structuredAgentRuntimeRegistration('cursor')
+    expect(registration?.definition).toMatchObject({
+      agent: 'cursor',
+      handleTransport: 'acp',
+      accountHomeVariable: 'CURSOR_CONFIG_DIR',
+      capabilities: {
+        imagePrompts: true,
+        compact: false,
+        steering: 'queue',
+        approvalEnforcement: 'orca'
+      }
+    })
+    expect(registration?.supportsLaunch).toBeTypeOf('function')
+    const settings = { experimentalNativeChat: true }
+    expect(
+      decideAgentLaunchMode({
+        placement: { agent: 'cursor', workspaceKind: 'git-worktree' },
+        settings
+      }).mode
+    ).toBe('structured')
+    expect(
+      decideAgentLaunchMode({
+        placement: { agent: 'cursor' },
+        settings: { experimentalNativeChat: false }
+      })
+    ).toMatchObject({ mode: 'terminal', reason: 'user_default' })
+  })
+
+  it("pins Cursor's config directory from the launch env, else XDG, else ~/.cursor", async () => {
+    const { resolveAccountHome } = structuredAgentRuntimeRegistration('cursor')!
+    const unused = (): never => {
+      throw new Error('Cursor resolves its account home without the runtime')
+    }
+    const resolve = async (launchEnv: NodeJS.ProcessEnv) =>
+      resolveAccountHome(
+        { launchEnv, location: null, purpose: 'read', workspacePath: null },
+        {
+          getClaudeConfigDirectory: unused,
+          prepareCodexLaunchHome: unused,
+          readCodexLaunchHome: unused,
+          workspaceTrustSettings: unused
+        }
+      )
+    await expect(resolve({ CURSOR_CONFIG_DIR: '/data/cursor' })).resolves.toEqual({
+      variable: 'CURSOR_CONFIG_DIR',
+      path: '/data/cursor'
+    })
+    await expect(resolve({ XDG_CONFIG_HOME: '/xdg', CURSOR_CONFIG_DIR: '' })).resolves.toEqual({
+      variable: 'CURSOR_CONFIG_DIR',
+      path: '/xdg/cursor'
+    })
+    await expect(resolve({ CURSOR_CONFIG_DIR: '' })).resolves.toMatchObject({
+      variable: 'CURSOR_CONFIG_DIR',
+      path: expect.stringMatching(/[\\/]\.cursor$/)
     })
   })
 

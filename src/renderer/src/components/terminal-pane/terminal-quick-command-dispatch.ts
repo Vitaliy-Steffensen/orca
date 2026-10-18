@@ -2,7 +2,7 @@ import type { TerminalQuickCommand } from '../../../../shared/terminal-quick-com
 import {
   buildTerminalQuickCommandInput,
   flattenTerminalQuickCommand,
-  isTerminalAgentQuickCommand
+  isTerminalCommandQuickCommand
 } from '../../../../shared/terminal-quick-commands'
 import { recordTerminalUserInputForLeaf } from './terminal-input-activity'
 import type { PtyTransport } from './pty-transport-types'
@@ -27,7 +27,7 @@ export function sendTerminalQuickCommandToPane({
   tabId: string
   transport: QuickCommandTransport | null | undefined
 }): boolean {
-  if (isTerminalAgentQuickCommand(command)) {
+  if (!isTerminalCommandQuickCommand(command)) {
     return false
   }
   if (!transport) {

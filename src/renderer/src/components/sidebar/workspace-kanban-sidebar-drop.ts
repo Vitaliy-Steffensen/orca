@@ -9,6 +9,7 @@ import {
   resolveFullLaneDropIndex
 } from './workspace-kanban-filtered-drop-index'
 import { getWorkspaceStatus } from './workspace-status'
+import { stampManualWorkspaceStatusOverride } from '../../../../shared/workspace-status-manual-override'
 import {
   buildManualOrderUpdatesForGroupDrop,
   shouldWriteManualOrderForGroupDrop,
@@ -258,7 +259,7 @@ export function buildWorkspaceKanbanSidebarDropUpdates(args: {
     }
     updates.push({
       worktreeId,
-      updates: next,
+      updates: stampManualWorkspaceStatusOverride(next, args.now),
       executionHostId: current.hostId ?? 'local'
     })
   }

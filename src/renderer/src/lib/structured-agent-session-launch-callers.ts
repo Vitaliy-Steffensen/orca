@@ -24,6 +24,8 @@ export type StructuredAgentLaunchOptions = {
   executionHostId?: ExecutionHostId
   /** The saved selection a paired host reported it will seed; read only by the starting caller. */
   hostSeedOptions?: Readonly<Record<string, string>>
+  /** Caller picks merged over that seed, such as plan mode from the new-workspace prompt. */
+  seedOverlay?: Readonly<Record<string, string>>
 }
 
 export type StructuredLaunchCaller = {

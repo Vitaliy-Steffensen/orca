@@ -1,6 +1,8 @@
 import { getWorkspaceStatusSectionGroupKey } from '../../../../../../shared/workspace-status-sections'
-import { getWorkspaceStatusFromGroupKey } from '../../workspace-status'
-import { WORKSPACE_STATUS_SECTION_META } from './group-keys'
+import {
+  getWorkspaceStatusFromGroupKey,
+  getWorkspaceStatusSectionHeaderVisual
+} from '../../workspace-status'
 import { appendOrderedGroups } from './group-sections'
 import type { SectionAppendContext } from './group-sections'
 import type { OrderedGroupEntry } from './project-grouping'
@@ -45,14 +47,15 @@ export function appendStatusSectionGroups(
       continue
     }
     const key = getWorkspaceStatusSectionGroupKey(section)
+    const visual = getWorkspaceStatusSectionHeaderVisual(section, workspaceStatuses)
     result.push({
       type: 'header',
       key,
       statusSection: section,
       label: section,
       count: entries.reduce((total, entry) => total + countGroupEntry(entry), 0),
-      tone: WORKSPACE_STATUS_SECTION_META.tone,
-      icon: WORKSPACE_STATUS_SECTION_META.icon
+      tone: visual.tone,
+      icon: visual.icon
     })
     if (!collapsedGroups.has(key)) {
       appendOrderedGroups(ctx, entries, 0, key)

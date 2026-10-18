@@ -304,10 +304,13 @@ describe('getSubmoduleStatus', () => {
 
     const result = await getSubmoduleStatus('/repo', 'flutter_mine')
 
+    const oid = 'ce013625030ba8dba906f756967f9e9ca394464a'
     expect(result.entries).toContainEqual({
       path: 'lib/main.dart',
       status: 'modified',
-      area: 'unstaged'
+      area: 'unstaged',
+      headOid: oid,
+      indexOid: oid
     })
   })
 

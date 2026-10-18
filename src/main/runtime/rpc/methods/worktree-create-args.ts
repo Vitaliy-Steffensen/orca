@@ -43,6 +43,8 @@ export function buildManagedWorktreeCreateArgs(
     displayNameKind: params.displayNameKind,
     telemetrySource: params.telemetrySource,
     workspaceStatus: params.workspaceStatus,
+    workspaceAutonomy: params.workspaceAutonomy,
+    workspaceIntent: params.workspaceIntent,
     manualOrder: params.manualOrder,
     sparseCheckout: params.sparseCheckout,
     pushTarget: params.pushTarget,

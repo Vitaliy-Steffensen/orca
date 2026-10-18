@@ -93,12 +93,18 @@ export function buildAllChangeEntries(
     const measured = uncommittedOnly ? undefined : lineCounts?.[path]
     const counts: { added?: number; removed?: number } =
       measured ?? (sources.length === 1 ? sources[0] : {})
+    // Why both sides: the committed blobs identify the branch's version of the file, the staged
+    // blob identifies what is queued on top of it. Together they are the file's review identity.
+    const indexOid = local.find((entry) => entry.indexOid !== undefined)?.indexOid
     entries.push({
       path,
       status: deletedLocally ? 'deleted' : fromBase.status,
       ...(!deletedLocally && fromBase.oldPath ? { oldPath: fromBase.oldPath } : {}),
       ...(counts.added !== undefined ? { added: counts.added } : {}),
-      ...(counts.removed !== undefined ? { removed: counts.removed } : {})
+      ...(counts.removed !== undefined ? { removed: counts.removed } : {}),
+      ...(branch?.baseOid === undefined ? {} : { baseOid: branch.baseOid }),
+      ...(branch?.headOid === undefined ? {} : { headOid: branch.headOid }),
+      ...(indexOid === undefined ? {} : { indexOid })
     })
   }
   return entries.sort((a, b) => compareFileNames(a.path, b.path))

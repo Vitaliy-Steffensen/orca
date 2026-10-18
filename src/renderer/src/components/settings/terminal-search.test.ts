@@ -1,10 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { getTerminalPaneSearchEntries } from './terminal-search'
 import { getAppearancePaneSearchEntries, getSidebarEntries } from './appearance-search'
-import {
-  getShowPinnedWorktreesInGroupsEntry,
-  getWorkspaceCardLayoutEntry
-} from './appearance-sidebar-search'
+import { getShowPinnedWorktreesInGroupsEntry } from './appearance-sidebar-search'
 import { matchesSettingsSearch } from './settings-search'
 
 describe('getTerminalPaneSearchEntries', () => {
@@ -209,26 +206,6 @@ describe('getTerminalPaneSearchEntries', () => {
     expect(
       getAppearancePaneSearchEntries().some((entry) => entry.title === 'Show Automations Button')
     ).toBe(true)
-  })
-
-  it('includes workspace card layout guidance in the sidebar and Appearance catalogs', () => {
-    const entry = getWorkspaceCardLayoutEntry()
-
-    expect(getSidebarEntries()).toContainEqual(entry)
-    expect(getAppearancePaneSearchEntries()).toContainEqual(entry)
-    expect(entry.description).toBe('Workspace cards can use compact or detailed layouts.')
-    expect(entry.description).not.toContain('options menu')
-  })
-
-  it.each(['compact', 'compact display', 'workspace cards', 'sidebar', 'card layout'])(
-    'matches workspace card layout search for %s',
-    (query) => {
-      expect(matchesSettingsSearch(query, getWorkspaceCardLayoutEntry())).toBe(true)
-    }
-  )
-
-  it('matches the Appearance catalog for compact workspace card searches', () => {
-    expect(matchesSettingsSearch('compact', getAppearancePaneSearchEntries())).toBe(true)
   })
 
   // The notice tells users to "turn it off in Terminal settings", so the product names in

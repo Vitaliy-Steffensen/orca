@@ -1,3 +1,4 @@
+import { CircleAlert, CirclePlay, Layers } from 'lucide-react'
 import { describe, expect, it } from 'vitest'
 import { buildRows } from './build-rows'
 import { getGroupKeysForWorktree } from './worktree-group-keys'
@@ -52,20 +53,86 @@ function summarize(rows: ReturnType<typeof buildRows>) {
 }
 
 describe('workspace-status sections', () => {
-  it('nests lanes under their section header in lane order', () => {
+  it('nests lanes under their section header in attention order', () => {
     expect(summarize(rowsFor({}))).toEqual([
       `header ${RESEARCH_KEY}`,
       `header workspace-status:scoping <${RESEARCH_KEY}`,
       'item wt-scope',
       `header ${NEEDS_ME_KEY}`,
-      `header workspace-status:my-review <${NEEDS_ME_KEY}`,
-      'item wt-review',
       `header workspace-status:flagged <${NEEDS_ME_KEY}`,
       'item wt-flag',
+      `header workspace-status:my-review <${NEEDS_ME_KEY}`,
+      'item wt-review',
       `header ${getWorkspaceStatusSectionGroupKey('Autonomous')}`,
       `header workspace-status:implementing <${getWorkspaceStatusSectionGroupKey('Autonomous')}`,
       'item wt-impl'
     ])
+  })
+
+  it('keeps Ask above Needs me and Autonomous at the bottom when the saved order is reversed', () => {
+    const statuses: WorkspaceStatusDefinition[] = [
+      { id: 'implementing', label: 'Implementing', section: 'Autonomous' },
+      { id: 'skim-implementation', label: 'Skim implementation', section: 'Needs me' },
+      { id: 'review-other', label: 'Review other', section: 'Needs me' },
+      { id: 'research', label: 'Research', section: 'Ask' }
+    ]
+    const askKey = getWorkspaceStatusSectionGroupKey('Ask')
+    expect(
+      summarize(
+        rowsFor({
+          statuses,
+          worktrees: [
+            workspace('wt-impl', 'implementing'),
+            workspace('wt-skim', 'skim-implementation'),
+            workspace('wt-other', 'review-other'),
+            workspace('wt-ask', 'research')
+          ]
+        })
+      )
+    ).toEqual([
+      `header ${askKey}`,
+      `header workspace-status:research <${askKey}`,
+      'item wt-ask',
+      `header ${NEEDS_ME_KEY}`,
+      `header workspace-status:review-other <${NEEDS_ME_KEY}`,
+      'item wt-other',
+      `header workspace-status:skim-implementation <${NEEDS_ME_KEY}`,
+      'item wt-skim',
+      `header ${getWorkspaceStatusSectionGroupKey('Autonomous')}`,
+      `header workspace-status:implementing <${getWorkspaceStatusSectionGroupKey('Autonomous')}`,
+      'item wt-impl'
+    ])
+  })
+
+  it('uses a configured icon and color on the outer section header', () => {
+    const rows = rowsFor({
+      statuses: SECTIONED_STATUSES.map((status) =>
+        status.section === 'Needs me'
+          ? { ...status, sectionIcon: 'circle-alert', sectionColor: 'rose' }
+          : status.section === 'Autonomous'
+            ? { ...status, sectionIcon: 'circle-play', sectionColor: 'sky' }
+            : status
+      )
+    })
+
+    expect(
+      rows.find((row) => row.type === 'header' && row.statusSection === 'Needs me')
+    ).toMatchObject({
+      tone: 'text-rose-600 dark:text-rose-300',
+      icon: CircleAlert
+    })
+    expect(
+      rows.find((row) => row.type === 'header' && row.statusSection === 'Autonomous')
+    ).toMatchObject({
+      tone: 'text-sky-600 dark:text-sky-300',
+      icon: CirclePlay
+    })
+    expect(
+      rows.find((row) => row.type === 'header' && row.statusSection === 'Research')
+    ).toMatchObject({
+      tone: 'text-foreground',
+      icon: Layers
+    })
   })
 
   it('counts every workspace in the section on its header', () => {
@@ -95,9 +162,9 @@ describe('workspace-status sections', () => {
       `header workspace-status:scoping <${RESEARCH_KEY}`,
       'item wt-scope',
       `header ${NEEDS_ME_KEY}`,
-      `header workspace-status:my-review <${NEEDS_ME_KEY}`,
       `header workspace-status:flagged <${NEEDS_ME_KEY}`,
       'item wt-flag',
+      `header workspace-status:my-review <${NEEDS_ME_KEY}`,
       `header ${getWorkspaceStatusSectionGroupKey('Autonomous')}`,
       `header workspace-status:implementing <${getWorkspaceStatusSectionGroupKey('Autonomous')}`,
       'item wt-impl'

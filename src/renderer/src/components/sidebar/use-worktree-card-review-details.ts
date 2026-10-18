@@ -25,10 +25,9 @@ export function useWorktreeCardReviewDetails({
   repo,
   settings,
   projectGroups,
-  cardProps,
-  newCardStyle
+  cardProps
 }: Pick<WorktreeCardProps, 'worktree' | 'repo'> &
-  Pick<Foundation, 'settings' | 'projectGroups' | 'cardProps' | 'newCardStyle'>) {
+  Pick<Foundation, 'settings' | 'projectGroups' | 'cardProps'>) {
   const gitIdentityDisplay = getWorktreeGitIdentityDisplay(worktree)
   const detachedHeadDisplay = gitIdentityDisplay?.kind === 'detached' ? gitIdentityDisplay : null
   const branch = gitIdentityDisplay?.kind === 'branch' ? gitIdentityDisplay.branchName : ''
@@ -43,10 +42,8 @@ export function useWorktreeCardReviewDetails({
     isFolder && hasProjectGroups && worktree.path.trim().length > 0 ? worktree.path : undefined
   const identityDisplay = branchIdentityDisplay ?? folderPathIdentityDisplay
   const hasPathIdentityEnabled = cardProps.includes('branch')
-  const showIdentityInNewCard = newCardStyle && hasPathIdentityEnabled && Boolean(identityDisplay)
-  const folderMetaRowContent = newCardStyle
-    ? hasPathIdentityEnabled && Boolean(folderPathIdentityDisplay)
-    : isFolder
+  const showIdentityInNewCard = hasPathIdentityEnabled && Boolean(identityDisplay)
+  const folderMetaRowContent = hasPathIdentityEnabled && Boolean(folderPathIdentityDisplay)
   const hostedReviewCacheKey =
     repo && branch
       ? getHostedReviewCacheKey(

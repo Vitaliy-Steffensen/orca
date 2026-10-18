@@ -134,7 +134,9 @@ const ROW = {
   // stored `pendingActivationSpawn`, so the Loader drops it.
   pendingActivationSpawn: 'unwritten',
   recovery: 'unwritten',
-  restoredFromSession: 'unwritten'
+  restoredFromSession: 'unwritten',
+  // Live Run badge label. Restart adopts from listening ports, so this is not restored.
+  workspaceRunServiceLabel: 'unwritten'
 } as const satisfies Record<keyof TerminalTab, DiskFieldWritten>
 
 const ENTRY_FIELDS = {

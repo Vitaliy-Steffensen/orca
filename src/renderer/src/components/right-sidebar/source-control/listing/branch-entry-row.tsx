@@ -15,6 +15,14 @@ import { SourceControlEntryContextMenu } from './entry-context-menu'
 import { toPermanentSourceControlRowOpenEvent, type SourceControlRowOpenEvent } from './split-open'
 import { SOURCE_CONTROL_TREE_FILE_PADDING_PX, SOURCE_CONTROL_TREE_INDENT_PX } from './row-layout'
 import { STATUS_COLORS, STATUS_LABELS } from '../../status-display'
+import { Checkbox } from '@/components/ui/checkbox'
+
+/** Fork: the reviewer's own progress on this file, shown only where a review is being tracked. */
+export type BranchEntryRowReview = {
+  isViewed: boolean
+  changedSinceViewed: boolean
+  onToggleViewed: () => void
+}
 
 export function BranchEntryRow({
   entry,
@@ -29,7 +37,8 @@ export function BranchEntryRow({
   reviewThreadCount,
   pendingReviewCount,
   isOpenFile = false,
-  showPathHint = true
+  showPathHint = true,
+  review
 }: {
   entry: GitBranchChangeEntry
   rowKey: string
@@ -44,6 +53,7 @@ export function BranchEntryRow({
   pendingReviewCount: number
   isOpenFile?: boolean
   showPathHint?: boolean
+  review?: BranchEntryRowReview
 }): React.JSX.Element {
   const revealFlashing = useSourceControlRowRevealFlash(rowKey)
   const FileIcon = getFileTypeIcon(entry.path)
@@ -88,8 +98,20 @@ export function BranchEntryRow({
           className: 'size-3.5 shrink-0',
           style: { color: STATUS_COLORS[entry.status] }
         })}
+        {review?.changedSinceViewed && (
+          <span
+            data-testid="branch-entry-changed-since-viewed"
+            className="size-1.5 shrink-0 rounded-full bg-status-warning"
+            title={translate(
+              'allChanges.changedSinceViewed',
+              'This file changed since you ticked it off'
+            )}
+          />
+        )}
         <span className="min-w-0 flex-1 truncate text-xs">
-          <span className="text-foreground">{fileName}</span>
+          <span className={review?.isViewed ? 'text-muted-foreground' : 'text-foreground'}>
+            {fileName}
+          </span>
           {showPathHint && dirPath && (
             <span className="ml-1.5 text-[11px] text-muted-foreground">{dirPath}</span>
           )}
@@ -141,6 +163,18 @@ export function BranchEntryRow({
         >
           {STATUS_LABELS[entry.status]}
         </span>
+        {review && (
+          <Checkbox
+            data-testid="branch-entry-viewed-checkbox"
+            className="shrink-0"
+            checked={review.isViewed}
+            onCheckedChange={() => review.onToggleViewed()}
+            // Why stopped here: the row opens the file on click, and ticking it off must not.
+            onClick={(event) => event.stopPropagation()}
+            aria-label={translate('allChanges.markViewed', 'Viewed')}
+            title={translate('allChanges.markViewed', 'Viewed')}
+          />
+        )}
       </div>
     </SourceControlEntryContextMenu>
   )

@@ -137,9 +137,7 @@ export function useSourceControlWorktreeContext() {
       : getLocalProjectExecutionRuntimeContext(useAppStore.getState(), activeWorktreeId)
   })
   // Why: the sidebar stays mounted when closed, so gate polling on tab AND open or branchCompare/PR fetch would run with no visible consumer.
-  // Why both tabs: the PR diff viewer reads the same branch compare, and only one panel mounts.
-  const isBranchVisible =
-    (rightSidebarTab === 'source-control' || rightSidebarTab === 'pr-diff') && rightSidebarOpen
+  const isBranchVisible = rightSidebarTab === 'source-control' && rightSidebarOpen
   const hasUncommittedEntries = entries.length > 0
 
   return {

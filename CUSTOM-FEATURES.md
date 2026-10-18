@@ -11,6 +11,9 @@ Adding a feature here? See the rule at the top of [`CLAUDE.md`](./CLAUDE.md).
 - Pull request sync is an automation: it runs on a schedule even when the window is hidden, and each check shows up in the run history.
 - A Monday weekly recap template writes what landed on the default branch into the run's workspace and its history.
 - A Wednesday template posts a Linear project status update for the projects you lead.
+- Run on a workspace card starts that project's dev commands together, shows booting then running, and can open the app and sign in.
+- Pick Ask / Supervised / Autonomous when creating a workspace, each with its own agent, model, and prompt.
+- ⇧⌘W closes every other tab and keeps the one you are in.
 - ⇧⌘H reveals the file you are looking at in whichever list is in front of you — the Source Control
   changes, the Explorer tree, or the combined diff's own file tree — and flashes the row.
 - Your `~/.orca/themes/` VS Code theme also colours notebook cells, code excerpts, combined-diff
@@ -20,6 +23,18 @@ Adding a feature here? See the rule at the top of [`CLAUDE.md`](./CLAUDE.md).
 - The app releases and auto-updates from this repository instead of upstream's or Frederik's.
 - A relative language server Path is read from the worktree root, and one that never starts keeps
   saying so instead of going quiet after its first warning.
+- Workspaces also follow their agent: a blocked, questioning, failed, idle or working agent moves
+  the card to the column you mapped it to, and a card you moved by hand stays put.
+- Workspace cards come in one style, and carry chips that appear only when something is wrong —
+  failing checks, a conflict with the base, or a branch left behind it.
+- A workspace card shows the pull request author's face when that pull request was opened by someone else.
+- Right-clicking a workspace card lists its linked pull request and issues under "Open in", so the
+  GitHub or Linear page is one menu away.
+- Workspace cards you were asked to review show how long ago the review was asked for, and say when
+  it is a re-request with its own fresh clock.
+- A workspace card shows the pull request diff (`+`/`−`), a frontend/backend/e2e/CI pie, Linear
+  priority, GitHub stack position, unresolved review comments, and `Nd` once the pull request has
+  been open longer than 3 days.
 - An agent can stage inline review comments and the review summary with `orca review comment add`
   and `orca review summary set`, marked as its drafts in the pending-review shelf, for you to accept
   and submit as your own review.
@@ -36,7 +51,10 @@ Adding a feature here? See the rule at the top of [`CLAUDE.md`](./CLAUDE.md).
 - Right-click a workspace to Archive it: everything it is running shuts down and it leaves the
   sidebar, keeping the checkout. Cmd+J's "View Archived Workspaces" brings them back to unarchive,
   and a merged or closed pull request can archive its workspace instead of deleting it.
+- Source Control shows Changes, Staged Changes and Unstaged Changes together. Tick a file off on
+  the Changes list; it unticks itself and shows a dot when that file actually changes.
 - Group workspace status lanes into collapsible sidebar sections, each header counting what it holds.
+- Give a sidebar status section its own icon and color, and count the workspaces in each nested lane.
 
 ## Inherited from `frbarbre/orca`
 

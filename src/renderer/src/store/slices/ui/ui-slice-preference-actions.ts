@@ -6,7 +6,6 @@ import {
   DEFAULT_SHOW_SLEEPING_WORKSPACES,
   DEFAULT_STATUS_BAR_ITEMS,
   DEFAULT_WORKTREE_CARD_PROPERTIES,
-  getWorktreeCardModeUpdates,
   normalizeAgentActivityDisplayMode,
   normalizeWorktreeCardProperties
 } from '../../../../../shared/constants'
@@ -181,22 +180,6 @@ export function createUiPreferenceActions(set: UISliceSet, get: UISliceGet): Par
 
     worktreeCardProperties: [...DEFAULT_WORKTREE_CARD_PROPERTIES],
     _worktreeCardModeDefaulted: true,
-    setWorktreeCardMode: (mode) => {
-      const updates = getWorktreeCardModeUpdates(mode)
-      set((s) => ({
-        settings: s.settings ? { ...s.settings, ...updates.settings } : s.settings,
-        worktreeCardProperties: updates.ui.worktreeCardProperties,
-        _worktreeCardModeDefaulted: true
-      }))
-      void Promise.all([
-        window.api.settings.set(updates.settings).then((nextSettings) => {
-          if (nextSettings) {
-            set({ settings: nextSettings })
-          }
-        }),
-        window.api.ui.set(updates.ui)
-      ]).catch(console.error)
-    },
     setWorktreeCardProperties: (properties) => {
       const normalized = normalizeWorktreeCardProperties(properties)
       set({ worktreeCardProperties: normalized, _worktreeCardModeDefaulted: false })

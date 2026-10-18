@@ -15,6 +15,7 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuSeparator,
+  DropdownMenuShortcut,
   DropdownMenuTrigger
 } from '@/components/ui/dropdown-menu'
 import { TabHoverCard } from './TabHoverCard'
@@ -33,6 +34,7 @@ import {
 } from './drop-indicator'
 import { preventMiddleButtonDefault } from './middle-button-default-guard'
 import { translate } from '@/i18n/i18n'
+import { useOptionalShortcutLabel } from '@/hooks/useShortcutLabel'
 import { TAB_LABEL_WIDTH_CLASSES } from './tab-width-rules'
 import { useTabStripSlotProps } from './use-tab-strip-slot-props'
 import { TabWorkspaceLayoutMenuSection } from './TabWorkspaceLayoutMenuSection'
@@ -105,6 +107,7 @@ export default function BrowserTab({
   dropIndicator?: DropIndicator
   includeTopTabBorder?: boolean
 }): React.JSX.Element {
+  const closeOthersShortcut = useOptionalShortcutLabel('tab.closeOthers')
   // Why: no transform/transition/isDragging styling — the drag design is
   // that tabs stay visually anchored; only the blue insertion bar moves.
   const { attributes, listeners, setNodeRef } = useSortable({
@@ -293,6 +296,9 @@ export default function BrowserTab({
           <DropdownMenuItem onSelect={onCloseOthers} disabled={tabCount <= 1}>
             <CopyX className="size-3.5" />
             {translate('components.tab.bar.BrowserTab.closeOthers', 'Close Others')}
+            {closeOthersShortcut ? (
+              <DropdownMenuShortcut>{closeOthersShortcut}</DropdownMenuShortcut>
+            ) : null}
           </DropdownMenuItem>
           <DropdownMenuItem onSelect={onCloseToRight} disabled={!hasTabsToRight}>
             <PanelRightClose className="size-3.5" />

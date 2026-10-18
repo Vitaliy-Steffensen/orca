@@ -304,6 +304,87 @@ describe('terminal quick commands', () => {
     ).toBe('git status')
   })
 
+  it('normalizes workspace run commands and keeps half-filled services', () => {
+    expect(
+      normalizeTerminalQuickCommands([
+        {
+          id: 'dev',
+          label: '  Dev stack  ',
+          action: 'workspace-run',
+          services: [
+            { label: ' Web ', command: 'pnpm dev', readyPort: 5173 },
+            { label: 'API', command: 'pnpm api', readyPort: '3000' },
+            { label: 'Broken', readyPort: 1 },
+            { command: 'pnpm worker', readyPort: 0 },
+            { label: 'Draft', command: '' }
+          ],
+          readyTimeoutSeconds: 1,
+          openBrowser: true,
+          browserPath: ' /login ',
+          browserServiceIndex: 0,
+          autoLogin: {
+            email: ' ada@example.com ',
+            emailSelector: ' #email ',
+            passwordSelector: '',
+            submitSelector: 'button.login'
+          }
+        },
+        {
+          id: 'empty-run',
+          action: 'workspace-run'
+        },
+        {
+          label: 'Untitled run',
+          action: 'workspace-run',
+          services: [{ label: 'Backend', command: 'go run .' }]
+        }
+      ])
+    ).toEqual([
+      {
+        id: 'dev',
+        label: 'Dev stack',
+        action: 'workspace-run',
+        scope: { type: 'global' },
+        services: [
+          { label: 'Web', command: 'pnpm dev', readyPort: 5173 },
+          { label: 'API', command: 'pnpm api', readyPort: 3000 },
+          { label: '', command: 'pnpm worker' },
+          { label: 'Draft', command: '' }
+        ],
+        readyTimeoutSeconds: 5,
+        openBrowser: true,
+        browserServiceIndex: 0,
+        browserPath: '/login',
+        autoLogin: {
+          email: 'ada@example.com',
+          emailSelector: '#email',
+          submitSelector: 'button.login'
+        }
+      },
+      {
+        id: 'quick-command-2',
+        label: 'Untitled run',
+        action: 'workspace-run',
+        scope: { type: 'global' },
+        services: [{ label: 'Backend', command: 'go run .' }],
+        readyTimeoutSeconds: 120,
+        openBrowser: false
+      }
+    ])
+    const [normalized] = normalizeTerminalQuickCommands([
+      {
+        id: 'dev',
+        label: 'Dev stack',
+        action: 'workspace-run',
+        services: [{ label: 'Web', command: 'pnpm dev', readyPort: 5173 }],
+        readyTimeoutSeconds: 30,
+        openBrowser: false,
+        scope: { type: 'global' }
+      }
+    ])
+    expect(parseNormalizedTerminalQuickCommands([normalized])).toEqual([normalized])
+  })
+
   it('classifies quick command actions and body text', () => {
     const terminal = {
       id: 'status',

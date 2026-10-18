@@ -274,6 +274,8 @@ function assignedShortcutLabel(actionId: string): string | null {
       return '⌘W'
     case 'tab.closeAll':
       return '⌘⌥W'
+    case 'tab.closeOthers':
+      return '⌘⇧W'
     default:
       return null
   }
@@ -331,23 +333,28 @@ describe('EditorFileTabContextMenu close-all shortcut', () => {
     expect(onOpenRenameInput).toHaveBeenCalledTimes(1)
   })
 
-  it('renders assigned shortcuts next to Rename, Close, and Close All Editor Tabs', async () => {
+  it('renders assigned shortcuts next to Rename, Close, Close Others, and Close All Editor Tabs', async () => {
     const tree = expandNode(await renderMenu())
     const menuItems = findElementsByType(tree, 'DropdownMenuItem')
 
     const renameItem = menuItems.find((item) => extractText(item.props.children).includes('Rename'))
     const closeItem = menuItems.find((item) => extractText(item.props.children) === 'Close⌘W')
+    const closeOthersItem = menuItems.find((item) =>
+      extractText(item.props.children).includes('Close Others')
+    )
     const closeAllItem = menuItems.find((item) =>
       extractText(item.props.children).includes('Close All Editor Tabs')
     )
 
     expect(renameItem).toBeTruthy()
     expect(closeItem).toBeTruthy()
+    expect(closeOthersItem).toBeTruthy()
     expect(closeAllItem).toBeTruthy()
 
     const shortcutExpectations: [ReactElementLike | undefined, string][] = [
       [renameItem, '⌘R'],
       [closeItem, '⌘W'],
+      [closeOthersItem, '⌘⇧W'],
       [closeAllItem, '⌘⌥W']
     ]
 
@@ -357,7 +364,7 @@ describe('EditorFileTabContextMenu close-all shortcut', () => {
       expect(extractText(shortcut[0].props.children)).toBe(expectedLabel)
     }
 
-    expect(findElementsByType(tree, 'DropdownMenuShortcut')).toHaveLength(3)
+    expect(findElementsByType(tree, 'DropdownMenuShortcut')).toHaveLength(4)
   })
 
   it('renders Close Others and both directional close items', async () => {
@@ -366,7 +373,7 @@ describe('EditorFileTabContextMenu close-all shortcut', () => {
       extractText(item.props.children)
     )
 
-    expect(labels).toContain('Close Others')
+    expect(labels.some((label) => label.includes('Close Others'))).toBe(true)
     expect(labels.some((label) => label.includes('Close Tabs To The Right'))).toBe(true)
     expect(labels.some((label) => label.includes('Close Tabs To The Left'))).toBe(true)
   })

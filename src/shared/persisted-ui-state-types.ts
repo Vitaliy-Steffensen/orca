@@ -214,6 +214,12 @@ export type PersistedUIState = {
   _jiraIssueWorktreeCardPropertyDefaulted?: boolean
   /** One-shot backfill flag for 'host', which became a toggleable property after earlier profiles were already stamped. */
   _hostWorktreeCardPropertyDefaulted?: boolean
+  /** One-shot backfill flag for 'run', so existing profiles show the Workspace Run badge until they turn it off. */
+  _runWorktreeCardPropertyDefaulted?: boolean
+  /** One-shot backfill flag for 'pr-author', so an existing profile shows someone else's face once and a later uncheck sticks. */
+  _prAuthorWorktreeCardPropertyDefaulted?: boolean
+  /** One-shot backfill for the review facts (diff, mix, priority, stack, comments, age). A later uncheck sticks. */
+  _worktreeCardFactsDefaulted?: boolean
   /** totalAgentsSpawned snapshot at first sighting of the current app version, so the nag counts agents since last update (not from zero). */
   starNagBaselineAgents?: number | null
   /** App version that set the current baseline; a version change re-captures the baseline on next spawn, restarting the nag countdown. */

@@ -1,5 +1,6 @@
 import type { GitPushTarget, Worktree } from '../../shared/worktree/types'
 import type { WorkspaceAutonomy } from '../../shared/workspace-autonomy'
+import type { WorkspaceIntent } from '../../shared/workspace-intent'
 import type { WorktreeMeta } from '../../shared/worktree/meta-types'
 import { worktreeWorkspaceKey } from '../../shared/workspace-scope'
 import { splitWorktreeId } from '../../shared/worktree/id'
@@ -10,15 +11,19 @@ import type { RuntimeStore } from './runtime-store-contract'
 import { RuntimeLineageError } from './runtime-worktree-lineage-resolution'
 import type { ResolvedWorktree } from './runtime-worktree-path-identity'
 
-type Updates = Omit<Partial<WorktreeMeta>, 'pushTarget' | 'workspaceAutonomy'> & {
+type Updates = Omit<
+  Partial<WorktreeMeta>,
+  'pushTarget' | 'workspaceAutonomy' | 'workspaceIntent'
+> & {
   pushTarget?: GitPushTarget | null
   workspaceAutonomy?: WorkspaceAutonomy | null
+  workspaceIntent?: WorkspaceIntent | null
   lineage?: { parentWorktree?: string; noParent?: boolean }
 }
 
 // Why: `undefined` means "leave unchanged" and is stripped before the merge, so an explicit
 // `null` is how a caller clears one of these slots back to unset.
-const NULL_CLEARABLE_FIELDS = ['pushTarget', 'workspaceAutonomy'] as const
+const NULL_CLEARABLE_FIELDS = ['pushTarget', 'workspaceAutonomy', 'workspaceIntent'] as const
 
 type Ports = {
   resolveWorktree: (selector: string) => Promise<ResolvedWorktree>
@@ -47,7 +52,8 @@ export async function updateRuntimeManagedWorktreeMetadata(args: {
   const normalized: Partial<WorktreeMeta> = {
     ...metaUpdates,
     pushTarget: metaUpdates.pushTarget ?? undefined,
-    workspaceAutonomy: metaUpdates.workspaceAutonomy ?? undefined
+    workspaceAutonomy: metaUpdates.workspaceAutonomy ?? undefined,
+    workspaceIntent: metaUpdates.workspaceIntent ?? undefined
   }
   const persisted: Partial<WorktreeMeta> = omitUndefinedProperties(
     normalized.displayName !== undefined

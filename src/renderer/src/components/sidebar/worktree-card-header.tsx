@@ -1,5 +1,5 @@
 import React from 'react'
-import { AlertCircle, Bot, Server, ServerOff, Star, Trash2 } from 'lucide-react'
+import { AlertCircle, Bot, MessageCircle, Server, ServerOff, Trash2 } from 'lucide-react'
 
 import { RepoIconGlyph } from '@/components/repo/repo-icon'
 import { Badge } from '@/components/ui/badge'
@@ -13,7 +13,8 @@ import { formatSparseDirectoryPreview, shouldBeginWorktreeRename } from './workt
 import type { WorktreeCardPresentation } from './worktree-card-presentation'
 import { WorktreeCardSshHostControl } from './WorktreeCardSshHostControl'
 import { WorktreeTitleInlineRename } from './WorktreeTitleInlineRename'
-import { WorktreeCardPrAuthor } from './worktree-card-pr-author'
+import { displayedPullRequestAuthor, WorktreeCardPrAuthor } from './worktree-card-pr-author'
+import { WorktreeCardRunAction } from './WorktreeCardRunAction'
 import { isAutonomousWorkspace } from '../../../../shared/workspace-autonomy'
 import type { WorktreeCardController } from './use-worktree-card-controller'
 
@@ -58,8 +59,6 @@ export function WorktreeCardHeader({
     repo,
     affiliateListMode,
     renameRowKey,
-    compactCards,
-    newCardStyle,
     parsedRepoHost,
     sshTargetLabel,
     sshStatus,
@@ -84,7 +83,6 @@ export function WorktreeCardHeader({
     showPinnedRepoIcon,
     showInlineRepoBadge,
     showHeaderActions,
-    showTitleRowPrimary,
     showDeleteQuickAction,
     showTitleRowIndicators,
     titleRowIndicators,
@@ -112,7 +110,7 @@ export function WorktreeCardHeader({
             status={sshStatus}
             targetRemoved={sshTargetRemoved}
             sshOwnerEnvironmentId={sshOwnerEnvironmentId}
-            iconOnly={compactCards || newCardStyle}
+            iconOnly
             onPointerDown={stopQuickActionPointerPropagation}
           />
         )}
@@ -173,7 +171,7 @@ export function WorktreeCardHeader({
           displayName={visibleCardTitle}
           disabled={isDeleting || affiliateListMode}
           showUnreadEmphasis={showUnreadEmphasis}
-          dimReadTitle={newCardStyle}
+          dimReadTitle
           className="text-[13px] leading-5"
           editingClassName="flex-1"
           titleWrapper={titleWrapper}
@@ -216,7 +214,7 @@ export function WorktreeCardHeader({
             </TooltipContent>
           </Tooltip>
         ) : null}
-        {!compactCards && worktree.isMainWorktree && !isFolder && (
+        {worktree.isMainWorktree && !isFolder && (
           <Tooltip>
             <TooltipTrigger asChild>
               <Badge
@@ -263,6 +261,18 @@ export function WorktreeCardHeader({
           </Tooltip>
         )}
 
+        {worktree.workspaceIntent === 'question' && (
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <span className="shrink-0 inline-flex items-center" aria-label="Question workspace">
+                <MessageCircle className="size-3 text-muted-foreground" />
+              </span>
+            </TooltipTrigger>
+            <TooltipContent side="right" sideOffset={8}>
+              Question workspace
+            </TooltipContent>
+          </Tooltip>
+        )}
         {isAutonomousWorkspace(worktree) && (
           <Tooltip>
             <TooltipTrigger asChild>
@@ -286,33 +296,18 @@ export function WorktreeCardHeader({
         <WorktreeCardPrAuthor
           worktreeId={card.worktree.id}
           enabled={card.showPrAuthor}
+          authorLogin={displayedPullRequestAuthor(card.prDisplay)}
           className={showTitleRowIndicators ? 'mr-1.5' : 'ml-auto mr-1.5'}
         />
       </div>
 
       {showHeaderActions && (
         <div className="ml-auto flex shrink-0 items-center justify-center gap-1 pr-1.5">
-          {showTitleRowPrimary && (
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <span
-                  className="shrink-0 inline-flex items-center"
-                  aria-label={translate(
-                    'auto.components.sidebar.WorktreeCard.0d224eff10',
-                    'Primary worktree'
-                  )}
-                >
-                  <Star className="size-3 fill-amber-400 text-amber-400" />
-                </span>
-              </TooltipTrigger>
-              <TooltipContent side="right" sideOffset={8}>
-                {translate(
-                  'auto.components.sidebar.WorktreeCard.0777de5970',
-                  'Primary worktree (original clone directory)'
-                )}
-              </TooltipContent>
-            </Tooltip>
-          )}
+          <WorktreeCardRunAction
+            worktreeId={card.worktree.id}
+            command={card.workspaceRunCommand}
+            active={card.runState !== null}
+          />
 
           {showDeleteQuickAction && (
             <Tooltip>

@@ -28,6 +28,9 @@ export type AgentDashboardMode = 'in-window' | 'popout'
 export type WorktreeCardProperty =
   | 'status'
   | 'unread'
+  // Exception chips on the title row: each renders only when its value is abnormal.
+  | 'blocker'
+  | 'conflict'
   // Legacy persisted preference. CI status is now represented by linked PR metadata.
   | 'ci'
   // Migration-only: legacy detailed cards showed branch identity as a visible row.
@@ -37,6 +40,13 @@ export type WorktreeCardProperty =
   | 'linear-issue'
   | 'linear-title'
   | 'pr-author'
+  // Review facts on the card: diff size, area mix, Linear priority, stack, comments, age.
+  | 'diff'
+  | 'diff-mix'
+  | 'linear-priority'
+  | 'stack'
+  | 'unresolved-comments'
+  | 'pr-open-age'
   | 'jira-issue'
   | 'pr'
   | 'automation'
@@ -44,6 +54,8 @@ export type WorktreeCardProperty =
   | 'cli'
   | 'comment'
   | 'ports'
+  // Workspace Run badge (booting / running). On by default.
+  | 'run'
   // Inline agent-activity list rendered in each workspace card; on by default (see DEFAULT_WORKTREE_CARD_PROPERTIES in shared/constants.ts).
   | 'inline-agents'
   // Execution-host pill, shown only when the visible workspaces span more than one host; on by default.
@@ -98,7 +110,6 @@ export type RightSidebarTab =
   | 'workspaces'
   | 'pr-checks'
   | 'source-control'
-  | 'pr-diff'
   | 'checks'
   | 'ports'
   // Plugin-contributed panels are keyed `plugin:<pluginId>/<panelId>` so the
