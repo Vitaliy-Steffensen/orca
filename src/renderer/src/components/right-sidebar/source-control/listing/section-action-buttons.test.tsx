@@ -52,9 +52,7 @@ function renderBranchSection(): void {
         activeConnectionId={null}
         openCommittedDiff={vi.fn()}
         openBranchAllDiffs={vi.fn()}
-        diffCommentCountByPath={new Map()}
-        reviewThreadCountByPath={new Map()}
-        pendingReviewCountByPath={new Map()}
+        commentCountsByPath={new Map()}
         activeOpenRowKeys={new Set()}
         activeOpenRowKey={null}
       />
@@ -108,8 +106,6 @@ function renderUncommittedSections({
         selectedKeySet={new Set()}
         activeOpenRowKeys={new Set()}
         activeOpenRowKey={null}
-        reviewThreadCountByPath={new Map()}
-        pendingReviewCountByPath={new Map()}
         handleSelect={vi.fn()}
         handleContextMenu={vi.fn()}
         revealInExplorer={vi.fn()}
@@ -118,7 +114,7 @@ function renderUncommittedSections({
         handleStage={vi.fn()}
         handleUnstage={vi.fn()}
         requestDiscardEntry={vi.fn()}
-        diffCommentCountByPath={new Map()}
+        commentCountsByPath={new Map()}
       />
     </TooltipProvider>
   )
@@ -151,7 +147,9 @@ describe('source control section header actions', () => {
   it('seats the branch View all button in a header slot that cannot shrink or wrap', () => {
     renderBranchSection()
 
-    const actionsSlot = screen.getByRole('button', { name: 'View all' }).parentElement
+    const actionsSlot = screen.getByRole('button', {
+      name: 'View all'
+    }).parentElement
     expect(actionsSlot).toHaveClass('shrink-0')
     expect(actionsSlot?.className).not.toContain('flex-wrap')
   })
@@ -166,7 +164,10 @@ describe('source control section header actions', () => {
 
   it('routes the Changes header Stage all through the section handler', () => {
     const handleStageSectionPaths = vi.fn(async () => {})
-    renderUncommittedSections({ handleStageSectionPaths, isStatusTruncated: true })
+    renderUncommittedSections({
+      handleStageSectionPaths,
+      isStatusTruncated: true
+    })
 
     fireEvent.click(screen.getByRole('button', { name: 'Stage all' }))
 
@@ -179,11 +180,17 @@ describe('source control section header actions', () => {
       area: 'untracked',
       items: [{ path: 'new.ts', status: 'untracked', area: 'untracked' }]
     }
-    renderUncommittedSections({ sections: [untracked], isStatusTruncated: true })
+    renderUncommittedSections({
+      sections: [untracked],
+      isStatusTruncated: true
+    })
     expect(screen.queryByRole('button', { name: 'Stage all' })).toBeNull()
 
     cleanup()
-    renderUncommittedSections({ sections: [untracked], isStatusTruncated: false })
+    renderUncommittedSections({
+      sections: [untracked],
+      isStatusTruncated: false
+    })
     expect(screen.getByRole('button', { name: 'Stage all' })).toBeInTheDocument()
   })
 })

@@ -25,10 +25,14 @@ export type ChangesSourceFilter =
       latest: boolean
     }
 
-// Fork: what the Changes list shows. Uncommitted, a commit and an agent turn are one filter, so
-// turning one on turns the other off. Outside the panel because shortcuts and the commit/turn
-// links set it while the panel may be unmounted.
-export type ChangesFilter = { kind: 'uncommitted' } | ChangesSourceFilter
+// Fork: what the Changes list shows. Uncommitted, unstaged, a commit and an agent turn are one
+// filter, so turning one on turns the other off. Outside the panel because shortcuts and the
+// commit/turn links set it while the panel may be unmounted.
+export type ChangesFilter = { kind: 'uncommitted' } | { kind: 'unstaged' } | ChangesSourceFilter
+
+export function isChangesSourceFilter(filter: ChangesFilter): filter is ChangesSourceFilter {
+  return filter.kind === 'commit' || filter.kind === 'turn'
+}
 
 let filters: ReadonlyMap<string, ChangesFilter> = new Map()
 const listeners = new Set<() => void>()
@@ -69,6 +73,14 @@ export function toggleUncommittedOnly(worktreeId: string): void {
   setChangesFilter(worktreeId, isUncommittedOnly(worktreeId) ? null : { kind: 'uncommitted' })
 }
 
+export function isUnstagedOnly(worktreeId: string): boolean {
+  return getChangesFilter(worktreeId)?.kind === 'unstaged'
+}
+
+export function toggleUnstagedOnly(worktreeId: string): void {
+  setChangesFilter(worktreeId, isUnstagedOnly(worktreeId) ? null : { kind: 'unstaged' })
+}
+
 /** Keeps a previewed turn's badge honest: it is the latest turn only until a newer one lands. */
 export function syncLatestAgentTurn(worktreeId: string, latestTurnOid: string | null): void {
   const filter = getChangesFilter(worktreeId)
@@ -90,6 +102,8 @@ export function changesFilterBadge(
   switch (filter.kind) {
     case 'uncommitted':
       return { label: translate('allChanges.uncommittedOnly', 'Uncommitted') }
+    case 'unstaged':
+      return { label: translate('allChanges.unstagedOnly', 'Unstaged') }
     case 'turn':
       return {
         label: filter.latest

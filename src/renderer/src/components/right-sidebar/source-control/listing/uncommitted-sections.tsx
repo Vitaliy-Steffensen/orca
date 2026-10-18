@@ -1,3 +1,4 @@
+import type { FileCommentCountsByPath } from '@/components/diff-comments/file-comment-counts'
 import React from 'react'
 import { Minus, Plus, Trash, Undo2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
@@ -91,9 +92,7 @@ export function SourceControlUncommittedSections(props: {
   handleStage: (path: string) => Promise<void>
   handleUnstage: (path: string, oldPath?: string) => Promise<void>
   requestDiscardEntry: (entry: GitStatusEntry) => void
-  diffCommentCountByPath: Map<string, number>
-  reviewThreadCountByPath: Map<string, number>
-  pendingReviewCountByPath: Map<string, number>
+  commentCountsByPath: FileCommentCountsByPath
 }): React.JSX.Element {
   return (
     <>
@@ -223,9 +222,7 @@ export function SourceControlUncommittedSections(props: {
                 handleStage={props.handleStage}
                 handleUnstage={props.handleUnstage}
                 requestDiscardEntry={props.requestDiscardEntry}
-                diffCommentCountByPath={props.diffCommentCountByPath}
-                reviewThreadCountByPath={props.reviewThreadCountByPath}
-                pendingReviewCountByPath={props.pendingReviewCountByPath}
+                commentCountsByPath={props.commentCountsByPath}
               />
             )}
           </div>

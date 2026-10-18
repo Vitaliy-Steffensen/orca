@@ -26,9 +26,7 @@ function renderSection(overrides: Partial<Parameters<typeof SourceControlAllChan
     revealInExplorer: vi.fn(),
     activeConnectionId: null,
     onOpen: vi.fn(),
-    diffCommentCountByPath: new Map(),
-    reviewThreadCountByPath: new Map(),
-    pendingReviewCountByPath: new Map(),
+    commentCountsByPath: new Map(),
     activeOpenRowKeys: new Set(),
     activeOpenRowKey: null,
     ...overrides
@@ -78,7 +76,10 @@ describe('SourceControlAllChangesSection', () => {
     renderSection({})
     expect(screen.getByTestId('source-control-changes-line-total').textContent).toBe('+7-1')
     cleanup()
-    renderSection({ entries: [entries[0]], filterBadge: { label: 'Latest turn' } })
+    renderSection({
+      entries: [entries[0]],
+      filterBadge: { label: 'Latest turn' }
+    })
     expect(screen.getByTestId('source-control-changes-line-total').textContent).toBe('+3-1')
   })
 

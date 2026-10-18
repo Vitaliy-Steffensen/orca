@@ -1,14 +1,7 @@
 import React from 'react'
-import {
-  ChevronDown,
-  MessageSquare,
-  MessagesSquare,
-  Minus,
-  PencilLine,
-  Plus,
-  Trash,
-  Undo2
-} from 'lucide-react'
+import { ChevronDown, Minus, Plus, Trash, Undo2 } from 'lucide-react'
+import { FileCommentBadges } from '@/components/diff-comments/FileCommentBadges'
+import type { FileCommentCounts } from '@/components/diff-comments/file-comment-counts'
 import { getFileTypeIcon } from '@/lib/file-type-icons'
 import { REVEAL_FLASH_CLASS } from '@/lib/reveal-flash-class'
 import { useSourceControlRowRevealFlash } from '@/lib/source-control-row-reveal'
@@ -17,7 +10,6 @@ import { cn } from '@/lib/utils'
 import { WORKSPACE_FILE_PATH_MIME } from '@/lib/workspace-file-drag'
 import { writeWorkspaceFileDragSourceForWorkspace } from '@/lib/workspace-file-drag-source'
 import { translate } from '@/i18n/i18n'
-import { AgentNoteFileBadge } from './agent-note-file-badge'
 import type { GitStatusEntry } from '../../../../../../shared/git-status-types'
 import { ActionButton } from './action-button'
 import { ConflictBadge } from './conflict-badge'
@@ -59,9 +51,7 @@ export const UncommittedEntryRow = React.memo(function UncommittedEntryRow({
   onStage,
   onUnstage,
   onDiscard,
-  commentCount,
-  reviewThreadCount,
-  pendingReviewCount,
+  commentCounts,
   showPathHint = true,
   submoduleExpansion
 }: {
@@ -80,9 +70,7 @@ export const UncommittedEntryRow = React.memo(function UncommittedEntryRow({
   onStage: (filePath: string) => Promise<void>
   onUnstage: (filePath: string, oldPath?: string) => Promise<void>
   onDiscard: (entry: GitStatusEntry) => void
-  commentCount: number
-  reviewThreadCount: number
-  pendingReviewCount: number
+  commentCounts: FileCommentCounts | undefined
   showPathHint?: boolean
   // When set, the row is a dirty submodule: clicking toggles lazy expansion instead of opening an uninformative gitlink diff.
   submoduleExpansion?: { isExpanded: boolean; onToggle: () => void }
@@ -199,47 +187,7 @@ export const UncommittedEntryRow = React.memo(function UncommittedEntryRow({
             </div>
           )}
         </div>
-        {commentCount > 0 && (
-          // Why: surface a per-row marker so files with review notes are visible without opening the Notes tab.
-          <span
-            className="flex shrink-0 items-center gap-0.5 text-[10px] text-muted-foreground"
-            title={translate(
-              'auto.components.right.sidebar.SourceControl.657e0c90ad',
-              '{{value0}} note{{value1}}',
-              { value0: commentCount, value1: commentCount === 1 ? '' : 's' }
-            )}
-          >
-            <MessageSquare className="size-3" />
-            <span className="tabular-nums">{commentCount}</span>
-          </span>
-        )}
-        <AgentNoteFileBadge filePath={entry.path} />
-        {reviewThreadCount > 0 && (
-          <span
-            className="flex shrink-0 items-center gap-0.5 text-[10px] text-status-warning"
-            title={translate(
-              'auto.components.right.sidebar.SourceControl.unresolvedThreads',
-              '{{value0}} unresolved review thread{{value1}}',
-              { value0: reviewThreadCount, value1: reviewThreadCount === 1 ? '' : 's' }
-            )}
-          >
-            <MessagesSquare className="size-3" />
-            <span className="tabular-nums">{reviewThreadCount}</span>
-          </span>
-        )}
-        {pendingReviewCount > 0 && (
-          <span
-            className="flex shrink-0 items-center gap-0.5 text-[10px] text-status-warning"
-            title={translate(
-              'auto.components.pendingReview.rowBadge',
-              '{{value0}} review comment{{value1}} waiting to be submitted',
-              { value0: pendingReviewCount, value1: pendingReviewCount === 1 ? '' : 's' }
-            )}
-          >
-            <PencilLine className="size-3" />
-            <span className="tabular-nums">{pendingReviewCount}</span>
-          </span>
-        )}
+        <FileCommentBadges counts={commentCounts} />
         {entry.conflictStatus ? (
           <ConflictBadge entry={entry} />
         ) : (

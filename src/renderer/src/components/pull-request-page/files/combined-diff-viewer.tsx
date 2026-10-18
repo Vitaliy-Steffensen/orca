@@ -5,6 +5,7 @@ import { useAppStore } from '@/store'
 import { useDocumentDarkTheme } from '@/hooks/use-document-dark-theme'
 import { DiffSectionItem } from '@/components/editor/DiffSectionItem'
 import { CombinedDiffFileTree } from '../../editor/combined-diff/browse-files/combined-diff-file-tree'
+import { buildPRFileCommentCounts } from '@/components/diff-comments/file-comment-counts'
 import { useCombinedDiffSectionIndexMap } from '../../editor/combined-diff/resolve-changes/use-combined-diff-section-index-map'
 import { handleCombinedDiffFileTreeNavigation } from '../../editor/combined-diff/browse-files/combined-diff-file-tree-navigation'
 import { getDiffSectionRowEstimatedHeight } from '@/components/editor/diff-section-layout'
@@ -76,6 +77,9 @@ export function PRFilesCombinedDiffViewer({
       fileByPath.get(section.path)?.reviewCommentLineNumbers,
     [fileByPath]
   )
+  // Why only threads here: this viewer has no workspace, so notes, agent notes and unsent
+  // drafts have nowhere to come from.
+  const commentCountsByPath = useMemo(() => buildPRFileCommentCounts(comments), [comments])
   const inlineReviewComments = useMemo(
     () => buildInlineReviewComments(comments, repoId, prNumber),
     [comments, prNumber, repoId]
@@ -185,7 +189,10 @@ export function PRFilesCombinedDiffViewer({
     })
 
   const allSectionsCollapsed = sections.length > 0 && sections.every((section) => section.collapsed)
-  const sectionIndexByKey = useCombinedDiffSectionIndexMap({ entrySignature, sections })
+  const sectionIndexByKey = useCombinedDiffSectionIndexMap({
+    entrySignature,
+    sections
+  })
   const visibleActiveTreeSectionKey =
     activeTreeSectionKey && sectionIndexByKey.has(activeTreeSectionKey)
       ? activeTreeSectionKey
@@ -325,6 +332,7 @@ export function PRFilesCombinedDiffViewer({
           sectionIndexByKey={sectionIndexByKey}
           activeSectionKey={visibleActiveTreeSectionKey}
           viewedSectionKeys={viewedSectionKeys}
+          commentCountsByPath={commentCountsByPath}
           collapsed={fileTreeCollapsed}
           onCollapsedChange={setFileTreeCollapsed}
           onNavigate={handleTreeNavigate}

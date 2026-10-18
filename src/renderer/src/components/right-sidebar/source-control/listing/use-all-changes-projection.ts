@@ -12,7 +12,7 @@ import { ALL_CHANGES_AREA, buildAllChangeEntries } from './all-changes'
 import type { AllChangesTreeNode } from './all-changes-section'
 import type { SourceControlEntryGroups } from './section-order'
 import type { FlatEntry } from './use-selection'
-import { useChangesFilter } from '@/lib/changes-filter'
+import { isChangesSourceFilter, useChangesFilter } from '@/lib/changes-filter'
 import { compareFileNames } from '../../../../../../shared/file-name-sort'
 
 const NO_ENTRIES: GitBranchChangeEntry[] = []
@@ -56,9 +56,10 @@ export function useAllChangesProjection({
   })
   const changesFilter = useChangesFilter(activeWorktreeId)
   const uncommittedOnly = changesFilter?.kind === 'uncommitted'
+  const unstagedOnly = changesFilter?.kind === 'unstaged'
   // Fork: a previewed turn or commit lists its own files in place of the branch's.
   const sourceEntries =
-    changesFilter && changesFilter.kind !== 'uncommitted' ? changesFilter.entries : null
+    changesFilter && isChangesSourceFilter(changesFilter) ? changesFilter.entries : null
   const allChangeEntries = useMemo(() => {
     if (!enabled) {
       return NO_ENTRIES
@@ -69,9 +70,17 @@ export function useAllChangesProjection({
     return buildAllChangeEntries(
       [...filteredGrouped.staged, ...filteredGrouped.unstaged, ...filteredGrouped.untracked],
       filteredBranchEntries,
-      { uncommittedOnly, ...(lineCounts ? { lineCounts } : {}) }
+      { uncommittedOnly, unstagedOnly, ...(lineCounts ? { lineCounts } : {}) }
     )
-  }, [enabled, filteredBranchEntries, filteredGrouped, lineCounts, sourceEntries, uncommittedOnly])
+  }, [
+    enabled,
+    filteredBranchEntries,
+    filteredGrouped,
+    lineCounts,
+    sourceEntries,
+    uncommittedOnly,
+    unstagedOnly
+  ])
   const totalAllChangeCount = useMemo(() => {
     if (!enabled) {
       return 0

@@ -4,6 +4,7 @@ import type { editor as monacoEditor } from 'monaco-editor'
 import type { DecoratedDiffComment } from '@/components/diff-comments/decorated-diff-comment'
 import { useCombinedDiffSectionIndexMap } from '../../editor/combined-diff/resolve-changes/use-combined-diff-section-index-map'
 import { handleCombinedDiffFileTreeNavigation } from '../../editor/combined-diff/browse-files/combined-diff-file-tree-navigation'
+import { buildPRFileCommentCounts } from '@/components/diff-comments/file-comment-counts'
 import { getDiffSectionRowEstimatedHeight } from '@/components/editor/diff-section-layout'
 import type { DiffSection } from '@/components/editor/diff-section-types'
 import { getCombinedDiffBranchEntriesInTreeOrder } from '../../editor/combined-diff/browse-files/combined-diff-file-tree-filter'
@@ -230,11 +231,17 @@ function PRFilesCombinedDiffSections({
   )
 
   const allSectionsCollapsed = sections.length > 0 && sections.every((section) => section.collapsed)
-  const sectionIndexByKey = useCombinedDiffSectionIndexMap({ entrySignature: signature, sections })
+  const sectionIndexByKey = useCombinedDiffSectionIndexMap({
+    entrySignature: signature,
+    sections
+  })
   const viewedSectionKeys = useMemo(
     () => new Set(files.filter(isPRFileViewed).map((file) => getPRFileSectionKey(file.path))),
     [files]
   )
+  // Why only threads here: this dialog has no workspace, so notes, agent notes and unsent
+  // drafts have nowhere to come from.
+  const commentCountsByPath = useMemo(() => buildPRFileCommentCounts(comments), [comments])
 
   const virtualizer = useVirtualizer({
     count: sections.length,
@@ -347,6 +354,7 @@ function PRFilesCombinedDiffSections({
       sectionIndexByKey={sectionIndexByKey}
       activeTreeSectionKey={activeTreeSectionKey}
       viewedSectionKeys={viewedSectionKeys}
+      commentCountsByPath={commentCountsByPath}
       handleTreeNavigate={handleTreeNavigate}
       scrollContainerRef={scrollContainerRef}
       virtualizer={virtualizer}

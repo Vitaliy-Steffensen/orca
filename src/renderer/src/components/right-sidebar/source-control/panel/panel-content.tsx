@@ -31,9 +31,7 @@ export function SourceControlPanelContent(props: SourceControlPanelReadyProps) {
     collapsedSections,
     collapsedTreeDirs,
     conflictOperation,
-    diffCommentCountByPath,
-    reviewThreadCountByPath,
-    pendingReviewCountByPath,
+    commentCountsByPath,
     displaySections,
     expandedSubmoduleKeys,
     fileFilterState,
@@ -184,9 +182,7 @@ export function SourceControlPanelContent(props: SourceControlPanelReadyProps) {
             }
             filterBadge={changesFilterBadge(changesFilter)}
             onClearFilter={() => clearChangesFilter(currentWorktreeId)}
-            diffCommentCountByPath={diffCommentCountByPath}
-            reviewThreadCountByPath={reviewThreadCountByPath}
-            pendingReviewCountByPath={pendingReviewCountByPath}
+            commentCountsByPath={commentCountsByPath}
             activeOpenRowKeys={activeOpenRowKeys}
             activeOpenRowKey={activeOpenRowKey}
           />
@@ -245,9 +241,7 @@ export function SourceControlPanelContent(props: SourceControlPanelReadyProps) {
           handleStage={handleStage}
           handleUnstage={handleUnstage}
           requestDiscardEntry={requestDiscardEntry}
-          diffCommentCountByPath={diffCommentCountByPath}
-          reviewThreadCountByPath={reviewThreadCountByPath}
-          pendingReviewCountByPath={pendingReviewCountByPath}
+          commentCountsByPath={commentCountsByPath}
         />
       )}
 
@@ -287,9 +281,7 @@ export function SourceControlPanelContent(props: SourceControlPanelReadyProps) {
             activeConnectionId={activeConnectionId}
             openCommittedDiff={openCommittedDiff}
             openBranchAllDiffs={openBranchAllDiffs}
-            diffCommentCountByPath={diffCommentCountByPath}
-            reviewThreadCountByPath={reviewThreadCountByPath}
-            pendingReviewCountByPath={pendingReviewCountByPath}
+            commentCountsByPath={commentCountsByPath}
           />
         )}
     </>

@@ -1,4 +1,4 @@
-import { getChangesFilter } from '@/lib/changes-filter'
+import { getChangesFilter, isChangesSourceFilter } from '@/lib/changes-filter'
 import type { EditorSlice } from '../types/editor-slice'
 import type { EditorOpenTargetOptions } from '../types/open-file'
 
@@ -16,7 +16,7 @@ export function openChangesFilterEntry(
   options?: EditorOpenTargetOptions
 ): boolean {
   const filter = getChangesFilter(worktreeId)
-  if (!filter || filter.kind === 'uncommitted') {
+  if (!filter || !isChangesSourceFilter(filter)) {
     return false
   }
   const entry = filter.entries.find((candidate) => candidate.path === relativePath) ?? {

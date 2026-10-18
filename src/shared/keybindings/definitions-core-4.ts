@@ -176,6 +176,16 @@ export const KEYBINDING_DEFINITION_CORE_4: readonly KeybindingDefinition[] = [
     defaultBindings: { darwin: ['Mod+Alt+U'], linux: [], win32: [] }
   },
   {
+    id: 'sourceControl.toggleUnstagedOnly',
+    title: 'Show Only Unstaged Changes',
+    group: 'Global',
+    scope: 'global',
+    conflictGroup: 'editor',
+    searchKeywords: ['shortcut', 'source control', 'changes', 'unstaged', 'filter', 'working'],
+    // Why macOS only: Ctrl+U discards the line in a terminal on Windows and Linux.
+    defaultBindings: { darwin: ['Mod+U'], linux: [], win32: [] }
+  },
+  {
     id: 'sourceControl.sendQueuedComments',
     title: 'Send Queued Comments',
     group: 'Global',

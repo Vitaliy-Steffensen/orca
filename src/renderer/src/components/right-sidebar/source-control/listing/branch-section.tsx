@@ -1,3 +1,4 @@
+import type { FileCommentCountsByPath } from '@/components/diff-comments/file-comment-counts'
 import React from 'react'
 import { Button } from '@/components/ui/button'
 import { translate } from '@/i18n/i18n'
@@ -32,9 +33,7 @@ export function SourceControlBranchSection({
   activeConnectionId,
   openCommittedDiff,
   openBranchAllDiffs,
-  diffCommentCountByPath,
-  reviewThreadCountByPath,
-  pendingReviewCountByPath,
+  commentCountsByPath,
   activeOpenRowKeys,
   activeOpenRowKey
 }: {
@@ -58,9 +57,7 @@ export function SourceControlBranchSection({
     worktreePath: string,
     summary: GitBranchCompareSummary
   ) => void
-  diffCommentCountByPath: Map<string, number>
-  reviewThreadCountByPath: Map<string, number>
-  pendingReviewCountByPath: Map<string, number>
+  commentCountsByPath: FileCommentCountsByPath
   activeOpenRowKeys: ReadonlySet<string>
   activeOpenRowKey: string | null
 }): React.JSX.Element {
@@ -144,9 +141,7 @@ export function SourceControlBranchSection({
                   onRevealInExplorer={revealInExplorer}
                   connectionId={activeConnectionId}
                   onOpen={(event) => openCommittedDiff(node.entry, event)}
-                  commentCount={diffCommentCountByPath.get(node.entry.path) ?? 0}
-                  reviewThreadCount={reviewThreadCountByPath.get(node.entry.path) ?? 0}
-                  pendingReviewCount={pendingReviewCountByPath.get(node.entry.path) ?? 0}
+                  commentCounts={commentCountsByPath.get(node.entry.path)}
                   isOpenFile={activeOpenRowKeys.has(node.key)}
                   showPathHint={false}
                 />
@@ -170,9 +165,7 @@ export function SourceControlBranchSection({
                 onRevealInExplorer={revealInExplorer}
                 connectionId={activeConnectionId}
                 onOpen={(event) => openCommittedDiff(entry, event)}
-                commentCount={diffCommentCountByPath.get(entry.path) ?? 0}
-                reviewThreadCount={reviewThreadCountByPath.get(entry.path) ?? 0}
-                pendingReviewCount={pendingReviewCountByPath.get(entry.path) ?? 0}
+                commentCounts={commentCountsByPath.get(entry.path)}
                 isOpenFile={activeOpenRowKeys.has(`branch::${entry.path}`)}
               />
             )}

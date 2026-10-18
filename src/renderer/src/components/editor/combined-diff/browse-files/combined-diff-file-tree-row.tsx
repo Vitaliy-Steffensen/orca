@@ -3,6 +3,8 @@ import { ChevronDown } from 'lucide-react'
 import { MaterialFolderIcon } from '@/lib/material-icons/material-icon'
 import { STATUS_COLORS, STATUS_LABELS } from '@/components/right-sidebar/status-display'
 import type { SourceControlTreeNode } from '@/components/right-sidebar/source-control-tree'
+import { FileCommentBadges } from '@/components/diff-comments/FileCommentBadges'
+import type { FileCommentCounts } from '@/components/diff-comments/file-comment-counts'
 import { getFileTypeIcon } from '@/lib/file-type-icons'
 import { basename, dirname, joinPath } from '@/lib/path'
 import { REVEAL_FLASH_CLASS } from '@/lib/reveal-flash-class'
@@ -44,6 +46,7 @@ export const CombinedDiffFileTreeRow = memo(function CombinedDiffFileTreeRow({
   isCollapsed,
   isFlashing = false,
   visibleFileCount,
+  commentCounts,
   onToggleDirectory,
   onNavigate
 }: {
@@ -56,6 +59,7 @@ export const CombinedDiffFileTreeRow = memo(function CombinedDiffFileTreeRow({
   isCollapsed: boolean
   isFlashing?: boolean
   visibleFileCount?: number
+  commentCounts?: FileCommentCounts
   onToggleDirectory: (key: string) => void
   onNavigate: (entry: CombinedDiffFileTreeEntry) => void
 }): React.JSX.Element {
@@ -139,6 +143,7 @@ export const CombinedDiffFileTreeRow = memo(function CombinedDiffFileTreeRow({
         <span className="text-foreground">{fileName}</span>
         {dirPath && <span className="ml-1.5 text-[11px] text-muted-foreground">{dirPath}</span>}
       </span>
+      <FileCommentBadges counts={commentCounts} />
       <span
         className="w-4 shrink-0 text-center text-[10px] font-bold"
         style={{ color: STATUS_COLORS[status] }}

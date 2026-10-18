@@ -43,11 +43,9 @@ function render(
       activeConnectionId={null}
       openCommittedDiff={vi.fn()}
       openBranchAllDiffs={vi.fn()}
-      diffCommentCountByPath={new Map()}
+      commentCountsByPath={new Map()}
       activeOpenRowKeys={new Set()}
       activeOpenRowKey={null}
-      reviewThreadCountByPath={new Map()}
-      pendingReviewCountByPath={new Map()}
     />
   )
 }

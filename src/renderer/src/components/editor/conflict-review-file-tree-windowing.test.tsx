@@ -180,11 +180,15 @@ function buildProjection(
 
 function renderTree(
   entries: readonly ConflictEntry[],
-  options: { selectedPath?: string | null; onOpenEntry?: (entry: GitStatusEntry) => void } = {}
+  options: {
+    selectedPath?: string | null
+    onOpenEntry?: (entry: GitStatusEntry) => void
+  } = {}
 ): void {
   act(() => {
     root.render(
       <ConflictReviewFileTree
+        worktreeId={null}
         entries={entries}
         collapsed={false}
         onCollapsedChange={() => {}}
@@ -219,7 +223,10 @@ function getMountedWindow(): { index: number; label: string }[] {
     if (!(row instanceof HTMLButtonElement)) {
       throw new Error('windowed wrapper has no row')
     }
-    return { index: Number(wrapper.getAttribute('data-index')), label: getRowLabel(row) }
+    return {
+      index: Number(wrapper.getAttribute('data-index')),
+      label: getRowLabel(row)
+    }
   })
 }
 

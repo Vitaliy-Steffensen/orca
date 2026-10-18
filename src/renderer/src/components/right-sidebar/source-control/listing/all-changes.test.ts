@@ -49,6 +49,26 @@ describe('buildAllChangeEntries', () => {
     ])
   })
 
+  it('keeps only tracked unstaged edits when asked, reported as those edits', () => {
+    const entries = buildAllChangeEntries(
+      [
+        status({ path: 'src/b.ts', area: 'staged', added: 3, removed: 0 }),
+        status({ path: 'src/b.ts', added: 1, removed: 2 }),
+        status({ path: 'src/new.ts', status: 'untracked', area: 'untracked', added: 9 }),
+        status({ path: 'src/a.ts', added: 15, removed: 0 })
+      ],
+      [
+        branch({ path: 'src/a.ts', status: 'added', added: 142, removed: 0 }),
+        branch({ path: 'docs/readme.md' })
+      ],
+      { unstagedOnly: true, lineCounts: { 'src/a.ts': { added: 142, removed: 0 } } }
+    )
+    expect(entries.map((entry) => [entry.path, entry.status, entry.added, entry.removed])).toEqual([
+      ['src/a.ts', 'modified', 15, 0],
+      ['src/b.ts', 'modified', 1, 2]
+    ])
+  })
+
   it('reports each file as it stands against the branch base', () => {
     const entries = buildAllChangeEntries(
       [

@@ -1,7 +1,7 @@
 import { useMemo } from 'react'
 import type { GitBranchChangeEntry } from '../../../../../../shared/git-diff-compare-types'
 import type { GitStatusEntry } from '../../../../../../shared/git-status-types'
-import { useChangesFilter } from '@/lib/changes-filter'
+import { isChangesSourceFilter, useChangesFilter } from '@/lib/changes-filter'
 import { compareFileNames } from '../../../../../../shared/file-name-sort'
 import { buildAllChangeEntries } from './all-changes'
 import {
@@ -18,13 +18,15 @@ export function buildChangedFileSearchPaths(
   branchEntries: readonly GitBranchChangeEntry[],
   options: {
     uncommittedOnly?: boolean
+    unstagedOnly?: boolean
     sourceEntries?: readonly GitBranchChangeEntry[] | null
   } = {}
 ): string[] {
   const entries = options.sourceEntries
     ? [...options.sourceEntries].sort((a, b) => compareFileNames(a.path, b.path))
     : buildAllChangeEntries(statusEntries, branchEntries, {
-        uncommittedOnly: options.uncommittedOnly ?? false
+        uncommittedOnly: options.uncommittedOnly ?? false,
+        unstagedOnly: options.unstagedOnly ?? false
       })
   // Why: a submodule row is a nested repository, not a file rg should descend into.
   const submoduleRoots = new Set(
@@ -44,15 +46,17 @@ export function useChangedFileSearchPaths(
 ): FileSearchPathRestriction {
   const changesFilter = useChangesFilter(activeWorktreeId)
   const uncommittedOnly = changesFilter?.kind === 'uncommitted'
+  const unstagedOnly = changesFilter?.kind === 'unstaged'
   const sourceEntries =
-    changesFilter && changesFilter.kind !== 'uncommitted' ? changesFilter.entries : null
+    changesFilter && isChangesSourceFilter(changesFilter) ? changesFilter.entries : null
   const signature = useMemo(
     () =>
       buildChangedFileSearchPaths(statusEntries, branchEntries, {
         uncommittedOnly,
+        unstagedOnly,
         sourceEntries
       }).join('\n'),
-    [statusEntries, branchEntries, uncommittedOnly, sourceEntries]
+    [statusEntries, branchEntries, uncommittedOnly, unstagedOnly, sourceEntries]
   )
   return useMemo(
     () => createFileSearchPathRestriction(signature ? signature.split('\n') : []),

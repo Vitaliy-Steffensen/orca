@@ -1,5 +1,6 @@
 import React, { useCallback, useState } from 'react'
 import { useAppStore } from '@/store'
+import { useWorkspaceFileCommentCounts } from '@/components/diff-comments/file-comment-counts'
 import { translate } from '@/i18n/i18n'
 import { SourceControlAllChangesSection } from '../source-control/listing/all-changes-section'
 import { CompareUnavailable } from '../source-control/sync/compare-summary'
@@ -9,11 +10,10 @@ import { SearchResultsPane } from '../SearchResultsPane'
 import { PrDiffHeaderToolbar } from './header-toolbar'
 import type { PrDiffModel } from './use-pr-diff-model'
 
-const NO_COUNTS = new Map<string, number>()
-
 /** The base-vs-now file list: a find bar, one row per changed path, and the degraded states. */
 export function PrDiffChangedFilesList({ model }: { model: PrDiffModel }): React.JSX.Element {
   const revealInExplorer = useAppStore((s) => s.revealInExplorer)
+  const commentCountsByPath = useWorkspaceFileCommentCounts(model.activeWorktreeId)
   const [collapsed, setCollapsed] = useState(false)
   const { allChanges, branchSummary, find } = model
   const toggleTreeDir = useCallback(
@@ -104,9 +104,7 @@ export function PrDiffChangedFilesList({ model }: { model: PrDiffModel }): React
               revealInExplorer={revealInExplorer}
               activeConnectionId={model.activeConnectionId}
               onOpen={model.openAllChangesEntry}
-              diffCommentCountByPath={NO_COUNTS}
-              reviewThreadCountByPath={NO_COUNTS}
-              pendingReviewCountByPath={NO_COUNTS}
+              commentCountsByPath={commentCountsByPath}
               activeOpenRowKeys={model.activeOpenRowKeys}
               activeOpenRowKey={model.activeOpenRowKey}
             />

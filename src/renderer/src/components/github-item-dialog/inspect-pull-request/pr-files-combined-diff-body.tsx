@@ -5,6 +5,7 @@ import { DiffSectionItem } from '@/components/editor/DiffSectionItem'
 import { translate } from '@/i18n/i18n'
 import type { DecoratedDiffComment } from '@/components/diff-comments/decorated-diff-comment'
 import { CombinedDiffFileTree } from '../../editor/combined-diff/browse-files/combined-diff-file-tree'
+import type { FileCommentCountsByPath } from '@/components/diff-comments/file-comment-counts'
 import type { DiffSection } from '@/components/editor/diff-section-types'
 import type { CombinedDiffFileTreeEntry } from '../../editor/combined-diff/resolve-changes/combined-diff-section-identity'
 import type { GitHubPRFile } from '../../../../../shared/github/pull-request-types'
@@ -27,6 +28,7 @@ export function PRFilesCombinedDiffBody({
   sectionIndexByKey,
   activeTreeSectionKey,
   viewedSectionKeys,
+  commentCountsByPath,
   handleTreeNavigate,
   scrollContainerRef,
   virtualizer,
@@ -61,6 +63,7 @@ export function PRFilesCombinedDiffBody({
   sectionIndexByKey: Map<string, number>
   activeTreeSectionKey: string | null
   viewedSectionKeys: Set<string>
+  commentCountsByPath: FileCommentCountsByPath
   handleTreeNavigate: (entry: CombinedDiffFileTreeEntry) => void
   scrollContainerRef: React.RefObject<HTMLDivElement | null>
   virtualizer: Virtualizer<HTMLDivElement, Element>
@@ -104,6 +107,7 @@ export function PRFilesCombinedDiffBody({
           sectionIndexByKey={sectionIndexByKey}
           activeSectionKey={activeTreeSectionKey}
           viewedSectionKeys={viewedSectionKeys}
+          commentCountsByPath={commentCountsByPath}
           collapsed={fileTreeCollapsed}
           onCollapsedChange={setFileTreeCollapsed}
           onNavigate={handleTreeNavigate}

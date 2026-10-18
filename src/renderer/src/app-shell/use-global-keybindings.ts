@@ -191,6 +191,18 @@ export function useGlobalKeybindings(args: {
         }
       }
 
+      // Why before the editable bail: asked with a file open; the editor binds this chord too.
+      const unstaged = takeSourceControlShortcut(
+        (id) => id === 'sourceControl.toggleUnstagedOnly' && matchShortcut(id),
+        canRevealRightSidebar,
+        actions
+      )
+      if (unstaged) {
+        input.preventDefault()
+        notifyTerminalCapture(unstaged)
+        return
+      }
+
       // Skip editable surfaces so TipTap's Cmd+B bold works; this renderer-side fallback covers the blur→press IPC race (docs/markdown-cmd-b-bold-design.md).
       if (fileSearchClaimsTextKey(input)) {
         return

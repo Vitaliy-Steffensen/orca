@@ -10,6 +10,11 @@ import type { FileFindMode } from '../file-find/file-find-mode'
 vi.mock('@/i18n/i18n', () => ({
   translate: (_key: string, fallback: string) => fallback
 }))
+// Why stubbed: this suite mounts the list against a hand-built store slice, and the badge counts
+// read far more of the store than these assertions are about.
+vi.mock('@/components/diff-comments/file-comment-counts', () => ({
+  useWorkspaceFileCommentCounts: () => new Map()
+}))
 vi.mock('@/store', () => ({
   useAppStore: (selector: (state: Record<string, unknown>) => unknown) =>
     selector({

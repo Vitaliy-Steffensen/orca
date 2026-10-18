@@ -33,14 +33,6 @@ export function useSourceControlDiffCommentNotes({
   const { comments: diffCommentsForActive, markdownReviewNotesEnabled } =
     useVisibleWorktreeDiffComments(activeWorktreeId)
   const diffCommentCount = diffCommentsForActive.length
-  // Why: compute per-file comment counts once per render so rows don't each re-filter the full list.
-  const diffCommentCountByPath = useMemo(() => {
-    const map = new Map<string, number>()
-    for (const c of diffCommentsForActive) {
-      map.set(c.filePath, (map.get(c.filePath) ?? 0) + 1)
-    }
-    return map
-  }, [diffCommentsForActive])
   const diffCommentsPrompt = useMemo(
     () => formatDiffComments(diffCommentsForActive),
     [diffCommentsForActive]
@@ -142,7 +134,6 @@ export function useSourceControlDiffCommentNotes({
 
   return {
     diffCommentCount,
-    diffCommentCountByPath,
     diffCommentsCopied,
     diffCommentsExpanded,
     diffCommentsForActive,

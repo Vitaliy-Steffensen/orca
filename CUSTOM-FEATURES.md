@@ -8,6 +8,7 @@ Adding a feature here? See the rule at the top of [`CLAUDE.md`](./CLAUDE.md).
 
 ## Added in this repo
 
+- ⌘U narrows the Changes list to files with unstaged edits, and pressing it again shows every change.
 - ⇧⌘H reveals the file you are looking at in whichever list is in front of you — the Source Control
   changes, the Explorer tree, or the combined diff's own file tree — and flashes the row.
 - Your `~/.orca/themes/` VS Code theme also colours notebook cells, code excerpts, combined-diff
@@ -94,3 +95,4 @@ Taken whole with every mirror; the fork lineage's work on top of upstream.
 56. A review summary shows the verdict it was submitted with. (§56)
 57. `orca file open --line/--column` opens a file with the cursor on that spot. (§57)
 58. Group workspace status lanes into collapsible sidebar sections, each header counting what it holds. (§58)
+59. Every file tree marks each file with how many notes, agent notes, unanswered review threads and unsent review comments it carries. (§59)
