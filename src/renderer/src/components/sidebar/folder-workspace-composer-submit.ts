@@ -1,3 +1,10 @@
+import {
+  workspaceAutonomyForMode,
+  workspaceIntentForMode,
+  type WorkspaceMode
+} from '../../../../shared/workspace-mode'
+import { promptForWorkspaceMode } from '../../../../shared/workspace-mode-prompts'
+import type { NativeChatPromptMark } from '../../../../shared/native-chat-prompt-marks'
 import { ensureAgentStartupInTerminal, type LinkedWorkItemSummary } from '@/lib/new-workspace'
 import { seedNativeChatLaunchDraftForAgentTab } from '@/lib/agent-launch-prompt-delivery'
 import { createBrowserUuid } from '@/lib/browser-uuid'
@@ -39,6 +46,8 @@ type FolderWorkspaceCreateInput = {
   connectionId?: string | null
   linkedTask: FolderWorkspace['linkedTask']
   linkedTaskSourceContext?: TaskSourceContext | null
+  workspaceAutonomy?: FolderWorkspace['workspaceAutonomy']
+  workspaceIntent?: FolderWorkspace['workspaceIntent']
   createdWithAgent?: TuiAgent
   pendingFirstAgentMessageRename?: boolean
 }
@@ -49,7 +58,10 @@ type SubmitFolderWorkspaceCreateParams = {
   lastAutoName: string
   linkedWorkItem: LinkedWorkItemSummary | null
   linkedTaskSourceContext?: TaskSourceContext | null
+  workspaceMode?: WorkspaceMode
+  simplifyMark?: NativeChatPromptMark
   note: string
+  launchSeedOverlay?: Readonly<Record<string, string>>
   quickAgent: TuiAgent | null
   autoRenameBranchFromWork: boolean | undefined
   agentCmdOverrides: Record<string, string> | undefined
@@ -69,7 +81,10 @@ export async function submitFolderWorkspaceCreate({
   lastAutoName,
   linkedWorkItem,
   linkedTaskSourceContext,
-  note,
+  note: rawNote,
+  workspaceMode,
+  simplifyMark,
+  launchSeedOverlay,
   quickAgent,
   autoRenameBranchFromWork,
   agentCmdOverrides,
@@ -81,6 +96,11 @@ export async function submitFolderWorkspaceCreate({
   createFolderWorkspace,
   onOpenChange
 }: SubmitFolderWorkspaceCreateParams): Promise<boolean> {
+  const wrapPrompt = (prompt: string): string =>
+    workspaceMode && !/^https?:\/\/\S+$/.test(rawNote.trim())
+      ? promptForWorkspaceMode(workspaceMode, prompt, simplifyMark)
+      : prompt
+  const note = wrapPrompt(rawNote)
   const linkedName = linkedWorkItem ? getLinkedItemDisplayName(linkedWorkItem) : null
   const nameIsAutoManaged = shouldApplyWorkspaceSourceAutoName({
     currentName: name,
@@ -104,8 +124,11 @@ export async function submitFolderWorkspaceCreate({
     quickAgent && launchPlatform && linkedWorkItem
       ? buildFolderWorkspaceLinkedStartupPlan({
           agent: quickAgent,
+          sessionOptions: launchSeedOverlay,
+          sessionOptionsOverrideAgentArgs: Boolean(launchSeedOverlay),
           linkedWorkItem,
-          note,
+          note: rawNote,
+          transformPrompt: wrapPrompt,
           agentCmdOverrides,
           agentArgs,
           agentEnv,
@@ -116,6 +139,8 @@ export async function submitFolderWorkspaceCreate({
       : quickAgent && launchPlatform
         ? buildAgentStartupPlan({
             agent: quickAgent,
+            sessionOptions: launchSeedOverlay,
+            sessionOptionsOverrideAgentArgs: Boolean(launchSeedOverlay),
             prompt: note,
             cmdOverrides: agentCmdOverrides ?? {},
             agentArgs,
@@ -129,7 +154,9 @@ export async function submitFolderWorkspaceCreate({
   // Why: the argv-prefill plan carries the draft inside `launchCommand`, so
   // `startupPlan.draftPrompt` alone can't tell whether this launch has one.
   const launchDraftPrompt =
-    quickAgent && linkedWorkItem ? resolveFolderWorkspaceLaunchDraft(linkedWorkItem, note) : null
+    quickAgent && linkedWorkItem
+      ? resolveFolderWorkspaceLaunchDraft(linkedWorkItem, rawNote, wrapPrompt)
+      : null
   const plan = quickAgent
     ? planAgentSessionLaunch(useAppStore.getState(), {
         requestId: newAgentLaunchRequestId(),
@@ -140,7 +167,8 @@ export async function submitFolderWorkspaceCreate({
           executionHostId: getNewWorkspaceProjectGroupHostId(projectGroup)
         },
         prompt: launchDraftPrompt ?? note,
-        promptDelivery: launchDraftPrompt ? 'draft' : 'auto-submit'
+        promptDelivery: launchDraftPrompt ? 'draft' : 'auto-submit',
+        ...(launchSeedOverlay ? { seedOverlay: launchSeedOverlay } : {})
       })
     : null
   const structuredLaunch = plan?.route === 'structured-native-chat'
@@ -156,6 +184,12 @@ export async function submitFolderWorkspaceCreate({
   const workspace = await createFolderWorkspace({
     projectGroupId: projectGroup.id,
     name: workspaceName,
+    ...(workspaceMode
+      ? {
+          workspaceAutonomy: workspaceAutonomyForMode(workspaceMode),
+          workspaceIntent: workspaceIntentForMode(workspaceMode)
+        }
+      : {}),
     // Why: SSH folder groups must keep their target provenance even when the
     // focused runtime is local or another host.
     connectionId: projectGroup.connectionId ?? null,

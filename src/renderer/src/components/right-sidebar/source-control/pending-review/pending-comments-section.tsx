@@ -33,6 +33,7 @@ export function SourceControlPendingCommentsSection({
               comment={comment}
               onChangeBody={(next) => queue.updateBody(comment.id, next)}
               onRemove={() => queue.remove(comment.id)}
+              onAccept={() => queue.accept(comment.id)}
             />
           ))}
         </div>

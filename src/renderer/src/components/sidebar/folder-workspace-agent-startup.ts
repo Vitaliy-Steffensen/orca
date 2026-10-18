@@ -36,16 +36,21 @@ export function getFolderWorkspaceAgentLaunchFact(
 /** Resolve the linked context that should appear in the agent input without submitting. */
 export function resolveFolderWorkspaceLaunchDraft(
   linkedWorkItem: LinkedWorkItemSummary,
-  note: string
+  note: string,
+  transformPrompt: (prompt: string) => string = (prompt) => prompt
 ): string | null {
   const { prompt, draftPrompt } = resolveQuickCreateLinkedWorkItemPrompt(linkedWorkItem, note)
-  return (draftPrompt ?? prompt.trim()) || null
+  const draft = (draftPrompt ?? prompt.trim()) || null
+  return draft ? transformPrompt(draft) : null
 }
 
 export function buildFolderWorkspaceLinkedStartupPlan(args: {
   agent: TuiAgent
+  sessionOptions?: Readonly<Record<string, string>>
+  sessionOptionsOverrideAgentArgs?: boolean
   linkedWorkItem: LinkedWorkItemSummary
   note: string
+  transformPrompt?: (prompt: string) => string
   agentCmdOverrides: Record<string, string> | undefined
   agentArgs?: string | null
   agentEnv?: Record<string, string>
@@ -53,10 +58,16 @@ export function buildFolderWorkspaceLinkedStartupPlan(args: {
   shell?: AgentStartupShell
   isRemote: boolean
 }): AgentStartupPlan | null {
-  const linkedDraftPrompt = resolveFolderWorkspaceLaunchDraft(args.linkedWorkItem, args.note)
+  const linkedDraftPrompt = resolveFolderWorkspaceLaunchDraft(
+    args.linkedWorkItem,
+    args.note,
+    args.transformPrompt
+  )
   const draftLaunchPlan = linkedDraftPrompt
     ? buildAgentDraftLaunchPlan({
         agent: args.agent,
+        sessionOptions: args.sessionOptions,
+        sessionOptionsOverrideAgentArgs: args.sessionOptionsOverrideAgentArgs,
         draft: linkedDraftPrompt,
         cmdOverrides: args.agentCmdOverrides ?? {},
         agentArgs: args.agentArgs,
@@ -82,6 +93,8 @@ export function buildFolderWorkspaceLinkedStartupPlan(args: {
 
   const startupPlan = buildAgentStartupPlan({
     agent: args.agent,
+    sessionOptions: args.sessionOptions,
+    sessionOptionsOverrideAgentArgs: args.sessionOptionsOverrideAgentArgs,
     // Why: linked context must stay reviewable; launch empty, then paste the draft after readiness.
     prompt: '',
     cmdOverrides: args.agentCmdOverrides ?? {},

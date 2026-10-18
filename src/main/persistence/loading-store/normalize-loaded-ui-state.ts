@@ -1,8 +1,8 @@
 import { resolveStatusBarCompactChangeNoticeDismissed } from '../../../shared/status-bar-compact-change-notice'
 import { migrateExplorerDisplayRoots } from '../../../shared/file-explorer-display-root'
 import {
-  getWorktreeCardModeProperties,
-  isDefaultedCompactWorktreeCardProperties,
+  DEFAULT_WORKTREE_CARD_PROPERTIES,
+  isRetiredCompactWorktreeCardProperties,
   normalizeWorktreeCardProperties
 } from '../../../shared/constants'
 import { isExistingPersistedProfile } from '../../../shared/project-order-manual-default-notice'
@@ -81,6 +81,8 @@ export function normalizeLoadedUiState(
   const expandedCardPropsMigrated = parsed.ui?._expandedWorktreeCardPropertiesDefaulted === true
   const jiraIssueCardPropDefaulted = parsed.ui?._jiraIssueWorktreeCardPropertyDefaulted === true
   const hostCardPropDefaulted = parsed.ui?._hostWorktreeCardPropertyDefaulted === true
+  const prAuthorCardPropDefaulted = parsed.ui?._prAuthorWorktreeCardPropertyDefaulted === true
+  const cardFactsDefaulted = parsed.ui?._worktreeCardFactsDefaulted === true
   const hadExperimentOn = readDeprecatedExperimentFlag(parsed)
   const deliberateUncheck =
     hadExperimentOn && Array.isArray(rawCardProps) && !rawCardProps.includes('inline-agents')
@@ -89,16 +91,18 @@ export function normalizeLoadedUiState(
     !deliberateUncheck &&
     Array.isArray(rawCardProps) &&
     !rawCardProps.includes('inline-agents')
-  const needsLegacyDefaultedCompactMigration =
+  // Why: the Compact layout is retired. A profile still on its defaulted preset would
+  // render an all-but-empty card, so it adopts the defaults; explicit picks are kept.
+  const needsRetiredCompactMigration =
     loadedCompactWorktreeCards &&
     parsed.ui?._worktreeCardModeDefaulted === true &&
-    isDefaultedCompactWorktreeCardProperties(rawCardProps)
+    isRetiredCompactWorktreeCardProperties(rawCardProps)
   const migratedCardProps = (() => {
     if (!Array.isArray(rawCardProps)) {
       return undefined
     }
-    if (needsLegacyDefaultedCompactMigration) {
-      return getWorktreeCardModeProperties('Compact')
+    if (needsRetiredCompactMigration) {
+      return [...DEFAULT_WORKTREE_CARD_PROPERTIES]
     }
     const candidate = needsInlineAgentsMigration
       ? [...rawCardProps, 'inline-agents' as const]
@@ -127,7 +131,28 @@ export function normalizeLoadedUiState(
       hostCardPropDefaulted || jiraCandidate.includes('host')
         ? jiraCandidate
         : [...jiraCandidate, 'host' as const]
-    const normalized = normalizeWorktreeCardProperties(hostCandidate)
+    // Why: someone else's pull request shows their face. Backfill once so a later uncheck is kept.
+    const prAuthorCandidate =
+      prAuthorCardPropDefaulted || hostCandidate.includes('pr-author')
+        ? hostCandidate
+        : [...hostCandidate, 'pr-author' as const]
+    // Why: the review facts joined the defaults after existing profiles were stamped. Backfill once.
+    const factProperties = [
+      'diff',
+      'diff-mix',
+      'linear-priority',
+      'stack',
+      'unresolved-comments',
+      'pr-open-age'
+    ] as const
+    const factsCandidate = cardFactsDefaulted
+      ? prAuthorCandidate
+      : factProperties.reduce<readonly string[]>(
+          (properties, property) =>
+            properties.includes(property) ? properties : [...properties, property],
+          prAuthorCandidate
+        )
+    const normalized = normalizeWorktreeCardProperties(factsCandidate)
     const changed =
       normalized.length !== rawCardProps.length ||
       normalized.some((property, index) => property !== rawCardProps[index])
@@ -138,7 +163,9 @@ export function normalizeLoadedUiState(
     !inlineAgentsMigrated ||
     !expandedCardPropsMigrated ||
     !jiraIssueCardPropDefaulted ||
-    !hostCardPropDefaulted
+    !hostCardPropDefaulted ||
+    !prAuthorCardPropDefaulted ||
+    !cardFactsDefaulted
   ) {
     markNeedsSave()
   }
@@ -199,10 +226,7 @@ export function normalizeLoadedUiState(
   }
   return {
     ...defaults.ui,
-    // Why: missing card properties follow the persisted layout mode; explicit choices are preserved below.
-    worktreeCardProperties: getWorktreeCardModeProperties(
-      loadedCompactWorktreeCards ? 'Compact' : 'Default'
-    ),
+    worktreeCardProperties: [...DEFAULT_WORKTREE_CARD_PROPERTIES],
     ...stripMainOwnedTelemetryMarkerFromUI(parsed.ui),
     // Why: migrate once from the retired Appearance setting only when no explicit chrome preference exists yet.
     rightSidebarOpen,
@@ -239,6 +263,8 @@ export function normalizeLoadedUiState(
     _inlineAgentsDefaultedForAllUsers: true,
     _expandedWorktreeCardPropertiesDefaulted: true,
     _jiraIssueWorktreeCardPropertyDefaulted: true,
-    _hostWorktreeCardPropertyDefaulted: true
+    _hostWorktreeCardPropertyDefaulted: true,
+    _prAuthorWorktreeCardPropertyDefaulted: true,
+    _worktreeCardFactsDefaulted: true
   }
 }

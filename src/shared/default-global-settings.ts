@@ -2,6 +2,7 @@ import type { GlobalSettings } from './global-settings-types'
 import type { NotificationSettings } from './notification-settings-types'
 import type { VoiceSettings } from './speech-types'
 import { DEFAULT_TERMINAL_FONT_WEIGHT, DEFAULT_TERMINAL_FONT_WEIGHT_BOLD } from './terminal-fonts'
+import { defaultNativeChatPromptMarks } from './native-chat-prompt-marks'
 import { getDefaultTerminalQuickCommands } from './terminal-quick-commands'
 import { TASK_PROVIDERS } from './task-providers'
 import { getDefaultSourceControlAiSettings } from './source-control-ai'
@@ -137,6 +138,7 @@ export function buildDefaultSettings(args: {
     nativeChatResumeWorkOnRestart: false,
     nativeChatQueueFollowUps: true,
     nativeChatInlineVisuals: true,
+    nativeChatPromptMarks: defaultNativeChatPromptMarks(),
     nativeChatInheritShellEnvironment: true,
     nativeChatShellEnvironmentVariables: [],
     nativeChatSessionOptions: {},
@@ -252,7 +254,7 @@ export function buildDefaultSettings(args: {
     experimentalTerminalAttention: false,
     experimentalAgentHibernation: false,
     agentHibernationIdleMs: 30 * 60 * 1000,
-    experimentalNewWorktreeCardStyle: false,
+    experimentalNewWorktreeCardStyle: true,
     experimentalEphemeralVms: false,
     compactWorktreeCards: false,
     // Why: local desktop stays the default until the user picks a saved runtime environment.

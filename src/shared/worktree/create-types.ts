@@ -127,6 +127,8 @@ export type CreateWorktreeArgs = {
   linkedTaskSourceContext?: TaskSourceContext | null
   pushTarget?: GitPushTarget
   workspaceStatus?: WorkspaceStatus
+  workspaceAutonomy?: Worktree['workspaceAutonomy']
+  workspaceIntent?: Worktree['workspaceIntent']
   manualOrder?: number
   /** Parent workspace for in-app creates launched from a folder workspace. */
   parentWorkspace?: WorkspaceKey

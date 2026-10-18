@@ -45,18 +45,7 @@ describe('selectWorktreeListReviewCacheInputs', () => {
     expect(selected).toEqual({ prCache, hostedReviewCache: null })
   })
 
-  it('keeps the PR cache live for legacy folder-card review displays', () => {
-    const prCache = { branch: {} as never }
-    const selected = selectWorktreeListReviewCacheInputs(
-      { ...EMPTY_STATE, folderWorkspaces: [FOLDER_WORKSPACE], prCache },
-      'repo',
-      ['pr']
-    )
-
-    expect(selected).toEqual({ prCache, hostedReviewCache: null })
-  })
-
-  it('keeps both caches live for new-style folder status displays', () => {
+  it('keeps both caches live for folder status displays', () => {
     const prCache = { branch: {} as never }
     const hostedReviewCache = { branch: {} as never }
     const selected = selectWorktreeListReviewCacheInputs(

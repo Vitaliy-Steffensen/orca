@@ -1,5 +1,6 @@
 import type {
   PendingReviewComment,
+  PendingReviewDraftChange,
   PendingReviewDraftMap,
   SubmitReviewVerdictRequest,
   SubmitReviewVerdictResult,
@@ -37,6 +38,8 @@ export type PendingReviewApi = {
   readSummaries: () => Promise<Record<string, string>>
   /** Replaces one workspace's unsent review summary on this device. */
   writeSummary: (worktreeId: string, text: string) => Promise<void>
+  /** Fork: an agent staged a comment or a summary through the CLI, straight into the file. */
+  onDraftsChanged: (callback: (change: PendingReviewDraftChange) => void) => () => void
   /** Rewrites the body of an inline review comment already on the pull request. */
   updateComment: (request: UpdatePublishedCommentRequest) => Promise<UpdatePublishedCommentResult>
   /** The base a "since last review" compare should use, rebuilt when the branch was rebased. */

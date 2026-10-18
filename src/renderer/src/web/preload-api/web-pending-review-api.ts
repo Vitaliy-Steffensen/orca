@@ -20,6 +20,8 @@ export function createWebPendingReviewApi(): Pick<PreloadApi, 'pendingReview'> {
       writeDrafts: () => Promise.resolve(),
       readSummaries: () => Promise.resolve({}),
       writeSummary: () => Promise.resolve(),
+      // Why inert: with no queue here, nothing an agent stages on the desktop reaches this client.
+      onDraftsChanged: () => () => {},
       updateComment: () =>
         Promise.resolve({
           ok: false as const,

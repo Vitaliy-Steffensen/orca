@@ -1,6 +1,7 @@
-import type {
-  PendingReviewComment,
-  ReviewVerdict
+import {
+  acceptedPendingReviewComments,
+  type PendingReviewComment,
+  type ReviewVerdict
 } from '../../shared/github/pending-review-comment'
 
 const EVENT_BY_VERDICT: Record<ReviewVerdict, string> = {
@@ -35,12 +36,15 @@ export function buildReviewVerdictMutation(args: {
   body: string
   comments: readonly PendingReviewComment[]
 }): string {
-  const threads = args.comments.map(threadLiteral).join(', ')
+  // Last gate before a public pull request: an agent's proposal the reviewer never accepted
+  // is not theirs to publish, whatever reached this call.
+  const sendable = acceptedPendingReviewComments(args.comments)
+  const threads = sendable.map(threadLiteral).join(', ')
   const input = [
     `pullRequestId: ${JSON.stringify(args.pullRequestId)}`,
     `event: ${EVENT_BY_VERDICT[args.verdict]}`,
     `body: ${JSON.stringify(args.body)}`,
-    ...(args.comments.length > 0 ? [`threads: [${threads}]`] : [])
+    ...(sendable.length > 0 ? [`threads: [${threads}]`] : [])
   ].join(', ')
   return `mutation { addPullRequestReview(input: { ${input} }) { pullRequestReview { id state url } } }`
 }

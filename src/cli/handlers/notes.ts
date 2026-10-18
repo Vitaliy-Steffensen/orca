@@ -1,8 +1,5 @@
-import path from 'node:path'
 import type { DiffComment } from '../../shared/diff-comment-types'
-import type { RuntimeWorktreeRecord } from '../../shared/runtime-types'
-import { isRuntimePathAbsolute, relativePathInsideRoot } from '../../shared/cross-platform-path'
-import type { CommandHandler, HandlerContext } from '../dispatch'
+import type { CommandHandler } from '../dispatch'
 import {
   getOptionalPositiveIntegerFlag,
   getOptionalStringFlag,
@@ -10,69 +7,19 @@ import {
 } from '../flags'
 import { printResult } from '../format'
 import { RuntimeClientError } from '../runtime-client'
-import { getOptionalWorktreeSelector, resolveCurrentWorktreeSelector } from '../selectors'
+import {
+  commentBody,
+  commentLineLabel,
+  defaultAgentName,
+  getCommentWorktreeSelector,
+  requireCommentLine,
+  resolveCommentFilePath
+} from './comment-anchor-flags'
 
 type NoteListResult = { userNotes: DiffComment[]; agentNotes: DiffComment[] }
 
-async function getNotesWorktreeSelector({ flags, cwd, client }: HandlerContext): Promise<string> {
-  const explicit = await getOptionalWorktreeSelector(flags, 'worktree', cwd, client)
-  if (explicit) {
-    return explicit
-  }
-  if (client.isRemote) {
-    throw new RuntimeClientError(
-      'invalid_argument',
-      'Remote notes commands require --worktree because the client cwd cannot identify a server worktree.'
-    )
-  }
-  return await resolveCurrentWorktreeSelector(cwd, client)
-}
-
-async function resolveNoteFilePath(
-  ctx: HandlerContext,
-  worktree: string,
-  file: string
-): Promise<string> {
-  const { result } = await ctx.client.call<{ worktree: RuntimeWorktreeRecord }>('worktree.show', {
-    worktree
-  })
-  const rootPath = result.worktree.path
-  const fromCwd = isRuntimePathAbsolute(file) ? file : path.resolve(ctx.cwd, file)
-  const relative =
-    relativePathInsideRoot(rootPath, fromCwd) ??
-    (isRuntimePathAbsolute(file)
-      ? null
-      : relativePathInsideRoot(rootPath, path.join(rootPath, file)))
-  if (!relative) {
-    throw new RuntimeClientError('invalid_argument', `${file} is not a file inside the worktree.`)
-  }
-  return relative.split(path.sep).join('/')
-}
-
-function requireLine(ctx: HandlerContext, name: string): number {
-  const line = getOptionalPositiveIntegerFlag(ctx.flags, name)
-  if (line === undefined) {
-    throw new RuntimeClientError('invalid_argument', `Missing --${name}.`)
-  }
-  return line
-}
-
-function defaultAgentName(): string {
-  return process.env.CLAUDECODE === '1' ? 'Claude Code' : 'Agent'
-}
-
-// Why: agents pass paragraphs as `\n` inside one quoted argument, which the shell keeps as two
-// characters; `\\n` stays a literal `\n` for a note that is about the escape itself.
-function noteBody(ctx: Parameters<CommandHandler>[0]): string {
-  return getRequiredStringFlag(ctx.flags, 'body').replace(/\\\\n|\\n/g, (match) =>
-    match === '\\n' ? '\n' : '\\n'
-  )
-}
-
 function lineLabel(note: Pick<DiffComment, 'startLine' | 'lineNumber'>): string {
-  return note.startLine !== undefined && note.startLine !== note.lineNumber
-    ? `${note.startLine}-${note.lineNumber}`
-    : `${note.lineNumber}`
+  return commentLineLabel({ startLine: note.startLine, line: note.lineNumber })
 }
 
 function formatNoteRow(note: DiffComment): string {
@@ -91,16 +38,16 @@ function formatNoteList(result: NoteListResult): string {
 
 export const NOTES_HANDLERS: Record<string, CommandHandler> = {
   'notes add': async (ctx) => {
-    const worktree = await getNotesWorktreeSelector(ctx)
-    const startLine = requireLine(ctx, 'line')
+    const worktree = await getCommentWorktreeSelector(ctx)
+    const startLine = requireCommentLine(ctx, 'line')
     const endLine = getOptionalPositiveIntegerFlag(ctx.flags, 'end-line')
     if (endLine !== undefined && endLine < startLine) {
       throw new RuntimeClientError('invalid_argument', '--end-line must not be before --line.')
     }
-    const body = noteBody(ctx)
+    const body = commentBody(ctx)
     const agent = getOptionalStringFlag(ctx.flags, 'agent') ?? defaultAgentName()
     const githubCommentUrl = getOptionalStringFlag(ctx.flags, 'github-comment')
-    const filePath = await resolveNoteFilePath(
+    const filePath = await resolveCommentFilePath(
       ctx,
       worktree,
       getRequiredStringFlag(ctx.flags, 'file')
@@ -122,12 +69,12 @@ export const NOTES_HANDLERS: Record<string, CommandHandler> = {
     )
   },
   'notes reply': async (ctx) => {
-    const worktree = await getNotesWorktreeSelector(ctx)
+    const worktree = await getCommentWorktreeSelector(ctx)
     const noteId = getRequiredStringFlag(ctx.flags, 'id')
     const response = await ctx.client.call<{ note: DiffComment }>('agentNote.reply', {
       worktree,
       noteId,
-      body: noteBody(ctx),
+      body: commentBody(ctx),
       agent: getOptionalStringFlag(ctx.flags, 'agent') ?? defaultAgentName()
     })
     printResult(
@@ -137,12 +84,12 @@ export const NOTES_HANDLERS: Record<string, CommandHandler> = {
     )
   },
   'notes list': async (ctx) => {
-    const worktree = await getNotesWorktreeSelector(ctx)
+    const worktree = await getCommentWorktreeSelector(ctx)
     const response = await ctx.client.call<NoteListResult>('agentNote.list', { worktree })
     printResult(response, ctx.json, formatNoteList)
   },
   'notes rm': async (ctx) => {
-    const worktree = await getNotesWorktreeSelector(ctx)
+    const worktree = await getCommentWorktreeSelector(ctx)
     const id = getRequiredStringFlag(ctx.flags, 'id')
     const response = await ctx.client.call<{ removed: boolean }>('agentNote.remove', {
       worktree,

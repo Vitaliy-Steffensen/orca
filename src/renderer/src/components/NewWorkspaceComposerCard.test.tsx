@@ -451,7 +451,11 @@ describe('NewWorkspaceComposerCard folder task source mode', () => {
 
     unmountCurrent()
 
-    current = renderCard({ canReuseSelectedBranch: true, reuseSelectedBranch: true })
+    current = renderCard({
+      advancedOpen: true,
+      canReuseSelectedBranch: true,
+      reuseSelectedBranch: true
+    })
     const reuseLabel = [...current.container.querySelectorAll('label')].find((label) =>
       label.textContent?.includes('Reuse branch')
     )
@@ -902,16 +906,9 @@ describe('NewWorkspaceComposerCard folder task source mode', () => {
     expect(hostChanges).toEqual(['setup-builder'])
     expect(recipeChanges).toEqual([null])
   })
-})
 
-describe('NewWorkspaceComposerCard note sizing', () => {
   // Sizing is layout-driven (field-sizing) rather than a JS measure pass, and happy-dom
   // has no layout engine, so these assert the class contract that produces the growth.
-  afterEach(() => {
-    unmountCurrent()
-    current = null
-  })
-
   function findNoteTextarea(container: HTMLElement): HTMLTextAreaElement {
     const label = [...container.querySelectorAll('label')].find(
       (candidate) => candidate.textContent?.trim() === 'Note'

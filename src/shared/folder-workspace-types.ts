@@ -3,6 +3,7 @@ import type { TaskSourceContext } from './task-source-context'
 import type { TuiAgent } from './tui-agent'
 import type { DiffComment } from './diff-comment-types'
 import type { WorkspaceAutonomy } from './workspace-autonomy'
+import type { WorkspaceIntent } from './workspace-intent'
 import type {
   WorkspaceCreatorProvenance,
   WorkspaceLinkedItem,
@@ -40,6 +41,7 @@ export type FolderWorkspace = {
   workspaceStatus?: WorkspaceStatus
   /** See {@link Worktree.workspaceAutonomy}. Absent means unset, which reads as supervised. */
   workspaceAutonomy?: WorkspaceAutonomy
+  workspaceIntent?: WorkspaceIntent
   createdWithAgent?: TuiAgent
   pendingFirstAgentMessageRename?: boolean
   firstAgentMessageRenameError?: string | null

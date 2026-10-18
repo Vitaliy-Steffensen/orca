@@ -1,4 +1,5 @@
 import { ipcRenderer } from 'electron'
+import type { PendingReviewDraftChange } from '../../shared/github/pending-review-comment'
 import type { PendingReviewApi } from './pending-review-api'
 
 export const pendingReviewApi: PendingReviewApi = {
@@ -9,6 +10,14 @@ export const pendingReviewApi: PendingReviewApi = {
   readSummaries: () => ipcRenderer.invoke('pending-review:summaries-read'),
   writeSummary: (worktreeId, text) =>
     ipcRenderer.invoke('pending-review:summary-write', worktreeId, text),
+  onDraftsChanged: (callback) => {
+    const listener = (_event: Electron.IpcRendererEvent, change: PendingReviewDraftChange): void =>
+      callback(change)
+    ipcRenderer.on('pending-review:drafts-changed', listener)
+    return (): void => {
+      ipcRenderer.removeListener('pending-review:drafts-changed', listener)
+    }
+  },
   updateComment: (request) => ipcRenderer.invoke('pending-review:update-comment', request),
   resolveBase: (request) => ipcRenderer.invoke('pending-review:resolve-base', request),
   context: (request) => ipcRenderer.invoke('pending-review:context', request),

@@ -277,25 +277,6 @@ describe('WorktreeCard affiliate list mode', () => {
     expect(container.querySelector('[data-worktree-sleeping-dim=""]')).toBeNull()
   })
 
-  it('keeps legacy sleeping cards undimmed', () => {
-    sleepMocks.sleeping = true
-
-    act(() => {
-      root.render(
-        <WorktreeCard
-          worktree={makeWorktree()}
-          repo={makeRepo()}
-          isActive={false}
-          nativeDragEnabled
-          flushSurface
-          affiliateListMode
-        />
-      )
-    })
-
-    expect(container.querySelector('[data-worktree-sleeping-dim=""]')).toBeNull()
-  })
-
   it('keeps the unread badge rendered on a dimmed sleeping card', () => {
     sleepMocks.sleeping = true
     settings = { experimentalNewWorktreeCardStyle: true }

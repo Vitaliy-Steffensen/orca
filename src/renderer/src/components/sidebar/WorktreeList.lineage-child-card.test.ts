@@ -75,10 +75,10 @@ describe('WorktreeList lineage child card renderer', () => {
     setLineageFixtureState()
     const markup = await renderWorktreeListMarkup()
 
-    expect(getOptionOpeningTag(markup, 'child')).toContain('padding-left:14px')
+    expect(getOptionOpeningTag(markup, 'child')).not.toContain('padding-left')
     expect(getCardOpeningTag(markup, 'child')).toContain('data-content-indent="0"')
     expect(getCardOpeningTag(markup, 'child')).toContain('data-flush-surface="true"')
-    expect(getOptionOpeningTag(markup, 'grandchild')).toContain('padding-left:28px')
+    expect(getOptionOpeningTag(markup, 'grandchild')).not.toContain('padding-left')
     expect(getCardOpeningTag(markup, 'grandchild')).toContain('data-content-indent="0"')
     expect(getCardOpeningTag(markup, 'grandchild')).toContain('data-flush-surface="true"')
   })
@@ -197,8 +197,8 @@ describe('WorktreeList lineage child card renderer', () => {
     setLineageFixtureState('repo')
     const markup = await renderWorktreeListMarkup()
 
-    expect(getOptionOpeningTag(markup, 'child')).toContain('padding-left:14px')
-    expect(getCardOpeningTag(markup, 'child')).toContain('data-content-indent="6"')
+    expect(getOptionOpeningTag(markup, 'child')).not.toContain('padding-left')
+    expect(getCardOpeningTag(markup, 'child')).toContain('data-content-indent="0"')
     expect(getCardOpeningTag(markup, 'child')).toContain('data-flush-surface="true"')
   })
 
@@ -206,8 +206,8 @@ describe('WorktreeList lineage child card renderer', () => {
     setLineageFixtureState('repo', { projectGrouped: true })
     const markup = await renderWorktreeListMarkup()
 
-    expect(getOptionOpeningTag(markup, 'child')).toContain('padding-left:14px')
-    expect(getCardOpeningTag(markup, 'child')).toContain('data-content-indent="24"')
+    expect(getOptionOpeningTag(markup, 'child')).not.toContain('padding-left')
+    expect(getCardOpeningTag(markup, 'child')).toContain('data-content-indent="0"')
     expect(getCardOpeningTag(markup, 'child')).toContain('data-flush-surface="true"')
   })
 

@@ -40,6 +40,8 @@ export type ProvisionedRootRequest = Pick<
   | 'linkedTaskSourceContext'
   | 'pushTarget'
   | 'workspaceStatus'
+  | 'workspaceAutonomy'
+  | 'workspaceIntent'
   | 'manualOrder'
   | 'createdWithAgent'
   | 'pendingFirstAgentMessageRename'
@@ -156,6 +158,8 @@ export function buildProvisionedRootMeta(
       ? { linkedLinearIssueOrganizationUrlKey: args.linkedLinearIssueOrganizationUrlKey }
       : {}),
     ...(args.manualOrder !== undefined ? { manualOrder: args.manualOrder } : {}),
+    ...(args.workspaceAutonomy !== undefined ? { workspaceAutonomy: args.workspaceAutonomy } : {}),
+    ...(args.workspaceIntent !== undefined ? { workspaceIntent: args.workspaceIntent } : {}),
     ...(args.workspaceStatus !== undefined ? { workspaceStatus: args.workspaceStatus } : {}),
     ...(args.linkedGitLabIssue !== undefined ? { linkedGitLabIssue: args.linkedGitLabIssue } : {}),
     ...(args.linkedGitLabMR !== undefined ? { linkedGitLabMR: args.linkedGitLabMR } : {}),

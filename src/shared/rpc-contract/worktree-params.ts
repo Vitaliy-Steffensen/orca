@@ -16,6 +16,7 @@ import { DiffCommentSchema, MobileDiffReviewSchema } from '../diff-comment-schem
 import { TaskSourceContextSchema } from '../task-source-context-schema'
 import { isWorkspaceLinkedItemSourceContextMatch } from '../workspace-linked-item-source-context'
 import { WORKSPACE_AUTONOMY_VALUES } from '../workspace-autonomy'
+import { WORKSPACE_INTENT_VALUES } from '../workspace-intent'
 
 export const OptionalExecutionHostId = z
   .string()
@@ -150,6 +151,7 @@ export const WorktreeSet = WorktreeSelector.extend({
   workspaceStatus: OptionalString,
   // Why nullable: `undefined` means "leave unchanged", so clearing needs its own value.
   workspaceAutonomy: z.enum(WORKSPACE_AUTONOMY_VALUES).nullish(),
+  workspaceIntent: z.enum(WORKSPACE_INTENT_VALUES).nullish(),
   pushTarget: z
     .object({
       remoteName: z.string(),

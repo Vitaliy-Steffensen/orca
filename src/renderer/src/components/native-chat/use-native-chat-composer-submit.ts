@@ -13,6 +13,11 @@ import {
   isBareStructuredAgentSessionGoalCommand,
   structuredAgentSessionGoalObjective
 } from '../../../../shared/structured-agent-session-composer'
+import {
+  messageWithNativeChatPromptMark,
+  type NativeChatPromptMark
+} from '../../../../shared/native-chat-prompt-marks'
+import { isSlashCommandDraft } from '../../../../shared/native-chat-slash-commands'
 
 const GOAL_COMMAND = 'goal'
 
@@ -43,8 +48,19 @@ export function useNativeChatComposerSubmit(args: {
   setDraft: (value: string) => void
   setCaret: (caret: number) => void
   planApproval?: NativeChatPlanApproval
+  /** Instruction joined onto a normal message at the moment Send is pressed. */
+  promptMark?: NativeChatPromptMark | null
 }): { send: () => void; goalMode: NativeChatComposerGoalMode } {
-  const { caret, disabled, draft, draftScopeKey, imageAttachments, sendPty, sendStructured } = args
+  const {
+    caret,
+    disabled,
+    draft,
+    draftScopeKey,
+    imageAttachments,
+    promptMark,
+    sendPty,
+    sendStructured
+  } = args
   const { planApproval, setCaret, setDraft, structuredTransport } = args
   const threadGoal = structuredTransport?.threadGoal
   const [entered, setEntered] = useState(false)
@@ -122,7 +138,12 @@ export function useNativeChatComposerSubmit(args: {
     } else if (!structuredTransport) {
       sendPty()
     } else if ((draft.trim() !== '' || imageAttachments.length > 0) && !disabled) {
-      sendStructured(draft, imageAttachments)
+      // The mark is baked in here, so a message that waits in the queue keeps the
+      // instruction that was on when Send was pressed.
+      sendStructured(
+        isSlashCommandDraft(draft) ? draft : messageWithNativeChatPromptMark(draft, promptMark),
+        imageAttachments
+      )
     }
   }, [
     active,
@@ -130,6 +151,7 @@ export function useNativeChatComposerSubmit(args: {
     draft,
     imageAttachments,
     planApproval,
+    promptMark,
     sendPty,
     sendStructured,
     setCaret,

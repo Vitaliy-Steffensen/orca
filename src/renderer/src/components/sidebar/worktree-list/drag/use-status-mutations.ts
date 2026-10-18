@@ -15,6 +15,7 @@ import {
   type WorktreeDragGroup
 } from '../../worktree-manual-order'
 import { buildWorkspaceKanbanSidebarDropUpdates } from '../../workspace-kanban-sidebar-drop'
+import { stampManualWorkspaceStatusOverride } from '../../../../../../shared/workspace-status-manual-override'
 import type { SortBy } from '../../smart-sort'
 import { switchSortToManualAfterDrop } from '../../manual-sort-switch-toast'
 import type { WorktreeStatusDropAtIndexArgs } from './drop-commit-context'
@@ -40,7 +41,7 @@ export function useWorktreeStatusMutations(args: {
       }
       void updateWorktreeMeta(
         worktreeId,
-        { workspaceStatus: status },
+        stampManualWorkspaceStatusOverride({ workspaceStatus: status }, Date.now()),
         { executionHostId: current.hostId ?? 'local' }
       )
     },
@@ -57,7 +58,7 @@ export function useWorktreeStatusMutations(args: {
         }
         updates.push({
           worktreeId,
-          updates: { workspaceStatus: status },
+          updates: stampManualWorkspaceStatusOverride({ workspaceStatus: status }, Date.now()),
           executionHostId: current.hostId ?? 'local'
         })
       }
@@ -91,7 +92,7 @@ export function useWorktreeStatusMutations(args: {
         }
         updates.set(worktreeId, {
           worktreeId,
-          updates: next,
+          updates: stampManualWorkspaceStatusOverride(next, Date.now()),
           executionHostId: current.hostId ?? 'local'
         })
       }

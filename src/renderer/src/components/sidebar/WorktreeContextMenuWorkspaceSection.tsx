@@ -3,17 +3,21 @@ import { Pencil } from 'lucide-react'
 import { translate } from '@/i18n/i18n'
 import type { WorkspaceStatusDefinition } from '../../../../shared/worktree/types'
 import type { WorkspaceAutonomy } from '../../../../shared/workspace-autonomy'
+import type { WorkspaceIntent } from '../../../../shared/workspace-intent'
 import { WorktreeAutonomyMenuItems } from './WorktreeAutonomyMenuItems'
+import { WorktreeIntentMenuItems } from './WorktreeIntentMenuItems'
 import { WorktreeStatusMenuItems } from './WorktreeStatusMenuItems'
 
 /** The top of the card menu: rename, status, and autonomy. */
 export function WorktreeContextMenuWorkspaceSection(props: {
   contextWorkspaceAutonomy: string
+  contextWorkspaceIntent: string
   contextWorkspaceStatus: string
   deletingContext: boolean
   isDeleting: boolean
   isMultiContext: boolean
   onAssignWorkspaceAutonomy: (autonomy: WorkspaceAutonomy) => void
+  onAssignWorkspaceIntent: (intent: WorkspaceIntent) => void
   onAssignWorkspaceStatus: (status: string) => void
   onRename: () => void
   workspaceStatuses: readonly WorkspaceStatusDefinition[]
@@ -41,6 +45,12 @@ export function WorktreeContextMenuWorkspaceSection(props: {
         deletingContext={props.deletingContext}
         isMultiContext={props.isMultiContext}
         onAssignWorkspaceAutonomy={props.onAssignWorkspaceAutonomy}
+      />
+      <WorktreeIntentMenuItems
+        contextWorkspaceIntent={props.contextWorkspaceIntent}
+        deletingContext={props.deletingContext}
+        isMultiContext={props.isMultiContext}
+        onAssignWorkspaceIntent={props.onAssignWorkspaceIntent}
       />
     </>
   )

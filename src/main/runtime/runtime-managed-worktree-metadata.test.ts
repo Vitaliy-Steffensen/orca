@@ -102,6 +102,28 @@ describe('updateRuntimeManagedWorktreeMetadata', () => {
     expect(setWorktreeMetaForHost.mock.calls[0]?.[2]).not.toHaveProperty('workspaceAutonomy')
   })
 
+  it.each(['question', 'task'] as const)('persists workspaceIntent %s', async (value) => {
+    const { setWorktreeMetaForHost } = await runMetadataUpdate({ workspaceIntent: value })
+
+    expect(setWorktreeMetaForHost).toHaveBeenCalledWith('repo-1::/workspace/app', 'ssh:build-box', {
+      workspaceIntent: value
+    })
+  })
+
+  it('clears workspaceIntent back to unset on an explicit null', async () => {
+    const { setWorktreeMetaForHost } = await runMetadataUpdate({ workspaceIntent: null })
+    const written = setWorktreeMetaForHost.mock.calls[0]?.[2]
+
+    expect(Object.hasOwn(written, 'workspaceIntent')).toBe(true)
+    expect(written.workspaceIntent).toBeUndefined()
+  })
+
+  it('leaves workspaceIntent untouched when the update omits it', async () => {
+    const { setWorktreeMetaForHost } = await runMetadataUpdate({ comment: 'unrelated' })
+
+    expect(setWorktreeMetaForHost.mock.calls[0]?.[2]).not.toHaveProperty('workspaceIntent')
+  })
+
   describe('a folder workspace removed while its resolution was in flight (#22712)', () => {
     const folderRepo = { id: 'repo-1', path: '/workspace/app', displayName: 'app', kind: 'folder' }
     // oxlint-disable-next-line typescript/consistent-type-assertions -- SAFETY: the update only reads id, repoId, hostId and instanceId.

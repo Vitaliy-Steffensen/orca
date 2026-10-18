@@ -3,9 +3,12 @@
 
 import { join } from 'node:path'
 import type { AcpDialect } from './acp-dialects/acp-dialect'
+import { CURSOR_ACP_DIALECT } from './acp-dialects/cursor-dialect'
 import { GROK_ACP_DIALECT } from './acp-dialects/grok-dialect'
 import { OMP_ACP_DIALECT } from './acp-dialects/omp-dialect'
 import { OPENCODE_ACP_DIALECT } from './acp-dialects/opencode-dialect'
+import { isLegacyAgentSessionAccountHome } from '../../shared/agent-session-account-home'
+import { resolveStructuredEnvAccountHomePath } from '../runtime/structured-agent-account-home'
 import { directoryAccountBinding, type AcpAccountBinding } from './acp-account-binding'
 import { openCodeAcpAccountBinding } from '../opencode/opencode-structured-account-home'
 import { scrubOpenCodeAcpEnvironment } from '../opencode/opencode-acp-environment'
@@ -21,6 +24,8 @@ import {
   parseOpenCodeModelListing
 } from '../opencode/opencode-model-catalog-listing'
 import { agentSessionSignInFor } from '../../shared/agent-session-sign-in'
+import { cursorStructuredChatVersion } from './cursor-structured-chat-version'
+import { parseCursorAcpModelListing } from './cursor-model-catalog'
 import {
   loadGrokVisualsSkill,
   loadOmpVisualsSkill,
@@ -187,10 +192,61 @@ const OMP_LAUNCH_SPEC: AcpLaunchSpec = {
   compaction: true
 }
 
+function cursorConfigDir(launchEnv: NodeJS.ProcessEnv, homePath: string): string {
+  const xdg = launchEnv.XDG_CONFIG_HOME?.trim()
+  return xdg ? join(xdg, 'cursor') : join(homePath, '.cursor')
+}
+
+/** Cursor's config root: `CURSOR_CONFIG_DIR`, else `$XDG_CONFIG_HOME/cursor`, else `~/.cursor`. */
+function cursorAccountBinding(): AcpAccountBinding {
+  return {
+    pin: { accountHomeVariable: 'CURSOR_CONFIG_DIR' },
+    resolve: async ({ launchEnv }) => ({
+      variable: 'CURSOR_CONFIG_DIR',
+      path: resolveStructuredEnvAccountHomePath({
+        launchEnv,
+        variable: 'CURSOR_CONFIG_DIR',
+        defaultPath: (homePath) => cursorConfigDir(launchEnv, homePath)
+      })
+    }),
+    environment: (home, env) => {
+      if (!isLegacyAgentSessionAccountHome(home) || home.variable !== 'CURSOR_CONFIG_DIR') {
+        throw new Error('sessions of this agent pin CURSOR_CONFIG_DIR')
+      }
+      return { ...env, CURSOR_CONFIG_DIR: home.path }
+    }
+  }
+}
+
+const CURSOR_LAUNCH_SPEC: AcpLaunchSpec = {
+  agent: 'cursor',
+  command: 'cursor-agent',
+  // Root flags belong before `acp`. `--force` is the permissions bypass; auto-update would replace
+  // the binary under a running chat.
+  args: ({ fullAccess }) => ['--disable-auto-update', ...(fullAccess ? ['--force'] : []), 'acp'],
+  env: {},
+  dialect: CURSOR_ACP_DIALECT,
+  loginCommand: agentSessionSignInFor('cursor')?.loginCommand ?? [],
+  authMethod: ({ advertised }) =>
+    advertised.includes('cursor_login') ? 'cursor_login' : undefined,
+  account: cursorAccountBinding(),
+  // Builds before ACP keep the terminal. The date is the build token, not a semver prerelease.
+  supportsVersion: cursorStructuredChatVersion,
+  installDirectories: ({ homePath }) => [join(homePath, '.local', 'bin')],
+  imagePrompts: true,
+  modelDiscovery: {
+    kind: 'command',
+    args: ['models'],
+    parse: parseCursorAcpModelListing,
+    listingNamesConfiguredModel: true
+  }
+}
+
 export const ACP_LAUNCH_SPECS: readonly AcpLaunchSpec[] = [
   GROK_LAUNCH_SPEC,
   OPENCODE_LAUNCH_SPEC,
-  OMP_LAUNCH_SPEC
+  OMP_LAUNCH_SPEC,
+  CURSOR_LAUNCH_SPEC
 ]
 
 export function acpLaunchSpecFor(agent: string): AcpLaunchSpec | null {

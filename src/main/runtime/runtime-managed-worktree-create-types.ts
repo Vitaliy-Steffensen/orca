@@ -41,6 +41,8 @@ export type RuntimeManagedWorktreeCreateArgs = {
   displayNameKind?: CreateWorktreeArgs['displayNameKind']
   telemetrySource?: WorkspaceCreateTelemetrySource
   workspaceStatus?: string
+  workspaceAutonomy?: Worktree['workspaceAutonomy']
+  workspaceIntent?: Worktree['workspaceIntent']
   manualOrder?: number
   sparseCheckout?: { directories: string[]; presetId?: string }
   pushTarget?: GitPushTarget

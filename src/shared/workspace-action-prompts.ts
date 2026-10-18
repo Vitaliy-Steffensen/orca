@@ -1,10 +1,11 @@
-import { REVIEW_AGENT_NOTE_INSTRUCTION } from './agent-note-prompt'
+import { REVIEW_STAGED_COMMENT_INSTRUCTION } from './agent-note-prompt'
 
 export const WORKSPACE_ACTION_PROMPT_IDS = [
   'commitAndPush',
   'createPullRequest',
   'readyForReview',
-  'reviewPullRequest'
+  'reviewPullRequest',
+  'reReviewPullRequest'
 ] as const
 
 export type WorkspaceActionPromptId = (typeof WORKSPACE_ACTION_PROMPT_IDS)[number]
@@ -51,12 +52,23 @@ Reply with what you checked, anything you changed, and the final state.`,
   reviewPullRequest: `Review pull request #{{prNumber}} — "{{prTitle}}" ({{prUrl}}).
 The branch {{branch}} is checked out in {{worktreePath}}; compare it against {{baseRef}}.
 
+- If you have the review-pr skill, use it: it picks the passes this diff needs, checks the UI in the browser when one changed, and handles the staging below. Otherwise follow the rest of this prompt.
 - Read the full diff and the surrounding code it touches.
 - Point out bugs, missing edge cases, risky changes and anything that does not fit how the codebase already does things.
 - Order findings by severity, each with the file and line and a concrete suggestion.
 - Do not change any code.
 
-${REVIEW_AGENT_NOTE_INSTRUCTION}`
+${REVIEW_STAGED_COMMENT_INSTRUCTION}`,
+  reReviewPullRequest: `Re-review pull request #{{prNumber}} — "{{prTitle}}" ({{prUrl}}).
+The branch {{branch}} is checked out in {{worktreePath}}; its base is {{baseRef}}.
+
+- If you have the re-review skill, use it. Otherwise follow the rest of this prompt.
+- Find the review I already left on this pull request — inline comments, review summaries and conversation comments — and the commit I left it on. Diff from there, not from the base.
+- For each point I made, say how it was answered: done as asked, done differently, covered by a follow-up task, argued against with a reason that holds, argued against with a reason that does not, or not addressed at all. Quote the code that settles it.
+- Then flag anything new that arrived in those commits and was not part of what I asked for.
+- Do not change any code.
+
+${REVIEW_STAGED_COMMENT_INSTRUCTION}`
 }
 
 export function resolveWorkspaceActionPromptTemplate(

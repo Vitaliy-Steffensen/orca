@@ -236,10 +236,13 @@ function NativeChatSessionOptionPickersInner({
   const optionsMenuFocus = useNativeChatPickerFocusReturn(focusComposer)
   const model = snapshot.find((descriptor) => descriptor.category === 'model')
   const options = sortNativeChatSessionOptions(snapshot)
-  if (!surface || !model) {
+  // A prompt can offer plan mode before a model list exists. The options pill
+  // still has to render; only an empty surface stays blank.
+  if (!surface || (!model && options.length === 0)) {
     return null
   }
-  const requestedModelSequence = pickerRequest?.id === model.id ? pickerRequest.sequence : null
+  const requestedModelSequence =
+    model && pickerRequest?.id === model.id ? pickerRequest.sequence : null
   const requestedOptionsSequence = options.some((descriptor) => descriptor.id === pickerRequest?.id)
     ? (pickerRequest?.sequence ?? null)
     : null
@@ -251,17 +254,19 @@ function NativeChatSessionOptionPickersInner({
     runSurfaceCall(descriptor.id, setPendingId, () => surface.invokeAction(descriptor.id))
   }
 
-  const modelReason = nativeChatSessionOptionDisabledReason(model.disabledReason)
+  const modelReason = model ? nativeChatSessionOptionDisabledReason(model.disabledReason) : null
   const modelPickerKey = `model:${requestedModelSequence ?? 'idle'}`
   // Read only when a request remounts the picker.
   const modelPickerDefaultOpen = requestedModelSequence !== null
-  const modelTrigger = {
-    label: nativeChatModelPillLabel(model),
-    tooltipLabel: translate('components.native-chat.composer.model', 'Model'),
-    disabled: isWorking || pendingId !== null,
-    disabledReason: modelReason,
-    dispatched: sessionOptionDispatchUnconfirmed(model)
-  }
+  const modelTrigger = model
+    ? {
+        label: nativeChatModelPillLabel(model),
+        tooltipLabel: translate('components.native-chat.composer.model', 'Model'),
+        disabled: isWorking || pendingId !== null,
+        disabledReason: modelReason,
+        dispatched: sessionOptionDispatchUnconfirmed(model)
+      }
+    : null
   const optionsTooltip = nativeChatOptionsPillTitle(options)
   const optionsReason =
     options.length > 0 && options.every((descriptor) => !descriptor.settable)
@@ -270,43 +275,45 @@ function NativeChatSessionOptionPickersInner({
 
   return (
     <div className="flex min-w-0 items-center gap-0.5 text-chat-foreground-faint">
-      {model.kind.type === 'select' && !model.action ? (
-        <NativeChatModelCombobox
-          key={modelPickerKey}
-          defaultOpen={modelPickerDefaultOpen}
-          choices={model.kind.choices}
-          currentValue={model.kind.currentValue}
-          readOnly={!model.settable || pendingId !== null}
-          readOnlyReason={modelReason}
-          onSelect={(value) => setOption(model, value)}
-          focusComposer={focusComposer}
-          renderTrigger={(onKeyDown) => (
-            <PickerTrigger Trigger={PopoverTrigger} {...modelTrigger} onKeyDown={onKeyDown} />
-          )}
-        />
-      ) : (
-        <DropdownMenu key={modelPickerKey} defaultOpen={modelPickerDefaultOpen}>
-          <PickerTrigger Trigger={DropdownMenuTrigger} {...modelTrigger} />
-          <DropdownMenuContent
-            align="start"
-            side="top"
-            collisionPadding={8}
-            className="w-64"
-            onCloseAutoFocus={modelMenuFocus.onCloseAutoFocus}
-          >
-            {modelReason && !model.settable ? (
-              <DropdownMenuLabel className="font-normal">{modelReason}</DropdownMenuLabel>
-            ) : null}
-            <DescriptorMenuRows
-              descriptor={model}
-              pending={pendingId !== null}
-              setValue={(value) => setOption(model, value)}
-              invokeAction={() => invokeAction(model)}
-              notePick={modelMenuFocus.notePick}
-            />
-          </DropdownMenuContent>
-        </DropdownMenu>
-      )}
+      {model && modelTrigger ? (
+        model.kind.type === 'select' && !model.action ? (
+          <NativeChatModelCombobox
+            key={modelPickerKey}
+            defaultOpen={modelPickerDefaultOpen}
+            choices={model.kind.choices}
+            currentValue={model.kind.currentValue}
+            readOnly={!model.settable || pendingId !== null}
+            readOnlyReason={modelReason}
+            onSelect={(value) => setOption(model, value)}
+            focusComposer={focusComposer}
+            renderTrigger={(onKeyDown) => (
+              <PickerTrigger Trigger={PopoverTrigger} {...modelTrigger} onKeyDown={onKeyDown} />
+            )}
+          />
+        ) : (
+          <DropdownMenu key={modelPickerKey} defaultOpen={modelPickerDefaultOpen}>
+            <PickerTrigger Trigger={DropdownMenuTrigger} {...modelTrigger} />
+            <DropdownMenuContent
+              align="start"
+              side="top"
+              collisionPadding={8}
+              className="w-64"
+              onCloseAutoFocus={modelMenuFocus.onCloseAutoFocus}
+            >
+              {modelReason && !model.settable ? (
+                <DropdownMenuLabel className="font-normal">{modelReason}</DropdownMenuLabel>
+              ) : null}
+              <DescriptorMenuRows
+                descriptor={model}
+                pending={pendingId !== null}
+                setValue={(value) => setOption(model, value)}
+                invokeAction={() => invokeAction(model)}
+                notePick={modelMenuFocus.notePick}
+              />
+            </DropdownMenuContent>
+          </DropdownMenu>
+        )
+      ) : null}
       {options.length > 0 ? (
         <DropdownMenu
           key={`options:${requestedOptionsSequence ?? 'idle'}`}

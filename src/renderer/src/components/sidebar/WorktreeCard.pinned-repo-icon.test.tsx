@@ -137,7 +137,7 @@ describe('WorktreeCard pinned repo icon', () => {
   )
 
   it(
-    'does not render the leading pinned repo icon for non-pinned cards',
+    'drops the repo icon entirely for non-pinned cards whose repo badge is hidden',
     async () => {
       const { default: WorktreeCard } = await import('./WorktreeCard')
 
@@ -146,6 +146,7 @@ describe('WorktreeCard pinned repo icon', () => {
           worktree={makeWorktree({ isPinned: false })}
           repo={makeRepo()}
           isActive={false}
+          hideRepoBadge
         />
       )
 
@@ -156,9 +157,8 @@ describe('WorktreeCard pinned repo icon', () => {
   )
 
   it(
-    'uses the pinned-style repo icon in new card style instead of a metadata-row badge',
+    'uses the pinned-style repo icon instead of a metadata-row badge',
     async () => {
-      settings = { compactWorktreeCards: false, experimentalNewWorktreeCardStyle: true }
       worktreeCardProperties = ['status']
       const { default: WorktreeCard } = await import('./WorktreeCard')
 

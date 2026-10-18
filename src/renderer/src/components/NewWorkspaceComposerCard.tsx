@@ -28,6 +28,7 @@ import { NewWorkspaceComposerAgentSection } from './new-workspace/NewWorkspaceCo
 import { NewWorkspaceComposerFooter } from './new-workspace/NewWorkspaceComposerFooter'
 import { NewWorkspaceComposerNameSection } from './new-workspace/NewWorkspaceComposerNameSection'
 import { NewWorkspaceComposerProjectSection } from './new-workspace/NewWorkspaceComposerProjectSection'
+import { WorkspacePromptComposerFields } from './new-workspace/WorkspacePromptComposerFields'
 import {
   EMPTY_EPHEMERAL_VM_RECIPES,
   EMPTY_PROJECT_HOST_SETUP_OPTIONS,
@@ -309,35 +310,56 @@ export default function NewWorkspaceComposerCard(
         containerClassName
       )}
     >
-      <div className={cn('min-h-0 min-w-0 space-y-4 pt-3', contentClassName)}>
-        <NewWorkspaceComposerProjectSection
-          {...props}
-          disabled={sparseEditing}
+      <div className={cn('min-h-0 min-w-0 space-y-3 pt-1', contentClassName)}>
+        <WorkspacePromptComposerFields
+          card={props}
+          repoId={repoId}
+          sparseEditing={sparseEditing}
           projectOptions={projectOptions}
-          projectHostSetupOptions={projectHostSetupOptions}
-          ephemeralVmRecipes={ephemeralVmRecipes}
-          projectDescriptionId={projectDescriptionId}
-          onAddProject={handleAddProject}
-          focusNameInput={focusNameInput}
-          shouldShowRunTargetPicker={shouldShowRunTargetPicker}
-          handleProjectHostSetupChange={(setupId) => onProjectHostSetupChange?.(setupId)}
-          handleAddSshHost={() => setAddRemoteHostMode('ssh')}
-          handleAddRemoteServer={() => setAddRemoteHostMode('server')}
-          handleConnectRunTargetHost={handleConnectRunTargetHost}
-          handleSetLocation={handleSetLocation}
-          sshStatusLabel={sshStatusLabel}
-          connectButtonLabel={connectButtonLabel}
+          selectedProjectId={selectedProjectId}
           selectedProjectName={selectedProjectName}
         />
-        <NewWorkspaceComposerNameSection {...props} onNamePlainEnter={handleNamePlainEnter} />
-        <NewWorkspaceComposerAgentSection
-          {...props}
-          createDisabled={props.createDisabled || sparseEditing}
-          advancedLocked={sparseEditing}
-          visibleQuickAgents={visibleQuickAgents}
-          defaultTuiAgent={defaultTuiAgent}
-          handleSetDefaultAgent={handleSetDefaultAgent}
-        />
+        <div
+          className={cn(
+            'grid transition-[grid-template-rows] duration-200 ease-out',
+            props.advancedOpen ? 'grid-rows-[1fr]' : 'grid-rows-[0fr]',
+            !props.advancedOpen && 'overflow-hidden'
+          )}
+          aria-hidden={props.advancedOpen ? undefined : true}
+          inert={props.advancedOpen ? undefined : true}
+        >
+          <div className="min-h-0 space-y-4">
+            <NewWorkspaceComposerProjectSection
+              {...props}
+              disabled={sparseEditing}
+              projectOptions={projectOptions}
+              projectHostSetupOptions={projectHostSetupOptions}
+              ephemeralVmRecipes={ephemeralVmRecipes}
+              projectDescriptionId={projectDescriptionId}
+              onAddProject={handleAddProject}
+              focusNameInput={focusNameInput}
+              shouldShowRunTargetPicker={shouldShowRunTargetPicker}
+              handleProjectHostSetupChange={(setupId) => onProjectHostSetupChange?.(setupId)}
+              handleAddSshHost={() => setAddRemoteHostMode('ssh')}
+              handleAddRemoteServer={() => setAddRemoteHostMode('server')}
+              handleConnectRunTargetHost={handleConnectRunTargetHost}
+              handleSetLocation={handleSetLocation}
+              sshStatusLabel={sshStatusLabel}
+              connectButtonLabel={connectButtonLabel}
+              selectedProjectName={selectedProjectName}
+            />
+            <NewWorkspaceComposerNameSection {...props} onNamePlainEnter={handleNamePlainEnter} />
+            <NewWorkspaceComposerAgentSection
+              {...props}
+              showAdvancedToggle={false}
+              createDisabled={props.createDisabled || sparseEditing}
+              advancedLocked={sparseEditing}
+              visibleQuickAgents={visibleQuickAgents}
+              defaultTuiAgent={defaultTuiAgent}
+              handleSetDefaultAgent={handleSetDefaultAgent}
+            />
+          </div>
+        </div>
         <NewWorkspaceComposerAdvancedSection
           {...props}
           onSparseEditingChange={setSparseEditing}
@@ -360,6 +382,8 @@ export default function NewWorkspaceComposerCard(
         <div className="shrink-0 space-y-1">
           <NewWorkspaceComposerFooter
             {...props}
+            hidePrimaryAction
+            showCreateMultiple={Boolean(props.showCreateMultiple && props.advancedOpen)}
             submitShortcutModifierLabel={getScreenSubmitModifierLabel()}
           />
         </div>

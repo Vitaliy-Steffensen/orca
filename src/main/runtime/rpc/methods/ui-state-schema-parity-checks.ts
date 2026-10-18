@@ -15,6 +15,8 @@ type MainOwnedUIState =
   | '_expandedWorktreeCardPropertiesDefaulted'
   | '_jiraIssueWorktreeCardPropertyDefaulted'
   | '_hostWorktreeCardPropertyDefaulted'
+  | '_prAuthorWorktreeCardPropertyDefaulted'
+  | '_worktreeCardFactsDefaulted'
   | 'starNagBaselineAgents'
   | 'starNagAppVersion'
   | 'starNagNextThreshold'

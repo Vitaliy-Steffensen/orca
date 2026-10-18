@@ -98,12 +98,10 @@ function ActivityThreadHoverCardContent({
     repo: repo ?? undefined,
     settings: foundation.settings,
     projectGroups: foundation.projectGroups,
-    cardProps: foundation.cardProps,
-    newCardStyle: foundation.newCardStyle
+    cardProps: foundation.cardProps
   })
   const linked = useWorktreeCardLinkedDetails({
     worktree,
-    newCardStyle: foundation.newCardStyle,
     deleteState: foundation.deleteState,
     branch: review.branch,
     issueEntry: review.issueEntry,
@@ -125,7 +123,6 @@ function ActivityThreadHoverCardContent({
     branch: review.branch,
     fetchHostedReviewForBranch: foundation.fetchHostedReviewForBranch,
     shouldRefreshHostedReview: false,
-    newCardStyle: true,
     hoverDetailsOpen: detailsHoverControl.hoverOpen,
     showIssue: true,
     issueCacheKey: review.issueCacheKey,
@@ -144,7 +141,6 @@ function ActivityThreadHoverCardContent({
     showIssue: true,
     showLinearIssue: true,
     showJiraIssue: true,
-    showPR: true,
     showAutomation: true,
     showCli: true,
     showComment: true,
@@ -159,8 +155,6 @@ function ActivityThreadHoverCardContent({
     linkedAzureDevOpsPR: review.linkedAzureDevOpsPR,
     linkedGiteaPR: review.linkedGiteaPR,
     cardProps: foundation.cardProps,
-    newCardStyle: foundation.newCardStyle,
-    compactCards: foundation.compactCards,
     agentActivityDisplayMode: foundation.agentActivityDisplayMode,
     workspacePorts: foundation.workspacePorts,
     openTaskPage: foundation.openTaskPage,

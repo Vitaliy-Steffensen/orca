@@ -1,3 +1,5 @@
+import { WORKSPACE_AUTONOMY_VALUES } from '../workspace-autonomy'
+import { WORKSPACE_INTENT_VALUES } from '../workspace-intent'
 import { z } from 'zod'
 import { WorkspaceAttachmentsSchema } from '../workspace-attachment-schema'
 import { WorkspaceLinkedItemSchema } from '../workspace-linked-item-schema'
@@ -57,6 +59,8 @@ export const WorktreeCreate = z
       })
       .optional(),
     workspaceStatus: OptionalString,
+    workspaceAutonomy: z.enum(WORKSPACE_AUTONOMY_VALUES).optional(),
+    workspaceIntent: z.enum(WORKSPACE_INTENT_VALUES).optional(),
     manualOrder: OptionalFiniteNumber,
     sparseCheckout: z
       .object({
