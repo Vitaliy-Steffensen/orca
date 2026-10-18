@@ -14,6 +14,7 @@ import type { ClaudeAgentTeamsMode } from './claude-agent-teams-tmux-compat'
 import type { TerminalCustomTheme } from './terminal-custom-themes'
 import type { UiLanguage } from './ui-language'
 import type { GlobalWindowsRuntimeDefault } from './project-execution-runtime'
+import type { NativeChatPromptMark } from './native-chat-prompt-marks'
 import type { PersistedNativeChatSessionOptions } from './native-chat-session-options'
 import type { ComputerAwakeMode } from './computer-awake-mode'
 import type { CommitMessageAiSettings } from './commit-message-ai-types'
@@ -233,6 +234,8 @@ export type GlobalSettings = ForkBaseSettings & {
   nativeChatQueueFollowUps?: boolean
   /** Teach newly started native chats to create inline visuals; absent means on. */
   nativeChatInlineVisuals?: boolean
+  /** Instructions the chat composer can attach to a message. Missing means the Simplify default. */
+  nativeChatPromptMarks?: NativeChatPromptMark[]
   /** Structured chat only: Codex/Claude children inherit the whole login-shell environment.
    *  Off passes only `nativeChatShellEnvironmentVariables` (plus a PATH/locale baseline). */
   nativeChatInheritShellEnvironment?: boolean
