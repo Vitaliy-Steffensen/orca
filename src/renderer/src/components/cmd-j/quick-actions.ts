@@ -9,7 +9,6 @@ import {
 import { translate } from '@/i18n/i18n'
 import { createLocalizedCatalog } from '@/i18n/localized-catalog'
 import { getNativeChatSplitQuickActions } from './native-chat-split-quick-actions'
-import { useAppStore } from '@/store'
 
 export type CmdJQuickActionRunResult =
   | { status: 'ok' }
@@ -27,6 +26,8 @@ export type CmdJQuickAction = {
   verbKeywords: string[]
   isAvailable: (ctx: CmdJQuickActionContext) => CmdJQuickActionAvailability
   run: (ctx: CmdJQuickActionContext) => Promise<CmdJQuickActionRunResult>
+  /** Leave the palette open and let the palette switch views instead of running a side effect. */
+  keepPaletteOpen?: boolean
 }
 
 export const CREATE_WORKSPACE_QUICK_ACTION_ID = 'create-workspace'
@@ -177,8 +178,8 @@ export const getCmdJQuickActions = createLocalizedCatalog((): CmdJQuickAction[] 
     }
   },
   {
-    // Why a toggle rather than a separate view: archived workspaces render in
-    // the sidebar they came from, so revealing them is all the palette has to do.
+    // Why the palette stays open: restoring an archive is picking a row, not
+    // flipping the sidebar filter. The palette lists them and unarchives on select.
     id: 'view-archived-workspaces',
     kind: 'action',
     title: translate(
@@ -187,7 +188,7 @@ export const getCmdJQuickActions = createLocalizedCatalog((): CmdJQuickAction[] 
     ),
     description: translate(
       'auto.components.cmd.j.quick.actions.viewArchivedWorkspacesDescription',
-      'Show archived workspaces in the sidebar so they can be restored.'
+      'Browse archived workspaces and restore one.'
     ),
     icon: Archive,
     verbKeywords: [
@@ -197,11 +198,8 @@ export const getCmdJQuickActions = createLocalizedCatalog((): CmdJQuickAction[] 
       translate('auto.components.cmd.j.quick.actions.verbs.restoreWorkspace', 'restore workspace')
     ],
     isAvailable: () => ({ available: true }),
-    run: async () => {
-      const { showArchivedWorkspaces, setShowArchivedWorkspaces } = useAppStore.getState()
-      setShowArchivedWorkspaces(!showArchivedWorkspaces)
-      return { status: 'ok' }
-    }
+    keepPaletteOpen: true,
+    run: async () => ({ status: 'ok' })
   },
   {
     id: 'add-quick-command',

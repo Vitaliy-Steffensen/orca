@@ -135,6 +135,16 @@ describe('runUnarchiveWorktrees', () => {
     mocks.state.shutdownWorktreeTerminals.mockClear().mockResolvedValue(undefined)
   })
 
+  it('uses the host the caller named when the same id exists twice', async () => {
+    await runUnarchiveWorktrees(['wt-1'], { 'wt-1': 'ssh:box' })
+
+    expect(mocks.state.updateWorktreeMeta).toHaveBeenCalledWith(
+      'wt-1',
+      { isArchived: false },
+      { executionHostId: 'ssh:box' }
+    )
+  })
+
   it('clears the flag without touching the runtime', async () => {
     await runUnarchiveWorktrees(['wt-1'])
 

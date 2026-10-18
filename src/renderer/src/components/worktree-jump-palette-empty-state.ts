@@ -4,6 +4,9 @@ import type { WorktreeJumpPaletteController } from './use-worktree-jump-palette-
 export function getWorktreeJumpPaletteResultCount(
   controller: WorktreeJumpPaletteController
 ): number {
+  if (controller.viewingArchivedWorkspaces) {
+    return controller.selectableItems.length
+  }
   return controller.hasQuery
     ? controller.worktreeItems.length +
         controller.projectTargetItems.length +
@@ -16,6 +19,30 @@ export function getWorktreeJumpPaletteEmptyState(controller: WorktreeJumpPalette
   title: string
   subtitle: string
 } {
+  if (controller.viewingArchivedWorkspaces) {
+    if (controller.query.trim().length > 0) {
+      return {
+        title: translate(
+          'auto.components.WorktreeJumpPalette.archivedSearchEmptyTitle',
+          'No archived workspaces match your search'
+        ),
+        subtitle: translate(
+          'auto.components.WorktreeJumpPalette.archivedSearchEmptySubtitle',
+          'Try another name, branch, or project.'
+        )
+      }
+    }
+    return {
+      title: translate(
+        'auto.components.WorktreeJumpPalette.archivedEmptyTitle',
+        'No archived workspaces'
+      ),
+      subtitle: translate(
+        'auto.components.WorktreeJumpPalette.archivedEmptySubtitle',
+        'Archive a workspace from its menu to find it here.'
+      )
+    }
+  }
   if (controller.filterActive) {
     return {
       title: translate(

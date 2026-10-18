@@ -4,7 +4,13 @@ import type { ExecutionHostId } from '../../../../shared/execution-host'
 import { translate } from '@/i18n/i18n'
 import { tearDownWorkspaceRuntimes } from './workspace-runtime-teardown'
 
-function executionHostIdFor(worktreeId: string): ExecutionHostId {
+function executionHostIdFor(
+  worktreeId: string,
+  preferredHostId?: ExecutionHostId
+): ExecutionHostId {
+  if (preferredHostId) {
+    return preferredHostId
+  }
   return (
     useAppStore
       .getState()
@@ -13,16 +19,21 @@ function executionHostIdFor(worktreeId: string): ExecutionHostId {
   )
 }
 
-async function setArchivedFlag(worktreeIds: readonly string[], isArchived: boolean): Promise<void> {
+async function setArchivedFlag(
+  worktreeIds: readonly string[],
+  isArchived: boolean,
+  executionHostIdByWorktreeId?: Readonly<Record<string, ExecutionHostId | undefined>>
+): Promise<void> {
   const { updateWorktreeMeta } = useAppStore.getState()
   const failures: string[] = []
   await Promise.all(
     worktreeIds.map(async (worktreeId) => {
-      const result = await updateWorktreeMeta(
-        worktreeId,
-        { isArchived },
-        { executionHostId: executionHostIdFor(worktreeId) }
-      )
+      const result = await updateWorktreeMeta(worktreeId, { isArchived }, {
+        executionHostId: executionHostIdFor(
+          worktreeId,
+          executionHostIdByWorktreeId?.[worktreeId]
+        )
+      })
       if (!result.ok) {
         failures.push(result.error)
       }
@@ -82,9 +93,12 @@ export async function runArchiveWorktree(worktreeId: string): Promise<void> {
 }
 
 /** Clear the flag. The workspace wakes the normal way the next time it is opened. */
-export async function runUnarchiveWorktrees(worktreeIds: readonly string[]): Promise<void> {
+export async function runUnarchiveWorktrees(
+  worktreeIds: readonly string[],
+  executionHostIdByWorktreeId?: Readonly<Record<string, ExecutionHostId | undefined>>
+): Promise<void> {
   if (worktreeIds.length === 0) {
     return
   }
-  await setArchivedFlag(worktreeIds, false)
+  await setArchivedFlag(worktreeIds, false, executionHostIdByWorktreeId)
 }
