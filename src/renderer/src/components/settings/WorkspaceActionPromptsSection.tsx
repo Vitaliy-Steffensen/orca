@@ -19,6 +19,8 @@ function promptLabel(id: WorkspaceActionPromptId): string {
       return translate('auto.components.settings.workspaceActions.ready', 'Ready for review')
     case 'reviewPullRequest':
       return translate('auto.components.settings.workspaceActions.review', 'Review')
+    case 'reReviewPullRequest':
+      return translate('auto.components.settings.workspaceActions.reReview', 'Re-review')
   }
 }
 

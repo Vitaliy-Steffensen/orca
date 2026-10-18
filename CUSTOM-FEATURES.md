@@ -17,6 +17,12 @@ Adding a feature here? See the rule at the top of [`CLAUDE.md`](./CLAUDE.md).
 - The app releases and auto-updates from this repository instead of upstream's or Frederik's.
 - A relative language server Path is read from the worktree root, and one that never starts keeps
   saying so instead of going quiet after its first warning.
+- An agent can stage inline review comments and the review summary with `orca review comment add`
+  and `orca review summary set`, marked as its drafts in the pending-review shelf, for you to accept
+  and submit as your own review.
+- A review comment an agent stages is a proposal with an Accept and a Reject on it; only what you
+  accept is submitted, and the rest stay waiting.
+- A Re-review button beside Review re-checks a pull request against the comments you already left.
 - Shift+Tab in the chat composer turns Claude's Plan mode on and off, the composer names the mode
   you are in, and the next chat starts in the one you left off in.
 - A plan waiting on you reads in the transcript instead of a cramped card, and the composer carries
@@ -27,6 +33,7 @@ Adding a feature here? See the rule at the top of [`CLAUDE.md`](./CLAUDE.md).
 - Right-click a workspace to Archive it: everything it is running shuts down and it leaves the
   sidebar, keeping the checkout. Cmd+J's "View Archived Workspaces" brings them back to unarchive,
   and a merged or closed pull request can archive its workspace instead of deleting it.
+- Group workspace status lanes into collapsible sidebar sections, each header counting what it holds.
 
 ## Inherited from `frbarbre/orca`
 
@@ -93,4 +100,3 @@ Taken whole with every mirror; the fork lineage's work on top of upstream.
 55. The Changes header totals the added and removed lines of the files it lists. (§55)
 56. A review summary shows the verdict it was submitted with. (§56)
 57. `orca file open --line/--column` opens a file with the cursor on that spot. (§57)
-58. Group workspace status lanes into collapsible sidebar sections, each header counting what it holds. (§58)

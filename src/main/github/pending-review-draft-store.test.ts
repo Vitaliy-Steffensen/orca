@@ -1,4 +1,4 @@
-import { mkdtemp, rm, writeFile } from 'node:fs/promises'
+import { mkdtemp, readFile, rm, writeFile } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
@@ -8,6 +8,8 @@ import {
   writePendingReviewDrafts,
   writePendingReviewSummary
 } from './pending-review-draft-store'
+
+const AGENT = { kind: 'agent', name: 'Claude Code' } as const
 
 let dir: string
 let file: string
@@ -22,7 +24,14 @@ afterEach(async () => {
 })
 
 function draft(id: string) {
-  return { id, path: 'src/a.ts', line: 3, body: `note ${id}`, createdAt: 1 }
+  return {
+    id,
+    path: 'src/a.ts',
+    line: 3,
+    body: `note ${id}`,
+    createdAt: 1,
+    status: 'accepted' as const
+  }
 }
 
 describe('the queued-comment file on this device', () => {
@@ -88,5 +97,46 @@ describe('the queued-comment file on this device', () => {
     await writePendingReviewSummary(file, 'wt-a', '   ')
 
     expect(await readPendingReviewSummaries(file)).toEqual({})
+  })
+
+  it('keeps the agent’s proposals out of the key an older build submits from', async () => {
+    const proposal = { ...draft('p1'), status: 'proposed' as const, agentAuthor: AGENT }
+    await writePendingReviewDrafts(file, 'wt-a', [draft('mine'), proposal])
+
+    const stored: Record<string, Record<string, unknown[]>> = JSON.parse(
+      await readFile(file, 'utf8')
+    )
+    expect(stored.drafts['wt-a']).toHaveLength(1)
+    expect(stored.proposals['wt-a']).toHaveLength(1)
+    expect(await readPendingReviewDrafts(file)).toStrictEqual({
+      'wt-a': [draft('mine'), proposal]
+    })
+  })
+
+  // A version 1 file had no proposals key, so an agent's comments sat in `drafts`; reading
+  // them back as accepted would submit findings nobody judged.
+  it('reads a version 1 file’s agent comments back as proposals', async () => {
+    await writeFile(
+      file,
+      JSON.stringify({
+        version: 1,
+        drafts: {
+          'wt-a': [
+            {
+              id: 'p1',
+              path: 'src/a.ts',
+              line: 3,
+              body: 'note p1',
+              createdAt: 1,
+              agentAuthor: AGENT
+            }
+          ]
+        },
+        summaries: {}
+      }),
+      'utf8'
+    )
+
+    expect((await readPendingReviewDrafts(file))['wt-a']?.[0]?.status).toBe('proposed')
   })
 })
