@@ -2,7 +2,11 @@ import { useCallback } from 'react'
 import { useAppStore } from '@/store'
 import { getWorkspaceStatus } from './workspace-status'
 import { makeWorkspaceStatusId } from '../../../../shared/workspace-statuses'
-import { sanitizeWorkspaceStatusSection } from '../../../../shared/workspace-status-sections'
+import {
+  assignWorkspaceStatusSection,
+  sanitizeWorkspaceStatusSection,
+  updateWorkspaceStatusSectionAppearance
+} from '../../../../shared/workspace-status-sections'
 import type { Worktree } from '../../../../shared/worktree/types'
 
 type WorkspaceStatuses = ReturnType<typeof useAppStore.getState>['workspaceStatuses']
@@ -55,15 +59,30 @@ export function useWorkspaceKanbanStatusActions(args: {
   )
   const handleChangeStatusSection = useCallback(
     (statusId: string, section: string) => {
-      const sanitized = sanitizeWorkspaceStatusSection(section)
       args.setWorkspaceStatuses(
-        args.workspaceStatuses.map((status) => {
-          if (status.id !== statusId) {
-            return status
-          }
-          const { section: _previous, ...rest } = status
-          return sanitized === undefined ? rest : { ...rest, section: sanitized }
-        })
+        assignWorkspaceStatusSection(
+          args.workspaceStatuses,
+          statusId,
+          sanitizeWorkspaceStatusSection(section)
+        )
+      )
+      recordInteraction()
+    },
+    [args]
+  )
+  const handleChangeSectionColor = useCallback(
+    (section: string, color: string) => {
+      args.setWorkspaceStatuses(
+        updateWorkspaceStatusSectionAppearance(args.workspaceStatuses, section, { color })
+      )
+      recordInteraction()
+    },
+    [args]
+  )
+  const handleChangeSectionIcon = useCallback(
+    (section: string, icon: string) => {
+      args.setWorkspaceStatuses(
+        updateWorkspaceStatusSectionAppearance(args.workspaceStatuses, section, { icon })
       )
       recordInteraction()
     },
@@ -122,6 +141,8 @@ export function useWorkspaceKanbanStatusActions(args: {
     handleChangeStatusColor,
     handleChangeStatusIcon,
     handleChangeStatusSection,
+    handleChangeSectionColor,
+    handleChangeSectionIcon,
     handleMoveStatus,
     handleAddStatus,
     handleRemoveStatus

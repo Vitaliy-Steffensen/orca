@@ -50,6 +50,7 @@ Adding a feature here? See the rule at the top of [`CLAUDE.md`](./CLAUDE.md).
   sidebar, keeping the checkout. Cmd+J's "View Archived Workspaces" brings them back to unarchive,
   and a merged or closed pull request can archive its workspace instead of deleting it.
 - Group workspace status lanes into collapsible sidebar sections, each header counting what it holds.
+- Give a sidebar status section its own icon and color, and count the workspaces in each nested lane.
 
 ## Inherited from `frbarbre/orca`
 

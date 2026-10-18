@@ -47,6 +47,8 @@ function renderMenu({
         onChangeStatusColor={vi.fn()}
         onChangeStatusIcon={vi.fn()}
         onChangeStatusSection={vi.fn()}
+        onChangeSectionColor={vi.fn()}
+        onChangeSectionIcon={vi.fn()}
         onMoveStatus={vi.fn()}
         onRemoveStatus={vi.fn()}
         onAddStatus={onAddStatus}
@@ -101,5 +103,26 @@ describe('WorkspaceKanbanSettingsMenu', () => {
     expect(addStatus?.disabled).toBe(false)
     addStatus?.click()
     expect(onAddStatus).toHaveBeenCalledOnce()
+  })
+
+  it('offers one appearance control for each outer section', () => {
+    renderMenu({
+      workspaceStatuses: [
+        { id: 'skim', label: 'Skim implementation', section: 'Needs me' },
+        { id: 'review', label: 'Review other', section: 'Needs me' },
+        { id: 'implementing', label: 'Implementing', section: 'Autonomous' }
+      ]
+    })
+
+    const labels = Array.from(document.querySelectorAll('button')).map((button) =>
+      button.getAttribute('aria-label')
+    )
+
+    expect(
+      labels.filter((label) => label === 'Customize Needs me section appearance')
+    ).toHaveLength(1)
+    expect(
+      labels.filter((label) => label === 'Customize Autonomous section appearance')
+    ).toHaveLength(1)
   })
 })

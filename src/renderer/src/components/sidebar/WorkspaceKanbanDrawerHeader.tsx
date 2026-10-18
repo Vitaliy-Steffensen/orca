@@ -25,6 +25,8 @@ type WorkspaceKanbanDrawerHeaderProps = {
   onChangeStatusColor: (statusId: string, color: string) => void
   onChangeStatusIcon: (statusId: string, icon: string) => void
   onChangeStatusSection: (statusId: string, section: string) => void
+  onChangeSectionColor: (section: string, color: string) => void
+  onChangeSectionIcon: (section: string, icon: string) => void
   sections: readonly string[]
   hiddenSections: ReadonlySet<string>
   onToggleSection: (section: string) => void
@@ -52,6 +54,8 @@ export default function WorkspaceKanbanDrawerHeader({
   onChangeStatusColor,
   onChangeStatusIcon,
   onChangeStatusSection,
+  onChangeSectionColor,
+  onChangeSectionIcon,
   sections,
   hiddenSections,
   onToggleSection,
@@ -125,6 +129,8 @@ export default function WorkspaceKanbanDrawerHeader({
           onChangeStatusColor={onChangeStatusColor}
           onChangeStatusIcon={onChangeStatusIcon}
           onChangeStatusSection={onChangeStatusSection}
+          onChangeSectionColor={onChangeSectionColor}
+          onChangeSectionIcon={onChangeSectionIcon}
           onMoveStatus={onMoveStatus}
           onRemoveStatus={onRemoveStatus}
           onAddStatus={onAddStatus}

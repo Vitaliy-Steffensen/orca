@@ -1,5 +1,7 @@
 import React from 'react'
 import { CircleDot } from 'lucide-react'
+import { getWorkspaceStatusSectionAppearance } from '../../../../shared/workspace-status-sections'
+import { WORKSPACE_STATUS_SECTION_META } from './worktree-list/grouping/group-keys'
 import type { WorkspaceStatus, WorkspaceStatusDefinition } from '../../../../shared/worktree/types'
 import {
   DEFAULT_WORKSPACE_STATUS_COLOR_ID,
@@ -223,5 +225,29 @@ export function getWorkspaceStatusVisualMeta(status: WorkspaceStatus | Workspace
     border: color.border,
     laneTint: color.laneTint,
     icon: icon.icon
+  }
+}
+
+/** Outer-band chrome. Unconfigured sections keep the generic layers icon. */
+export function getWorkspaceStatusSectionHeaderVisual(
+  section: string,
+  statuses: readonly WorkspaceStatusDefinition[]
+): {
+  tone: string
+  icon: React.ComponentType<{ className?: string }>
+} {
+  const appearance = getWorkspaceStatusSectionAppearance(section, statuses)
+  if (appearance.icon === undefined && appearance.color === undefined) {
+    return WORKSPACE_STATUS_SECTION_META
+  }
+  const meta = getWorkspaceStatusVisualMeta({
+    id: section,
+    label: section,
+    ...(appearance.color === undefined ? {} : { color: appearance.color }),
+    ...(appearance.icon === undefined ? {} : { icon: appearance.icon })
+  })
+  return {
+    tone: appearance.color === undefined ? WORKSPACE_STATUS_SECTION_META.tone : meta.tone,
+    icon: appearance.icon === undefined ? WORKSPACE_STATUS_SECTION_META.icon : meta.icon
   }
 }

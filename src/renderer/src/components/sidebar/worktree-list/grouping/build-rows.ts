@@ -43,7 +43,10 @@ import type {
   WorktreeGroupBy
 } from './row-types'
 import { getRenderedNaturalAnchorRepoIds, withRepoSectionDisplayLabels } from './section-order'
-import { hasWorkspaceStatusSections } from '../../../../../../shared/workspace-status-sections'
+import {
+  hasWorkspaceStatusSections,
+  orderWorkspaceStatusesByAttention
+} from '../../../../../../shared/workspace-status-sections'
 import { appendStatusSectionGroups } from './status-section-rows'
 import { buildOrderedGroups } from './worktree-grouping'
 
@@ -197,13 +200,21 @@ export function buildRows(
     return result
   }
 
+  // Why: the saved lane list is the pipeline the board shows left to right.
+  // The sidebar answers what to look at first, so Ask stays above Needs me
+  // and Autonomous stays at the bottom even when that list says otherwise.
+  const sidebarStatuses =
+    groupBy === 'workspace-status'
+      ? orderWorkspaceStatusesByAttention(workspaceStatuses)
+      : workspaceStatuses
+
   const orderedGroups = buildOrderedGroups({
     groupBy,
     naturalWorktrees,
     repoMap,
     prCache,
     settings,
-    workspaceStatuses,
+    workspaceStatuses: sidebarStatuses,
     projectIndex,
     placeholderRepoIds,
     importedWorktreesByRepo,
@@ -218,7 +229,7 @@ export function buildRows(
     result,
     groupBy,
     collapsedGroups,
-    workspaceStatuses,
+    workspaceStatuses: sidebarStatuses,
     repoMap,
     defaultHostId,
     hostLabelById,
