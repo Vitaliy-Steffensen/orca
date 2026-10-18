@@ -64,9 +64,9 @@ describe('WorktreeCardReviewFacts', () => {
       'aria-label',
       expect.stringContaining('Frontend')
     )
-    expect(container.querySelector('[data-worktree-card-fact="linear-priority"]')).toHaveTextContent(
-      'High'
-    )
+    expect(
+      container.querySelector('[data-worktree-card-fact="linear-priority"]')
+    ).toHaveTextContent('High')
     expect(container.querySelector('[data-worktree-card-fact="stack"]')).toHaveTextContent('2/4')
     expect(
       container.querySelector('[data-worktree-card-fact="unresolved-comments"]')

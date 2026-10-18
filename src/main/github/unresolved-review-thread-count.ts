@@ -42,7 +42,9 @@ export function _resetUnresolvedReviewThreadCountCacheForTests(): void {
 }
 
 /** Counts unresolved review threads, including ones GitHub can no longer place on a line. */
-export function countUnresolvedReviewThreads(response: ThreadCountResponse): UnresolvedReviewThreadCount {
+export function countUnresolvedReviewThreads(
+  response: ThreadCountResponse
+): UnresolvedReviewThreadCount {
   const threads = response.data?.repository?.pullRequest?.reviewThreads
   const nodes = threads?.nodes ?? []
   let count = 0
@@ -66,7 +68,11 @@ query($owner: String!, $repo: String!, $pr: Int!) {
   }
 }`
 
-function cacheKey(repository: GitHubApiRepository, prNumber: number, executionScope: string): string {
+function cacheKey(
+  repository: GitHubApiRepository,
+  prNumber: number,
+  executionScope: string
+): string {
   return `${executionScope}\0${repository.owner}/${repository.repo}#${prNumber}`
 }
 

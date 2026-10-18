@@ -6,10 +6,7 @@ import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip
 import { getIntlLocale, translate } from '@/i18n/i18n'
 import type { DiffAreaTotals } from '../../../../shared/diff-area'
 import { diffAreaTotal, diffMixConicGradient } from './worktree-card-diff-mix'
-import {
-  resolveWorktreeCardFacts,
-  type WorktreeCardFact
-} from './worktree-card-facts'
+import { resolveWorktreeCardFacts, type WorktreeCardFact } from './worktree-card-facts'
 import type { WorktreeCardController } from './use-worktree-card-controller'
 
 const PRIORITY_VARIANT = {
@@ -23,20 +20,20 @@ function formatCount(value: number): string {
   return value.toLocaleString(getIntlLocale())
 }
 
-function DiffFact({ fact }: { fact: Extract<WorktreeCardFact, { id: 'diff' }> }): React.JSX.Element {
+function DiffFact({
+  fact
+}: {
+  fact: Extract<WorktreeCardFact, { id: 'diff' }>
+}): React.JSX.Element {
   const fileLabel =
     typeof fact.files === 'number'
-      ? translate(
-          'auto.components.sidebar.worktreeCardFacts.diffFiles',
-          '{{value0}} {{value1}}',
-          {
-            value0: formatCount(fact.files),
-            value1:
-              fact.files === 1
-                ? translate('auto.components.sidebar.worktreeCardFacts.file', 'file')
-                : translate('auto.components.sidebar.worktreeCardFacts.files', 'files')
-          }
-        )
+      ? translate('auto.components.sidebar.worktreeCardFacts.diffFiles', '{{value0}} {{value1}}', {
+          value0: formatCount(fact.files),
+          value1:
+            fact.files === 1
+              ? translate('auto.components.sidebar.worktreeCardFacts.file', 'file')
+              : translate('auto.components.sidebar.worktreeCardFacts.files', 'files')
+        })
       : null
   const tooltip = fileLabel
     ? translate(
@@ -44,11 +41,10 @@ function DiffFact({ fact }: { fact: Extract<WorktreeCardFact, { id: 'diff' }> })
         '+{{value0}} −{{value1}} across {{value2}}',
         { value0: formatCount(fact.added), value1: formatCount(fact.removed), value2: fileLabel }
       )
-    : translate(
-        'auto.components.sidebar.worktreeCardFacts.diff',
-        '+{{value0}} −{{value1}}',
-        { value0: formatCount(fact.added), value1: formatCount(fact.removed) }
-      )
+    : translate('auto.components.sidebar.worktreeCardFacts.diff', '+{{value0}} −{{value1}}', {
+        value0: formatCount(fact.added),
+        value1: formatCount(fact.removed)
+      })
   return (
     <Tooltip>
       <TooltipTrigger asChild>
@@ -56,8 +52,12 @@ function DiffFact({ fact }: { fact: Extract<WorktreeCardFact, { id: 'diff' }> })
           className="inline-flex items-center gap-1 text-[10px] leading-none tabular-nums"
           data-worktree-card-fact="diff"
         >
-          <span className="text-[color:var(--git-decoration-added)]">+{formatCount(fact.added)}</span>
-          <span className="text-[color:var(--git-decoration-deleted)]">−{formatCount(fact.removed)}</span>
+          <span className="text-[color:var(--git-decoration-added)]">
+            +{formatCount(fact.added)}
+          </span>
+          <span className="text-[color:var(--git-decoration-deleted)]">
+            −{formatCount(fact.removed)}
+          </span>
         </span>
       </TooltipTrigger>
       <TooltipContent side="right" sideOffset={8}>

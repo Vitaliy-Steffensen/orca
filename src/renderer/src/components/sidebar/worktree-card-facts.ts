@@ -129,7 +129,11 @@ export function resolveWorktreeCardFacts(input: {
     facts.push({ id: 'stack', position: stack.position, size: stack.size })
   }
   const unresolved = input.review?.unresolvedComments
-  if (enabled(input.cardProps, 'unresolved-comments') && typeof unresolved === 'number' && unresolved > 0) {
+  if (
+    enabled(input.cardProps, 'unresolved-comments') &&
+    typeof unresolved === 'number' &&
+    unresolved > 0
+  ) {
     facts.push({
       id: 'unresolved-comments',
       count: unresolved,
@@ -142,7 +146,5 @@ export function resolveWorktreeCardFacts(input: {
       facts.push({ id: 'pr-open-age', days })
     }
   }
-  return facts.sort(
-    (a, b) => FACT_ORDER.indexOf(a.id) - FACT_ORDER.indexOf(b.id)
-  )
+  return facts.sort((a, b) => FACT_ORDER.indexOf(a.id) - FACT_ORDER.indexOf(b.id))
 }
