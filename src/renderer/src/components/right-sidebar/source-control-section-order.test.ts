@@ -56,7 +56,13 @@ describe('buildSourceControlDisplaySections', () => {
       resolveSourceControlGroupOrder('staged-first')
     )
 
-    expect(sections.map((section) => section.id)).toEqual(['staged', 'unstaged', 'untracked'])
+    expect(sections.map((section) => section.id)).toEqual(['staged', 'unstaged'])
+    expect(
+      sections.find((section) => section.id === 'unstaged')?.items.map((item) => item.path)
+    ).toEqual(['changed.ts', 'new.ts'])
+    expect(
+      sections.find((section) => section.id === 'unstaged')?.items.map((item) => item.area)
+    ).toEqual(['unstaged', 'untracked'])
   })
 
   it('keeps conflicts pinned before the configured normal order', () => {
@@ -77,12 +83,10 @@ describe('buildSourceControlDisplaySections', () => {
       resolveSourceControlGroupOrder('staged-first')
     )
 
-    expect(sections.map((section) => section.id)).toEqual([
-      'conflicts',
-      'staged',
-      'unstaged',
-      'untracked'
-    ])
+    expect(sections.map((section) => section.id)).toEqual(['conflicts', 'staged', 'unstaged'])
+    expect(
+      sections.find((section) => section.id === 'unstaged')?.items.map((item) => item.path)
+    ).toEqual(['changed.ts', 'new.ts'])
   })
 
   it('pins conflict rows and removes them from the normal Changes section', () => {

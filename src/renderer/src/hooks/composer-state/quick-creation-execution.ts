@@ -1,9 +1,4 @@
 import { workspaceAutonomyForMode, workspaceIntentForMode } from '../../../../shared/workspace-mode'
-import { promptForWorkspaceMode } from '../../../../shared/workspace-mode-prompts'
-import {
-  normalizeNativeChatPromptMarks,
-  SIMPLIFY_PROMPT_MARK_ID
-} from '../../../../shared/native-chat-prompt-marks'
 import type { WorkspaceMode } from '../../../../shared/workspace-mode'
 import type { ComposerModel } from './composer-model'
 
@@ -47,9 +42,8 @@ import { useAppStore } from '@/store'
 import { settleComposerSubmit } from '@/lib/composer-submit-cancellation'
 import { runBackgroundWorktreeCreation } from '@/lib/worktree-creation-flow'
 import { translate } from '@/i18n/i18n'
-import { resolveQuickCreateLinkedWorkItemPrompt } from '@/lib/linked-work-item-context'
-import { extractWorkspacePromptTaskLink } from '@/lib/workspace-prompt-task-link'
 import { buildQuickComposerStartup } from './quick-startup-plan'
+import { buildWrappedQuickCreationPrompts } from './quick-creation-prompt'
 import { buildQuickCreationRequest } from './quick-creation-request'
 import type { PendingSmartGitHubSubmitResolution } from './source-selection-decisions'
 import { resolveAgentSessionLaunchRoute } from '@/lib/agent-session-launch-plan'
@@ -129,31 +123,14 @@ export function useQuickCreationExecution(input: QuickCreationExecutionInput) {
         trimmedNote
       } = prepared
 
-      const promptLinkedWorkItem = agent === null ? null : submitLinkedWorkItem
-
-      const linkedPrompt = resolveQuickCreateLinkedWorkItemPrompt(promptLinkedWorkItem, trimmedNote)
-      const userPrompt = agentPrompt.trim()
-      const promptIsOnlyTaskLink =
-        userPrompt.length > 0 && extractWorkspacePromptTaskLink(userPrompt)?.url === userPrompt
-      const { prompt: mergedPrompt, draftPrompt: mergedDraftPrompt } =
-        userPrompt && !promptIsOnlyTaskLink
-          ? {
-              prompt: linkedPrompt.draftPrompt
-                ? `${userPrompt}\n\n${linkedPrompt.draftPrompt}`
-                : userPrompt,
-              draftPrompt: null
-            }
-          : linkedPrompt
-
-      const simplifyMark = normalizeNativeChatPromptMarks(settings?.nativeChatPromptMarks).find(
-        (mark) => mark.id === SIMPLIFY_PROMPT_MARK_ID
-      )
-      const wrapPrompt = (prompt: string): string =>
-        workspaceMode && !promptIsOnlyTaskLink
-          ? promptForWorkspaceMode(workspaceMode, prompt, simplifyMark)
-          : prompt
-      const quickPrompt = wrapPrompt(mergedPrompt)
-      const quickDraftPrompt = mergedDraftPrompt ? wrapPrompt(mergedDraftPrompt) : mergedDraftPrompt
+      const { quickPrompt, quickDraftPrompt } = buildWrappedQuickCreationPrompts({
+        agent,
+        agentPrompt,
+        submitLinkedWorkItem,
+        trimmedNote,
+        nativeChatPromptMarks: settings?.nativeChatPromptMarks,
+        workspaceMode
+      })
 
       const {
         startupPlan,

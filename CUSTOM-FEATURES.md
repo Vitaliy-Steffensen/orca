@@ -49,6 +49,8 @@ Adding a feature here? See the rule at the top of [`CLAUDE.md`](./CLAUDE.md).
 - Right-click a workspace to Archive it: everything it is running shuts down and it leaves the
   sidebar, keeping the checkout. Cmd+J's "View Archived Workspaces" brings them back to unarchive,
   and a merged or closed pull request can archive its workspace instead of deleting it.
+- Source Control shows Changes, Staged Changes and Unstaged Changes together. Tick a file off on
+  the Changes list; it unticks itself and shows a dot when that file actually changes.
 - Group workspace status lanes into collapsible sidebar sections, each header counting what it holds.
 - Give a sidebar status section its own icon and color, and count the workspaces in each nested lane.
 

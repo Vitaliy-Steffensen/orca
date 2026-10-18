@@ -13952,8 +13952,7 @@
             "fc3095d2ed": "explorer",
             "aiVaultSessionHistory": "Agents",
             "folderWorkspaces": "Attached worktrees",
-            "parentPrChecks": "PR Checks",
-            "prDiffViewer": "PR Diff Viewer"
+            "parentPrChecks": "PR Checks"
           },
           "right": {
             "panel": {
@@ -20336,17 +20335,13 @@
     "send": "Send {{count}} queued comments",
     "badge": "{{count}} queued"
   },
-  "prDiff": {
-    "title": "Changed files",
-    "comparedAgainst": "vs {{ref}}",
-    "noWorkspace": "Select a workspace to see its changed files.",
-    "folderWorkspace": "Changed files are only available for Git repositories.",
-    "noMatchingFiles": "No changed files match the filter.",
-    "noChanges": "No changes against the base branch."
-  },
   "allChanges": {
     "lineTotal": "{{added}} lines added, {{removed}} lines deleted in the listed files",
     "title": "Changes",
+    "viewedCount": "{{viewed}}/{{total}} viewed",
+    "viewedCountTitle": "Files you have ticked off in this review",
+    "markViewed": "Viewed",
+    "changedSinceViewed": "This file changed since you ticked it off",
     "showAllChanges": "Show all changes",
     "showOneList": "Show all changes in one list",
     "groupByStatus": "Group by status",
@@ -20359,7 +20354,9 @@
   "sourceControlSections": {
     "hide": "Hide section",
     "pendingComments": "Pending review",
-    "review": "Review"
+    "review": "Review",
+    "staged": "Staged Changes",
+    "unstaged": "Unstaged Changes"
   },
   "languageServers": {
     "restartFailed": "Could not restart the language server.",

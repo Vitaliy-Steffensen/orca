@@ -23,8 +23,20 @@ describe('StatusPorcelainParser', () => {
     expect(parser.branch.upstreamName).toBe('origin/feature/x')
     expect(parser.branch.upstreamAheadBehind).toEqual({ ahead: 2, behind: 1 })
     expect(parser.entries).toEqual([
-      { path: 'src/staged.ts', status: 'modified', area: 'staged' },
-      { path: 'src/unstaged.ts', status: 'modified', area: 'unstaged' },
+      {
+        path: 'src/staged.ts',
+        status: 'modified',
+        area: 'staged',
+        headOid: 'aaaa',
+        indexOid: 'aaaa'
+      },
+      {
+        path: 'src/unstaged.ts',
+        status: 'modified',
+        area: 'unstaged',
+        headOid: 'bbbb',
+        indexOid: 'bbbb'
+      },
       { path: 'new.txt', status: 'untracked', area: 'untracked' }
     ])
     expect(parser.ignoredPaths).toEqual(['dist/'])
@@ -36,7 +48,14 @@ describe('StatusPorcelainParser', () => {
     parser.update('2 R. N... 100644 100644 100644 aaaa bbbb R100 new.ts\told.ts\n', 0)
     parser.finish()
     expect(parser.entries).toEqual([
-      { path: 'new.ts', status: 'renamed', area: 'staged', oldPath: 'old.ts' }
+      {
+        path: 'new.ts',
+        status: 'renamed',
+        area: 'staged',
+        oldPath: 'old.ts',
+        headOid: 'aaaa',
+        indexOid: 'bbbb'
+      }
     ])
   })
 
@@ -53,6 +72,8 @@ describe('StatusPorcelainParser', () => {
         path: 'flutter_mine',
         status: 'modified',
         area: 'staged',
+        headOid: 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa',
+        indexOid: 'bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb',
         submodule: { commitChanged: true, trackedChanges: false, untrackedChanges: false }
       }
     ])
@@ -136,5 +157,41 @@ describe('StatusPorcelainParser', () => {
     const stopped = parser.update(lines, 0)
     expect(stopped).toBe(false)
     expect(parser.entries.length).toBe(50)
+  })
+
+  it('keeps the HEAD and index blob oids, and drops the all-zero placeholder', () => {
+    const parser = new StatusPorcelainParser()
+    const head = '1111111111111111111111111111111111111111'
+    const index = '2222222222222222222222222222222222222222'
+    const zero = '0000000000000000000000000000000000000000'
+    parser.update(
+      `1 MM N... 100644 100644 100644 ${head} ${index} src/with spaces.ts\n` +
+        `1 A. N... 000000 100644 100644 ${zero} ${index} added.ts\n` +
+        `2 R. N... 100644 100644 100644 ${head} ${index} R100 moved to.ts\told name.ts\n`,
+      0
+    )
+    parser.finish()
+
+    // A path containing spaces shifts no field: the oids sit at fixed offsets before it.
+    const staged = parser.entries.find(
+      (entry) => entry.path === 'src/with spaces.ts' && entry.area === 'staged'
+    )
+    const unstaged = parser.entries.find(
+      (entry) => entry.path === 'src/with spaces.ts' && entry.area === 'unstaged'
+    )
+    expect(staged).toMatchObject({ headOid: head, indexOid: index })
+    expect(unstaged).toMatchObject({ headOid: head, indexOid: index })
+
+    // An added file has no HEAD blob, and the all-zero placeholder is not an identity.
+    expect(parser.entries.find((entry) => entry.path === 'added.ts')).toMatchObject({
+      indexOid: index
+    })
+    expect(parser.entries.find((entry) => entry.path === 'added.ts')?.headOid).toBeUndefined()
+
+    expect(parser.entries.find((entry) => entry.path === 'moved to.ts')).toMatchObject({
+      oldPath: 'old name.ts',
+      headOid: head,
+      indexOid: index
+    })
   })
 })

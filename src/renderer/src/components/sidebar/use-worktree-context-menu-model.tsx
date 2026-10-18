@@ -32,7 +32,10 @@ import {
 import { resolveWorkspaceArchiveMenuAction } from './workspace-archive-menu-action'
 import { useWorktreeContextMenuCommands } from './use-worktree-context-menu-commands'
 import { useWorktreeParentPickerTransition } from './use-worktree-parent-picker-transition'
-import { useWorktreeContextMenuSecondaryActions } from './use-worktree-context-menu-secondary-actions'
+import {
+  focusWorktreeSidebarAfterContextMenu,
+  useWorktreeContextMenuSecondaryActions
+} from './use-worktree-context-menu-secondary-actions'
 import { CLOSE_ALL_CONTEXT_MENUS_EVENT } from '@/lib/close-all-context-menus'
 
 export type WorktreeContextMenuProps = {
@@ -353,19 +356,12 @@ export function useWorktreeContextMenuModel({
 
   const handleCloseAutoFocus = useCallback(
     (event: Event) => {
-      // Why: Radix otherwise restores focus to the hidden context-menu trigger.
-      // When Sleep/Delete clears the active workspace and remounts the sidebar,
-      // that focus restore can scroll the virtual list away from the row the
-      // user just acted on.
-      event.preventDefault()
-      if (pendingParentPickerRef.current) {
-        window.setTimeout(openPendingParentPicker, 0)
-        return
-      }
-      const sidebar = scopeRef.current?.closest('[data-worktree-sidebar]')
-      if (sidebar instanceof HTMLElement) {
-        sidebar.focus({ preventScroll: true })
-      }
+      focusWorktreeSidebarAfterContextMenu(
+        event,
+        pendingParentPickerRef.current !== null,
+        openPendingParentPicker,
+        scopeRef.current
+      )
     },
     [openPendingParentPicker]
   )

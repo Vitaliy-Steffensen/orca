@@ -6,10 +6,11 @@ export function revealTargetSection(rowKey: string): string | null {
   if (!target) {
     return null
   }
-  if (target.area === 'branch') {
-    return 'branch'
+  if (target.area === 'branch' || target.area === 'branch-worktree') {
+    return 'all-changes'
   }
-  return target.area === 'branch-worktree' ? 'all-changes' : target.area
+  // Untracked files render inside the Unstaged section.
+  return target.area === 'untracked' ? 'unstaged' : target.area
 }
 
 /**
@@ -26,11 +27,15 @@ export function collapsedDirsHidingRow(
   if (!target) {
     return []
   }
-  return Array.from(collapsedTreeDirs).filter((key) => {
-    const prefix = `dir::${target.area}::`
-    if (!key.startsWith(prefix)) {
-      return false
-    }
-    return target.relativePath.startsWith(`${key.slice(prefix.length)}/`)
-  })
+  // Untracked rows keep untracked:: keys, but their folders are keyed under the unstaged tree.
+  const areas = target.area === 'untracked' ? ['untracked', 'unstaged'] : [target.area]
+  return Array.from(collapsedTreeDirs).filter((key) =>
+    areas.some((area) => {
+      const prefix = `dir::${area}::`
+      if (!key.startsWith(prefix)) {
+        return false
+      }
+      return target.relativePath.startsWith(`${key.slice(prefix.length)}/`)
+    })
+  )
 }

@@ -42,6 +42,8 @@ describe('source control sections', () => {
       ['agent-notes', 'Agent notes'],
       ['agent-turns', 'Agent turns'],
       ['changes', 'Changes'],
+      ['staged', 'Staged Changes'],
+      ['unstaged', 'Unstaged Changes'],
       ['commits', 'Commits']
     ])
   })
@@ -52,14 +54,18 @@ describe('source control sections', () => {
       'pending-comments',
       'agent-notes',
       'agent-turns',
-      'changes'
+      'changes',
+      'staged',
+      'unstaged'
     ])
     expect(orderSourceControlSections(['changes', 'reviewers', 'agent-turns', 'changes'])).toEqual([
       'changes',
       'agent-turns',
       'pending-review',
       'pending-comments',
-      'agent-notes'
+      'agent-notes',
+      'staged',
+      'unstaged'
     ])
   })
 
@@ -70,13 +76,17 @@ describe('source control sections', () => {
       'pending-review',
       'pending-comments',
       'agent-notes',
-      'agent-turns'
+      'agent-turns',
+      'staged',
+      'unstaged'
     ])
     expect(moveSourceControlSection(order, 'pending-review', null)).toEqual([
       'pending-comments',
       'agent-notes',
       'agent-turns',
       'changes',
+      'staged',
+      'unstaged',
       'pending-review'
     ])
     expect(moveSourceControlSection(order, 'agent-turns', 'agent-turns')).toEqual(order)

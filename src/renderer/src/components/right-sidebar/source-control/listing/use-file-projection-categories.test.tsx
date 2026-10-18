@@ -67,7 +67,8 @@ describe('useSourceControlFileProjection file categories', () => {
   it('keeps hidden files out of the section bulk actions', () => {
     const projection = project(['generated'])
     expect(paths(projection.unfilteredDisplaySectionsById.get('unstaged')?.items ?? [])).toEqual([
-      'src/app.test.ts'
+      'src/app.test.ts',
+      'e2e/login.ts'
     ])
   })
 

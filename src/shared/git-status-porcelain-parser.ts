@@ -150,12 +150,14 @@ export class StatusPorcelainParser {
       const tabParts = line.split('\t')
       const path = decodeGitCQuotedPath(tabParts[0].split(' ').slice(9).join(' '))
       const oldPath = decodeGitCQuotedPath(tabParts.slice(1).join('\t'))
+      const oids = blobOidFields(parts[6], parts[7])
       if (indexStatus !== '.') {
         this.push({
           path,
           status: parseStatusChar(indexStatus),
           area: 'staged',
           oldPath,
+          ...oids,
           ...submoduleStatusField(parts[2], indexStatus)
         })
       }
@@ -165,6 +167,7 @@ export class StatusPorcelainParser {
           status: parseStatusChar(worktreeStatus),
           area: 'unstaged',
           oldPath,
+          ...oids,
           ...submoduleStatusField(parts[2], worktreeStatus)
         })
       }
@@ -172,11 +175,13 @@ export class StatusPorcelainParser {
     }
 
     const path = decodeGitCQuotedPath(parts.slice(8).join(' '))
+    const oids = blobOidFields(parts[6], parts[7])
     if (indexStatus !== '.') {
       this.push({
         path,
         status: parseStatusChar(indexStatus),
         area: 'staged',
+        ...oids,
         ...submoduleStatusField(parts[2], indexStatus)
       })
     }
@@ -185,6 +190,7 @@ export class StatusPorcelainParser {
         path,
         status: parseStatusChar(worktreeStatus),
         area: 'unstaged',
+        ...oids,
         ...submoduleStatusField(parts[2], worktreeStatus)
       })
     }
@@ -194,6 +200,21 @@ export class StatusPorcelainParser {
     this.count += 1
     this.entries.push(entry)
     this.statusRecords.push({ type: 'entry', entry })
+  }
+}
+
+/** Porcelain v2 writes an all-zero oid when a side has no object, which is not an identity. */
+function blobOidFields(
+  headOid: string | undefined,
+  indexOid: string | undefined
+): { headOid?: string; indexOid?: string } {
+  const usable = (value: string | undefined): string | undefined =>
+    value !== undefined && /^[0-9a-f]+$/.test(value) && !/^0+$/.test(value) ? value : undefined
+  const head = usable(headOid)
+  const index = usable(indexOid)
+  return {
+    ...(head === undefined ? {} : { headOid: head }),
+    ...(index === undefined ? {} : { indexOid: index })
   }
 }
 

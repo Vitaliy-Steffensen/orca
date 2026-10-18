@@ -10,6 +10,12 @@ export type GitBranchChangeEntry = {
   oldPath?: string
   added?: number
   removed?: number
+  /** Blob oid of the merge-base side. Absent from hosts predating per-file review identity. */
+  baseOid?: string
+  /** Blob oid of the HEAD side. Absent from hosts predating per-file review identity. */
+  headOid?: string
+  /** Blob oid staged in the index, merged in from the working-tree status. */
+  indexOid?: string
 }
 
 export type GitBranchCompareSummary = {

@@ -5,7 +5,7 @@ import type { GitBranchChangeEntry } from '../../../../../../shared/git-diff-com
 import type { SourceControlViewMode } from '../../../../../../shared/ui-chrome-types'
 import type { SourceControlTreeNode } from '../../source-control-tree'
 import type { SourceControlRowOpenEvent } from './split-open'
-import { BranchEntryRow } from './branch-entry-row'
+import { BranchEntryRow, type BranchEntryRowReview } from './branch-entry-row'
 import { SectionHeader } from './section-header'
 import { formatSourceControlRefLabel } from '../panel/branch-context-stats'
 import { SourceControlBranchTreeDirectoryRow } from './tree-directory-rows'
@@ -17,6 +17,27 @@ export type AllChangesTreeNode = SourceControlTreeNode<
   GitBranchChangeEntry,
   typeof ALL_CHANGES_AREA
 >
+
+export function ChangesViewedCount({
+  viewed,
+  total
+}: {
+  viewed: number
+  total: number
+}): React.JSX.Element | null {
+  if (total <= 0) {
+    return null
+  }
+  return (
+    <span
+      data-testid="source-control-viewed-count"
+      className="mr-2 shrink-0 text-[11px] tabular-nums text-muted-foreground"
+      title={translate('allChanges.viewedCountTitle', 'Files you have ticked off in this review')}
+    >
+      {translate('allChanges.viewedCount', '{{viewed}}/{{total}} viewed', { viewed, total })}
+    </span>
+  )
+}
 
 function ListedLineTotal({
   entries
@@ -83,7 +104,9 @@ export function SourceControlAllChangesSection({
   reviewThreadCountByPath,
   pendingReviewCountByPath,
   activeOpenRowKeys,
-  activeOpenRowKey
+  activeOpenRowKey,
+  reviewByPath,
+  viewedCount
 }: {
   baseRef: string | null
   entries: GitBranchChangeEntry[]
@@ -109,6 +132,9 @@ export function SourceControlAllChangesSection({
   pendingReviewCountByPath: Map<string, number>
   activeOpenRowKeys: ReadonlySet<string>
   activeOpenRowKey: string | null
+  reviewByPath?: ReadonlyMap<string, BranchEntryRowReview>
+  /** Files ticked off in this review, out of the files the section lists. */
+  viewedCount?: number
 }): React.JSX.Element {
   const revealRequestId = useSourceControlRowRevealRequestId(activeOpenRowKey)
   const fileCount = entries.length
@@ -149,11 +175,12 @@ export function SourceControlAllChangesSection({
       pendingReviewCount={pendingReviewCountByPath.get(entry.path) ?? 0}
       isOpenFile={activeOpenRowKeys.has(key)}
       showPathHint={depth === undefined}
+      review={reviewByPath?.get(entry.path)}
     />
   )
 
   return (
-    <div>
+    <div data-testid="source-control-changes-section">
       <SectionHeader
         label={translate('allChanges.title', 'Changes')}
         count={fileCount}
@@ -163,6 +190,9 @@ export function SourceControlAllChangesSection({
         actions={
           <>
             <ListedLineTotal entries={entries} />
+            {viewedCount !== undefined && (
+              <ChangesViewedCount viewed={viewedCount} total={entries.length} />
+            )}
             {filterBadge && (
               <span
                 title={filterBadge.title}

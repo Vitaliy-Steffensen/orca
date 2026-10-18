@@ -48,6 +48,10 @@ export type GitUncommittedEntry = {
   // as additions. Undefined for binary files and when the diff is unavailable.
   added?: number
   removed?: number
+  /** Blob oid at HEAD (porcelain v2 `hH`). Absent from hosts predating per-file review identity. */
+  headOid?: string
+  /** Blob oid staged in the index (porcelain v2 `hI`). Absent on those same hosts. */
+  indexOid?: string
 }
 
 export type GitStatusEntry = GitUncommittedEntry

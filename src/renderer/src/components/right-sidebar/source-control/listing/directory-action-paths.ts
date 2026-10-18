@@ -29,6 +29,8 @@ export type SourceControlDirectoryActionPaths = {
   stagePaths: string[]
   unstagePaths: string[]
   discardPaths: string[]
+  /** Untracked files folded into an unstaged folder, deleted rather than discarded. */
+  untrackedDiscardPaths: string[]
 }
 
 export function getSourceControlDirectoryActionPaths(
@@ -40,7 +42,8 @@ export function getSourceControlDirectoryActionPaths(
     unstagePaths: getUnstageAllPaths(entries),
     discardPaths:
       node.area === 'unstaged' || node.area === 'untracked'
-        ? getDiscardAllPaths(entries, node.area)
-        : []
+        ? getDiscardAllPaths(entries, node.area === 'untracked' ? 'untracked' : 'unstaged')
+        : [],
+    untrackedDiscardPaths: node.area === 'unstaged' ? getDiscardAllPaths(entries, 'untracked') : []
   }
 }

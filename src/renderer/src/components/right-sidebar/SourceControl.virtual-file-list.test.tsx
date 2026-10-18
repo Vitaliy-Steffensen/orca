@@ -128,8 +128,8 @@ function resetState(overrides: Partial<Record<string, unknown>> = {}): void {
     remoteStatusesByWorktree: {},
     isRemoteOperationActive: false,
     inFlightRemoteOpKind: null,
-    // Fork: these cover the status sections; the all-changes list is the fork's default.
-    settings: { sourceControlGrouping: 'status' },
+    // The review list is hidden so these assertions measure the Unstaged virtualizer.
+    settings: { sourceControlSectionLayout: { hidden: ['changes'] } },
     hostedReviewCache: {},
     prCache: {},
     commitMessageGenerationRecords: {},
@@ -441,7 +441,10 @@ describe('SourceControl virtualized changed-files list', () => {
 
   it('bounds mounted tree-view rows for large changesets', () => {
     resetState({
-      settings: { sourceControlViewMode: 'tree', sourceControlGrouping: 'status' },
+      settings: {
+        sourceControlViewMode: 'tree',
+        sourceControlSectionLayout: { hidden: ['changes'] }
+      },
       fileSearchStateByWorktree: {},
       updateFileSearchState: () => undefined,
       consumeFileSearchSeedRequest: () => undefined,

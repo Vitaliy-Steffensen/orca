@@ -29,7 +29,6 @@ export function useSourceControlRowOpening({
   worktreePath,
   visibleSelectionEntries,
   branchSummary,
-  sourceControlGrouping,
   statusEntries,
   allChanges
 }: {
@@ -38,7 +37,6 @@ export function useSourceControlRowOpening({
   worktreePath: string | null
   visibleSelectionEntries: FlatEntry[]
   branchSummary: GitBranchCompareSummary | null
-  sourceControlGrouping: 'all' | 'status'
   statusEntries: readonly GitStatusEntry[]
   allChanges: Pick<ReturnType<typeof useAllChangesProjection>, 'changesFilter' | 'allChangeEntries'>
 }) {
@@ -92,13 +90,17 @@ export function useSourceControlRowOpening({
     }
     return keys
   }, [visibleSelectionEntries])
-  const activeOpenRowKeys = useMemo(
-    () =>
-      sourceControlGrouping === 'all'
-        ? buildAllChangesOpenRowKeys(activeOpenFileSignature)
-        : buildActiveOpenRowKeys(activeOpenFileSignature, activeOpenAvailableRowKeys),
-    [activeOpenAvailableRowKeys, activeOpenFileSignature, sourceControlGrouping]
-  )
+  const activeOpenRowKeys = useMemo(() => {
+    // Changes and the staging lists are on screen together, so the open file highlights in both.
+    const keys = new Set<string>()
+    for (const key of buildAllChangesOpenRowKeys(activeOpenFileSignature)) {
+      keys.add(key)
+    }
+    for (const key of buildActiveOpenRowKeys(activeOpenFileSignature, activeOpenAvailableRowKeys)) {
+      keys.add(key)
+    }
+    return keys
+  }, [activeOpenAvailableRowKeys, activeOpenFileSignature])
 
   // Why: the scroll target is a single row, while the key set can hold both working-tree variants
   // of a path; the first surviving key is the one a row actually rendered for.

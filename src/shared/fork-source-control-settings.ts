@@ -4,8 +4,6 @@ import type { NativeChatGlobalSettings } from './native-chat-appearance-settings
 export type SectionLayout = { order?: string[]; hidden?: string[] }
 
 export type ForkSourceControlSettings = {
-  /** One list of every file changed vs the base ('all', the default), or upstream's staged/changes/committed sections. */
-  sourceControlGrouping?: 'all' | 'status'
   /** Dragged order and hidden sections of the source-control panel, and of the PR panel under `pr` (`shared/source-control-sections.ts`). */
   sourceControlSectionLayout?: SectionLayout & { pr?: SectionLayout }
 }

@@ -12,7 +12,7 @@ import { AgentTurnsSection, useAgentTurns } from '../agent-turns/agent-turns-sec
 import { useWorktreeAgentNotes } from '@/lib/agent-notes'
 import { usePendingReviewQueue } from '@/components/pending-review/use-pending-review-queue'
 import { useSubmitReviewVerdict } from '@/components/pending-review/use-submit-review-verdict'
-import { SourceControlPanelContent } from './panel-content'
+import { SourceControlPanelContent, SourceControlWorkingTreeShelf } from './panel-content'
 import { SourceControlStackedSections, type StackedSection } from './stacked-sections'
 import { SourceControlCommitsSection } from './commits-section'
 import { SourceControlPanelDialogs } from './panel-dialogs'
@@ -53,8 +53,8 @@ export function SourceControlPanelReady(props: SourceControlPanelReadyProps) {
     handleCreatePrHeaderClick,
     handleOpenComment,
     handleRelinkSuppressedGitHubPR,
+    displaySections,
     handleSourceControlKeyDown,
-    handleToggleSourceControlGrouping,
     handleToggleSourceControlViewMode,
     hostedReview,
     isCreatePrIntentInFlight,
@@ -71,7 +71,6 @@ export function SourceControlPanelReady(props: SourceControlPanelReadyProps) {
     setFilterQuery,
     setSourceControlRoot,
     settings,
-    sourceControlGrouping,
     sourceControlViewMode,
     suppressedGitHubPRState,
     toggleSection,
@@ -121,6 +120,22 @@ export function SourceControlPanelReady(props: SourceControlPanelReadyProps) {
     shelves.push({
       id: 'agent-notes',
       node: <AgentNotesShelf worktreeId={activeWorktreeId} onOpenNote={handleOpenComment} />
+    })
+  }
+  const stagedSections = displaySections.filter((section) => section.id === 'staged')
+  if (stagedSections.length > 0) {
+    shelves.push({
+      id: 'staged',
+      node: <SourceControlWorkingTreeShelf props={props} sectionIds={['staged']} />
+    })
+  }
+  const unstagedSections = displaySections.filter(
+    (section) => section.id === 'conflicts' || section.id === 'unstaged'
+  )
+  if (unstagedSections.length > 0) {
+    shelves.push({
+      id: 'unstaged',
+      node: <SourceControlWorkingTreeShelf props={props} sectionIds={['conflicts', 'unstaged']} />
     })
   }
   if (activeWorktreeId && worktreePath && !activeConnectionId && agentTurns.length > 0) {
@@ -187,8 +202,6 @@ export function SourceControlPanelReady(props: SourceControlPanelReadyProps) {
           sourceControlViewMode={sourceControlViewMode}
           viewModeToggleDisabled={settings === null}
           onToggleViewMode={handleToggleSourceControlViewMode}
-          sourceControlGrouping={sourceControlGrouping}
-          onToggleGrouping={handleToggleSourceControlGrouping}
           onChangeBaseRef={() => setBaseRefDialogOpen(true)}
           onRefreshBranchCompare={() => void refreshBranchCompare()}
           branchCompareRefreshDisabled={!branchSummary || branchSummary.status === 'loading'}

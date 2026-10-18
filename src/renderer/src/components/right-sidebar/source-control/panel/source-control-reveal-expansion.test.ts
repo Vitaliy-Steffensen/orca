@@ -5,8 +5,8 @@ describe('revealTargetSection', () => {
   it('maps each area to the section that holds it', () => {
     expect(revealTargetSection('unstaged::src/a.ts')).toBe('unstaged')
     expect(revealTargetSection('staged::src/a.ts')).toBe('staged')
-    expect(revealTargetSection('untracked::src/a.ts')).toBe('untracked')
-    expect(revealTargetSection('branch::src/a.ts')).toBe('branch')
+    expect(revealTargetSection('untracked::src/a.ts')).toBe('unstaged')
+    expect(revealTargetSection('branch::src/a.ts')).toBe('all-changes')
     expect(revealTargetSection('branch-worktree::src/a.ts')).toBe('all-changes')
     expect(revealTargetSection('nonsense')).toBeNull()
   })
