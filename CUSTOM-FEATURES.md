@@ -9,6 +9,7 @@ Adding a feature here? See the rule at the top of [`CLAUDE.md`](./CLAUDE.md).
 ## Added in this repo
 
 - Run on a workspace card starts that project's dev commands together, shows booting then running, and can open the app and sign in.
+- Run brings OrbStack up first when the stack needs containers, puts every service in one split terminal, and the card says whether it is spinning up or running and ready.
 - Pick Ask / Supervised / Autonomous when creating a workspace, each with its own agent, model, and prompt.
 
 - ⇧⌘W closes every other tab and keeps the one you are in.

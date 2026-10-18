@@ -20,7 +20,7 @@ import { listeningPortNumbers } from '@/lib/workspace-run-ports'
 import { workspaceRunAdoptionBlocked } from '@/lib/workspace-run-adoption'
 import type { WorkspaceRunQuickCommand } from '../../../../shared/terminal-quick-command-types'
 
-const ptyAliveSinceByTabId = new Map<string, number>()
+const ptyAliveSinceByLeafId = new Map<string, number>()
 
 function portsForWorktree(worktreeId: string): Set<number> {
   const ports = new Set<number>()
@@ -45,20 +45,21 @@ function observeServices(
   // match never sees it and the browser stays closed after boot.
   const ports = listeningPortNumbers(state.workspacePortScansByKey)
   return entry.services.map((service) => {
-    const ptyIds = state.ptyIdsByTabId[service.tabId] ?? []
-    const ptyAlive = ptyIds.length > 0
+    const livePtyIds = state.ptyIdsByTabId[service.tabId] ?? []
+    const panePtyId = state.terminalLayoutsByTabId[service.tabId]?.ptyIdsByLeafId?.[service.leafId]
+    const ptyAlive = panePtyId !== undefined && livePtyIds.includes(panePtyId)
     if (ptyAlive) {
-      if (!ptyAliveSinceByTabId.has(service.tabId)) {
-        ptyAliveSinceByTabId.set(service.tabId, Date.now())
+      if (!ptyAliveSinceByLeafId.has(service.leafId)) {
+        ptyAliveSinceByLeafId.set(service.leafId, Date.now())
       }
     } else {
-      ptyAliveSinceByTabId.delete(service.tabId)
+      ptyAliveSinceByLeafId.delete(service.leafId)
     }
     return {
-      tabId: service.tabId,
+      leafId: service.leafId,
       tabPresent: present.has(service.tabId),
       ptyAlive,
-      ptyAliveSince: ptyAliveSinceByTabId.get(service.tabId) ?? null,
+      ptyAliveSince: ptyAliveSinceByLeafId.get(service.leafId) ?? null,
       portListening: service.readyPort !== undefined && ports.has(service.readyPort)
     }
   })
@@ -128,6 +129,9 @@ function reconcileWorkspaceRuns(): number | null {
 
   for (const worktreeId of worktreeIds) {
     const current = useAppStore.getState().workspaceRunByWorktreeId[worktreeId]
+    if (current?.state === 'starting-runtime') {
+      continue
+    }
     if (current && current.services.length === 0) {
       const command = findWorkspaceRunCommandById(useAppStore.getState(), current.commandId)
       const ports = portsForWorktree(worktreeId)
@@ -162,10 +166,7 @@ function reconcileWorkspaceRuns(): number | null {
       useAppStore.getState().setWorkspaceRun(worktreeId, result.entry)
     }
     if (result.shouldOpenBrowser && result.entry) {
-      const command = findWorkspaceRunCommandById(
-        useAppStore.getState(),
-        result.entry.commandId
-      )
+      const command = findWorkspaceRunCommandById(useAppStore.getState(), result.entry.commandId)
       const plan = workspaceRunBrowserOpenPlan({
         command,
         services: result.entry.services,

@@ -37,6 +37,7 @@ const {
   registerClaudeAccountHandlersMock,
   registerOpenCodeGoCredentialsHandlersMock,
   registerMiniMaxCredentialsHandlersMock,
+  registerContainerRuntimeHandlersMock,
   registerWorkspaceRunCredentialHandlersMock,
   registerZcodePlanCredentialsHandlersMock,
   registerGrokAccountHandlersMock,
@@ -107,6 +108,7 @@ const {
   registerClaudeAccountHandlersMock: vi.fn(),
   registerOpenCodeGoCredentialsHandlersMock: vi.fn(),
   registerMiniMaxCredentialsHandlersMock: vi.fn(),
+  registerContainerRuntimeHandlersMock: vi.fn(),
   registerWorkspaceRunCredentialHandlersMock: vi.fn(),
   registerZcodePlanCredentialsHandlersMock: vi.fn(),
   registerGrokAccountHandlersMock: vi.fn(),
@@ -370,6 +372,10 @@ vi.mock('../workspace-run-credentials', () => ({
   registerWorkspaceRunCredentialHandlers: registerWorkspaceRunCredentialHandlersMock
 }))
 
+vi.mock('../container-runtime', () => ({
+  registerContainerRuntimeHandlers: registerContainerRuntimeHandlersMock
+}))
+
 vi.mock('../zcode-plan-credentials', () => ({
   registerZcodePlanCredentialsHandlers: registerZcodePlanCredentialsHandlersMock
 }))
@@ -603,6 +609,7 @@ describe('registerCoreHandlers', () => {
     expect(registerOpenCodeGoCredentialsHandlersMock).toHaveBeenCalledWith(rateLimits)
     expect(registerMiniMaxCredentialsHandlersMock).toHaveBeenCalledWith(rateLimits)
     expect(registerWorkspaceRunCredentialHandlersMock).toHaveBeenCalledWith(runtime)
+    expect(registerContainerRuntimeHandlersMock).toHaveBeenCalled()
     expect(registerZcodePlanCredentialsHandlersMock).toHaveBeenCalledWith(rateLimits)
     expect(registerGrokAccountHandlersMock).toHaveBeenCalled()
     expect(registerCursorAccountHandlersMock).toHaveBeenCalled()

@@ -1,10 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import type { WorkspacePort } from '../../../shared/workspace-ports'
 import type { WorkspaceRunQuickCommand } from '../../../shared/terminal-quick-command-types'
-import {
-  workspaceRunBrowserOpenPlan,
-  workspaceRunLoginPageId
-} from './open-workspace-run-browser'
+import { workspaceRunBrowserOpenPlan, workspaceRunLoginPageId } from './open-workspace-run-browser'
 import { listeningPortNumbers } from './workspace-run-ports'
 import { transitionWorkspaceRun, type WorkspaceRunEntry } from './workspace-run-transition'
 
@@ -42,8 +39,8 @@ function entry(): WorkspaceRunEntry {
     readyDeadlineAt: 900_000,
     openedBrowser: false,
     services: [
-      { label: 'Backend', tabId: 'backend', readyPort: 23880, ready: false },
-      { label: 'Frontend', tabId: 'frontend', readyPort: 23883, ready: false }
+      { label: 'Backend', tabId: 'run-tab', leafId: 'backend', readyPort: 23880, ready: false },
+      { label: 'Frontend', tabId: 'run-tab', leafId: 'frontend', readyPort: 23883, ready: false }
     ]
   }
 }
@@ -92,14 +89,14 @@ describe('workspace run browser open after boot', () => {
       now: 1_000,
       observations: [
         {
-          tabId: 'backend',
+          leafId: 'backend',
           tabPresent: true,
           ptyAlive: true,
           ptyAliveSince: 0,
           portListening: listening.has(23880)
         },
         {
-          tabId: 'frontend',
+          leafId: 'frontend',
           tabPresent: true,
           ptyAlive: true,
           ptyAliveSince: 0,
