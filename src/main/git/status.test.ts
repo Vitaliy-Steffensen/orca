@@ -56,6 +56,15 @@ vi.mock('../../shared/node-bounded-file-reader', async (importOriginal) =>
 
 import { clearEffectiveUpstreamStatusCacheForTests, getStatus, stageFile } from './status'
 
+/** Blob oids have their own parser tests; these assert the status and change shape instead. */
+function withoutBlobOids<T extends { baseOid?: string; headOid?: string; indexOid?: string }>(
+  entries: readonly T[]
+): Omit<T, 'baseOid' | 'headOid' | 'indexOid'>[] {
+  return entries.map(
+    ({ baseOid: _baseOid, headOid: _headOid, indexOid: _indexOid, ...entry }) => entry
+  )
+}
+
 describe('getStatus', () => {
   beforeEach(() => {
     clearEffectiveUpstreamStatusCacheForTests()
@@ -100,7 +109,7 @@ describe('getStatus', () => {
     const result = await getStatus('/repo')
 
     expect(result.conflictOperation).toBe('merge')
-    expect(result.entries).toEqual([
+    expect(withoutBlobOids(result.entries)).toEqual([
       {
         path: 'src/app.ts',
         area: 'unstaged',
@@ -192,7 +201,7 @@ describe('getStatus', () => {
       expect(String(lstatMock.mock.calls[0]?.[0]).replaceAll('\\', '/')).toContain(
         '//wsl.localhost/Ubuntu/home/me/repo/feature/node_modules'
       )
-      expect(result.entries).toEqual([])
+      expect(withoutBlobOids(result.entries)).toEqual([])
     } finally {
       platformSpy.mockRestore()
     }
@@ -219,7 +228,7 @@ describe('getStatus', () => {
       '--branch',
       '--untracked-files=all'
     ])
-    expect(result.entries).toEqual([
+    expect(withoutBlobOids(result.entries)).toEqual([
       { path: 'docs/日本語/sample.md', status: 'modified', area: 'unstaged' }
     ])
   })
@@ -233,7 +242,7 @@ describe('getStatus', () => {
 
     const result = await getStatus('/repo')
 
-    expect(result.entries).toEqual([
+    expect(withoutBlobOids(result.entries)).toEqual([
       {
         path: 'nested-repo',
         status: 'added',
@@ -391,7 +400,7 @@ describe('getStatus', () => {
       '--ignored=matching'
     ])
     expect(result.ignoredPaths).toEqual(['dist/', '.env', 'coverage/'])
-    expect(result.entries).toEqual([])
+    expect(withoutBlobOids(result.entries)).toEqual([])
   })
 
   it('attaches per-area line counts from staged and unstaged numstat', async () => {
@@ -414,7 +423,7 @@ describe('getStatus', () => {
 
     const result = await getStatus('/repo')
 
-    expect(result.entries).toEqual([
+    expect(withoutBlobOids(result.entries)).toEqual([
       { path: 'src/staged.ts', status: 'modified', area: 'staged', added: 10, removed: 0 },
       { path: 'src/unstaged.ts', status: 'modified', area: 'unstaged', added: 3, removed: 4 }
     ])
@@ -468,7 +477,7 @@ describe('getStatus', () => {
     const reused = await getStatus('/repo', { reuseLineStats: true })
     await getStatus('/repo')
 
-    expect(reused.entries).toEqual([
+    expect(withoutBlobOids(reused.entries)).toEqual([
       { path: 'src/unstaged.ts', status: 'modified', area: 'unstaged', added: 3, removed: 4 }
     ])
     expect(
@@ -500,7 +509,7 @@ describe('getStatus', () => {
     const reused = await getStatus('/repo', { reuseLineStats: true })
 
     expect(failed.entries[0]?.added).toBeUndefined()
-    expect(reused.entries).toEqual([
+    expect(withoutBlobOids(reused.entries)).toEqual([
       { path: 'src/unstaged.ts', status: 'modified', area: 'unstaged', added: 3, removed: 4 }
     ])
   })
@@ -587,7 +596,7 @@ describe('getStatus', () => {
         env: expect.objectContaining({ GIT_OPTIONAL_LOCKS: '0' })
       })
     )
-    expect(result.entries).toEqual([
+    expect(withoutBlobOids(result.entries)).toEqual([
       { path: 'docs/a => b.txt', status: 'modified', area: 'unstaged', added: 1, removed: 0 }
     ])
   })
@@ -608,7 +617,7 @@ describe('getStatus', () => {
 
     const result = await getStatus('/repo')
 
-    expect(result.entries).toEqual([
+    expect(withoutBlobOids(result.entries)).toEqual([
       {
         path: 'src/new name.ts',
         oldPath: 'src/old name.ts',
@@ -637,7 +646,7 @@ describe('getStatus', () => {
 
     const result = await getStatus('/repo')
 
-    expect(result.entries).toEqual([
+    expect(withoutBlobOids(result.entries)).toEqual([
       { path: 'src/brand-new.ts', status: 'untracked', area: 'untracked', added: 3 }
     ])
   })
@@ -659,7 +668,7 @@ describe('getStatus', () => {
 
     const result = await getStatus('/repo')
 
-    expect(result.entries).toEqual([
+    expect(withoutBlobOids(result.entries)).toEqual([
       { path: 'assets/logo.png', status: 'modified', area: 'unstaged' }
     ])
   })

@@ -14,7 +14,9 @@ afterEach(cleanup)
 const VIEW_MODE_PROPS = {
   viewMode: 'list',
   viewModeToggleDisabled: false,
-  onToggleViewMode: () => undefined
+  onToggleViewMode: () => undefined,
+  viewedCount: 0,
+  totalCount: 0
 } as const
 
 describe('PrDiffHeaderToolbar', () => {
@@ -72,6 +74,8 @@ describe('PrDiffHeaderToolbar', () => {
         viewMode="list"
         viewModeToggleDisabled={false}
         onToggleViewMode={onToggleViewMode}
+        viewedCount={0}
+        totalCount={0}
       />
     )
     const button = screen.getByTestId('pr-diff-view-mode-toggle')
@@ -90,11 +94,41 @@ describe('PrDiffHeaderToolbar', () => {
         viewMode="tree"
         viewModeToggleDisabled={false}
         onToggleViewMode={vi.fn()}
+        viewedCount={0}
+        totalCount={0}
       />
     )
     expect(screen.getByTestId('pr-diff-view-mode-toggle')).toHaveAttribute(
       'aria-label',
       'View as list'
     )
+  })
+
+  it('counts the files ticked off out of the files listed', () => {
+    render(
+      <PrDiffHeaderToolbar
+        compareBaseRef="origin/main"
+        findExpanded={false}
+        onToggleFind={vi.fn()}
+        hasQuery={false}
+        {...VIEW_MODE_PROPS}
+        viewedCount={2}
+        totalCount={5}
+      />
+    )
+    expect(screen.getByTestId('pr-diff-viewed-count')).toHaveTextContent('2/5 viewed')
+  })
+
+  it('says nothing about progress when no files are listed', () => {
+    render(
+      <PrDiffHeaderToolbar
+        compareBaseRef="origin/main"
+        findExpanded={false}
+        onToggleFind={vi.fn()}
+        hasQuery={false}
+        {...VIEW_MODE_PROPS}
+      />
+    )
+    expect(screen.queryByTestId('pr-diff-viewed-count')).not.toBeInTheDocument()
   })
 })

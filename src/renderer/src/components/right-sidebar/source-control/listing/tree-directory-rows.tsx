@@ -16,14 +16,14 @@ import {
   SOURCE_CONTROL_TREE_INDENT_PX
 } from './row-layout'
 
-/** Shared chrome for both directory rows: indentation, collapse toggle, folder icon, name, file count. */
+/** Shared chrome for both directory rows: indentation, collapse toggle, folder icon, and name. */
 function SourceControlTreeDirectoryHeader({
   node,
   isCollapsed,
   onToggle,
   children
 }: {
-  node: Pick<SourceControlTreeDirectoryNode, 'depth' | 'name' | 'fileCount'>
+  node: Pick<SourceControlTreeDirectoryNode, 'depth' | 'name'>
   isCollapsed: boolean
   onToggle: () => void
   children?: React.ReactNode
@@ -47,9 +47,6 @@ function SourceControlTreeDirectoryHeader({
         <MaterialFolderIcon path={node.name} open={!isCollapsed} className="size-4" />
         <span className="min-w-0 flex-1 truncate">{node.name}</span>
       </button>
-      <span className="w-4 shrink-0 text-center text-[10px] font-bold tabular-nums text-muted-foreground/80">
-        {node.fileCount}
-      </span>
       {children}
     </div>
   )
@@ -151,7 +148,7 @@ export function SourceControlBranchTreeDirectoryRow({
   onToggle
 }: {
   // Fork: only the header fields, so the all-changes tree can reuse this row.
-  node: Pick<BranchSourceControlTreeDirectoryNode, 'depth' | 'name' | 'fileCount'>
+  node: Pick<BranchSourceControlTreeDirectoryNode, 'depth' | 'name'>
   isCollapsed: boolean
   onToggle: () => void
 }): React.JSX.Element {

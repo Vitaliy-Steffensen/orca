@@ -5,7 +5,7 @@ import type { GitBranchChangeEntry } from '../../../../../../shared/git-diff-com
 import type { SourceControlViewMode } from '../../../../../../shared/ui-chrome-types'
 import type { SourceControlTreeNode } from '../../source-control-tree'
 import type { SourceControlRowOpenEvent } from './split-open'
-import { BranchEntryRow } from './branch-entry-row'
+import { BranchEntryRow, type BranchEntryRowReview } from './branch-entry-row'
 import { SectionHeader } from './section-header'
 import { formatSourceControlRefLabel } from '../panel/branch-context-stats'
 import { SourceControlBranchTreeDirectoryRow } from './tree-directory-rows'
@@ -83,7 +83,8 @@ export function SourceControlAllChangesSection({
   reviewThreadCountByPath,
   pendingReviewCountByPath,
   activeOpenRowKeys,
-  activeOpenRowKey
+  activeOpenRowKey,
+  reviewByPath
 }: {
   baseRef: string | null
   entries: GitBranchChangeEntry[]
@@ -109,6 +110,8 @@ export function SourceControlAllChangesSection({
   pendingReviewCountByPath: Map<string, number>
   activeOpenRowKeys: ReadonlySet<string>
   activeOpenRowKey: string | null
+  /** Fork: present only where review progress is tracked, which today is the PR diff viewer. */
+  reviewByPath?: ReadonlyMap<string, BranchEntryRowReview>
 }): React.JSX.Element {
   const revealRequestId = useSourceControlRowRevealRequestId(activeOpenRowKey)
   const fileCount = entries.length
@@ -149,6 +152,7 @@ export function SourceControlAllChangesSection({
       pendingReviewCount={pendingReviewCountByPath.get(entry.path) ?? 0}
       isOpenFile={activeOpenRowKeys.has(key)}
       showPathHint={depth === undefined}
+      review={reviewByPath?.get(entry.path)}
     />
   )
 

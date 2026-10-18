@@ -19,6 +19,7 @@ import type {
   UploadReviewAssetRequest,
   UploadReviewAssetResult
 } from '../../shared/github/review-asset'
+import type { ViewedFilesState } from '../../shared/diff-review-identity'
 
 export type PendingReviewContextRequest = Pick<
   SubmitReviewVerdictRequest,
@@ -53,4 +54,8 @@ export type PendingReviewApi = {
   /** Uploads a pasted or dropped image or video as a GitHub attachment on the repository. */
   uploadAsset: (request: UploadReviewAssetRequest) => Promise<UploadReviewAssetResult>
   resolveAssetUrl: (href: string) => Promise<string | null>
+  /** The files this reviewer has ticked off in one workspace, as stored on this device. */
+  readViewedFiles: (worktreeId: string) => Promise<ViewedFilesState>
+  /** Replaces one workspace's ticked-off files on this device. */
+  writeViewedFiles: (worktreeId: string, state: ViewedFilesState) => Promise<void>
 }

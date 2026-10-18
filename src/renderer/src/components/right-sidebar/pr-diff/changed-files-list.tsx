@@ -48,6 +48,8 @@ export function PrDiffChangedFilesList({ model }: { model: PrDiffModel }): React
         viewMode={model.sourceControlViewMode}
         viewModeToggleDisabled={model.viewModeToggleDisabled}
         onToggleViewMode={model.toggleViewMode}
+        viewedCount={model.viewedCount}
+        totalCount={allChanges.allChangeEntries.length}
       />
       <ChangedFilesFindBar
         mode={find.mode}
@@ -109,6 +111,7 @@ export function PrDiffChangedFilesList({ model }: { model: PrDiffModel }): React
               pendingReviewCountByPath={NO_COUNTS}
               activeOpenRowKeys={model.activeOpenRowKeys}
               activeOpenRowKey={model.activeOpenRowKey}
+              reviewByPath={model.reviewByPath}
             />
           )}
         </div>

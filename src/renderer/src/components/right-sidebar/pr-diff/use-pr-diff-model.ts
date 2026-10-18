@@ -15,6 +15,13 @@ import type { SourceControlTreeNode } from '../source-control-tree'
 import type { GitBranchChangeEntry } from '../../../../../shared/git-diff-compare-types'
 import type { FileFindMode } from '../file-find/file-find-mode'
 import { usePrDiffContentSearch } from './use-pr-diff-content-search'
+import { setFileViewed, useViewedFiles } from './viewed-files-store'
+import {
+  buildChangedFileIdentity,
+  didFileChangeSinceViewed,
+  isFileViewed
+} from '../../../../../shared/diff-review-identity'
+import type { BranchEntryRowReview } from '../source-control/listing/branch-entry-row'
 
 // Why module scope: a fresh [] each render would churn every memo keyed on it.
 const NO_SELECTION_ENTRIES: FlatEntry[] = []
@@ -150,6 +157,32 @@ export function usePrDiffModel() {
     allChangesReviewOrder: allChanges.allChangesReviewOrder
   })
 
+  const viewedFiles = useViewedFiles(activeWorktreeId)
+  // Why recomputed rather than stored: a file is ticked only while its identity still matches, so
+  // a change unticks it on the next read without any write of its own.
+  const { reviewByPath, viewedCount } = useMemo(() => {
+    const byPath = new Map<string, BranchEntryRowReview>()
+    let viewed = 0
+    for (const entry of allChanges.allChangeEntries) {
+      const identity = buildChangedFileIdentity(entry)
+      const fileState = viewedFiles.files[entry.path]
+      const isViewed = isFileViewed(fileState, identity)
+      if (isViewed) {
+        viewed += 1
+      }
+      byPath.set(entry.path, {
+        isViewed,
+        changedSinceViewed: didFileChangeSinceViewed(fileState, identity),
+        onToggleViewed: () => {
+          if (activeWorktreeId) {
+            setFileViewed(activeWorktreeId, entry.path, identity, !isViewed)
+          }
+        }
+      })
+    }
+    return { reviewByPath: byPath, viewedCount: viewed }
+  }, [activeWorktreeId, allChanges.allChangeEntries, viewedFiles])
+
   return {
     activeConnectionId: context.activeConnectionId,
     activeOpenRowKey,
@@ -174,6 +207,8 @@ export function usePrDiffModel() {
     isFolder,
     openAllChangesEntry,
     refreshBranchCompare,
+    reviewByPath,
+    viewedCount,
     resolveSplitTargetGroupId,
     setCollapsedTreeDirs,
     setFileListScrollElement,

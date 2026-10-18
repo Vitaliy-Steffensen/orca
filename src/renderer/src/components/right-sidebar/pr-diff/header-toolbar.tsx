@@ -13,6 +13,8 @@ type PrDiffHeaderToolbarProps = {
   viewMode: SourceControlViewMode
   viewModeToggleDisabled: boolean
   onToggleViewMode: () => void
+  viewedCount: number
+  totalCount: number
 }
 
 /** Names what the list is comparing against, and hosts the view-mode switch and find magnifier. */
@@ -23,7 +25,9 @@ export function PrDiffHeaderToolbar({
   hasQuery,
   viewMode,
   viewModeToggleDisabled,
-  onToggleViewMode
+  onToggleViewMode,
+  viewedCount,
+  totalCount
 }: PrDiffHeaderToolbarProps): React.JSX.Element {
   const ref = compareBaseRef?.trim()
   const viewModeLabel =
@@ -39,6 +43,18 @@ export function PrDiffHeaderToolbar({
             })
           : translate('prDiff.title', 'Changed files')}
       </span>
+      {totalCount > 0 && (
+        <span
+          data-testid="pr-diff-viewed-count"
+          className="shrink-0 text-[11px] tabular-nums text-muted-foreground"
+          title={translate('prDiff.viewedCountTitle', 'Files you have ticked off in this review')}
+        >
+          {translate('prDiff.viewedCount', '{{viewed}}/{{total}} viewed', {
+            viewed: viewedCount,
+            total: totalCount
+          })}
+        </span>
+      )}
       <FileFindToggle
         expanded={findExpanded}
         onToggle={onToggleFind}
