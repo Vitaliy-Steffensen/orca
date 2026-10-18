@@ -27,6 +27,7 @@ import { isAgentSessionOptions } from '../agent-session-record'
 import { isStructuredAgentId } from '../agent-session-provider-handle-encoding'
 import { normalizeExecutionHostId } from '../execution-host'
 import {
+  AGENT_SESSION_PROMPT_NOTE_MAX_BYTES,
   AGENT_SESSION_QUESTION_ANSWER_MAX_BYTES,
   AGENT_SESSION_RESPONSE_OPTION_ID_MAX_LENGTH
 } from '../agent-session-question-answer'
@@ -208,7 +209,17 @@ export const RespondParams = z
     itemId: Identifier('Invalid item id'),
     /** Compare-and-set: the revision the client had on screen. */
     expectedRevision: z.number().int().positive(),
-    optionId: Identifier('Invalid option id', MAX_RESPONSE_OPTION_ID_LENGTH)
+    optionId: Identifier('Invalid option id', MAX_RESPONSE_OPTION_ID_LENGTH),
+    // Free text left beside the decision. Hashed verbatim by both peers, so no trim or
+    // transform here; the client trims and drops an empty one before the fingerprint.
+    note: z
+      .string()
+      .max(AGENT_SESSION_PROMPT_NOTE_MAX_BYTES)
+      .refine(
+        (value) => Buffer.byteLength(value, 'utf8') <= AGENT_SESSION_PROMPT_NOTE_MAX_BYTES,
+        'Note is too large'
+      )
+      .optional()
   })
   .strict()
 

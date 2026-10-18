@@ -2,6 +2,7 @@ import { expect, it } from 'vitest'
 import {
   DRAWN_APPROVAL_SUBJECT_KINDS,
   isNewerApprovalSubject,
+  pendingPlanApproval,
   pendingPromptsAllUnanswerableHere
 } from './agent-session-approval-subject'
 import type { AgentJournalItemBody } from './agent-session-journal-types'
@@ -56,4 +57,22 @@ it('holds only while every pending prompt is an approval this build cannot answe
   )
   expect(pendingPromptsAllUnanswerableHere([cancelled, PLAN])).toBe(false)
   expect(pendingPromptsAllUnanswerableHere([cancelled])).toBe(false)
+})
+
+it('names the lone waiting plan, which is what keeps the composer open', () => {
+  expect(pendingPlanApproval([PLAN])).toBe(PLAN)
+  expect(pendingPlanApproval([])).toBeNull()
+  // Anything else waiting wants the slot too, so the card takes it back.
+  expect(pendingPlanApproval([PLAN, QUESTION])).toBeNull()
+  expect(pendingPlanApproval([PLAN, NEWER])).toBeNull()
+  expect(pendingPlanApproval([PLAN, PLAN])).toBeNull()
+  expect(pendingPlanApproval([NEWER])).toBeNull()
+  expect(pendingPlanApproval([QUESTION])).toBeNull()
+})
+
+it('ignores a plan that is no longer pending', () => {
+  const resolved = JSON.parse(
+    JSON.stringify(PLAN).replace('"state":"pending"', '"state":"resolved"')
+  )
+  expect(pendingPlanApproval([resolved])).toBeNull()
 })

@@ -61,6 +61,13 @@ export type AgentSessionOptionCatalog = {
   supportsWorkerLaunchPreferences?: true
   /** Launch-safe options for opaque model ids that are absent from the static catalog. */
   unknownModelOptions?: CatalogOption[]
+  /** Options a structured session offers on every model, whatever its host reported. A
+   *  discovered model's options are rebuilt from the host's own report (efforts, tiers,
+   *  Fast), which can only describe what the provider lists per model — so an option the
+   *  session owns rather than the model, like Claude's permission mode, is carried here or
+   *  it is dropped the moment a real model list lands. Structured lane only: the terminal
+   *  lane drives these through its own CLI. */
+  structuredSessionOptions?: CatalogOption[]
   composeModelValue?: (modelId: string, values: Record<string, SessionOptionValue>) => string
   /** Why: a seeded id the CLI has retired is a fatal launch, so a successful probe
    * must be able to drop it rather than only add. Membership only — option menus
