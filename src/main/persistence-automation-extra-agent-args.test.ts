@@ -60,11 +60,15 @@ describe('automation extra agent args persistence', () => {
     expect(automation.extraAgentArgs).toBe(text)
     store.flush()
     // oxlint-disable-next-line typescript/consistent-type-assertions -- SAFETY: the store just flushed this automation to the data file.
-    const persisted = readDataFile() as { automations: { extraAgentArgs?: string }[] }
-    expect(persisted.automations[0].extraAgentArgs).toBe(text)
+    const persisted = readDataFile() as { automations: { id: string; extraAgentArgs?: string }[] }
+    expect(persisted.automations.find((entry) => entry.id === automation.id)?.extraAgentArgs).toBe(
+      text
+    )
     await closeTestStores()
     const reloaded = await createStore()
-    expect(reloaded.listAutomations()[0].extraAgentArgs).toBe(text)
+    expect(
+      reloaded.listAutomations().find((entry) => entry.id === automation.id)?.extraAgentArgs
+    ).toBe(text)
   })
 
   it('stores no field for empty or whitespace input', async () => {

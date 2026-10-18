@@ -9,3 +9,15 @@ export function isWorkspaceIntentValue(value: unknown): value is WorkspaceIntent
 export function resolveWorkspaceIntent(value: unknown): WorkspaceIntent {
   return isWorkspaceIntentValue(value) ? value : DEFAULT_WORKSPACE_INTENT
 }
+
+/** One intent when every workspace agrees; empty when the selection is mixed or empty. */
+export function uniformWorkspaceIntent(
+  worktrees: readonly { workspaceIntent?: unknown }[]
+): WorkspaceIntent | '' {
+  const [first, ...rest] = worktrees
+  if (!first) {
+    return ''
+  }
+  const intent = resolveWorkspaceIntent(first.workspaceIntent)
+  return rest.every((item) => resolveWorkspaceIntent(item.workspaceIntent) === intent) ? intent : ''
+}

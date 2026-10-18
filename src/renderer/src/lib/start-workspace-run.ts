@@ -39,7 +39,10 @@ async function readyPortForService(
       offset: 0,
       length: 16_384
     })
-    return readWorkspaceRunReadyPortFromToml(decodeBase64(chunk.contentBase64), service.readyPortEnv)
+    return readWorkspaceRunReadyPortFromToml(
+      decodeBase64(chunk.contentBase64),
+      service.readyPortEnv
+    )
   } catch {
     return undefined
   }

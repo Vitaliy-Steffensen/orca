@@ -162,10 +162,7 @@ function reconcileWorkspaceRuns(): number | null {
       useAppStore.getState().setWorkspaceRun(worktreeId, result.entry)
     }
     if (result.shouldOpenBrowser && result.entry) {
-      const command = findWorkspaceRunCommandById(
-        useAppStore.getState(),
-        result.entry.commandId
-      )
+      const command = findWorkspaceRunCommandById(useAppStore.getState(), result.entry.commandId)
       const plan = workspaceRunBrowserOpenPlan({
         command,
         services: result.entry.services,

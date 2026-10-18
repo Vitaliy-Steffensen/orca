@@ -1,10 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import type { WorkspacePort } from '../../../shared/workspace-ports'
 import type { WorkspaceRunQuickCommand } from '../../../shared/terminal-quick-command-types'
-import {
-  workspaceRunBrowserOpenPlan,
-  workspaceRunLoginPageId
-} from './open-workspace-run-browser'
+import { workspaceRunBrowserOpenPlan, workspaceRunLoginPageId } from './open-workspace-run-browser'
 import { listeningPortNumbers } from './workspace-run-ports'
 import { transitionWorkspaceRun, type WorkspaceRunEntry } from './workspace-run-transition'
 

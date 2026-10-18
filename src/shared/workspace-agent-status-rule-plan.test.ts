@@ -13,7 +13,6 @@ const NOW = 10_000_000
 function makeConfig(overrides: Partial<WorkspaceStatusRuleConfig> = {}): WorkspaceStatusRuleConfig {
   return {
     ...cloneDefaultWorkspaceStatusRuleConfig(),
-    enabled: true,
     agentRulesEnabled: true,
     statusByAgentCondition: {
       'agent-blocked': 'answer-questions',

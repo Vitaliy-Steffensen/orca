@@ -25,13 +25,12 @@ import {
 } from './run-completion-watcher'
 import { createAutomationRunWriter, type AutomationRunWriter } from './automation-run-writer'
 import { reportAutomationScheduleDrift } from './schedule-drift-report'
+import { recordRefusedAutomationRun, recordUnevaluableAutomation } from './dispatch-refusal'
 import {
-  describeScheduledRefusal,
-  missedBeyondGrace,
-  recordMissedRun,
-  recordRefusedAutomationRun,
-  recordUnevaluableAutomation
-} from './dispatch-refusal'
+  evaluateDueAutomation,
+  pullRequestSyncManualTarget,
+  takeFoldedPullRequestSyncNoOp
+} from './due-automation-evaluation'
 import type {
   AutomationsChangedPayload,
   PublishAutomationsChanged
@@ -148,7 +147,7 @@ export class AutomationService {
     if (!automation) {
       throw new Error('Automation not found.')
     }
-    const target = this.resolveTarget(automation)
+    const target = pullRequestSyncManualTarget(automation) ?? this.resolveTarget(automation)
     const run = await this.runs.createRun(automation, Date.now(), 'manual')
     return await this.requestDispatch(automation, run, target, generation)
   }
@@ -204,6 +203,11 @@ export class AutomationService {
   }
 
   async markDispatchResult(result: AutomationDispatchResult): Promise<AutomationRun> {
+    const folded = await takeFoldedPullRequestSyncNoOp(this.runs, result)
+    if (folded) {
+      clearAutomationDispatchTokens(folded.automationId, result.runId)
+      return folded
+    }
     const run = await this.runs.updateRun(result)
     clearAutomationDispatchTokens(run.automationId, run.id)
     if (!isFinalAutomationRunStatus(run.status)) {
@@ -264,37 +268,20 @@ export class AutomationService {
     }
   }
 
-  private async evaluateAutomation(automation: Automation, now: number): Promise<void> {
-    const generation = this.dispatchGeneration
-    const scheduledFor = this.store.getLatestAutomationOccurrence(automation, now)
-    if (scheduledFor === null) {
-      await this.runs.advanceNextRun(automation.id, now)
-      return
-    }
-    if (missedBeyondGrace({ automation, scheduledFor, now, tickMs: this.tickMs })) {
-      await recordMissedRun({ runs: this.runs, automation, scheduledFor })
-      await this.runs.advanceNextRun(automation.id, now)
-      return
-    }
-
-    // Resolved before the run exists: a refusal repeats every occurrence, and a
-    // */5 automation would otherwise write ~288 identical rows a day — past
-    // retention, which would evict the automation's real history.
-    const target = this.resolveTarget(automation)
-    const canDispatch = this.canDispatchToRenderer() || Boolean(this.headlessDispatcher)
-    const refusal = describeScheduledRefusal({ target, canDispatch })
-    if (refusal && (await this.runs.repeatSkip(automation.id, refusal, scheduledFor))) {
-      await this.runs.advanceNextRun(automation.id, now)
-      return
-    }
-
-    await this.requestDispatch(
+  private evaluateAutomation(automation: Automation, now: number): Promise<void> {
+    return evaluateDueAutomation({
       automation,
-      await this.runs.createRun(automation, scheduledFor),
-      target,
-      generation
-    )
-    await this.runs.advanceNextRun(automation.id, now)
+      now,
+      generation: this.dispatchGeneration,
+      tickMs: this.tickMs,
+      headless: Boolean(this.headlessDispatcher),
+      latestOccurrence: (current, at) => this.store.getLatestAutomationOccurrence(current, at),
+      runs: this.runs,
+      canDispatchToRenderer: () => this.canDispatchToRenderer(),
+      resolveTarget: (current) => this.resolveTarget(current),
+      requestDispatch: (current, run, target, generation) =>
+        this.requestDispatch(current, run, target, generation)
+    })
   }
 
   private resolveTarget(automation: Automation): AutomationRunTargetResult {

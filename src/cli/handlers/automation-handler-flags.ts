@@ -18,6 +18,8 @@ import {
 } from '../flags'
 import { RuntimeClientError } from '../runtime-client'
 
+export { getAutomationKindFlag } from './automation-kind-flag'
+
 const PRESET_TRIGGERS = new Set<AutomationSchedulePreset>(['hourly', 'daily', 'weekdays', 'weekly'])
 const SCHEDULE_MODIFIER_FLAGS = ['day', 'time'] as const
 

@@ -23,6 +23,7 @@ function writerWith(selector: ReturnType<Store['automationChangeSelector']>) {
     createAutomationRun: vi.fn(() => run),
     updateAutomationRun: vi.fn(() => run),
     recordRepeatedAutomationSkip: vi.fn(() => null),
+    recordRepeatedNoOpRun: vi.fn(() => null),
     advanceAutomationNextRun: vi.fn(() => automation),
     automationChangeSelector
   }

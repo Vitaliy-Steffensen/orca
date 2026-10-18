@@ -4,6 +4,7 @@ import { clampLinearIssueListLimit } from '../../shared/linear/issue-read-limits
 import { getIssueComments } from '../linear/linear-issue-comments'
 import {
   createProject,
+  createProjectUpdate,
   getCustomView,
   getProject,
   listCustomViewIssues,
@@ -11,8 +12,11 @@ import {
   listCustomViews,
   listProjectIssues,
   listProjects,
-  type LinearProjectCreateInput
+  type LinearProjectCreateInput,
+  type ProjectUpdateHealth
 } from '../linear/projects'
+import { getClients } from '../linear/client'
+import { linearError } from '../linear/issue-context-errors'
 import { getTeamLabels, getTeamMembers, getTeamStates, listTeams } from '../linear/teams'
 
 export class RuntimeLinearBrowseCommands {
@@ -28,9 +32,19 @@ export class RuntimeLinearBrowseCommands {
     query?: string,
     limit = 20,
     workspaceId?: LinearWorkspaceSelection,
-    force?: boolean
+    force?: boolean,
+    lead?: 'me'
   ): ReturnType<typeof listProjects> {
-    return listProjects(query, Math.min(Math.max(1, limit), 50), workspaceId, force)
+    return listProjects(query, Math.min(Math.max(1, limit), 50), workspaceId, force, lead)
+  }
+
+  linearCreateProjectUpdate(input: {
+    projectId: string
+    body: string
+    health?: ProjectUpdateHealth
+    workspaceId?: string
+  }): ReturnType<typeof createProjectUpdate> {
+    return createProjectUpdate(input)
   }
 
   linearCreateProject(
@@ -46,6 +60,18 @@ export class RuntimeLinearBrowseCommands {
     force?: boolean
   ): ReturnType<typeof getProject> {
     return getProject(id, workspaceId, force)
+  }
+
+  linearShowProject(
+    id: string,
+    workspaceId?: string,
+    force?: boolean
+  ): ReturnType<typeof getProject> {
+    const concrete = workspaceId?.trim() || getClients()[0]?.workspace.id
+    if (!concrete) {
+      throw linearError('linear_not_connected', 'Not connected to Linear.')
+    }
+    return getProject(id, concrete, force)
   }
 
   linearListProjectIssues(

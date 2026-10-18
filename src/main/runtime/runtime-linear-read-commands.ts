@@ -103,10 +103,17 @@ export class RuntimeLinearReadCommands extends RuntimeLinearContextCommands {
     query?: string
     limit?: number
     workspaceId?: (string & {}) | 'all'
+    lead?: 'me'
   }): Promise<LinearProjectListResult> {
     const limit = clampLinearSearchLimit(params.limit)
     try {
-      const result = await this.linearListProjects(params.query, limit, params.workspaceId, true)
+      const result = await this.linearListProjects(
+        params.query,
+        limit,
+        params.workspaceId,
+        true,
+        params.lead
+      )
       const projects = result.items.slice(0, limit).map((project) => ({
         id: project.id,
         name: project.name,

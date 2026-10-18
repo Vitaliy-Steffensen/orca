@@ -1,4 +1,4 @@
-import { resolveWorkspaceIntent } from '../../../../shared/workspace-intent'
+import { uniformWorkspaceIntent } from '../../../../shared/workspace-intent'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useAppStore } from '@/store'
 import { useAllWorktrees, useRepoById, useRepoMap, useWorktreeMap } from '@/store/selectors'
@@ -188,16 +188,10 @@ export function useWorktreeContextMenuModel({
       ? autonomy
       : ''
   }, [activeContextWorktrees])
-  const contextWorkspaceIntent = useMemo(() => {
-    const [first, ...rest] = activeContextWorktrees
-    if (!first) {
-      return ''
-    }
-    const intent = resolveWorkspaceIntent(first.workspaceIntent)
-    return rest.every((item) => resolveWorkspaceIntent(item.workspaceIntent) === intent)
-      ? intent
-      : ''
-  }, [activeContextWorktrees])
+  const contextWorkspaceIntent = useMemo(
+    () => uniformWorkspaceIntent(activeContextWorktrees),
+    [activeContextWorktrees]
+  )
   const batchDeleteWorktrees = useMemo(
     () =>
       activeContextWorktrees.filter((item) => {

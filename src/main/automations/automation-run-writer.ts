@@ -11,6 +11,8 @@ export type AutomationRunWriter = {
   updateRun: DurableWrite<Store['updateAutomationRun']>
   /** Null when nothing could be folded — the caller then writes an ordinary run. */
   repeatSkip: DurableWrite<Store['recordRepeatedAutomationSkip']>
+  /** Null when this no-op could not fold into the previous row. */
+  foldNoOp: DurableWrite<Store['recordRepeatedNoOpRun']>
   advanceNextRun: DurableWrite<Store['advanceAutomationNextRun']>
 }
 
@@ -23,6 +25,7 @@ export function createAutomationRunWriter(
     | 'createAutomationRun'
     | 'updateAutomationRun'
     | 'recordRepeatedAutomationSkip'
+    | 'recordRepeatedNoOpRun'
     | 'advanceAutomationNextRun'
     | 'automationChangeSelector'
     | 'flushPendingOrThrowAsync'
@@ -61,6 +64,14 @@ export function createAutomationRunWriter(
       if (run) {
         await store.flushPendingOrThrowAsync({ drainToStableGeneration: false })
         announce(automationId, 'run')
+      }
+      return run
+    },
+    foldNoOp: async (result): Promise<AutomationRun | null> => {
+      const run = store.recordRepeatedNoOpRun(result)
+      if (run) {
+        await store.flushPendingOrThrowAsync({ drainToStableGeneration: false })
+        announce(run.automationId, 'run')
       }
       return run
     }

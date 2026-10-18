@@ -106,4 +106,19 @@ describe('formatAutomationList reports each row host', () => {
 
     expect(output).not.toContain('host:')
   })
+
+  it('prints a pull request sync without a project or prompt', () => {
+    const sync = automation({
+      kind: 'pull_request_sync',
+      name: 'Pull request sync',
+      prompt: '',
+      agentId: 'claude',
+      projectId: ''
+    })
+    expect(formatAutomationList({ automations: [sync] })).toContain('pull request sync')
+    const shown = formatAutomationShow({ automation: sync })
+    expect(shown).toContain('kind: pull_request_sync')
+    expect(shown).not.toContain('prompt:')
+    expect(shown).not.toContain('legacyRepoId:')
+  })
 })
