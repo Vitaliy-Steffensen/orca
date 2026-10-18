@@ -45,6 +45,7 @@ const mocks = vi.hoisted(() => {
     openFile: vi.fn(),
     openConflictFile: vi.fn(),
     openBranchDiff: vi.fn(),
+    openBranchWorktreeDiff: vi.fn(),
     createEmptySplitGroup: vi.fn(),
     discardRuntimeGitPath: vi.fn(),
     bulkStageRuntimeGitPaths: vi.fn(),
@@ -170,8 +171,7 @@ function resetState(overrides: Partial<Record<string, unknown>> = {}): void {
     remoteStatusesByWorktree: {},
     isRemoteOperationActive: false,
     inFlightRemoteOpKind: null,
-    // Fork: these cover the status sections; the all-changes list is the fork's default.
-    settings: { sourceControlGrouping: 'status' },
+    settings: {},
     hostedReviewCache: {},
     prCache: {},
     commitMessageGenerationRecords: {},
@@ -210,6 +210,7 @@ function resetState(overrides: Partial<Record<string, unknown>> = {}): void {
     openConflictFile: mocks.calls.openConflictFile,
     openConflictReview: vi.fn(),
     openBranchDiff: mocks.calls.openBranchDiff,
+    openBranchWorktreeDiff: mocks.calls.openBranchWorktreeDiff,
     createEmptySplitGroup: mocks.calls.createEmptySplitGroup,
     openAllDiffs: vi.fn(),
     openBranchAllDiffs: vi.fn(),
@@ -259,7 +260,9 @@ function renderSourceControl(): void {
 }
 
 function clickUncommitted(path: string, init: MouseEventInit = {}): void {
-  const row = container.querySelector<HTMLDivElement>(`[data-source-control-path="${path}"]`)
+  const row = container.querySelector<HTMLDivElement>(
+    `[data-source-control-path="${path}"][data-source-control-area]`
+  )
   expect(row).not.toBeNull()
   act(() => {
     row?.dispatchEvent(new MouseEvent('click', { bubbles: true, ...init }))
@@ -267,7 +270,9 @@ function clickUncommitted(path: string, init: MouseEventInit = {}): void {
 }
 
 function doubleClickUncommitted(path: string): void {
-  const row = container.querySelector<HTMLDivElement>(`[data-source-control-path="${path}"]`)
+  const row = container.querySelector<HTMLDivElement>(
+    `[data-source-control-path="${path}"][data-source-control-area]`
+  )
   expect(row).not.toBeNull()
   act(() => {
     row?.dispatchEvent(new MouseEvent('dblclick', { bubbles: true }))
@@ -432,11 +437,12 @@ describe('SourceControl preview row opens', () => {
     })
     renderSourceControl()
     mocks.state.settings = {
-      activeRuntimeEnvironmentId: 'runtime-other',
-      sourceControlGrouping: 'status'
+      activeRuntimeEnvironmentId: 'runtime-other'
     }
 
-    const row = container.querySelector<HTMLDivElement>('[data-source-control-path="src/file.ts"]')
+    const row = container.querySelector<HTMLDivElement>(
+      '[data-source-control-path="src/file.ts"][data-source-control-area="unstaged"]'
+    )
     const discardButton = row?.querySelector<HTMLButtonElement>(
       'button[aria-label="Discard changes"]'
     )
@@ -487,7 +493,7 @@ describe('SourceControl preview row opens', () => {
     renderSourceControl()
 
     const row = container.querySelector<HTMLDivElement>(
-      '[data-source-control-path="packages/nested"]'
+      '[data-source-control-path="packages/nested"][data-source-control-area="unstaged"]'
     )
     expect(row?.textContent).toContain('Stage inside submodule')
     expect(
@@ -506,7 +512,7 @@ describe('SourceControl preview row opens', () => {
 
     clickBranchRow()
 
-    expect(mocks.calls.openBranchDiff).toHaveBeenCalledWith(
+    expect(mocks.calls.openBranchWorktreeDiff).toHaveBeenCalledWith(
       mocks.activeWorktree.id,
       '/repo/wt',
       expect.objectContaining({ path: 'src/branch.ts' }),

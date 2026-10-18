@@ -18,6 +18,27 @@ export type AllChangesTreeNode = SourceControlTreeNode<
   typeof ALL_CHANGES_AREA
 >
 
+export function ChangesViewedCount({
+  viewed,
+  total
+}: {
+  viewed: number
+  total: number
+}): React.JSX.Element | null {
+  if (total <= 0) {
+    return null
+  }
+  return (
+    <span
+      data-testid="source-control-viewed-count"
+      className="mr-2 shrink-0 text-[11px] tabular-nums text-muted-foreground"
+      title={translate('allChanges.viewedCountTitle', 'Files you have ticked off in this review')}
+    >
+      {translate('allChanges.viewedCount', '{{viewed}}/{{total}} viewed', { viewed, total })}
+    </span>
+  )
+}
+
 function ListedLineTotal({
   entries
 }: {
@@ -84,7 +105,8 @@ export function SourceControlAllChangesSection({
   pendingReviewCountByPath,
   activeOpenRowKeys,
   activeOpenRowKey,
-  reviewByPath
+  reviewByPath,
+  viewedCount
 }: {
   baseRef: string | null
   entries: GitBranchChangeEntry[]
@@ -110,8 +132,9 @@ export function SourceControlAllChangesSection({
   pendingReviewCountByPath: Map<string, number>
   activeOpenRowKeys: ReadonlySet<string>
   activeOpenRowKey: string | null
-  /** Fork: present only where review progress is tracked, which today is the PR diff viewer. */
   reviewByPath?: ReadonlyMap<string, BranchEntryRowReview>
+  /** Files ticked off in this review, out of the files the section lists. */
+  viewedCount?: number
 }): React.JSX.Element {
   const revealRequestId = useSourceControlRowRevealRequestId(activeOpenRowKey)
   const fileCount = entries.length
@@ -157,7 +180,7 @@ export function SourceControlAllChangesSection({
   )
 
   return (
-    <div>
+    <div data-testid="source-control-changes-section">
       <SectionHeader
         label={translate('allChanges.title', 'Changes')}
         count={fileCount}
@@ -167,6 +190,9 @@ export function SourceControlAllChangesSection({
         actions={
           <>
             <ListedLineTotal entries={entries} />
+            {viewedCount !== undefined && (
+              <ChangesViewedCount viewed={viewedCount} total={entries.length} />
+            )}
             {filterBadge && (
               <span
                 title={filterBadge.title}

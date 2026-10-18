@@ -27,6 +27,8 @@ Adding a feature here? See the rule at the top of [`CLAUDE.md`](./CLAUDE.md).
 - Right-click a workspace to Archive it: everything it is running shuts down and it leaves the
   sidebar, keeping the checkout. Cmd+J's "View Archived Workspaces" brings them back to unarchive,
   and a merged or closed pull request can archive its workspace instead of deleting it.
+- Source Control shows Changes, Staged Changes and Unstaged Changes together. Tick a file off on
+  the Changes list; it unticks itself and shows a dot when that file actually changes.
 
 ## Inherited from `frbarbre/orca`
 
@@ -94,4 +96,3 @@ Taken whole with every mirror; the fork lineage's work on top of upstream.
 56. A review summary shows the verdict it was submitted with. (§56)
 57. `orca file open --line/--column` opens a file with the cursor on that spot. (§57)
 58. Group workspace status lanes into collapsible sidebar sections, each header counting what it holds. (§58)
-59. Tick files off in the PR Diff Viewer; a file unticks itself and shows a dot when it actually changes. (§59)

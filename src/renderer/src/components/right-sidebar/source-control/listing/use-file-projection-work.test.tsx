@@ -279,7 +279,6 @@ describe('useSourceControlFileProjection view-mode gating', () => {
     expect(counters.injectExpandedSubmoduleRows).toBe(0)
     expect(counters.injectExpandedSubmoduleEntries).toBeGreaterThan(0)
     expect(result.current.visibleTreeRowsBySection).toEqual({})
-    expect(result.current.visibleBranchTreeRows).toEqual([])
   })
 
   it('builds no list projection in tree mode', () => {
@@ -292,7 +291,6 @@ describe('useSourceControlFileProjection view-mode gating', () => {
 
     expect(counters.injectExpandedSubmoduleEntries).toBe(0)
     expect(counters.buildGitStatusSourceControlTree).toBeGreaterThan(0)
-    expect(counters.buildSourceControlTree).toBeGreaterThan(0)
     expect(result.current.visibleListRowsBySection).toEqual({})
   })
 
@@ -310,7 +308,6 @@ describe('useSourceControlFileProjection view-mode gating', () => {
     rerender({ entries, branchEntries, filterQuery: '', sourceControlViewMode: 'tree' })
 
     expect(result.current.visibleListRowsBySection).toEqual({})
-    expect(result.current.visibleBranchTreeRows.length).toBeGreaterThan(0)
     expect(
       Object.values(result.current.visibleTreeRowsBySection).reduce(
         (total, rows) => total + rows.length,
@@ -322,7 +319,6 @@ describe('useSourceControlFileProjection view-mode gating', () => {
     rerender({ entries, branchEntries, filterQuery: '', sourceControlViewMode: 'list' })
 
     expect(result.current.visibleTreeRowsBySection).toEqual({})
-    expect(result.current.visibleBranchTreeRows).toEqual([])
     expect(result.current.visibleListRowsBySection).toEqual(listRows)
   })
 })

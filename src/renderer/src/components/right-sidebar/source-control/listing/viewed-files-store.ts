@@ -4,7 +4,7 @@ import {
   clearFileViewed,
   markFileViewed,
   type ViewedFilesState
-} from '../../../../../shared/diff-review-identity'
+} from '../../../../../../shared/diff-review-identity'
 
 const stateByWorkspace = new Map<string, ViewedFilesState>()
 const loadingByWorkspace = new Map<string, Promise<void>>()
@@ -43,7 +43,7 @@ function write(worktreeId: string, next: ViewedFilesState): void {
   stateByWorkspace.set(worktreeId, next)
   emit()
   void window.api?.pendingReview?.writeViewedFiles(worktreeId, next).catch((error: unknown) => {
-    console.error('[pr-diff] could not save the files you ticked off:', error)
+    console.error('[source-control] could not save the files you ticked off:', error)
   })
 }
 

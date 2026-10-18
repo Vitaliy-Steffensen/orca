@@ -3,6 +3,7 @@ import { act, renderHook } from '@testing-library/react'
 import { describe, expect, it } from 'vitest'
 import type { GitStatusEntry } from '../../../../../../shared/git-status-types'
 import { useAllChangesProjection } from './use-all-changes-projection'
+import type { FlatEntry } from './use-selection'
 import { clearChangesFilter, setChangesFilter, toggleUncommittedOnly } from '@/lib/changes-filter'
 
 const unstaged: GitStatusEntry = { path: 'src/ui/b.ts', status: 'modified', area: 'unstaged' }
@@ -12,13 +13,13 @@ const committed = { path: 'src/ui/a.ts', status: 'modified' as const }
 function renderProjection(
   sourceControlViewMode: 'list' | 'tree',
   collapsedTreeDirs = new Set<string>(),
-  activeWorktreeId = 'wt'
+  activeWorktreeId = 'wt',
+  visibleSelectionEntries: FlatEntry[] = []
 ) {
   return renderHook(() =>
     useAllChangesProjection({
       activeWorktreeId,
-      sourceControlGrouping: 'all',
-      visibleSelectionEntries: [],
+      visibleSelectionEntries,
       entries: [unstaged, untracked],
       branchEntries: [committed, { path: 'filtered-out.ts', status: 'added' }],
       filteredGrouped: { staged: [], unstaged: [unstaged], untracked: [untracked] },
@@ -34,23 +35,14 @@ function project(sourceControlViewMode: 'list' | 'tree', collapsedTreeDirs = new
 }
 
 describe('useAllChangesProjection', () => {
-  it('still lists rows under forceEnabled when the grouping preference is status', () => {
-    const { result } = renderHook(() =>
-      useAllChangesProjection({
-        activeWorktreeId: 'wt-forced',
-        sourceControlGrouping: 'status',
-        visibleSelectionEntries: [],
-        entries: [unstaged],
-        branchEntries: [committed],
-        filteredGrouped: { staged: [], unstaged: [unstaged], untracked: [] },
-        filteredBranchEntries: [committed],
-        sourceControlViewMode: 'list',
-        collapsedTreeDirs: new Set(),
-        forceEnabled: true
-      })
-    )
-    expect(result.current.showAllChanges).toBe(true)
+  it('keeps staged and unstaged rows selectable while the changes list is showing', () => {
+    const selectable: FlatEntry[] = [
+      { key: 'staged::src/ui/b.ts', entry: unstaged, area: 'staged' }
+    ]
+    const { result } = renderProjection('list', new Set(), 'wt-selectable', selectable)
+    expect(result.current.selectableEntries).toBe(selectable)
     expect(result.current.allChangeEntries.map((entry) => entry.path)).toEqual([
+      'README.md',
       'src/ui/a.ts',
       'src/ui/b.ts'
     ])

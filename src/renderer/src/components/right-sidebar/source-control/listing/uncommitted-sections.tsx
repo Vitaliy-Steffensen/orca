@@ -32,8 +32,8 @@ const SECTION_LABELS: Record<SourceControlSectionArea, { key: string; fallback: 
     fallback: 'Staged Changes'
   },
   unstaged: {
-    key: 'auto.components.right.sidebar.SourceControl.d4ef4bafc5',
-    fallback: 'Changes'
+    key: 'sourceControlSections.unstaged',
+    fallback: 'Unstaged Changes'
   },
   untracked: {
     key: 'auto.components.right.sidebar.SourceControl.522f44dce5',
@@ -104,16 +104,27 @@ export function SourceControlUncommittedSections(props: {
         // Why: visibility and execution resolve paths via the same eligibility rules, so the button never shows for a set the handler would filter to empty.
         const actionSection = props.unfilteredDisplaySectionsById.get(id) ?? section
         const actionItems = actionSection.items
-        const stageAllPaths = actionItems.filter(isStageableStatusEntry).map((entry) => entry.path)
-        const unstageAllPaths = getUnstageAllPaths(actionItems)
-        const discardAllPaths = getDiscardAllPaths(actionItems, area)
         // Why: a capped listing cannot name every untracked file, and the host has no untracked-only stage.
+        const stageAllPaths = actionItems
+          .filter(
+            (entry) =>
+              isStageableStatusEntry(entry) &&
+              !(props.isStatusTruncated && entry.area === 'untracked')
+          )
+          .map((entry) => entry.path)
+        const unstageAllPaths = getUnstageAllPaths(actionItems)
+        // The Unstaged section holds untracked files too, and each kind has its own bulk button.
+        const discardGroups = (
+          id === 'unstaged' ? (['unstaged', 'untracked'] as const) : [area]
+        ).flatMap((discardArea) => {
+          const paths = getDiscardAllPaths(actionItems, discardArea)
+          return paths.length > 0 ? [{ area: discardArea, paths }] : []
+        })
         const canStageAll =
           !props.normalizedFilter &&
           stageAllPaths.length > 0 &&
           !(props.isStatusTruncated && id === 'untracked')
         const canUnstageAll = !props.normalizedFilter && unstageAllPaths.length > 0
-        const canRevertAll = !props.normalizedFilter && discardAllPaths.length > 0
         const sectionLabel = id === 'conflicts' ? CONFLICTS_SECTION_LABEL : SECTION_LABELS[area]
         const sectionViewAction = getSourceControlSectionViewAction(actionSection)
         return (
@@ -126,27 +137,29 @@ export function SourceControlUncommittedSections(props: {
               onToggle={() => props.toggleSection(id)}
               actions={
                 <div className="flex items-center">
-                  {canRevertAll && (
-                    <ActionButton
-                      icon={area === 'untracked' ? Trash : Undo2}
-                      title={
-                        area === 'untracked'
-                          ? translate(
-                              'auto.components.right.sidebar.SourceControl.2f609a2e7c',
-                              'Delete all untracked'
-                            )
-                          : translate(
-                              'auto.components.right.sidebar.SourceControl.ce41708855',
-                              'Discard all'
-                            )
-                      }
-                      onClick={(event) => {
-                        event.stopPropagation()
-                        props.requestDiscardAllInArea(area, discardAllPaths)
-                      }}
-                      disabled={props.isExecutingBulk}
-                    />
-                  )}
+                  {!props.normalizedFilter &&
+                    discardGroups.map((group) => (
+                      <ActionButton
+                        key={group.area}
+                        icon={group.area === 'untracked' ? Trash : Undo2}
+                        title={
+                          group.area === 'untracked'
+                            ? translate(
+                                'auto.components.right.sidebar.SourceControl.2f609a2e7c',
+                                'Delete all untracked'
+                              )
+                            : translate(
+                                'auto.components.right.sidebar.SourceControl.ce41708855',
+                                'Discard all'
+                              )
+                        }
+                        onClick={(event) => {
+                          event.stopPropagation()
+                          props.requestDiscardAllInArea(group.area, group.paths)
+                        }}
+                        disabled={props.isExecutingBulk}
+                      />
+                    ))}
                   {canStageAll && (
                     <ActionButton
                       icon={Plus}

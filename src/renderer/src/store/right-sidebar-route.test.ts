@@ -9,9 +9,9 @@ describe('normalizeRightSidebarRoute', () => {
     })
   })
 
-  it('preserves the git-only PR diff viewer route', () => {
+  it('opens Source Control for a profile still sitting on the retired PR diff viewer', () => {
     expect(normalizeRightSidebarRoute('pr-diff')).toEqual({
-      rightSidebarTab: 'pr-diff',
+      rightSidebarTab: 'source-control',
       rightSidebarExplorerView: 'files'
     })
   })

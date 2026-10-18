@@ -1,5 +1,5 @@
 import React from 'react'
-import { List, ListTree, MoreHorizontal, RefreshCw, Rows3, Settings2 } from 'lucide-react'
+import { List, ListTree, MoreHorizontal, RefreshCw, Settings2 } from 'lucide-react'
 import type { SourceControlViewMode } from '../../../../../../shared/ui-chrome-types'
 import { Button } from '@/components/ui/button'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
@@ -17,9 +17,7 @@ export function SourceControlHeaderOverflowMenu({
   onToggleViewMode,
   onChangeBaseRef,
   onRefreshBranchCompare,
-  branchCompareRefreshDisabled,
-  sourceControlGrouping,
-  onToggleGrouping
+  branchCompareRefreshDisabled
 }: {
   sourceControlViewMode: SourceControlViewMode
   viewModeToggleDisabled: boolean
@@ -27,8 +25,6 @@ export function SourceControlHeaderOverflowMenu({
   onChangeBaseRef: () => void
   onRefreshBranchCompare: () => void
   branchCompareRefreshDisabled: boolean
-  sourceControlGrouping?: 'all' | 'status'
-  onToggleGrouping?: () => void
 }): React.JSX.Element {
   const viewModeLabel =
     sourceControlViewMode === 'tree'
@@ -72,14 +68,6 @@ export function SourceControlHeaderOverflowMenu({
           )}
           {viewModeLabel}
         </DropdownMenuItem>
-        {onToggleGrouping ? (
-          <DropdownMenuItem disabled={viewModeToggleDisabled} onSelect={onToggleGrouping}>
-            <Rows3 className="size-3.5" />
-            {sourceControlGrouping === 'status'
-              ? translate('allChanges.showOneList', 'Show all changes in one list')
-              : translate('allChanges.groupByStatus', 'Group by status')}
-          </DropdownMenuItem>
-        ) : null}
         <DropdownMenuItem onSelect={onChangeBaseRef}>
           <Settings2 className="size-3.5" />
           {translate('auto.components.right.sidebar.SourceControl.476b77745b', 'Change Base Ref')}…

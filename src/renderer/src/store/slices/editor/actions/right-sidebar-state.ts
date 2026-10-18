@@ -97,12 +97,9 @@ export function createRightSidebarState(set: EditorSet, _get: EditorGet): RightS
       })),
     showRightSidebarSearch: (payload) =>
       set((s) => {
-        // Why: Source Control and the PR diff viewer search their own changed files, so the find
-        // chord opens their bar rather than yanking the user over to the Explorer.
-        if (
-          !payload &&
-          (s.rightSidebarTab === 'source-control' || s.rightSidebarTab === 'pr-diff')
-        ) {
+        // Why: Source Control searches its own changed files, so the find chord opens its bar
+        // rather than yanking the user over to the Explorer.
+        if (!payload && s.rightSidebarTab === 'source-control') {
           return {
             rightSidebarOpen: true,
             rightSidebarFindExpanded: true,

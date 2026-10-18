@@ -39,13 +39,17 @@ export function normalizeRightSidebarRoute(
     }
     return { rightSidebarTab: tab, rightSidebarExplorerView: 'files' }
   }
+  // The PR diff viewer was folded into Source Control. A profile still sitting on that tab
+  // opens the panel that absorbed it.
+  if (tab === 'pr-diff') {
+    return { rightSidebarTab: 'source-control', rightSidebarExplorerView: 'files' }
+  }
   if (
     tab === 'explorer' ||
     tab === 'vault' ||
     tab === 'workspaces' ||
     tab === 'pr-checks' ||
     tab === 'source-control' ||
-    tab === 'pr-diff' ||
     tab === 'checks' ||
     tab === 'ports'
   ) {

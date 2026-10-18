@@ -19,6 +19,7 @@ import { usePublishedOpenInSelectionPath } from './use-open-in-selection-path'
 import type { SourceControlWorktreeContext } from './use-worktree-context'
 import { usePendingReviewCountByPath } from '@/components/pending-review/pending-review-count'
 import { useAllChangesProjection } from './use-all-changes-projection'
+import { useChangesReviewProgress } from './use-changes-review-progress'
 
 /**
  * Projects git status and branch compare into the rows the panel renders, and layers the
@@ -47,7 +48,6 @@ export function useSourceControlFileListing({
   repositoryHuge,
   rightSidebarTab,
   sourceControlGroupOrder,
-  sourceControlGrouping,
   sourceControlRef,
   sourceControlViewMode,
   worktreeMap,
@@ -74,7 +74,6 @@ export function useSourceControlFileListing({
   repositoryHuge: SourceControlWorktreeContext['repositoryHuge']
   rightSidebarTab: SourceControlWorktreeContext['rightSidebarTab']
   sourceControlGroupOrder: SourceControlPanelViewState['sourceControlGroupOrder']
-  sourceControlGrouping: SourceControlPanelViewState['sourceControlGrouping']
   sourceControlRef: SourceControlPanelViewState['sourceControlRef']
   sourceControlViewMode: SourceControlPanelViewState['sourceControlViewMode']
   worktreeMap: SourceControlWorktreeContext['worktreeMap']
@@ -108,7 +107,6 @@ export function useSourceControlFileListing({
     filteredBranchEntries,
     visibleTreeRowsBySection,
     visibleListRowsBySection,
-    visibleBranchTreeRows,
     visibleSelectionEntries
   } = useSourceControlFileProjection({
     entries,
@@ -140,7 +138,6 @@ export function useSourceControlFileListing({
 
   const allChanges = useAllChangesProjection({
     activeWorktreeId,
-    sourceControlGrouping,
     visibleSelectionEntries,
     entries,
     branchEntries,
@@ -149,7 +146,11 @@ export function useSourceControlFileListing({
     sourceControlViewMode,
     collapsedTreeDirs
   })
-  const { selectableEntries, showAllChanges } = allChanges
+  const { selectableEntries } = allChanges
+  const { reviewByPath, viewedCount } = useChangesReviewProgress(
+    activeWorktreeId,
+    allChanges.allChangeEntries
+  )
 
   // Why: modifier-click keeps the current pane intact by opening the file in a fresh split to the right.
   const {
@@ -165,7 +166,6 @@ export function useSourceControlFileListing({
     worktreePath,
     visibleSelectionEntries: selectableEntries,
     branchSummary,
-    sourceControlGrouping,
     statusEntries: entries,
     allChanges
   })
@@ -173,9 +173,9 @@ export function useSourceControlFileListing({
   usePublishedSourceControlReviewOrder({
     activeWorktreeId,
     visibleSelectionEntries,
-    visibleBranchTreeRows,
+    visibleBranchTreeRows: [],
     filteredBranchEntries,
-    allChangesReviewOrder: showAllChanges ? allChanges.allChangesReviewOrder : undefined
+    allChangesReviewOrder: allChanges.allChangesReviewOrder
   })
 
   const shouldOpenAsSplit = useCallback(
@@ -269,6 +269,8 @@ export function useSourceControlFileListing({
   return {
     ...allChanges,
     openAllChangesEntry,
+    reviewByPath,
+    viewedCount,
     reviewThreadCountByPath,
     pendingReviewCountByPath,
     activeOpenRowKeys,
@@ -312,7 +314,6 @@ export function useSourceControlFileListing({
     unfilteredDisplaySectionsById,
     unresolvedConflictReviewEntries,
     unresolvedConflicts,
-    visibleBranchTreeRows,
     visibleListRowsBySection,
     visibleSelectionEntries,
     visibleTreeRowsBySection

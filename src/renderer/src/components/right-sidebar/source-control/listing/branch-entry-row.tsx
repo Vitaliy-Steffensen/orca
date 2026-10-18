@@ -103,7 +103,7 @@ export function BranchEntryRow({
             data-testid="branch-entry-changed-since-viewed"
             className="size-1.5 shrink-0 rounded-full bg-status-warning"
             title={translate(
-              'prDiff.changedSinceViewed',
+              'allChanges.changedSinceViewed',
               'This file changed since you ticked it off'
             )}
           />
@@ -171,8 +171,8 @@ export function BranchEntryRow({
             onCheckedChange={() => review.onToggleViewed()}
             // Why stopped here: the row opens the file on click, and ticking it off must not.
             onClick={(event) => event.stopPropagation()}
-            aria-label={translate('prDiff.markViewed', 'Viewed')}
-            title={translate('prDiff.markViewed', 'Viewed')}
+            aria-label={translate('allChanges.markViewed', 'Viewed')}
+            title={translate('allChanges.markViewed', 'Viewed')}
           />
         )}
       </div>

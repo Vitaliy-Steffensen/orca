@@ -81,10 +81,11 @@ export function SourceControlTreeDirectoryRow({
   const canStage = !hideBulkActions && actionPaths.stagePaths.length > 0
   const canUnstage = !hideBulkActions && actionPaths.unstagePaths.length > 0
   const canDiscard = !hideBulkActions && actionPaths.discardPaths.length > 0
+  const canDeleteUntracked = !hideBulkActions && actionPaths.untrackedDiscardPaths.length > 0
 
   return (
     <SourceControlTreeDirectoryHeader node={node} isCollapsed={isCollapsed} onToggle={onToggle}>
-      {(canDiscard || canStage || canUnstage) && (
+      {(canDiscard || canDeleteUntracked || canStage || canUnstage) && (
         <div className={SOURCE_CONTROL_ROW_ACTION_OVERLAY_CLASS}>
           {canDiscard && (
             <ActionButton
@@ -103,6 +104,20 @@ export function SourceControlTreeDirectoryRow({
               onClick={(event) => {
                 event.stopPropagation()
                 onRequestDiscardPaths(node.area, actionPaths.discardPaths)
+              }}
+              disabled={isExecutingBulk}
+            />
+          )}
+          {canDeleteUntracked && (
+            <ActionButton
+              icon={Trash}
+              title={translate(
+                'auto.components.right.sidebar.SourceControl.9b367363b6',
+                'Delete untracked in folder'
+              )}
+              onClick={(event) => {
+                event.stopPropagation()
+                onRequestDiscardPaths('untracked', actionPaths.untrackedDiscardPaths)
               }}
               disabled={isExecutingBulk}
             />

@@ -401,7 +401,7 @@ describe('useFileSearchRunner path restriction', () => {
       useFileSearchRunner({
         activeWorktreeId: worktreeId,
         worktreePath: '/repo',
-        scope: 'pr-diff',
+        scope: 'explorer',
         restriction: createFileSearchPathRestriction([]),
         updateActiveSearchState: (update) => updates.push(update)
       })

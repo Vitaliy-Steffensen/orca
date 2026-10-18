@@ -15,6 +15,7 @@ function planApproval(overrides: Partial<NativeChatPlanApproval> = {}) {
     acceptsNote: true,
     isSubmitting: false,
     approve: vi.fn(),
+    keepPlanning: vi.fn(),
     revise
   }
   // `revise` last so it stays the spy whatever the override carries.

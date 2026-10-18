@@ -6,7 +6,6 @@ import { useRightSidebarFindKeys } from './file-find/use-right-sidebar-find-keys
 
 const FileExplorer = lazy(() => import('./FileExplorer'))
 const SourceControl = lazy(() => import('./SourceControl'))
-const PrDiffViewer = lazy(() => import('./PrDiffViewer'))
 const ChecksPanel = lazy(() => import('./ChecksPanel'))
 const PortsPanel = lazy(() => import('./PortsPanel'))
 const AiVaultPanel = lazy(() => import('./AiVaultPanel'))
@@ -30,7 +29,6 @@ export function RightSidebarPanelContent({
       <Suspense fallback={null}>
         {effectiveTab === 'explorer' && <FileExplorer />}
         {effectiveTab === 'source-control' && <SourceControl />}
-        {effectiveTab === 'pr-diff' && <PrDiffViewer />}
         {effectiveTab === 'checks' && <ChecksPanel />}
         {/* Why: SSH port forwarding still depends on the raw ports.detect data,
             which the workspace-scoped status bar popover intentionally does not
