@@ -46,6 +46,7 @@ function renderMenu({
         onRenameStatus={vi.fn()}
         onChangeStatusColor={vi.fn()}
         onChangeStatusIcon={vi.fn()}
+        onChangeStatusSection={vi.fn()}
         onMoveStatus={vi.fn()}
         onRemoveStatus={vi.fn()}
         onAddStatus={onAddStatus}

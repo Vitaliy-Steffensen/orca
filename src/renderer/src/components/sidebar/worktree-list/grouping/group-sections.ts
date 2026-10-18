@@ -55,7 +55,8 @@ export type SectionAppendContext = {
 export function appendOrderedGroups(
   ctx: SectionAppendContext,
   groupsToAppend: OrderedGroupEntry[],
-  projectGroupDepth = 0
+  projectGroupDepth = 0,
+  parentKey?: string
 ): void {
   const {
     result,
@@ -147,7 +148,7 @@ export function appendOrderedGroups(
               }
             })()
 
-    result.push(header)
+    result.push(parentKey === undefined ? header : { ...header, parentKey })
     if (!isCollapsed) {
       if (groupBy === 'repo') {
         const repoIds =
