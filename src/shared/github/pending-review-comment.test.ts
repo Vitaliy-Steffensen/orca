@@ -1,6 +1,11 @@
 import { describe, expect, it } from 'vitest'
 import {
+  acceptAllPendingReviewComments,
+  acceptPendingReviewComment,
+  acceptedPendingReviewComments,
   addPendingReviewComment,
+  discardProposedPendingReviewComments,
+  proposedPendingReviewComments,
   canSubmitReviewVerdict,
   normalizePendingReviewComments,
   pendingReviewCommentsForPath,
@@ -16,6 +21,7 @@ function draft(overrides: Partial<PendingReviewComment> = {}): PendingReviewComm
     line: 12,
     body: 'this leaks',
     createdAt: 1,
+    status: 'accepted',
     ...overrides
   }
 }
@@ -99,5 +105,53 @@ describe('canSubmitReviewVerdict', () => {
 
   it('refuses a comment review that would say nothing at all', () => {
     expect(canSubmitReviewVerdict({ verdict: 'comment', body: '   ', pendingCount: 0 })).toBe(false)
+  })
+})
+
+describe('an agent’s proposals', () => {
+  const AGENT = { kind: 'agent', name: 'Claude Code' } as const
+
+  it('reads a stored comment with no status as proposed when an agent wrote it', () => {
+    const [mine, theirs] = normalizePendingReviewComments([
+      { id: 'a', path: 'src/app.ts', line: 1, body: 'mine', createdAt: 1 },
+      { id: 'b', path: 'src/app.ts', line: 2, body: 'staged', createdAt: 2, agentAuthor: AGENT }
+    ])
+    expect(mine?.status).toBe('accepted')
+    expect(theirs?.status).toBe('proposed')
+  })
+
+  it('keeps a status the file already carries', () => {
+    const [comment] = normalizePendingReviewComments([
+      {
+        id: 'b',
+        path: 'src/app.ts',
+        line: 2,
+        body: 'kept',
+        createdAt: 2,
+        agentAuthor: AGENT,
+        status: 'accepted'
+      }
+    ])
+    expect(comment?.status).toBe('accepted')
+  })
+
+  it('splits what is sendable from what is still only proposed', () => {
+    const queue = [draft(), draft({ id: 'b', status: 'proposed', agentAuthor: AGENT })]
+    expect(acceptedPendingReviewComments(queue).map((c) => c.id)).toStrictEqual(['a'])
+    expect(proposedPendingReviewComments(queue).map((c) => c.id)).toStrictEqual(['b'])
+  })
+
+  it('accepts one by id, and all at once', () => {
+    const queue = [draft({ id: 'a', status: 'proposed' }), draft({ id: 'b', status: 'proposed' })]
+    expect(acceptPendingReviewComment(queue, 'a').map((c) => c.status)).toStrictEqual([
+      'accepted',
+      'proposed'
+    ])
+    expect(acceptAllPendingReviewComments(queue).every((c) => c.status === 'accepted')).toBe(true)
+  })
+
+  it('discards every proposal and leaves the reviewer’s own comments', () => {
+    const queue = [draft(), draft({ id: 'b', status: 'proposed' })]
+    expect(discardProposedPendingReviewComments(queue).map((c) => c.id)).toStrictEqual(['a'])
   })
 })

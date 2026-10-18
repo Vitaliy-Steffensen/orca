@@ -1,5 +1,12 @@
 import React, { useState } from 'react'
-import { CircleCheck, GitMerge, GitPullRequestArrow, ScanEye, Upload } from 'lucide-react'
+import {
+  CircleCheck,
+  GitMerge,
+  GitPullRequestArrow,
+  ScanEye,
+  ScanSearch,
+  Upload
+} from 'lucide-react'
 import { useAppStore } from '@/store'
 import { cn } from '@/lib/utils'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
@@ -99,6 +106,15 @@ export function WorkspaceActionButtons({
           showLabel={showLabels}
           disabled={busy !== null}
           onClick={() => run('review')}
+        />
+      ) : null}
+      {canReview ? (
+        <ActionButton
+          label={translate('auto.components.workspaceActions.reReview', 'Re-review')}
+          icon={<ScanSearch className="size-3.5" />}
+          showLabel={showLabels}
+          disabled={busy !== null}
+          onClick={() => run('re-review')}
         />
       ) : null}
       {primary ? (

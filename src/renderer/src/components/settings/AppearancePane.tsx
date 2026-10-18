@@ -35,10 +35,7 @@ import { getRendererAppPlatform } from '@/lib/renderer-app-platform'
 import { isWebClientLocation } from '@/lib/web-client-location'
 import { SHOW_UI_LANGUAGE_SETTING } from '@/i18n/supported-languages'
 import { translate } from '@/i18n/i18n'
-import {
-  getLeftSidebarAppearanceEntry,
-  getWorkspaceCardLayoutEntry
-} from './appearance-sidebar-search'
+import { getLeftSidebarAppearanceEntry } from './appearance-sidebar-search'
 import { resolveInterfaceSectionSummary } from './appearance-interface-summary'
 export { getAppearancePaneSearchEntries }
 
@@ -159,8 +156,7 @@ export function AppearancePane({
     ...getStatusBarEntries(),
     ...getSidebarEntries(),
     ...getLayoutEntries(),
-    getLeftSidebarAppearanceEntry(),
-    getWorkspaceCardLayoutEntry()
+    getLeftSidebarAppearanceEntry()
   ]
 
   const interfaceMatches = matchesSettingsSearch(searchQuery, interfaceSearchEntries)

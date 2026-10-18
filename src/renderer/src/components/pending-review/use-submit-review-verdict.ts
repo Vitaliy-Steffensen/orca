@@ -2,7 +2,10 @@ import { useCallback, useEffect, useState } from 'react'
 import { toast } from 'sonner'
 import { useAppStore } from '@/store'
 import { usePRCommentScope } from '@/components/pr-comments/use-pr-comment-scope'
-import type { ReviewVerdict } from '../../../../shared/github/pending-review-comment'
+import {
+  acceptedPendingReviewComments,
+  type ReviewVerdict
+} from '../../../../shared/github/pending-review-comment'
 import type { PullRequestReviewer } from '../../../../shared/github/pull-request-reviewers'
 import type {
   PullRequestCommitSummary,
@@ -136,12 +139,12 @@ export function useSubmitReviewVerdict(
         connectionId: repo.connectionId ?? null,
         verdict,
         body,
-        comments: queue.comments
+        comments: acceptedPendingReviewComments(queue.comments)
       })
       if (!result.ok) {
         return result
       }
-      queue.clear()
+      queue.keepProposals()
       setContextNonce((value) => value + 1)
       // Why forced: the comments were just created remotely, and only a real fetch
       // carries the thread ids they need before anyone can reply or resolve them.

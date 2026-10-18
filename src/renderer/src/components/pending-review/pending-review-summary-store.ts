@@ -34,6 +34,20 @@ export function loadPendingReviewSummaries(): Promise<void> {
   return loading
 }
 
+/**
+ * Takes a summary an agent wrote straight to the file.
+ *
+ * Why typing wins: text in the box is newer than the file and is about to be saved over it, so
+ * replacing it here would delete a sentence mid-word.
+ */
+export function applyExternalPendingReviewSummary(worktreeId: string, text: string): void {
+  if (!loaded || typedBeforeLoad.has(worktreeId) || pendingSaves.has(worktreeId)) {
+    return
+  }
+  summaries = { ...summaries, [worktreeId]: text }
+  emit()
+}
+
 function save(worktreeId: string, text: string): void {
   void window.api?.pendingReview?.writeSummary(worktreeId, text).catch((error: unknown) => {
     console.error('[pending-review] could not save the review summary:', error)

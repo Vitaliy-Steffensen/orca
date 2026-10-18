@@ -8,6 +8,7 @@ import { normalizeAppIconId } from '../../../shared/app-icon'
 import { normalizeTerminalCustomThemes } from '../../../shared/terminal-custom-themes'
 import { projectSourceControlAiToLegacyCommitMessageAi } from '../../../shared/source-control-ai'
 import { normalizeUiLanguage } from '../../../shared/ui-language'
+import { normalizeNativeChatPromptMarks } from '../../../shared/native-chat-prompt-marks'
 import { normalizeNativeChatShellEnvironmentVariables } from '../../../shared/native-chat-shell-environment'
 import {
   savedChatUiWithTerminalDefaultView,
@@ -133,6 +134,7 @@ export function normalizeLoadedGlobalSettings(
     nativeChatShellEnvironmentVariables: normalizeNativeChatShellEnvironmentVariables(
       parsed.settings?.nativeChatShellEnvironmentVariables
     ),
+    nativeChatPromptMarks: normalizeNativeChatPromptMarks(parsed.settings?.nativeChatPromptMarks),
     defaultTaskSource: taskProviderSettings.defaultTaskSource,
     visibleTaskProviders: taskProviderSettings.visibleTaskProviders,
     visibleTaskProvidersDefaultedForJira: true,

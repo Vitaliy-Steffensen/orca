@@ -29,7 +29,11 @@ export function archivedWorkspaceMatchesQuery(
   if (needle.length === 0) {
     return true
   }
-  const haystack = [resolveWorktreeDisplayName(worktree), resolveWorktreeBranchLabel(worktree), repoName]
+  const haystack = [
+    resolveWorktreeDisplayName(worktree),
+    resolveWorktreeBranchLabel(worktree),
+    repoName
+  ]
     .join('\n')
     .toLowerCase()
   return haystack.includes(needle)

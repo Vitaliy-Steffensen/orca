@@ -18,6 +18,8 @@ import { OpenInApplicationIcon } from '@/lib/open-in-app-catalog'
 import { getExternalEditorOpenCapability } from '@/lib/external-editor-open-capability'
 import { NO_OPEN_IN_APPLICATIONS } from '@/lib/open-in-application-selection'
 import { showOpenFailureToast } from './worktree-open-failure-toast'
+import { WorktreeOpenInReferenceItems } from './WorktreeOpenInReferenceItems'
+import type { WorkspaceReferenceOpenTarget } from './workspace-reference-open-targets'
 import type { OpenInApplication } from '../../../../shared/ui-chrome-types'
 import { translate } from '@/i18n/i18n'
 import { ShortcutKeyCombo } from '@/components/ShortcutKeyCombo'
@@ -92,6 +94,8 @@ export function getOpenInEntryAvailability(
       }
     : { disabled: false }
 }
+
+const NO_REFERENCE_TARGETS: readonly WorkspaceReferenceOpenTarget[] = []
 
 function stopMenuPropagation(event: React.SyntheticEvent): void {
   event.stopPropagation()
@@ -265,8 +269,11 @@ export function WorktreeOpenInSubMenu({
   connectionId,
   runtimeEnvironmentId,
   ownerUnresolved,
-  disabled
-}: WorktreeOpenInMenuItemsProps): React.JSX.Element {
+  disabled,
+  references = NO_REFERENCE_TARGETS
+}: WorktreeOpenInMenuItemsProps & {
+  references?: readonly WorkspaceReferenceOpenTarget[]
+}): React.JSX.Element {
   return (
     <DropdownMenuSub>
       <DropdownMenuSubTrigger disabled={disabled}>
@@ -278,6 +285,12 @@ export function WorktreeOpenInSubMenu({
         onClick={stopMenuPropagation}
         onPointerDown={stopMenuPropagation}
       >
+        {references.length ? (
+          <>
+            <WorktreeOpenInReferenceItems targets={references} disabled={disabled} />
+            <DropdownMenuSeparator />
+          </>
+        ) : null}
         <WorktreeOpenInMenuItems
           worktreePath={worktreePath}
           connectionId={connectionId}

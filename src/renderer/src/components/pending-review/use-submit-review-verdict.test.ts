@@ -11,12 +11,23 @@ const mocks = vi.hoisted(() => ({
 vi.mock('@/components/pr-comments/use-pr-comment-scope', () => ({
   usePRCommentScope: (worktreeId: string) => mocks.scopes.get(worktreeId)
 }))
-vi.mock('@/store', () => ({ useAppStore: () => vi.fn() }))
+vi.mock('@/store', () => ({ useAppStore: () => vi.fn().mockResolvedValue(undefined) }))
+vi.mock('sonner', () => ({ toast: { success: vi.fn(), error: vi.fn() } }))
 vi.mock('@/i18n/i18n', () => ({ translate: (_key: string, fallback: string) => fallback }))
 
 import { useSubmitReviewVerdict } from './use-submit-review-verdict'
 
-const QUEUE = { comments: [], add: vi.fn(), updateBody: vi.fn(), remove: vi.fn(), clear: vi.fn() }
+const QUEUE = {
+  comments: [],
+  add: vi.fn(),
+  updateBody: vi.fn(),
+  remove: vi.fn(),
+  accept: vi.fn(),
+  acceptAll: vi.fn(),
+  discardProposals: vi.fn(),
+  keepProposals: vi.fn(),
+  clear: vi.fn()
+}
 
 function context(login: string) {
   return {
@@ -57,5 +68,40 @@ describe('useSubmitReviewVerdict', () => {
 
     await act(async () => resolveB(context('bob')))
     expect(result.current.reviewers?.map((r) => r.login)).toEqual(['bob'])
+  })
+
+  it('submits what you accepted and leaves the agent’s proposals in the shelf', async () => {
+    const submit = vi.fn().mockResolvedValue({ ok: true, url: 'u', state: 'COMMENTED' })
+    const keepProposals = vi.fn()
+    const comments = [
+      { id: 'mine', path: 'a.ts', line: 1, body: 'mine', createdAt: 1, status: 'accepted' },
+      {
+        id: 'theirs',
+        path: 'a.ts',
+        line: 2,
+        body: 'staged',
+        createdAt: 2,
+        status: 'proposed',
+        agentAuthor: { kind: 'agent', name: 'Claude Code' }
+      }
+    ] as const
+    mocks.context.mockResolvedValue(context('alice'))
+    Object.assign(window, {
+      api: { pendingReview: { context: mocks.context, submit } }
+    })
+
+    const { result } = renderHook(() =>
+      useSubmitReviewVerdict('wt-a', { ...QUEUE, comments: [...comments], keepProposals })
+    )
+    await act(async () => undefined)
+    await act(async () => {
+      await result.current.submit('comment', 'looks good')
+    })
+
+    expect(submit.mock.calls[0]?.[0].comments.map((c: { id: string }) => c.id)).toStrictEqual([
+      'mine'
+    ])
+    expect(keepProposals).toHaveBeenCalled()
+    expect(QUEUE.clear).not.toHaveBeenCalled()
   })
 })

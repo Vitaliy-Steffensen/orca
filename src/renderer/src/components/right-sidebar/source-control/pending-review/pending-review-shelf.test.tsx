@@ -106,8 +106,36 @@ describe('SourceControlPendingReviewShelf', () => {
     expect(screen.getByPlaceholderText('Add review summary…')).toBeInTheDocument()
   })
 
+  // Without this, a shelf holding nothing but an agent's unread findings offers a submit
+  // that would send an empty review — or worse, read as though the agent's work were yours.
+  it('offers no bare comment verdict when every queued comment is still a proposal', () => {
+    renderShelf(false, [
+      {
+        id: 'p1',
+        path: 'a.ts',
+        line: 3,
+        body: 'This retry never backs off',
+        createdAt: 1,
+        status: 'proposed',
+        agentAuthor: { kind: 'agent', name: 'Claude Code' }
+      }
+    ])
+    expect(screen.getByRole('button', { name: /Only comment/ })).toBeDisabled()
+    expect(screen.queryByText('Your review is pending')).toBeNull()
+  })
+
+  it('offers the comment verdict once one of them is accepted', () => {
+    renderShelf(false, [
+      { id: 'p1', path: 'a.ts', line: 3, body: 'kept', createdAt: 1, status: 'accepted' }
+    ])
+    expect(screen.getByRole('button', { name: /Only comment/ })).toBeEnabled()
+    expect(screen.getByText('Your review is pending')).toBeInTheDocument()
+  })
+
   it('leaves your unsent review comments to their own Pending review section', () => {
-    renderShelf(false, [{ id: 'd1', path: 'a.ts', line: 3, body: 'Rename this', createdAt: 1 }])
+    renderShelf(false, [
+      { id: 'd1', path: 'a.ts', line: 3, body: 'Rename this', createdAt: 1, status: 'accepted' }
+    ])
     expect(screen.queryByRole('button', { name: /Pending review/ })).toBeNull()
   })
 

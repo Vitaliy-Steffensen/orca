@@ -3,6 +3,7 @@ import React from 'react'
 import { cn } from '@/lib/utils'
 import { getWorkspaceAttachments } from '../../../../shared/workspace-attachments'
 import { WorktreeCardHeader } from './worktree-card-header'
+import { WorktreeCardReviewFacts } from './worktree-card-review-facts'
 import { WorktreeCardMetaRow } from './worktree-card-meta-row'
 import { WorktreeCardLinearTitle } from './worktree-card-linear-title'
 import { WorktreeCardDetailsHover } from './WorktreeCardMeta'
@@ -22,12 +23,7 @@ export function WorktreeCardParentContent({
   const {
     worktree,
     affiliateListMode,
-    newCardStyle,
-    lineageChildren,
     showStatus,
-    unreadTooltip,
-    stopQuickActionPointerPropagation,
-    handleToggleUnreadQuick,
     statusLaneReview,
     reviewChecks,
     branchIdentityDisplay,
@@ -63,7 +59,6 @@ export function WorktreeCardParentContent({
     titleOnlyCard,
     parentContentMarginLeft,
     showCombinedStatusSlot,
-    showUnreadQuickAction,
     hasHoverDetails,
     hoverBranchName,
     hoverWorkspaceTitle
@@ -75,6 +70,7 @@ export function WorktreeCardParentContent({
       data-worktree-card-hover-trigger=""
     >
       <WorktreeCardHeader card={card} presentation={presentation} />
+      <WorktreeCardReviewFacts card={card} />
       {presentation.hasMetaRow && <WorktreeCardMetaRow card={card} presentation={presentation} />}
       <WorktreeCardLinearTitle
         enabled={card.showLinearTitle}
@@ -146,7 +142,7 @@ export function WorktreeCardParentContent({
         <div
           className={cn(
             'flex shrink-0 justify-center',
-            newCardStyle ? 'mr-1 w-5 items-center' : 'items-start pt-[2px]',
+            'mr-1 w-5 items-center',
             affiliateListMode && 'px-1'
           )}
           data-worktree-card-status-slot=""
@@ -154,14 +150,9 @@ export function WorktreeCardParentContent({
           <WorktreeCardStatusSlot
             worktreeId={worktree.id}
             showStatus={showStatus}
-            showUnreadAction={showUnreadQuickAction}
             isUnread={worktree.isUnread}
-            unreadTooltip={unreadTooltip}
-            onPointerDown={stopQuickActionPointerPropagation}
-            onToggleUnread={handleToggleUnreadQuick}
             prDisplay={statusLaneReview}
             reviewChecks={reviewChecks.total > 0 ? reviewChecks : undefined}
-            newCardStyle={newCardStyle}
             hasBranchIdentity={Boolean(branchIdentityDisplay)}
             isArchived={worktree.isArchived}
           />
@@ -173,9 +164,7 @@ export function WorktreeCardParentContent({
         className={cn(
           'flex min-w-0 flex-1 flex-col gap-1.5',
           // Why: inline agent rows intentionally outdent into the card gutter; inner elements handle truncation.
-          showInlineAgentList ||
-            getWorkspaceAttachments(worktree).length > 1 ||
-            (!newCardStyle && lineageChildren)
+          showInlineAgentList || getWorkspaceAttachments(worktree).length > 1
             ? 'overflow-visible'
             : 'overflow-hidden'
         )}

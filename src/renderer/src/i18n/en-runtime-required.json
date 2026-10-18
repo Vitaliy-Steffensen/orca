@@ -831,6 +831,9 @@
           "Search": {
             "1ec640c9c7": "match"
           },
+          "SearchQueryRow": {
+            "clearLabel": "Clear search"
+          },
           "SourceControl": {
             "1406954883": "Clear all notes...",
             "03d238218c": "Details",
@@ -857,6 +860,7 @@
             "9febd8ab5f": "create_pr",
             "a0cc0e6b4e": "loading",
             "c105a61960": "merge",
+            "c35baf2f1e": "Filter files…",
             "cc474e0b8c": "Notes",
             "conflictsSection": "Conflicts",
             "createPrIntentConfigureAi": "Add a commit message or configure Source Control AI settings.",
@@ -864,6 +868,7 @@
             "d13edef890": "Collapse notes",
             "d2e9189866": "all",
             "d4ef4bafc5": "Changes",
+            "d4f8c2a901": "Clear and close filter",
             "d62bc0c7d8": "untracked",
             "e59bca888a": "markdown",
             "eae2d051af": "Copy all notes",

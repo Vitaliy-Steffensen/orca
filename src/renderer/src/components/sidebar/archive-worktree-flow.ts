@@ -28,12 +28,13 @@ async function setArchivedFlag(
   const failures: string[] = []
   await Promise.all(
     worktreeIds.map(async (worktreeId) => {
-      const result = await updateWorktreeMeta(worktreeId, { isArchived }, {
-        executionHostId: executionHostIdFor(
-          worktreeId,
-          executionHostIdByWorktreeId?.[worktreeId]
-        )
-      })
+      const result = await updateWorktreeMeta(
+        worktreeId,
+        { isArchived },
+        {
+          executionHostId: executionHostIdFor(worktreeId, executionHostIdByWorktreeId?.[worktreeId])
+        }
+      )
       if (!result.ok) {
         failures.push(result.error)
       }

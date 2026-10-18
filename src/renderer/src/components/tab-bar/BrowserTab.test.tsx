@@ -94,6 +94,10 @@ vi.mock('lucide-react', () => ({
   }
 }))
 
+vi.mock('@/hooks/useShortcutLabel', () => ({
+  useOptionalShortcutLabel: () => null
+}))
+
 vi.mock('@/components/ui/dropdown-menu', () => ({
   DropdownMenu: function DropdownMenu(props: { children?: unknown }) {
     return { type: 'DropdownMenu', props }
