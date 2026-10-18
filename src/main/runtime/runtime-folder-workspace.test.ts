@@ -125,6 +125,7 @@ describe('mergeRuntimeFolderWorkspace', () => {
       sortOrder: 0,
       lastActivityAt: 0,
       workspaceStatus: 'in-progress',
+      workspaceAutonomy: 'supervised',
       diffComments: undefined,
       mobileDiffReview: undefined
     })

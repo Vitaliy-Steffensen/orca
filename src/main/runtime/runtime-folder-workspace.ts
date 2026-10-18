@@ -1,4 +1,5 @@
 import { DEFAULT_WORKSPACE_STATUS_ID } from '../../shared/workspace-statuses'
+import { resolveWorkspaceAutonomy } from '../../shared/workspace-autonomy'
 import type { Repo } from '../../shared/repo-types'
 import type { WorktreeMeta } from '../../shared/worktree/meta-types'
 import type { Worktree } from '../../shared/worktree/types'
@@ -71,6 +72,7 @@ export function mergeRuntimeFolderWorkspace(
     ...(meta.cliProvenance !== undefined ? { cliProvenance: meta.cliProvenance } : {}),
     ...(meta.priorWorktreeIds !== undefined ? { priorWorktreeIds: meta.priorWorktreeIds } : {}),
     workspaceStatus: meta.workspaceStatus ?? DEFAULT_WORKSPACE_STATUS_ID,
+    workspaceAutonomy: resolveWorkspaceAutonomy(meta.workspaceAutonomy),
     diffComments: meta.diffComments,
     pendingReviewComments: meta.pendingReviewComments,
     mobileDiffReview: meta.mobileDiffReview
