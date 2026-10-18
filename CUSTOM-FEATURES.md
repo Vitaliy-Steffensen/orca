@@ -20,6 +20,8 @@ Adding a feature here? See the rule at the top of [`CLAUDE.md`](./CLAUDE.md).
 - An agent can stage inline review comments and the review summary with `orca review comment add`
   and `orca review summary set`, marked as its drafts in the pending-review shelf, for you to accept
   and submit as your own review.
+- A review comment an agent stages is a proposal with an Accept and a Reject on it; only what you
+  accept is submitted, and the rest stay waiting.
 
 ## Inherited from `frbarbre/orca`
 

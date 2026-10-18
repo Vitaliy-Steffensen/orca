@@ -108,6 +108,7 @@ describe('pending review comments', () => {
     path: 'src/a.ts',
     line: 20,
     body: 'queued',
+    status: 'accepted',
     createdAt: 1,
     ...overrides
   })

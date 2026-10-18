@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button'
 import { translate } from '@/i18n/i18n'
 import { cn } from '@/lib/utils'
 import {
+  acceptedPendingReviewComments,
   canSubmitReviewVerdict,
   type ReviewVerdict
 } from '../../../../../../shared/github/pending-review-comment'
@@ -106,10 +107,14 @@ export function SourceControlPendingReviewShelf({
     ? VERDICTS.filter((verdict) => verdict.id === 'comment')
     : VERDICTS
 
+  // An agent's proposal is not yet part of this review, so it counts for neither the
+  // standing banner nor whether there is anything to send.
+  const acceptedCount = acceptedPendingReviewComments(queue.comments).length
+
   // Why the queue wins over the verdict on record: unsent comments are the newer state,
   // and saying "you approved" while drafts sit unsent would be wrong about right now.
   const standing =
-    queue.comments.length > 0
+    acceptedCount > 0
       ? {
           Icon: MessageCircle,
           text: translate(
@@ -228,7 +233,7 @@ export function SourceControlPendingReviewShelf({
                   !canSubmitReviewVerdict({
                     verdict: verdict.id,
                     body,
-                    pendingCount: queue.comments.length
+                    pendingCount: acceptedCount
                   })
                 }
                 onClick={() => void submit(verdict.id)}

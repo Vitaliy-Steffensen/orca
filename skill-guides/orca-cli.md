@@ -194,22 +194,36 @@ When the user sent you their notes, answer each one with `ORCA notes reply --id 
 ## Staged Review Comments
 
 When the workspace is for reviewing someone else's pull request, draft the review into the user's
-pending-review shelf. Each comment waits there, marked as yours, until the user accepts or drops it
-and submits the review under their own name — you cannot submit, and nothing reaches the provider
-until they do.
+pending-review shelf. Everything you stage is a **proposal**: it shows on its diff line marked as
+yours, with an Accept and a Reject on it, and it joins the review only when the user accepts it.
+You cannot submit, and nothing reaches the provider until they do. So stage what you are sure of,
+and keep anything uncertain in your reply instead.
 
 ```text
-ORCA review comment add --file src/api.ts --line 42 --body "This retry loop never backs off." --json
+ORCA review comment add --file src/api.ts --line 42 --agent "Claude Code" --body "This retry loop never backs off." --json
 ORCA review comment list --json
 ORCA review comment rm --id <comment id> --json
 ORCA review summary set --body "Two retry paths need backoff." --json
 ```
 
-Line numbers and `--file` work as in `notes add`. `review summary set` replaces the whole summary
-box, so list first if the user may have typed there. These are for someone else's pull request;
-`notes add` is for commentary on the user's own diff. The queue lives on the device whose Orca app
-submits the review, so these commands fail on a headless Orca server rather than staging where
-nobody will look.
+Line numbers and `--file` work as in `notes add`. Name yourself with `--agent`; a pass name
+("Claude Code (review-fe)") tells the user which review a proposal came from. Lead the body with
+the severity and what this diff has to do with the problem — `🔴 Blocker · introduced` — then
+`**What:**`, `**Why:**` and `**Fix:**` lines; `introduced` is a line the diff added, `aggravated` an
+unchanged line a change made reachable more often, `adjacent` an unchanged line in a touched file,
+`pre-existing` anything else. Stage the first two; the rest belong in your reply, since commenting
+on lines the author never touched is rarely welcome.
+
+Run `review comment list --json` before your first add: a non-empty shelf means the user has already
+drafted, so append rather than replace, and confirm the count afterwards — a stage that silently
+failed is worse than none. `review summary set` replaces the whole summary box, so list first if the
+user may have typed there; put the verdict and the findings with no single line in it.
+
+Reviewing someone else's pull request → `review comment add`. Commentary on the user's own diff →
+`notes add`. If the workspace does not make it obvious, compare
+`gh pr view --json author -q .author.login` with `gh api user -q .login`. The queue lives on the
+device whose Orca app submits the review, so these commands fail on a headless Orca server rather
+than staging where nobody will look.
 
 ## Terminals
 

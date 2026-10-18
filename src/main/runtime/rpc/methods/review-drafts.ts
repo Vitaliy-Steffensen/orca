@@ -1,6 +1,7 @@
 import { randomUUID } from 'node:crypto'
 import {
   addPendingReviewComment,
+  proposedPendingReviewComments,
   removePendingReviewComment,
   type PendingReviewComment
 } from '../../../../shared/github/pending-review-comment'
@@ -54,13 +55,17 @@ export const REVIEW_DRAFT_METHODS = [
           : {}),
         body: params.body,
         createdAt: Date.now(),
-        agentAuthor: { kind: 'agent', name: params.agent }
+        agentAuthor: { kind: 'agent', name: params.agent },
+        status: 'proposed'
       }
       const comments = await updatePendingReviewDrafts(surface.file(), worktreeId, (queue) =>
         addPendingReviewComment(queue, comment)
       )
       surface.announceChange({ worktreeId, comments })
-      return { comment, pendingCount: comments.length }
+      return {
+        comment,
+        pendingCount: proposedPendingReviewComments(comments).length
+      }
     }
   }),
   defineMethod({

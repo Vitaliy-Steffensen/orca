@@ -20,7 +20,8 @@ import {
 
 function formatCommentRow(comment: PendingReviewComment): string {
   const author = comment.agentAuthor ? `[${comment.agentAuthor.name}] ` : ''
-  return `${comment.id}  ${comment.path}:${commentLineLabel(comment)}  ${author}${comment.body.replace(/\s+/g, ' ')}`
+  const status = comment.status === 'proposed' ? 'proposed' : 'accepted'
+  return `${comment.id}  ${status}  ${comment.path}:${commentLineLabel(comment)}  ${author}${comment.body.replace(/\s+/g, ' ')}`
 }
 
 export const REVIEW_HANDLERS: Record<string, CommandHandler> = {
@@ -54,7 +55,7 @@ export const REVIEW_HANDLERS: Record<string, CommandHandler> = {
       response,
       ctx.json,
       ({ comment, pendingCount }) =>
-        `Staged review comment ${comment.id} on ${comment.path}:${commentLineLabel(comment)} (${pendingCount} waiting to be submitted).`
+        `Proposed review comment ${comment.id} on ${comment.path}:${commentLineLabel(comment)} (${pendingCount} waiting for the user to accept).`
     )
   },
   'review comment list': async (ctx) => {

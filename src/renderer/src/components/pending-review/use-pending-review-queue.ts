@@ -2,8 +2,12 @@ import { useCallback, useEffect, useMemo } from 'react'
 import { useAppStore } from '@/store'
 import { createBrowserUuid } from '@/lib/browser-uuid'
 import {
+  acceptAllPendingReviewComments,
+  acceptPendingReviewComment,
   addPendingReviewComment,
+  discardProposedPendingReviewComments,
   normalizePendingReviewComments,
+  proposedPendingReviewComments,
   removePendingReviewComment,
   updatePendingReviewCommentBody,
   type PendingReviewComment
@@ -15,6 +19,12 @@ export type PendingReviewQueue = {
   add: (draft: { path: string; line: number; startLine?: number; body: string }) => void
   updateBody: (id: string, body: string) => void
   remove: (id: string) => void
+  /** Takes one of the agent's proposals over, so the next submit carries it. */
+  accept: (id: string) => void
+  acceptAll: () => void
+  discardProposals: () => void
+  /** Drops what was just submitted and leaves the proposals nobody has judged yet. */
+  keepProposals: () => void
   clear: () => void
 }
 
@@ -81,11 +91,16 @@ export function usePendingReviewQueue(worktreeId: string | null): PendingReviewQ
               ? { startLine: draft.startLine }
               : {}),
             body: draft.body,
-            createdAt: Date.now()
+            createdAt: Date.now(),
+            status: 'accepted'
           })
         ),
       updateBody: (id, body) => write(updatePendingReviewCommentBody(comments, id, body)),
       remove: (id) => write(removePendingReviewComment(comments, id)),
+      accept: (id) => write(acceptPendingReviewComment(comments, id)),
+      acceptAll: () => write(acceptAllPendingReviewComments(comments)),
+      discardProposals: () => write(discardProposedPendingReviewComments(comments)),
+      keepProposals: () => write(proposedPendingReviewComments(comments)),
       clear: () => write([])
     }),
     [comments, write]

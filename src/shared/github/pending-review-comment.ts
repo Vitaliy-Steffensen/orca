@@ -1,5 +1,12 @@
 import type { DiffCommentAgentAuthor } from '../diff-comment-types'
 import type { GitHubRepositoryIdentity } from './pull-request-types'
+/**
+ * Fork: `proposed` is a finding an agent staged that the reviewer has not taken over yet, and it
+ * is never submitted. Accepting one makes it `accepted`, which is what a comment the reviewer
+ * wrote is from the start.
+ */
+export type PendingReviewCommentStatus = 'proposed' | 'accepted'
+
 /** A review comment queued locally, not yet sent to the provider. */
 export type PendingReviewComment = {
   /** Local id. Never a provider comment id — these do not exist remotely yet. */
@@ -12,6 +19,8 @@ export type PendingReviewComment = {
   createdAt: number
   /** Fork: set on a comment an agent staged through `orca review comment add`; never sent to the provider. */
   agentAuthor?: DiffCommentAgentAuthor
+  /** Fork: only `accepted` comments are submitted. */
+  status: PendingReviewCommentStatus
 }
 
 export type ReviewVerdict = 'comment' | 'approve' | 'request-changes'
@@ -98,6 +107,39 @@ export function removePendingReviewComment(
   return queue.filter((comment) => comment.id !== id)
 }
 
+export function acceptedPendingReviewComments(
+  queue: readonly PendingReviewComment[]
+): PendingReviewComment[] {
+  return queue.filter((comment) => comment.status === 'accepted')
+}
+
+export function proposedPendingReviewComments(
+  queue: readonly PendingReviewComment[]
+): PendingReviewComment[] {
+  return queue.filter((comment) => comment.status === 'proposed')
+}
+
+export function acceptPendingReviewComment(
+  queue: readonly PendingReviewComment[],
+  id: string
+): PendingReviewComment[] {
+  return queue.map((comment) =>
+    comment.id === id ? { ...comment, status: 'accepted' as const } : comment
+  )
+}
+
+export function acceptAllPendingReviewComments(
+  queue: readonly PendingReviewComment[]
+): PendingReviewComment[] {
+  return queue.map((comment) => ({ ...comment, status: 'accepted' as const }))
+}
+
+export function discardProposedPendingReviewComments(
+  queue: readonly PendingReviewComment[]
+): PendingReviewComment[] {
+  return acceptedPendingReviewComments(queue)
+}
+
 export function pendingReviewCommentsForPath(
   queue: readonly PendingReviewComment[],
   path: string
@@ -116,6 +158,7 @@ export function pendingReviewCommentsForPath(
 export function canSubmitReviewVerdict(args: {
   verdict: ReviewVerdict
   body: string
+  /** Accepted comments only — a shelf holding nothing but proposals has nothing to send. */
   pendingCount: number
 }): boolean {
   if (args.verdict !== 'comment') {
@@ -157,8 +200,24 @@ function sanitizeComment(value: unknown): PendingReviewComment | null {
       : {}),
     body,
     createdAt: typeof createdAt === 'number' && Number.isFinite(createdAt) ? createdAt : 0,
-    ...(agentAuthor ? { agentAuthor } : {})
+    ...(agentAuthor ? { agentAuthor } : {}),
+    status: sanitizeStatus(raw.status, agentAuthor)
   }
+}
+
+/**
+ * A missing status is read from the author, not defaulted: a queue written before proposals
+ * existed holds agent comments that were never accepted, and defaulting them to accepted would
+ * submit findings the reviewer has not read.
+ */
+function sanitizeStatus(
+  value: unknown,
+  agentAuthor: DiffCommentAgentAuthor | null
+): PendingReviewCommentStatus {
+  if (value === 'accepted' || value === 'proposed') {
+    return value
+  }
+  return agentAuthor ? 'proposed' : 'accepted'
 }
 
 export function normalizePendingReviewComments(value: unknown): PendingReviewComment[] {

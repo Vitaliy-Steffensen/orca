@@ -1,4 +1,4 @@
-import { REVIEW_AGENT_NOTE_INSTRUCTION } from './agent-note-prompt'
+import { REVIEW_STAGED_COMMENT_INSTRUCTION } from './agent-note-prompt'
 
 export const WORKSPACE_ACTION_PROMPT_IDS = [
   'commitAndPush',
@@ -51,12 +51,13 @@ Reply with what you checked, anything you changed, and the final state.`,
   reviewPullRequest: `Review pull request #{{prNumber}} — "{{prTitle}}" ({{prUrl}}).
 The branch {{branch}} is checked out in {{worktreePath}}; compare it against {{baseRef}}.
 
+- If you have the review-pr skill, use it: it picks the passes this diff needs, checks the UI in the browser when one changed, and handles the staging below. Otherwise follow the rest of this prompt.
 - Read the full diff and the surrounding code it touches.
 - Point out bugs, missing edge cases, risky changes and anything that does not fit how the codebase already does things.
 - Order findings by severity, each with the file and line and a concrete suggestion.
 - Do not change any code.
 
-${REVIEW_AGENT_NOTE_INSTRUCTION}`
+${REVIEW_STAGED_COMMENT_INSTRUCTION}`
 }
 
 export function resolveWorkspaceActionPromptTemplate(

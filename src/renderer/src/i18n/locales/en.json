@@ -18212,7 +18212,12 @@
         "noPullRequest": "This workspace has no pull request to review.",
         "submittedWithState": "Review submitted ({{state}}).",
         "submitted": "Review submitted.",
-        "rowBadge": "{{value0}} review comment{{value1}} waiting to be submitted"
+        "rowBadge": "{{value0}} review comment{{value1}} waiting to be submitted",
+        "anAgent": "an agent",
+        "proposedBy": "Proposed by {{agent}} — not part of your review yet",
+        "accept": "Accept",
+        "acceptHint": "Add this to your review, to send with your verdict",
+        "reject": "Reject proposal"
       },
       "pr": {
         "comments": {

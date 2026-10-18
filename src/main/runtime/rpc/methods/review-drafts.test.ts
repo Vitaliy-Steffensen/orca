@@ -32,6 +32,7 @@ let announced: PendingReviewDraftChange[] = []
 
 async function storedFile(): Promise<{
   drafts: Record<string, { id: string; body: string }[]>
+  proposals: Record<string, { id: string; body: string }[]>
   summaries: Record<string, string>
 }> {
   return JSON.parse(await readFile(file, 'utf8'))
@@ -62,13 +63,17 @@ describe('staged review comment RPC methods', () => {
     })
 
     expect(response).toMatchObject({ ok: true, result: { pendingCount: 1 } })
-    expect((await storedFile()).drafts['wt-1']).toEqual([
+    // In `proposals`, never `drafts`: a build that predates proposals submits everything in
+    // `drafts`, and a finding the reviewer has not read is not theirs to publish.
+    expect((await storedFile()).drafts['wt-1']).toBeUndefined()
+    expect((await storedFile()).proposals['wt-1']).toEqual([
       expect.objectContaining({
         path: 'src/a.ts',
         startLine: 3,
         line: 5,
         body: 'This retry loop never backs off.',
-        agentAuthor: { kind: 'agent', name: 'Claude Code' }
+        agentAuthor: { kind: 'agent', name: 'Claude Code' },
+        status: 'proposed'
       })
     ])
     expect(announced).toEqual([
@@ -94,7 +99,7 @@ describe('staged review comment RPC methods', () => {
       })
     ])
 
-    const bodies = (await storedFile()).drafts['wt-1'].map((comment) => comment.body)
+    const bodies = (await storedFile()).proposals['wt-1'].map((comment) => comment.body)
     expect(bodies.sort()).toEqual(['one', 'two'])
   })
 
@@ -107,7 +112,7 @@ describe('staged review comment RPC methods', () => {
       agent: 'Codex'
     })
     const listed = await call('reviewComment.list', { worktree: 'id:wt-1' })
-    const id = (await storedFile()).drafts['wt-1'][0].id
+    const id = (await storedFile()).proposals['wt-1'][0].id
 
     const removed = await call('reviewComment.remove', { worktree: 'id:wt-1', id })
     const missing = await call('reviewComment.remove', { worktree: 'id:wt-1', id: 'nope' })
@@ -115,7 +120,7 @@ describe('staged review comment RPC methods', () => {
     expect(listed).toMatchObject({ ok: true, result: { comments: [{ body: 'one' }] } })
     expect(removed).toMatchObject({ ok: true, result: { removed: true } })
     expect(missing).toMatchObject({ ok: true, result: { removed: false } })
-    expect((await storedFile()).drafts['wt-1']).toBeUndefined()
+    expect((await storedFile()).proposals['wt-1']).toBeUndefined()
   })
 
   it('writes the review summary, and an empty body clears it', async () => {

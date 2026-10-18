@@ -1,7 +1,14 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 function draft(id: string) {
-  return { id, path: 'src/a.ts', line: 3, body: `note ${id}`, createdAt: 1 }
+  return {
+    id,
+    path: 'src/a.ts',
+    line: 3,
+    body: `note ${id}`,
+    createdAt: 1,
+    status: 'accepted' as const
+  }
 }
 
 let resolveRead: (value: Record<string, unknown>) => void
