@@ -56,6 +56,7 @@ import { createPtyApi, createSshApi } from './preload-api/web-terminal-api'
 import { createWebUiApi } from './preload-api/web-ui-api'
 import { createUpdaterApi } from './preload-api/web-updater-api'
 import { createWebWorkspacePortsApi } from './preload-api/web-workspace-ports-api'
+import { createWebContainerRuntimeApi } from './preload-api/web-container-runtime-api'
 import { createWebWorkspaceRunCredentialsApi } from './preload-api/web-workspace-run-credentials-api'
 import { createWebWorkspaceSessionApi } from './preload-api/web-workspace-session-api'
 import { createWorktreesApi } from './preload-api/web-worktrees-api'
@@ -78,6 +79,7 @@ function createWebPreloadApi(): Partial<PreloadApi> {
     ...createWebPlatformApi(),
     ...createWebWorkspacePortsApi(),
     workspaceRunCredentials: createWebWorkspaceRunCredentialsApi(),
+    containerRuntime: createWebContainerRuntimeApi(),
     ...createWebOrcaProfilesApi(),
     ...createWebE2EApi(),
     ...createWebSettingsApi(),

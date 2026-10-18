@@ -29,6 +29,10 @@ export async function stopWorkspaceRunNow(worktreeId: string): Promise<void> {
     return
   }
 
+  if (entry.state === 'starting-runtime') {
+    return
+  }
+
   if (entry.services.length === 0) {
     const commands = store.settings?.terminalQuickCommands ?? []
     const command = commands.find(
@@ -58,11 +62,11 @@ export async function stopWorkspaceRunNow(worktreeId: string): Promise<void> {
     return
   }
 
-  for (const service of entry.services) {
-    for (const ptyId of useAppStore.getState().ptyIdsByTabId[service.tabId] ?? []) {
+  for (const tabId of new Set(entry.services.map((service) => service.tabId))) {
+    for (const ptyId of useAppStore.getState().ptyIdsByTabId[tabId] ?? []) {
       await window.api.pty.kill(ptyId).catch(() => undefined)
     }
-    useAppStore.getState().closeTab(service.tabId, { recordInteraction: false, reason: 'cleanup' })
+    useAppStore.getState().closeTab(tabId, { recordInteraction: false, reason: 'cleanup' })
   }
 }
 

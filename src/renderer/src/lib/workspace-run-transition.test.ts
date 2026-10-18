@@ -14,19 +14,19 @@ function entry(overrides: Partial<WorkspaceRunEntry> = {}): WorkspaceRunEntry {
     readyDeadlineAt: 120_000,
     openedBrowser: false,
     services: [
-      { label: 'Web', tabId: 'web', readyPort: 5173, ready: false },
-      { label: 'Api', tabId: 'api', ready: false }
+      { label: 'Web', tabId: 'run-tab', leafId: 'web', readyPort: 5173, ready: false },
+      { label: 'Api', tabId: 'run-tab', leafId: 'api', ready: false }
     ],
     ...overrides
   }
 }
 
 function observe(
-  tabId: string,
+  leafId: string,
   overrides: Partial<WorkspaceRunServiceObservation> = {}
 ): WorkspaceRunServiceObservation {
   return {
-    tabId,
+    leafId,
     tabPresent: true,
     ptyAlive: true,
     ptyAliveSince: 0,
@@ -53,8 +53,8 @@ describe('transitionWorkspaceRun', () => {
       state: 'running',
       openedBrowser: false,
       services: [
-        { label: 'Web', tabId: 'web', readyPort: 5173, ready: true },
-        { label: 'Api', tabId: 'api', ready: true }
+        { label: 'Web', tabId: 'run-tab', leafId: 'web', readyPort: 5173, ready: true },
+        { label: 'Api', tabId: 'run-tab', leafId: 'api', ready: true }
       ]
     })
     const result = transitionWorkspaceRun({
@@ -72,8 +72,8 @@ describe('transitionWorkspaceRun', () => {
         state: 'running',
         openedBrowser: true,
         services: [
-          { label: 'Web', tabId: 'web', readyPort: 5173, ready: true },
-          { label: 'Api', tabId: 'api', ready: true }
+          { label: 'Web', tabId: 'run-tab', leafId: 'web', readyPort: 5173, ready: true },
+          { label: 'Api', tabId: 'run-tab', leafId: 'api', ready: true }
         ]
       }),
       now: 5_000,
@@ -125,7 +125,7 @@ describe('transitionWorkspaceRun', () => {
       now: 1_000,
       observations: [observe('web'), observe('api', { tabPresent: false, ptyAlive: false })]
     })
-    expect(partial.entry?.services.map((service) => service.tabId)).toEqual(['web'])
+    expect(partial.entry?.services.map((service) => service.leafId)).toEqual(['web'])
     expect(partial.toast).toBeUndefined()
 
     const last = transitionWorkspaceRun({
@@ -148,7 +148,7 @@ describe('transitionWorkspaceRun', () => {
 
   it('waits out the no-port liveness window', () => {
     const waiting = transitionWorkspaceRun({
-      entry: entry({ services: [{ label: 'Api', tabId: 'api', ready: false }] }),
+      entry: entry({ services: [{ label: 'Api', tabId: 'run-tab', leafId: 'api', ready: false }] }),
       now: 1_000,
       observations: [observe('api', { ptyAliveSince: 1_000 })]
     })
@@ -156,7 +156,7 @@ describe('transitionWorkspaceRun', () => {
     expect(waiting.entry?.services[0]?.ready).toBe(false)
 
     const ready = transitionWorkspaceRun({
-      entry: entry({ services: [{ label: 'Api', tabId: 'api', ready: false }] }),
+      entry: entry({ services: [{ label: 'Api', tabId: 'run-tab', leafId: 'api', ready: false }] }),
       now: 1_000 + WORKSPACE_RUN_LIVENESS_READY_MS,
       observations: [observe('api', { ptyAliveSince: 1_000 })]
     })

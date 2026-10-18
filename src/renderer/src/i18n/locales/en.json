@@ -989,6 +989,15 @@
               "searchFailed": "Unable to search with {{value0}}."
             }
           }
+        },
+        "run": {
+          "container": {
+            "runtime": {
+              "start": {
+                "timedOut": "OrbStack is still starting — the run is going ahead anyway"
+              }
+            }
+          }
         }
       },
       "worktree": {
@@ -1228,7 +1237,8 @@
       "start": {
         "workspace": {
           "run": {
-            "failed": "Run didn't start"
+            "failed": "Run didn't start",
+            "tabTitle": "Run"
           }
         }
       }
@@ -6835,8 +6845,9 @@
           "run": "Run"
         },
         "WorktreeCardRunState": {
-          "booting": "Run starting",
-          "running": "Run is up"
+          "startingRuntime": "Starting OrbStack…",
+          "booting": "Spinning up…",
+          "running": "Running and ready"
         },
         "WorktreeContextMenuRunItem": {
           "stop": "Stop run",
