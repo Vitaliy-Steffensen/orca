@@ -22,6 +22,16 @@ export function hostedReviewInfoFromGitHubPRInfo(pr: PRInfo): HostedReviewInfo {
     ...(pr.confirmedContainedHeadOid
       ? { confirmedContainedHeadOid: pr.confirmedContainedHeadOid }
       : {}),
-    ...(pr.conflictSummary ? { conflictSummary: pr.conflictSummary } : {})
+    ...(pr.conflictSummary ? { conflictSummary: pr.conflictSummary } : {}),
+    ...(pr.createdAt ? { createdAt: pr.createdAt } : {}),
+    ...(typeof pr.additions === 'number' ? { additions: pr.additions } : {}),
+    ...(typeof pr.deletions === 'number' ? { deletions: pr.deletions } : {}),
+    ...(typeof pr.changedFiles === 'number' ? { changedFiles: pr.changedFiles } : {}),
+    ...(pr.diffAreas ? { diffAreas: pr.diffAreas } : {}),
+    ...(typeof pr.unresolvedComments === 'number'
+      ? { unresolvedComments: pr.unresolvedComments }
+      : {}),
+    ...(pr.unresolvedCommentsTruncated ? { unresolvedCommentsTruncated: true } : {}),
+    ...(pr.stack ? { stack: pr.stack } : {})
   }
 }

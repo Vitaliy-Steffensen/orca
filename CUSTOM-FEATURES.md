@@ -24,6 +24,9 @@ Adding a feature here? See the rule at the top of [`CLAUDE.md`](./CLAUDE.md).
   GitHub or Linear page is one menu away.
 - Workspace cards you were asked to review show how long ago the review was asked for, and say when
   it is a re-request with its own fresh clock.
+- A workspace card shows the pull request diff (`+`/`−`), a frontend/backend/e2e/CI pie, Linear
+  priority, GitHub stack position, unresolved review comments, and `Nd` once the pull request has
+  been open longer than 3 days.
 
 ## Inherited from `frbarbre/orca`
 

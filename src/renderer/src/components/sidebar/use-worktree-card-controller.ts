@@ -1,3 +1,4 @@
+import { useAppStore } from '@/store'
 import { useViewerReviewRequest } from '../workspace-status-rules/viewer-review-request-store'
 import { useWorkspaceReferenceDetails } from './use-workspace-reference-details'
 import { getWorkspaceAttachments } from '../../../../shared/workspace-attachments'
@@ -37,7 +38,11 @@ export function useWorktreeCardController(props: ResolvedWorktreeCardProps) {
   const showIssue = foundation.cardProps.includes('issue')
   const showLinearIssue = foundation.cardProps.includes('linear-issue')
   const showLinearTitle = foundation.cardProps.includes('linear-title')
+  const showLinearPriority = foundation.cardProps.includes('linear-priority')
   const showPrAuthor = foundation.cardProps.includes('pr-author')
+  const branchLineTotal = useAppStore(
+    (state) => state.gitBranchLineTotalByWorktree[worktree.id] ?? null
+  )
   const showJiraIssue = foundation.cardProps.includes('jira-issue')
   const showPR = foundation.cardProps.includes('pr')
   const viewerReviewRequest = useViewerReviewRequest(worktree.id)
@@ -76,7 +81,7 @@ export function useWorktreeCardController(props: ResolvedWorktreeCardProps) {
     showIssue,
     issueCacheKey: review.issueCacheKey,
     fetchIssue: foundation.fetchIssue,
-    showLinearIssue: showLinearIssue || showLinearTitle,
+    showLinearIssue: showLinearIssue || showLinearTitle || showLinearPriority,
     linearSourceContext: review.linearSourceContext,
     linearWorkspaceId: review.linearWorkspaceId,
     fetchLinearIssue: foundation.fetchLinearIssue
@@ -165,6 +170,8 @@ export function useWorktreeCardController(props: ResolvedWorktreeCardProps) {
     showIssue,
     showLinearIssue,
     showLinearTitle,
+    showLinearPriority,
+    branchLineTotal,
     showPrAuthor,
     showJiraIssue,
     showPR,

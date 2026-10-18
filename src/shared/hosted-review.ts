@@ -1,5 +1,7 @@
+import type { DiffAreaTotals } from './diff-area'
 import type {
   CheckStatus,
+  GitHubPRStack,
   GitHubRepositoryIdentity,
   PRConflictSummary,
   PRMergeableState,
@@ -52,6 +54,16 @@ export type HostedReviewInfo = {
   /** Target branch name for review-created worktree compare-base repair. */
   baseRefName?: string
   conflictSummary?: PRConflictSummary
+  /** When the review was opened. */
+  createdAt?: string
+  additions?: number
+  deletions?: number
+  changedFiles?: number
+  diffAreas?: DiffAreaTotals
+  unresolvedComments?: number
+  unresolvedCommentsTruncated?: boolean
+  /** GitHub stack this review belongs to. Absent for a review that stands alone. */
+  stack?: GitHubPRStack
 }
 
 export type HostedReviewForBranchArgs = {

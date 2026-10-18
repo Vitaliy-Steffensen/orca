@@ -8,6 +8,7 @@ import {
 import { hasWorktreeCardDetails, WorktreeCardMetaBadges } from './WorktreeCardMeta'
 import { WorktreeCardChipRail } from './worktree-card-chip-rail'
 import { resolveWorktreeCardChips } from './worktree-card-chips'
+import { resolveWorktreeCardFacts } from './worktree-card-facts'
 import { WorktreeCardPortsTrigger } from './WorktreeCardPorts'
 import type { WorktreeCardController } from './use-worktree-card-controller'
 
@@ -67,6 +68,13 @@ export function buildWorktreeCardPresentation(card: WorktreeCardController) {
   // Why: the slot owns the unread/status lane and keeps the glyph passive.
   const showCombinedStatusSlot = showStatus
   const chips = resolveWorktreeCardChips(card)
+  const hasReviewFacts =
+    resolveWorktreeCardFacts({
+      cardProps,
+      review: card.prDisplay && 'mergeable' in card.prDisplay ? card.prDisplay : null,
+      linearPriority: card.linearIssue?.priority,
+      branchLineTotal: card.branchLineTotal
+    }).length > 0
   const showTitleRowIndicators = hasDetails || hasPorts || chips.length > 0
   const showReviewRequestAge = showPR && viewerReviewRequest !== null
   // Why: grouped views can hide the repo badge; don't reserve a blank metadata lane unless there's real content.
@@ -155,7 +163,11 @@ export function buildWorktreeCardPresentation(card: WorktreeCardController) {
     </div>
   ) : null
   const hasSecondaryCardContent =
-    hasMetaRow || !!remoteBranchConflict || showInlineAgentList || showLineageChildChip
+    hasMetaRow ||
+    hasReviewFacts ||
+    !!remoteBranchConflict ||
+    showInlineAgentList ||
+    showLineageChildChip
   const titleOnlyCard = !hasSecondaryCardContent
 
   return {

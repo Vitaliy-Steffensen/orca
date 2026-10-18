@@ -40,6 +40,13 @@ export type WorktreeCardProperty =
   | 'linear-issue'
   | 'linear-title'
   | 'pr-author'
+  // Review facts on the card: diff size, area mix, Linear priority, stack, comments, age.
+  | 'diff'
+  | 'diff-mix'
+  | 'linear-priority'
+  | 'stack'
+  | 'unresolved-comments'
+  | 'pr-open-age'
   | 'jira-issue'
   | 'pr'
   | 'automation'

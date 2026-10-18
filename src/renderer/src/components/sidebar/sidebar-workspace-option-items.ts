@@ -5,7 +5,8 @@ import type {
 import { translate } from '@/i18n/i18n'
 import {
   LINEAR_TITLE_CARD_PROPERTY_OPTION,
-  PR_AUTHOR_CARD_PROPERTY_OPTION
+  PR_AUTHOR_CARD_PROPERTY_OPTION,
+  REVIEW_FACT_CARD_PROPERTY_OPTIONS
 } from './fork-card-property-options'
 
 export const GROUP_BY_OPTIONS = [
@@ -187,6 +188,7 @@ const ISSUE_WORKTREE_CARD_PROPERTY_OPTIONS: WorktreeCardPropertyOption[] = [
     }
   },
   LINEAR_TITLE_CARD_PROPERTY_OPTION,
+  ...REVIEW_FACT_CARD_PROPERTY_OPTIONS,
   {
     id: 'jira-issue',
     properties: ['jira-issue'],

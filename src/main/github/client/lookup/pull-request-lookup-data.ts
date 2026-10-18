@@ -1,3 +1,5 @@
+import type { DiffAreaTotals } from '../../../../shared/diff-area'
+import { readDiffAreaFiles, summarizeDiffAreas } from '../../../../shared/diff-area'
 import type {
   GitHubPRMergeMethodSettings,
   GitHubPRStack,
@@ -44,6 +46,15 @@ export type PullRequestLookupData = {
   headDefaultBranchName?: string
   stack?: GitHubPRStack
   stackMetadataChecked?: boolean
+  createdAt?: string
+  additions?: number
+  deletions?: number
+  changedFiles?: number
+  /** Raw `gh pr view --json files`. Stripped by {@link normalizePullRequestLookupData}. */
+  files?: unknown
+  diffAreas?: DiffAreaTotals
+  unresolvedComments?: number
+  unresolvedCommentsTruncated?: boolean
 }
 
 export type PullRequestLookupPolicy = {
@@ -65,6 +76,10 @@ export type RestPullRequest = {
   mergeable_state?: string | null
   base?: { ref?: string; sha?: string }
   user?: { login?: string } | null
+  created_at?: string
+  additions?: number
+  deletions?: number
+  changed_files?: number
   head?: {
     ref?: string
     sha?: string
@@ -80,10 +95,10 @@ export type RestPullRequest = {
 }
 
 export const PR_LOOKUP_JSON_FIELDS =
-  'number,title,state,url,author,statusCheckRollup,updatedAt,isDraft,mergeable,reviewDecision,mergeStateStatus,autoMergeRequest,baseRefName,headRefName,baseRefOid,headRefOid,headRepositoryOwner,headRepository'
+  'number,title,state,url,author,statusCheckRollup,updatedAt,createdAt,additions,deletions,changedFiles,files,isDraft,mergeable,reviewDecision,mergeStateStatus,autoMergeRequest,baseRefName,headRefName,baseRefOid,headRefOid,headRepositoryOwner,headRepository'
 
 export const PR_BRANCH_LIST_JSON_FIELDS =
-  'number,title,state,url,author,statusCheckRollup,updatedAt,isDraft,mergeable,baseRefName,headRefName,baseRefOid,headRefOid,headRepositoryOwner,headRepository'
+  'number,title,state,url,author,statusCheckRollup,updatedAt,createdAt,additions,deletions,changedFiles,isDraft,mergeable,baseRefName,headRefName,baseRefOid,headRefOid,headRepositoryOwner,headRepository'
 
 export type GitHubPRBranchLookupOptions = HostedReviewExecutionOptions & {
   acceptMergedFallbackPR?: boolean
@@ -142,6 +157,10 @@ export function mapRestPullRequest(pr: RestPullRequest): PullRequestLookupData {
     headRepository: pr.head?.repo,
     headDefaultBranchName: pr.head?.repo?.default_branch,
     ...(restAuthor ? { author: { login: restAuthor } } : {}),
+    ...(typeof pr.created_at === 'string' && pr.created_at ? { createdAt: pr.created_at } : {}),
+    ...(typeof pr.additions === 'number' ? { additions: pr.additions } : {}),
+    ...(typeof pr.deletions === 'number' ? { deletions: pr.deletions } : {}),
+    ...(typeof pr.changed_files === 'number' ? { changedFiles: pr.changed_files } : {}),
     stackMetadataChecked: true,
     ...(stack ? { stack } : {})
   }
@@ -216,13 +235,17 @@ export function pullRequestAuthorLogin(data: {
 }
 
 export function normalizePullRequestLookupData(data: PullRequestLookupData): PullRequestLookupData {
+  const diffAreas = summarizeDiffAreas(readDiffAreaFiles(data.files)) ?? data.diffAreas
+  const rest: PullRequestLookupData = { ...data }
+  delete rest.files
   return {
-    ...data,
+    ...rest,
     reviewDecision:
       data.reviewDecision !== undefined ? normalizeReviewDecision(data.reviewDecision) : undefined,
     autoMergeEnabled:
       data.autoMergeEnabled ??
-      ('autoMergeRequest' in data ? isAutoMergeEnabled(data.autoMergeRequest) : undefined)
+      ('autoMergeRequest' in data ? isAutoMergeEnabled(data.autoMergeRequest) : undefined),
+    ...(diffAreas ? { diffAreas } : {})
   }
 }
 

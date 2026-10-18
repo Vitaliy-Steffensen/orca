@@ -3,6 +3,7 @@ import React from 'react'
 import { cn } from '@/lib/utils'
 import { getWorkspaceAttachments } from '../../../../shared/workspace-attachments'
 import { WorktreeCardHeader } from './worktree-card-header'
+import { WorktreeCardReviewFacts } from './worktree-card-review-facts'
 import { WorktreeCardMetaRow } from './worktree-card-meta-row'
 import { WorktreeCardLinearTitle } from './worktree-card-linear-title'
 import { WorktreeCardDetailsHover } from './WorktreeCardMeta'
@@ -69,6 +70,7 @@ export function WorktreeCardParentContent({
       data-worktree-card-hover-trigger=""
     >
       <WorktreeCardHeader card={card} presentation={presentation} />
+      <WorktreeCardReviewFacts card={card} />
       {presentation.hasMetaRow && <WorktreeCardMetaRow card={card} presentation={presentation} />}
       <WorktreeCardLinearTitle
         enabled={card.showLinearTitle}

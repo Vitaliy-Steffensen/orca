@@ -1,3 +1,5 @@
+import type { DiffAreaTotals } from '../diff-area'
+
 export type PRState = 'open' | 'closed' | 'merged' | 'draft'
 export type IssueState = 'open' | 'closed'
 export type CheckStatus = 'pending' | 'success' | 'failure' | 'neutral'
@@ -66,6 +68,17 @@ export type PRInfo = {
   mergeStateStatus?: string | null
   /** GitHub-registered stack metadata. Absent for ordinary dependent PR chains. */
   stack?: GitHubPRStack
+  /** When the pull request was opened. Drives the "open longer than 3 days" mark. */
+  createdAt?: string
+  additions?: number
+  deletions?: number
+  changedFiles?: number
+  /** Line weight of the changed files, split into frontend, backend, e2e, and CI. */
+  diffAreas?: DiffAreaTotals
+  /** Unresolved review threads. Absent until a lookup has counted them. */
+  unresolvedComments?: number
+  /** True when the count stopped at the first page of threads. */
+  unresolvedCommentsTruncated?: boolean
   // Why: check-runs are keyed by the PR head commit, not the mutable branch name.
   // Keeping the head SHA in cached PR metadata lets the checks panel poll the
   // correct commit without re-querying GitHub or guessing from local branch refs.

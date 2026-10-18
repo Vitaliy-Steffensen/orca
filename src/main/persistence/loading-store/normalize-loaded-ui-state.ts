@@ -82,6 +82,7 @@ export function normalizeLoadedUiState(
   const jiraIssueCardPropDefaulted = parsed.ui?._jiraIssueWorktreeCardPropertyDefaulted === true
   const hostCardPropDefaulted = parsed.ui?._hostWorktreeCardPropertyDefaulted === true
   const prAuthorCardPropDefaulted = parsed.ui?._prAuthorWorktreeCardPropertyDefaulted === true
+  const cardFactsDefaulted = parsed.ui?._worktreeCardFactsDefaulted === true
   const hadExperimentOn = readDeprecatedExperimentFlag(parsed)
   const deliberateUncheck =
     hadExperimentOn && Array.isArray(rawCardProps) && !rawCardProps.includes('inline-agents')
@@ -135,7 +136,23 @@ export function normalizeLoadedUiState(
       prAuthorCardPropDefaulted || hostCandidate.includes('pr-author')
         ? hostCandidate
         : [...hostCandidate, 'pr-author' as const]
-    const normalized = normalizeWorktreeCardProperties(prAuthorCandidate)
+    // Why: the review facts joined the defaults after existing profiles were stamped. Backfill once.
+    const factProperties = [
+      'diff',
+      'diff-mix',
+      'linear-priority',
+      'stack',
+      'unresolved-comments',
+      'pr-open-age'
+    ] as const
+    const factsCandidate = cardFactsDefaulted
+      ? prAuthorCandidate
+      : factProperties.reduce<readonly string[]>(
+          (properties, property) =>
+            properties.includes(property) ? properties : [...properties, property],
+          prAuthorCandidate
+        )
+    const normalized = normalizeWorktreeCardProperties(factsCandidate)
     const changed =
       normalized.length !== rawCardProps.length ||
       normalized.some((property, index) => property !== rawCardProps[index])
@@ -147,7 +164,8 @@ export function normalizeLoadedUiState(
     !expandedCardPropsMigrated ||
     !jiraIssueCardPropDefaulted ||
     !hostCardPropDefaulted ||
-    !prAuthorCardPropDefaulted
+    !prAuthorCardPropDefaulted ||
+    !cardFactsDefaulted
   ) {
     markNeedsSave()
   }
@@ -246,6 +264,7 @@ export function normalizeLoadedUiState(
     _expandedWorktreeCardPropertiesDefaulted: true,
     _jiraIssueWorktreeCardPropertyDefaulted: true,
     _hostWorktreeCardPropertyDefaulted: true,
-    _prAuthorWorktreeCardPropertyDefaulted: true
+    _prAuthorWorktreeCardPropertyDefaulted: true,
+    _worktreeCardFactsDefaulted: true
   }
 }

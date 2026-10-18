@@ -64,6 +64,15 @@ export function assemblePRRefreshFoundOutcome(args: {
       ...(headDivergedFromMergedPRAtOid ? { headDivergedFromMergedPRAtOid } : {}),
       ...(data.baseRefName ? { baseRefName: data.baseRefName } : {}),
       ...(data.headRefName ? { headRefName: data.headRefName } : {}),
+      ...(data.createdAt ? { createdAt: data.createdAt } : {}),
+      ...(typeof data.additions === 'number' ? { additions: data.additions } : {}),
+      ...(typeof data.deletions === 'number' ? { deletions: data.deletions } : {}),
+      ...(typeof data.changedFiles === 'number' ? { changedFiles: data.changedFiles } : {}),
+      ...(data.diffAreas ? { diffAreas: data.diffAreas } : {}),
+      ...(typeof data.unresolvedComments === 'number'
+        ? { unresolvedComments: data.unresolvedComments }
+        : {}),
+      ...(data.unresolvedCommentsTruncated ? { unresolvedCommentsTruncated: true } : {}),
       prRepo: dataRepo ?? undefined,
       headRepo: dataHeadRepo ?? undefined,
       conflictSummary
