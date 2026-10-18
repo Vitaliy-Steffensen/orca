@@ -64,6 +64,9 @@ export type AcpCompactionReply = { outcome: 'skipped' | 'failed'; detail: string
 
 /** Hooks interpret extensions; lifecycle and row identity stay shared. */
 export type AcpDialect = {
+  /** Extension requests this agent sends without a session id. A request for another session is
+   *  still refused. Absent, a request with no session id is refused. */
+  sessionlessRequests?: readonly string[]
   subagentStop?: {
     /** Missing required target: proves the route exists without addressing any child. */
     probe: { method: string; params: unknown }

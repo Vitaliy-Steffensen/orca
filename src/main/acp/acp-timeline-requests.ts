@@ -72,7 +72,11 @@ export function translateAcpRequest(
   settled?: { reply: unknown }
 } {
   const session = requestSessionSchema.safeParse(params)
-  if (!session.success || session.data.sessionId !== options.sessionId) {
+  // Cursor's question and plan calls name no session. They belong to this child; a call that names
+  // another session does not.
+  const sessionless =
+    !session.success && options.dialect.sessionlessRequests?.includes(method) === true
+  if (!sessionless && (!session.success || session.data.sessionId !== options.sessionId)) {
     throw new AcpRpcError(-32602, 'ACP request belongs to an unknown session')
   }
   const tool = requestToolSchema.safeParse(params)
