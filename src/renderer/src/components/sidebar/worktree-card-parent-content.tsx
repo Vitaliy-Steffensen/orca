@@ -22,12 +22,7 @@ export function WorktreeCardParentContent({
   const {
     worktree,
     affiliateListMode,
-    newCardStyle,
-    lineageChildren,
     showStatus,
-    unreadTooltip,
-    stopQuickActionPointerPropagation,
-    handleToggleUnreadQuick,
     statusLaneReview,
     reviewChecks,
     branchIdentityDisplay,
@@ -63,7 +58,6 @@ export function WorktreeCardParentContent({
     titleOnlyCard,
     parentContentMarginLeft,
     showCombinedStatusSlot,
-    showUnreadQuickAction,
     hasHoverDetails,
     hoverBranchName,
     hoverWorkspaceTitle
@@ -146,7 +140,7 @@ export function WorktreeCardParentContent({
         <div
           className={cn(
             'flex shrink-0 justify-center',
-            newCardStyle ? 'mr-1 w-5 items-center' : 'items-start pt-[2px]',
+            'mr-1 w-5 items-center',
             affiliateListMode && 'px-1'
           )}
           data-worktree-card-status-slot=""
@@ -154,14 +148,9 @@ export function WorktreeCardParentContent({
           <WorktreeCardStatusSlot
             worktreeId={worktree.id}
             showStatus={showStatus}
-            showUnreadAction={showUnreadQuickAction}
             isUnread={worktree.isUnread}
-            unreadTooltip={unreadTooltip}
-            onPointerDown={stopQuickActionPointerPropagation}
-            onToggleUnread={handleToggleUnreadQuick}
             prDisplay={statusLaneReview}
             reviewChecks={reviewChecks.total > 0 ? reviewChecks : undefined}
-            newCardStyle={newCardStyle}
             hasBranchIdentity={Boolean(branchIdentityDisplay)}
           />
         </div>
@@ -172,9 +161,7 @@ export function WorktreeCardParentContent({
         className={cn(
           'flex min-w-0 flex-1 flex-col gap-1.5',
           // Why: inline agent rows intentionally outdent into the card gutter; inner elements handle truncation.
-          showInlineAgentList ||
-            getWorkspaceAttachments(worktree).length > 1 ||
-            (!newCardStyle && lineageChildren)
+          showInlineAgentList || getWorkspaceAttachments(worktree).length > 1
             ? 'overflow-visible'
             : 'overflow-hidden'
         )}

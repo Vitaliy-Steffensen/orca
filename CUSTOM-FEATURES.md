@@ -17,6 +17,8 @@ Adding a feature here? See the rule at the top of [`CLAUDE.md`](./CLAUDE.md).
 - The app releases and auto-updates from this repository instead of upstream's or Frederik's.
 - A relative language server Path is read from the worktree root, and one that never starts keeps
   saying so instead of going quiet after its first warning.
+- Workspace cards come in one style, and carry chips that appear only when something is wrong —
+  failing checks, a conflict with the base, or a branch left behind it.
 
 ## Inherited from `frbarbre/orca`
 

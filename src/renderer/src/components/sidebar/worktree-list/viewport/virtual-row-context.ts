@@ -29,7 +29,6 @@ type BuildArgs = {
   settings: AppState['settings']
   worktreeVisibilityDefaultsByHost: AppState['worktreeVisibilityDefaultsByHost']
   getRepoSshGate: RepoSshGateResolver
-  newCardStyle: boolean
   folderBackedProjectGroupIds: ReadonlySet<string>
   session: WorktreeDragSession
   runtime: WorktreeDragRuntime
@@ -139,7 +138,6 @@ export function buildWorktreeVirtualRowContext(args: BuildArgs): WorktreeVirtual
     },
     folderWorkspace: {
       groupBy: props.groupBy,
-      newCardStyle: args.newCardStyle,
       settings: args.settings,
       activeWorktreeId: props.activeWorktreeId,
       activeWorkspaceExecutionHostId: props.activeWorkspaceExecutionHostId,

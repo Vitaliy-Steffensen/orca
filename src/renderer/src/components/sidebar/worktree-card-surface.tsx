@@ -26,7 +26,6 @@ export function WorktreeCardSurface({ card }: { card: WorktreeCardController }):
     nativeDragEnabled,
     lineageChildren,
     lineageChildrenStyle,
-    newCardStyle,
     titleRenaming,
     isDeleting,
     isRuntimeDisconnected,
@@ -100,7 +99,7 @@ export function WorktreeCardSurface({ card }: { card: WorktreeCardController }):
           </div>
         </div>
       )}
-      {isSleeping && newCardStyle && !isDeleting ? (
+      {isSleeping && !isDeleting ? (
         // Why a token mix (see [data-worktree-sleeping-dim] in main.css), not opacity:
         // opacity dims toward whatever is painted behind, so the step shrank on lighter
         // surfaces and vanished on custom backgrounds (#19624). Scoped to the parent row
@@ -110,7 +109,7 @@ export function WorktreeCardSurface({ card }: { card: WorktreeCardController }):
         parentCardContent
       )}
 
-      {newCardStyle && lineageChildren ? (
+      {lineageChildren ? (
         <div
           className="mt-1.5 space-y-1"
           data-worktree-lineage-children=""

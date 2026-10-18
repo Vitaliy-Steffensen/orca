@@ -147,23 +147,13 @@ describe('WorktreeCard quick actions', () => {
     gitConflictOperationByWorktree = {}
   })
 
-  it('marks the unread toggle as a workspace-board-preserving action', () => {
+  it('renders repo identity as a title-row chip', () => {
     const markup = renderToStaticMarkup(
       <WorktreeCard worktree={makeWorktree()} repo={makeRepo()} isActive={false} />
     )
 
-    expect(markup).toContain('aria-label="Mark as read"')
-    expect(markup).toContain('data-workspace-board-preserve-open=""')
-  })
-
-  it('renders repo identity in the detailed metadata row', () => {
-    const markup = renderToStaticMarkup(
-      <WorktreeCard worktree={makeWorktree()} repo={makeRepo()} isActive={false} />
-    )
-
-    expect(markup).not.toContain('aria-label="Project orca"')
-    expect(markup).toContain('>orca</span>')
-    expect(markup).toContain('data-worktree-card-meta-row=""')
+    expect(markup).toContain('aria-label="Project orca"')
+    expect(markup).not.toContain('>orca</span>')
   })
 
   it('can render the current workspace with a secondary active surface', () => {
@@ -208,7 +198,7 @@ describe('WorktreeCard quick actions', () => {
     expect(activeSelected).not.toContain('data-worktree-card-selected')
   })
 
-  it('renders folder directory name in the detailed metadata row without a Folder badge', () => {
+  it('renders the folder workspace title without a Folder badge', () => {
     const markup = renderToStaticMarkup(
       <WorktreeCard
         worktree={makeWorktree({ displayName: 'Docs folder', branch: '' })}
@@ -219,11 +209,9 @@ describe('WorktreeCard quick actions', () => {
 
     expect(markup).toContain('Docs folder')
     expect(markup).not.toContain('>Folder</span>')
-    expect(markup).toContain('>quick-action</span>')
-    expect(markup).toContain('data-worktree-card-meta-row=""')
   })
 
-  it('renders synthetic folder workspace directory name in the detailed metadata row without a Folder badge', () => {
+  it('renders the synthetic folder workspace title without a Folder badge', () => {
     const markup = renderToStaticMarkup(
       <WorktreeCard
         worktree={makeWorktree({
@@ -239,8 +227,6 @@ describe('WorktreeCard quick actions', () => {
 
     expect(markup).toContain('Docs folder')
     expect(markup).not.toContain('>Folder</span>')
-    expect(markup).toContain('>quick-action</span>')
-    expect(markup).toContain('data-worktree-card-meta-row=""')
   })
 
   it('does not render a branch icon for synthetic folder workspace path identity', () => {
@@ -353,9 +339,8 @@ describe('WorktreeCard quick actions', () => {
     expect(markup).toContain('tabindex="0"')
   })
 
-  it('omits the repeated branch metadata row when compact cards are enabled', () => {
+  it('omits the repeated branch metadata row', () => {
     worktreeCardProperties = []
-    settings = { compactWorktreeCards: true }
 
     const markup = renderToStaticMarkup(
       <WorktreeCard
@@ -372,7 +357,6 @@ describe('WorktreeCard quick actions', () => {
 
   it('omits the branch metadata row when the workspace has a custom title', () => {
     worktreeCardProperties = []
-    settings = { compactWorktreeCards: true }
 
     const markup = renderToStaticMarkup(
       <WorktreeCard
@@ -389,7 +373,7 @@ describe('WorktreeCard quick actions', () => {
     expect(markup).not.toContain('text-[11px] text-muted-foreground truncate leading-none')
   })
 
-  it('uses the left status lane and primary badge when compact cards are disabled', () => {
+  it('uses the left status lane and a primary badge for the main worktree', () => {
     worktreeCardProperties = ['status']
 
     const markup = renderToStaticMarkup(
@@ -407,29 +391,6 @@ describe('WorktreeCard quick actions', () => {
 
     expect(markup).toContain('primary')
     expect(markup).not.toContain('aria-label="Primary worktree"')
-    expect(markup).toContain('data-worktree-card-meta-row=""')
-  })
-
-  it('keeps unread in the status lane and moves primary into the title row when compact cards are enabled', () => {
-    worktreeCardProperties = ['status']
-    settings = { compactWorktreeCards: true }
-
-    const markup = renderToStaticMarkup(
-      <WorktreeCard
-        worktree={makeWorktree({
-          displayName: 'main',
-          branch: 'main',
-          isMainWorktree: true
-        })}
-        repo={makeRepo()}
-        isActive={false}
-        hideRepoBadge
-      />
-    )
-
-    expect(markup).toContain('aria-label="Primary worktree"')
-    expect(markup).not.toContain('>primary<')
-    expect(markup).not.toContain('data-worktree-card-meta-row=""')
   })
 
   it('hides delete by default for an inactive workspace', () => {
@@ -538,7 +499,7 @@ describe('WorktreeCard quick actions', () => {
     )
 
     expect(markup).not.toContain('Rebasing')
-    expect(markup).toContain('data-worktree-card-meta-row=""')
+    expect(markup).not.toContain('data-worktree-card-meta-row=""')
   })
 
   it('keeps non-rebase operation chips on the card', () => {

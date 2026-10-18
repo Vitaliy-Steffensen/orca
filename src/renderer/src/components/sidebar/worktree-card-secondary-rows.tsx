@@ -22,8 +22,6 @@ export function WorktreeCardSecondaryRows({
     repo,
     settings,
     isActive,
-    newCardStyle,
-    lineageChildren,
     lineageCollapsed,
     onLineageToggle,
     remoteBranchConflict,
@@ -96,7 +94,7 @@ export function WorktreeCardSecondaryRows({
 
       {showLineageChildChip && (
         <div
-          className={cn('relative mt-1 flex min-w-0 justify-start', !newCardStyle && '-ml-1')}
+          className="relative mt-1 flex min-w-0 justify-start"
           style={{
             color: 'color-mix(in srgb, var(--muted-foreground) 42%, var(--worktree-sidebar))'
           }}
@@ -131,12 +129,6 @@ export function WorktreeCardSecondaryRows({
                   )}
             </TooltipContent>
           </Tooltip>
-        </div>
-      )}
-
-      {!newCardStyle && lineageChildren && (
-        <div className="-ml-[1.125rem] mt-1.5 w-[calc(100%+1.125rem)] space-y-1">
-          {lineageChildren}
         </div>
       )}
     </>

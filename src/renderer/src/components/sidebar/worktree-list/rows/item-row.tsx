@@ -87,13 +87,7 @@ function getWorktreeItemRowGeometry(
           groupDepth: itemRow.groupDepth,
           lineageDepth
         })
-  const nestedLineageGeometry = nested
-    ? getLineageNestedRowGeometry({
-        experimentalNewWorktreeCardStyle: ctx.settings?.experimentalNewWorktreeCardStyle === true,
-        inheritedCardContentIndent: getCardContentIndent(0),
-        lineageDepth: itemRow.depth
-      })
-    : null
+  const nestedLineageGeometry = nested ? getLineageNestedRowGeometry() : null
   // Why: grouped rows inherit their header depth, but the card surface still spans the full row.
   const paddingLeft =
     nested && ctx.groupBy !== 'none'

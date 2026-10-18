@@ -20,12 +20,10 @@ export function useWorktreeCardController(props: ResolvedWorktreeCardProps) {
     repo,
     settings: foundation.settings,
     projectGroups: foundation.projectGroups,
-    cardProps: foundation.cardProps,
-    newCardStyle: foundation.newCardStyle
+    cardProps: foundation.cardProps
   })
   const linked = useWorktreeCardLinkedDetails({
     worktree,
-    newCardStyle: foundation.newCardStyle,
     deleteState: foundation.deleteState,
     branch: review.branch,
     issueEntry: review.issueEntry,
@@ -45,7 +43,7 @@ export function useWorktreeCardController(props: ResolvedWorktreeCardProps) {
   const showCli = foundation.cardProps.includes('cli')
   const showComment = foundation.cardProps.includes('comment')
   const showPorts = foundation.cardProps.includes('ports')
-  const shouldRefreshHostedReview = foundation.newCardStyle ? showStatus : showPR
+  const shouldRefreshHostedReview = showStatus
   const detailsHoverControl = useWorktreeCardDetailsHoverControl()
   const hoverDetailsOpen = detailsHoverControl.hoverOpen
   const referenceDetails = useWorkspaceReferenceDetails(
@@ -72,7 +70,6 @@ export function useWorktreeCardController(props: ResolvedWorktreeCardProps) {
     branch: review.branch,
     fetchHostedReviewForBranch: foundation.fetchHostedReviewForBranch,
     shouldRefreshHostedReview,
-    newCardStyle: foundation.newCardStyle,
     hoverDetailsOpen,
     showIssue,
     issueCacheKey: review.issueCacheKey,
@@ -133,7 +130,6 @@ export function useWorktreeCardController(props: ResolvedWorktreeCardProps) {
     showIssue,
     showLinearIssue,
     showJiraIssue,
-    showPR,
     showAutomation,
     showCli,
     showComment,
@@ -148,8 +144,6 @@ export function useWorktreeCardController(props: ResolvedWorktreeCardProps) {
     linkedAzureDevOpsPR: review.linkedAzureDevOpsPR,
     linkedGiteaPR: review.linkedGiteaPR,
     cardProps: foundation.cardProps,
-    newCardStyle: foundation.newCardStyle,
-    compactCards: foundation.compactCards,
     agentActivityDisplayMode: foundation.agentActivityDisplayMode,
     workspacePorts: foundation.workspacePorts,
     openTaskPage: foundation.openTaskPage,

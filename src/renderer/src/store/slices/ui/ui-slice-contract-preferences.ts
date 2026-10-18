@@ -6,7 +6,6 @@ import type {
   ProjectOrderBy,
   StatusBarItem,
   ThreadReadFilter,
-  WorktreeCardMode,
   WorktreeCardProperty,
   WorkspaceHostOrder,
   WorkspaceHostScope,
@@ -94,7 +93,6 @@ export type UISlicePreferences = {
   toggleCollapsedGroup: (key: string) => void
   worktreeCardProperties: WorktreeCardProperty[]
   _worktreeCardModeDefaulted: boolean
-  setWorktreeCardMode: (mode: WorktreeCardMode) => void
   setWorktreeCardProperties: (properties: readonly WorktreeCardProperty[]) => void
   agentActivityDisplayMode: AgentActivityDisplayMode
   setAgentActivityDisplayMode: (mode: AgentActivityDisplayMode) => void

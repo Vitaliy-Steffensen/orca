@@ -501,11 +501,13 @@ export type GlobalSettings = ForkBaseSettings & {
   experimentalAgentHibernation?: boolean
   /** Milliseconds a completed agent must stay idle before hibernation can be considered. */
   agentHibernationIdleMs?: number
-  /** Experimental: opt-in preview of the updated worktree-card layout and metadata behavior. */
+  /** Retired: the card style it gated is now the only one. Kept so the strict RPC
+   *  settings schema still accepts it from older peers; nothing reads it. */
   experimentalNewWorktreeCardStyle?: boolean
   /** Experimental: per-workspace on-demand environment recipes and setup surface. */
   experimentalEphemeralVms?: boolean
-  /** Compact worktree cards: hide the metadata row when title and branch say the same thing. */
+  /** Retired alongside the Detailed/Compact split. Kept for the strict RPC schema
+   *  and older peers; nothing reads it. */
   compactWorktreeCards: boolean
   /** Legacy persisted key from the Experimental rollout; new writes use compactWorktreeCards. */
   experimentalCompactWorktreeCards?: boolean

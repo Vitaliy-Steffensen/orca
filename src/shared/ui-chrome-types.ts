@@ -28,6 +28,9 @@ export type AgentDashboardMode = 'in-window' | 'popout'
 export type WorktreeCardProperty =
   | 'status'
   | 'unread'
+  // Exception chips on the title row: each renders only when its value is abnormal.
+  | 'blocker'
+  | 'conflict'
   // Legacy persisted preference. CI status is now represented by linked PR metadata.
   | 'ci'
   // Migration-only: legacy detailed cards showed branch identity as a visible row.
