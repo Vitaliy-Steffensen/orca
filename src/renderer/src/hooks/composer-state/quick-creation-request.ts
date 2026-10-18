@@ -51,6 +51,7 @@ export type QuickCreationRequestInput = {
   promptDelivery: 'draft' | 'auto-submit'
   quickTelemetry: AgentStartedTelemetry | null
   suppressTerminalFocusOnCompletion: boolean
+  launchSeedOverlay?: Readonly<Record<string, string>>
 }
 
 export function buildQuickCreationRequest(
@@ -113,6 +114,7 @@ export function buildQuickCreationRequest(
     ...(input.launchDraftPrompt ? { launchDraftPrompt: input.launchDraftPrompt } : {}),
     promptDelivery: input.promptDelivery,
     quickTelemetry: input.quickTelemetry,
-    ...(input.suppressTerminalFocusOnCompletion ? { suppressTerminalFocusOnCompletion: true } : {})
+    ...(input.suppressTerminalFocusOnCompletion ? { suppressTerminalFocusOnCompletion: true } : {}),
+    ...(input.launchSeedOverlay ? { launchSeedOverlay: input.launchSeedOverlay } : {})
   }
 }

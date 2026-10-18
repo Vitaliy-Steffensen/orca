@@ -22,6 +22,7 @@ type QuickSubmitActionInput = Pick<
   | 'isSubmissionCancelled'
   | 'linkedPR'
   | 'name'
+  | 'agentPrompt'
   | 'onCreated'
   | 'parsedLinkedIssueNumber'
   | 'repoId'
@@ -46,6 +47,7 @@ export function useQuickSubmitAction(input: QuickSubmitActionInput) {
     fallbackCreatureName,
     isProjectGroupTarget,
     isSubmissionCancelled,
+    agentPrompt,
     linkedPR,
     name,
     onCreated,
@@ -66,15 +68,18 @@ export function useQuickSubmitAction(input: QuickSubmitActionInput) {
   } = input
 
   const submitQuick = useCallback(
-    async (requestedAgent: TuiAgent | null): Promise<void> => {
+    async (
+      requestedAgent: TuiAgent | null,
+      launchSeedOverlay?: Readonly<Record<string, string>>
+    ): Promise<void> => {
       if (isProjectGroupTarget) {
-        await submitFolderTarget(requestedAgent)
+        await submitFolderTarget(requestedAgent, launchSeedOverlay)
         return
       }
 
       const workspaceNameSeed = getWorkspaceSeedName({
         explicitName: name,
-        prompt: '',
+        prompt: agentPrompt,
         linkedIssueNumber: parsedLinkedIssueNumber,
         linkedPR,
         fallbackName: fallbackCreatureName
@@ -143,7 +148,8 @@ export function useQuickSubmitAction(input: QuickSubmitActionInput) {
           requestedAgent,
           workspaceNameSeed,
           workspaceRunContext,
-          repoId
+          repoId,
+          launchSeedOverlay
         )
       } catch (error) {
         if (isSubmissionCancelled()) {
@@ -162,6 +168,7 @@ export function useQuickSubmitAction(input: QuickSubmitActionInput) {
       fallbackCreatureName,
       isProjectGroupTarget,
       isSubmissionCancelled,
+      agentPrompt,
       linkedPR,
       name,
       onCreated,

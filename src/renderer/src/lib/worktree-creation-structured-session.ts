@@ -88,7 +88,8 @@ export async function launchStructuredWorktreeSession(
     requestId: args.creationId,
     agent,
     prompt: args.request.launchDraftPrompt ?? args.request.quickPrompt,
-    ...(args.request.promptDelivery ? { promptDelivery: args.request.promptDelivery } : {})
+    ...(args.request.promptDelivery ? { promptDelivery: args.request.promptDelivery } : {}),
+    ...(args.request.launchSeedOverlay ? { seedOverlay: args.request.launchSeedOverlay } : {})
   })
   const abandoned = new AbortController()
   let ownershipTransferred = false

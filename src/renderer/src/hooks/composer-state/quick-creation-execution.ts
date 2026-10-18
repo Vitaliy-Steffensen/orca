@@ -8,6 +8,7 @@ type QuickCreationExecutionInput = Pick<
   | 'ephemeralVmRecipes'
   | 'ephemeralVmsEnabled'
   | 'isSubmissionCancelled'
+  | 'agentPrompt'
   | 'linkedGitLabIssue'
   | 'linkedGitLabMR'
   | 'normalizedSparseDirectories'
@@ -40,6 +41,7 @@ import { settleComposerSubmit } from '@/lib/composer-submit-cancellation'
 import { runBackgroundWorktreeCreation } from '@/lib/worktree-creation-flow'
 import { translate } from '@/i18n/i18n'
 import { resolveQuickCreateLinkedWorkItemPrompt } from '@/lib/linked-work-item-context'
+import { extractWorkspacePromptTaskLink } from '@/lib/workspace-prompt-task-link'
 import { buildQuickComposerStartup } from './quick-startup-plan'
 import { buildQuickCreationRequest } from './quick-creation-request'
 import type { PendingSmartGitHubSubmitResolution } from './source-selection-decisions'
@@ -52,6 +54,7 @@ export function useQuickCreationExecution(input: QuickCreationExecutionInput) {
     effectivePresetId,
     ephemeralVmRecipes,
     ephemeralVmsEnabled,
+    agentPrompt,
     isSubmissionCancelled,
     linkedGitLabIssue,
     linkedGitLabMR,
@@ -83,7 +86,8 @@ export function useQuickCreationExecution(input: QuickCreationExecutionInput) {
       requestedAgent: TuiAgent | null,
       workspaceNameSeed: string,
       workspaceRunContext: WorktreeCreationRequest['workspaceRunContext'],
-      repoId: string
+      repoId: string,
+      launchSeedOverlay?: Readonly<Record<string, string>>
     ): Promise<void> => {
       const prepared = await prepareQuickSubmit(
         smartGitHubResolution,
@@ -119,8 +123,19 @@ export function useQuickCreationExecution(input: QuickCreationExecutionInput) {
 
       const promptLinkedWorkItem = agent === null ? null : submitLinkedWorkItem
 
+      const linkedPrompt = resolveQuickCreateLinkedWorkItemPrompt(promptLinkedWorkItem, trimmedNote)
+      const userPrompt = agentPrompt.trim()
+      const promptIsOnlyTaskLink =
+        userPrompt.length > 0 && extractWorkspacePromptTaskLink(userPrompt)?.url === userPrompt
       const { prompt: quickPrompt, draftPrompt: quickDraftPrompt } =
-        resolveQuickCreateLinkedWorkItemPrompt(promptLinkedWorkItem, trimmedNote)
+        userPrompt && !promptIsOnlyTaskLink
+          ? {
+              prompt: linkedPrompt.draftPrompt
+                ? `${userPrompt}\n\n${linkedPrompt.draftPrompt}`
+                : userPrompt,
+              draftPrompt: null
+            }
+          : linkedPrompt
 
       const {
         startupPlan,
@@ -237,7 +252,8 @@ export function useQuickCreationExecution(input: QuickCreationExecutionInput) {
         launchDraftPrompt: quickDraftPrompt,
         promptDelivery,
         quickTelemetry,
-        suppressTerminalFocusOnCompletion: createMultiple
+        suppressTerminalFocusOnCompletion: createMultiple,
+        ...(launchSeedOverlay ? { launchSeedOverlay } : {})
       })
 
       if (isSubmissionCancelled()) {
@@ -257,6 +273,7 @@ export function useQuickCreationExecution(input: QuickCreationExecutionInput) {
       }
     },
     [
+      agentPrompt,
       clearNewWorkspaceDraft,
       createMultiple,
       effectivePresetId,

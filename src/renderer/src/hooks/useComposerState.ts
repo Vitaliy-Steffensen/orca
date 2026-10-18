@@ -68,7 +68,10 @@ export type UseComposerStateResult = {
   onComposerNodeChange: (node: HTMLDivElement | null) => void
   promptTextareaRef: RefObject<HTMLTextAreaElement | null>
   nameInputRef: RefObject<HTMLInputElement | null>
-  submitQuick: (agent: TuiAgent | null) => Promise<void>
+  submitQuick: (
+    agent: TuiAgent | null,
+    launchSeedOverlay?: Readonly<Record<string, string>>
+  ) => Promise<void>
   createDisabled: boolean
   selectAddedProjectRepo: (repoId: string) => void
 }

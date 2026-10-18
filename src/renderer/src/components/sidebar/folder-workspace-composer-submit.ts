@@ -50,6 +50,7 @@ type SubmitFolderWorkspaceCreateParams = {
   linkedWorkItem: LinkedWorkItemSummary | null
   linkedTaskSourceContext?: TaskSourceContext | null
   note: string
+  launchSeedOverlay?: Readonly<Record<string, string>>
   quickAgent: TuiAgent | null
   autoRenameBranchFromWork: boolean | undefined
   agentCmdOverrides: Record<string, string> | undefined
@@ -70,6 +71,7 @@ export async function submitFolderWorkspaceCreate({
   linkedWorkItem,
   linkedTaskSourceContext,
   note,
+  launchSeedOverlay,
   quickAgent,
   autoRenameBranchFromWork,
   agentCmdOverrides,
@@ -140,7 +142,8 @@ export async function submitFolderWorkspaceCreate({
           executionHostId: getNewWorkspaceProjectGroupHostId(projectGroup)
         },
         prompt: launchDraftPrompt ?? note,
-        promptDelivery: launchDraftPrompt ? 'draft' : 'auto-submit'
+        promptDelivery: launchDraftPrompt ? 'draft' : 'auto-submit',
+        ...(launchSeedOverlay ? { seedOverlay: launchSeedOverlay } : {})
       })
     : null
   const structuredLaunch = plan?.route === 'structured-native-chat'

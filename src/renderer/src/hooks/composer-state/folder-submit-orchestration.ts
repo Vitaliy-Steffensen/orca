@@ -15,6 +15,7 @@ type FolderSubmitOrchestrationInput = Pick<
   | 'linkedWorkItem'
   | 'name'
   | 'note'
+  | 'agentPrompt'
   | 'onCreated'
   | 'persistDraft'
   | 'resolvePendingSmartGitHubSubmit'
@@ -55,6 +56,7 @@ export function useFolderSubmitOrchestration(input: FolderSubmitOrchestrationInp
     isSubmissionCancelled,
     lastAutoNameRef,
     linkedWorkItem,
+    agentPrompt,
     name,
     note,
     onCreated,
@@ -70,7 +72,10 @@ export function useFolderSubmitOrchestration(input: FolderSubmitOrchestrationInp
   const { canResolveFolderSmartGitHubSubmit } = decisions
 
   const submitFolderTarget = useCallback(
-    async (requestedAgent: TuiAgent | null): Promise<void> => {
+    async (
+      requestedAgent: TuiAgent | null,
+      launchSeedOverlay?: Readonly<Record<string, string>>
+    ): Promise<void> => {
       if (!selectedProjectGroup?.parentPath || folderCreateDisabled) {
         return
       }
@@ -106,7 +111,8 @@ export function useFolderSubmitOrchestration(input: FolderSubmitOrchestrationInp
           lastAutoName: lastAutoNameRef.current,
           linkedWorkItem: submitLinkedWorkItem,
           linkedTaskSourceContext: taskSourceContext,
-          note,
+          note: agentPrompt.trim() || note,
+          ...(launchSeedOverlay ? { launchSeedOverlay } : {}),
           quickAgent: agent,
           autoRenameBranchFromWork: settings?.autoRenameBranchFromWork,
           agentCmdOverrides: settings?.agentCmdOverrides,
@@ -164,6 +170,7 @@ export function useFolderSubmitOrchestration(input: FolderSubmitOrchestrationInp
       folderTargetRuntimeEnvironmentId,
       folderSourceRepos.length,
       isSubmissionCancelled,
+      agentPrompt,
       linkedWorkItem,
       name,
       note,

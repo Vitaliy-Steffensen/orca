@@ -55,16 +55,28 @@ type LaunchSeed = Readonly<Record<string, string>> | undefined
 
 /** What create will seed: this machine's saved selection for its own chats; for a paired server's,
  *  the server's own, which it reports when it admits the chat (absent from an older server). */
+export function overlayLaunchSeed(
+  base: Readonly<Record<string, string>> | undefined,
+  overlay: Readonly<Record<string, string>> | undefined
+): Readonly<Record<string, string>> | undefined {
+  if (!overlay || Object.keys(overlay).length === 0) {
+    return base
+  }
+  return { ...base, ...overlay }
+}
+
 function launchSeedOptions(
   state: ReturnType<typeof useAppStore.getState>,
   owner: Pick<StructuredAgentSessionLaunchIntent, 'target'>,
   agent: TuiAgent,
-  hostSeedOptions: LaunchSeed
+  hostSeedOptions: LaunchSeed,
+  seedOverlay?: Readonly<Record<string, string>>
 ): { seedOptions?: Readonly<Record<string, string>> } {
-  const seedOptions =
+  const base =
     owner.target.kind === 'local'
       ? resolveStructuredLaunchSeedOptions(state.settings?.nativeChatSessionOptions, agent)
       : hostSeedOptions
+  const seedOptions = overlayLaunchSeed(base, seedOverlay)
   return seedOptions ? { seedOptions } : {}
 }
 
@@ -86,7 +98,8 @@ export function createStructuredAgentSessionLaunchIntent(
   agent: TuiAgent,
   executionHostId?: ExecutionHostId,
   resumeFrom?: StructuredAgentSessionResumeSource,
-  hostSeedOptions?: LaunchSeed
+  hostSeedOptions?: LaunchSeed,
+  seedOverlay?: Readonly<Record<string, string>>
 ): StructuredAgentSessionLaunchIntent {
   const owner = structuredAgentSessionOwnerTarget(
     worktreeId,
@@ -99,7 +112,8 @@ export function createStructuredAgentSessionLaunchIntent(
     agent,
     sessionId,
     resumeFrom,
-    hostSeedOptions
+    hostSeedOptions,
+    seedOverlay
   )
 }
 
@@ -109,7 +123,8 @@ function buildStructuredAgentSessionLaunchIntent(
   agent: TuiAgent,
   sessionId: string,
   resumeFrom: StructuredAgentSessionResumeSource | undefined,
-  hostSeedOptions: LaunchSeed
+  hostSeedOptions: LaunchSeed,
+  seedOverlay?: Readonly<Record<string, string>>
 ): StructuredAgentSessionLaunchIntent {
   const state = useAppStore.getState()
   recordWebSessionFocusIntent(
@@ -132,7 +147,7 @@ function buildStructuredAgentSessionLaunchIntent(
       ...(resumeFrom ? { resumeFrom } : {}),
       randomUuid: createBrowserUuid
     }),
-    ...launchSeedOptions(state, owner, agent, hostSeedOptions)
+    ...launchSeedOptions(state, owner, agent, hostSeedOptions, seedOverlay)
   }
 }
 
@@ -146,6 +161,7 @@ export function retryStructuredAgentSessionLaunchIntent(
     intent.agent,
     intent.sessionId,
     intent.params.resumeFrom,
+    intent.seedOptions,
     intent.seedOptions
   )
 }

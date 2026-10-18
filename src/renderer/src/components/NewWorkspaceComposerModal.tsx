@@ -26,6 +26,9 @@ import type { WorkspaceStatus } from '../../../shared/worktree/types'
 import type { TaskSourceContext } from '../../../shared/task-source-context'
 import { translate } from '@/i18n/i18n'
 import { getWorkspaceComposerInitialFocusTarget } from '@/lib/workspace-composer-initial-focus'
+import { openPromptMatchedWorkspace } from '@/lib/open-prompt-matched-workspace'
+import type { Worktree } from '../../../shared/worktree/types'
+import { narrowStructuredLaunchSeedOptions } from '../../../shared/native-chat-session-option-defaults'
 import { getFolderWorkspacePrimaryActionLabel } from '@/components/sidebar/folder-workspace-composer-helpers'
 
 // Why: match App-level AddRepoDialog loading — the add flow is off the hot
@@ -85,7 +88,8 @@ function ComposerModalBody({
     <Dialog open onOpenChange={(open) => !open && handleDismiss()}>
       <DialogContent
         ref={dialogRef}
-        className="flex max-h-[calc(100vh-2rem)] flex-col overflow-hidden sm:max-w-lg"
+        showCloseButton={false}
+        className="flex max-h-[calc(100vh-2rem)] flex-col overflow-hidden sm:max-w-xl"
         onEscapeKeyDown={(event) => {
           if (dialogRef.current?.querySelector('[data-sparse-preset-editor]')) {
             event.preventDefault()
@@ -95,7 +99,7 @@ function ComposerModalBody({
           // Why: Radix's FocusScope fires this once the dialog has mounted.
           // preventDefault stops it from focusing whatever first-tabbable it
           // picks (close button), and we instead focus the name/source field
-          // so users can start typing immediately.
+          // so users can start typing the prompt immediately.
           event.preventDefault()
           const content = event.currentTarget as HTMLElement
           getWorkspaceComposerInitialFocusTarget(content)?.focus({ preventScroll: true })
@@ -189,9 +193,29 @@ function QuickTabBody({
     setQuickAgentOverride(agent)
   }, [])
 
+  const launchSeedRef = useRef<Readonly<Record<string, string>> | undefined>(undefined)
+  const promptTaskMatchRef = useRef<Worktree | null>(null)
+  const handleLaunchSeedChange = useCallback(
+    (seed: Readonly<Record<string, string>> | undefined): void => {
+      launchSeedRef.current = seed ? narrowStructuredLaunchSeedOptions(seed) : undefined
+    },
+    []
+  )
   const handleCreate = useCallback(async (): Promise<void> => {
-    await submitQuick(quickAgent)
-  }, [quickAgent, submitQuick])
+    const match = promptTaskMatchRef.current
+    if (match) {
+      try {
+        const opened = await openPromptMatchedWorkspace(match)
+        if (opened) {
+          onClose()
+        }
+      } catch {
+        // Unarchive reports its own failure. A failed open must not create a second workspace.
+      }
+      return
+    }
+    await submitQuick(quickAgent, launchSeedRef.current)
+  }, [onClose, quickAgent, submitQuick])
   // Why: Add Project layers over the composer as a nested dialog instead of
   // replacing it in the activeModal slot — closing the composer mid-flow (and
   // losing the typed name/prompt) was the old, abrupt behavior. Once opened it
@@ -218,9 +242,9 @@ function QuickTabBody({
       // opened the dialog; send it to the name field instead — the same place
       // picking a project from the combobox lands.
       event.preventDefault()
-      nameInputRef?.current?.focus()
+      getWorkspaceComposerInitialFocusTarget(composerRef.current ?? document)?.focus()
     },
-    [nameInputRef]
+    [composerRef]
   )
   const addProjectController = useMemo<AddRepoDialogHostedController>(
     () => ({
@@ -267,7 +291,10 @@ function QuickTabBody({
       if (!shouldAllowComposerEnterSubmitTarget(target, composerRef.current)) {
         return
       }
-      if (createDisabled || composerRef.current?.hasAttribute('data-sparse-preset-editing')) {
+      if (
+        (createDisabled && !promptTaskMatchRef.current) ||
+        composerRef.current?.hasAttribute('data-sparse-preset-editing')
+      ) {
         return
       }
       event.preventDefault()
@@ -279,7 +306,7 @@ function QuickTabBody({
 
   return (
     <>
-      <DialogHeader className="gap-1">
+      <DialogHeader className="sr-only">
         <DialogTitle className="text-base font-semibold">
           {isFolderWorkspaceTarget
             ? translate(
@@ -309,6 +336,9 @@ function QuickTabBody({
         primaryActionLabel={primaryActionLabel}
         onOpenAgentSettings={() => setAgentSettingsOpen(true)}
         onCreate={() => void handleCreate()}
+        onLaunchSeedChange={handleLaunchSeedChange}
+        onOpenedExistingWorkspace={onClose}
+        promptTaskMatchRef={promptTaskMatchRef}
         onAddProjectOverride={handleOpenAddProject}
         onNestedDialogOpenChange={setSetLocationOpen}
       />
