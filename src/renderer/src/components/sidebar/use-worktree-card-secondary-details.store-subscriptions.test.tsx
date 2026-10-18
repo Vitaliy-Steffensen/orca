@@ -79,7 +79,6 @@ function secondaryDetailsArgs(settings: GlobalSettings) {
     showIssue: false,
     showLinearIssue: false,
     showJiraIssue: false,
-    showPR: false,
     showAutomation: false,
     showCli: false,
     showComment: false,
@@ -94,8 +93,6 @@ function secondaryDetailsArgs(settings: GlobalSettings) {
     linkedAzureDevOpsPR: null,
     linkedGiteaPR: null,
     cardProps: [] as never,
-    newCardStyle: false,
-    compactCards: false,
     agentActivityDisplayMode: 'compact' as const,
     workspacePorts: [],
     openTaskPage: (() => {}) as never,
@@ -153,21 +150,6 @@ describe('useWorktreeCardSecondaryDetails store subscriptions', () => {
 
     act(() => root?.render(<Probe ttl={120_000} />))
     expect(cacheTtlMs).toBe(120_000)
-  })
-
-  it('reports no TTL while the aggregate cache timer is suppressed', () => {
-    let cacheTtlMs = -1
-    function Probe(): null {
-      // compactCards suppresses the aggregate timer row.
-      cacheTtlMs = useWorktreeCardSecondaryDetails({
-        ...secondaryDetailsArgs(makeSettings(300_000)),
-        compactCards: true
-      }).cacheTtlMs
-      return null
-    }
-
-    mount(<Probe />)
-    expect(cacheTtlMs).toBe(0)
   })
 
   it('writes a suppression tombstone when the user unlinks a displayed GitHub PR', async () => {

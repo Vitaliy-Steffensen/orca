@@ -16,8 +16,14 @@ export function projectPendingReviewComment(
 ): PRComment {
   return {
     id: -1,
-    author: viewer?.login ?? '',
-    authorAvatarUrl: viewer?.avatarUrl ?? '',
+    // Why the agent takes the byline: a comment it staged is not yours until you keep it, and
+    // the name is the only thing telling you which rows you have not read yet. It goes no
+    // further than this card — submitting sends the body and the line, never the author.
+    author: comment.agentAuthor?.name ?? viewer?.login ?? '',
+    authorAvatarUrl: comment.agentAuthor ? '' : (viewer?.avatarUrl ?? ''),
+    // Why the bot flag: the row then carries the badge every automated comment carries, so a
+    // staged draft reads as one at a glance — and stops being one the moment the review is sent.
+    ...(comment.agentAuthor ? { isBot: true } : {}),
     body: comment.body,
     createdAt: new Date(comment.createdAt).toISOString(),
     url: '',

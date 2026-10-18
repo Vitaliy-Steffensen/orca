@@ -4,6 +4,7 @@ import { hydrateGitHubPRStack } from '../../github-pr-stack'
 import { detectRepositoryMergeMetadata } from './../detect/repository-merge-metadata'
 import { derivePullRequestMergeable, type PullRequestLookupData } from './pull-request-lookup-data'
 import { getCachedGitHubPRStackSummary } from './pr-stack-summary-cache'
+import { readUnresolvedReviewThreadCount } from '../../unresolved-review-thread-count'
 
 export async function derivePRRefreshData(args: {
   data: PullRequestLookupData
@@ -33,6 +34,18 @@ export async function derivePRRefreshData(args: {
       data.stackMetadataChecked = true
     } catch {
       // Stack metadata is additive; exact PR lookup remains usable without it.
+    }
+  }
+  if (args.usedExactNumberLookup && dataRepo) {
+    const unresolved = await readUnresolvedReviewThreadCount(
+      dataRepo,
+      data.number,
+      ghOptions,
+      executionScope
+    )
+    if (unresolved) {
+      data.unresolvedComments = unresolved.count
+      data.unresolvedCommentsTruncated = unresolved.truncated
     }
   }
   const mergeable = derivePullRequestMergeable(data)

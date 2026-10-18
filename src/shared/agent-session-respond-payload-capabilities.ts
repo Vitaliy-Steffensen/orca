@@ -1,4 +1,4 @@
-// Split out of protocol-version.ts, which lists them in RUNTIME_CAPABILITIES.
+// Split out of protocol-version.ts, which lists these in RUNTIME_CAPABILITIES. Import them from here.
 
 // Why: agentSession.respondToQuestion has a strict schema, so clients must not send structured
 // `answers` to an older host; they fall back to the answer packed into `optionId`.
@@ -10,7 +10,7 @@ export const AGENT_SESSION_QUESTION_ANSWERS_RUNTIME_CAPABILITY =
 export const AGENT_SESSION_APPROVAL_NOTE_RUNTIME_CAPABILITY =
   'agent-session.approval-note.v1' as const
 
-export const AGENT_SESSION_STRICT_RESPOND_RUNTIME_CAPABILITIES = [
+export const AGENT_SESSION_RESPOND_PAYLOAD_RUNTIME_CAPABILITIES = [
   AGENT_SESSION_QUESTION_ANSWERS_RUNTIME_CAPABILITY,
   AGENT_SESSION_APPROVAL_NOTE_RUNTIME_CAPABILITY
 ] as const

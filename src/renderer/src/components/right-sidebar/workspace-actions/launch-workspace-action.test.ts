@@ -99,10 +99,30 @@ describe('launchWorkspaceAction', () => {
     expect(call.prompt).toContain('Review pull request #3145 — "Scale"')
   })
 
+  it('re-reviews the current pull request against the review already left on it', async () => {
+    setContext({
+      action: null,
+      pr: {
+        number: 3145,
+        state: 'open',
+        baseRefName: 'main',
+        url: 'https://x/3145',
+        title: 'Scale'
+      }
+    })
+    await launchWorkspaceAction('re-review')
+    const call = mocks.launch.mock.calls[0]?.[0]
+    expect(call.title).toBe('Re-review #3145')
+    expect(call.prompt).toContain('Re-review pull request #3145 — "Scale"')
+    expect(call.prompt).toContain('orca review comment add')
+    expect(call.prompt).not.toMatch(/\{\{\w+\}\}/)
+  })
+
   it('does nothing without an action or a pull request to review', async () => {
     setContext({ action: null })
     await launchWorkspaceAction('primary')
     await launchWorkspaceAction('review')
+    await launchWorkspaceAction('re-review')
     expect(mocks.launch).not.toHaveBeenCalled()
   })
 })

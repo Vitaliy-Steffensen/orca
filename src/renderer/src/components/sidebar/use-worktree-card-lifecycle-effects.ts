@@ -22,7 +22,6 @@ export function useWorktreeCardLifecycleEffects({
   branch,
   fetchHostedReviewForBranch,
   shouldRefreshHostedReview,
-  newCardStyle,
   hoverDetailsOpen,
   showIssue,
   issueCacheKey,
@@ -46,10 +45,7 @@ export function useWorktreeCardLifecycleEffects({
     | 'linearSourceContext'
     | 'linearWorkspaceId'
   > &
-  Pick<
-    Foundation,
-    'fetchHostedReviewForBranch' | 'newCardStyle' | 'fetchIssue' | 'fetchLinearIssue'
-  > & {
+  Pick<Foundation, 'fetchHostedReviewForBranch' | 'fetchIssue' | 'fetchLinearIssue'> & {
     shouldRefreshHostedReview: boolean
     hoverDetailsOpen: boolean
     showIssue: boolean
@@ -57,7 +53,6 @@ export function useWorktreeCardLifecycleEffects({
   }): void {
   useEffect(() => {
     if (
-      !newCardStyle ||
       !hoverDetailsOpen ||
       !isWindowVisible() ||
       shouldRefreshHostedReview ||
@@ -86,7 +81,6 @@ export function useWorktreeCardLifecycleEffects({
     })
   }, [
     hoverDetailsOpen,
-    newCardStyle,
     shouldRefreshHostedReview,
     repo,
     isFolder,
@@ -128,7 +122,6 @@ export function useWorktreeCardLifecycleEffects({
 
   useEffect(() => {
     if (
-      !newCardStyle ||
       !hoverDetailsOpen ||
       showIssue ||
       isWebClient() ||
@@ -140,16 +133,7 @@ export function useWorktreeCardLifecycleEffects({
       return
     }
     void fetchIssue(repo.path, worktree.linkedIssue, { repoId: repo.id })
-  }, [
-    newCardStyle,
-    hoverDetailsOpen,
-    showIssue,
-    repo,
-    isFolder,
-    worktree.linkedIssue,
-    fetchIssue,
-    issueCacheKey
-  ])
+  }, [hoverDetailsOpen, showIssue, repo, isFolder, worktree.linkedIssue, fetchIssue, issueCacheKey])
 
   useEffect(() => {
     if (!worktree.linkedLinearIssue || !showLinearIssue) {
@@ -180,14 +164,13 @@ export function useWorktreeCardLifecycleEffects({
   ])
 
   useEffect(() => {
-    if (!newCardStyle || !hoverDetailsOpen || showLinearIssue || !worktree.linkedLinearIssue) {
+    if (!hoverDetailsOpen || showLinearIssue || !worktree.linkedLinearIssue) {
       return
     }
     void fetchLinearIssue(worktree.linkedLinearIssue, linearWorkspaceId, {
       sourceContext: linearSourceContext
     })
   }, [
-    newCardStyle,
     hoverDetailsOpen,
     showLinearIssue,
     worktree.linkedLinearIssue,

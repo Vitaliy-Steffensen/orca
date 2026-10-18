@@ -25,7 +25,6 @@ export function useWorktreeCardSecondaryDetails({
   showIssue,
   showLinearIssue,
   showJiraIssue,
-  showPR,
   showAutomation,
   showCli,
   showComment,
@@ -40,8 +39,6 @@ export function useWorktreeCardSecondaryDetails({
   linkedAzureDevOpsPR,
   linkedGiteaPR,
   cardProps,
-  newCardStyle,
-  compactCards,
   agentActivityDisplayMode,
   workspacePorts,
   openTaskPage,
@@ -51,8 +48,6 @@ export function useWorktreeCardSecondaryDetails({
   Pick<
     Foundation,
     | 'cardProps'
-    | 'newCardStyle'
-    | 'compactCards'
     | 'agentActivityDisplayMode'
     | 'workspacePorts'
     | 'openTaskPage'
@@ -68,7 +63,6 @@ export function useWorktreeCardSecondaryDetails({
     showIssue: boolean
     showLinearIssue: boolean
     showJiraIssue: boolean
-    showPR: boolean
     showAutomation: boolean
     showCli: boolean
     showComment: boolean
@@ -85,11 +79,10 @@ export function useWorktreeCardSecondaryDetails({
   const metaIssue = showIssue ? hoverIssue : null
   const metaLinearIssue = showLinearIssue ? hoverLinearIssue : null
   const metaJiraIssue = showJiraIssue ? hoverJiraIssue : null
-  const metaReview = showPR ? hoverReview : null
   const metaAutomationProvenance = showAutomation ? worktree.automationProvenance : null
   const metaCliProvenance = showCli ? worktree.cliProvenance : null
   const metaComment = showComment ? hoverComment : null
-  const showInlineAgentList = cardProps.includes('inline-agents') && (newCardStyle || !compactCards)
+  const showInlineAgentList = cardProps.includes('inline-agents')
   const compactInlineAgentRows = useWorktreeAgentRows(
     worktree.id,
     showInlineAgentList && agentActivityDisplayMode === 'compact'
@@ -98,7 +91,7 @@ export function useWorktreeCardSecondaryDetails({
     showInlineAgentList &&
     agentActivityDisplayMode === 'compact' &&
     compactInlineAgentRows.length > 0
-  const showAggregateCacheTimer = !compactCards && !compactInlineAgentRowsVisible
+  const showAggregateCacheTimer = !compactInlineAgentRowsVisible
   const handleOpenGitHubIssueInOrca = useCallback(
     (e: React.MouseEvent) => {
       e.stopPropagation()
@@ -234,7 +227,7 @@ export function useWorktreeCardSecondaryDetails({
       issue: metaIssue,
       linearIssue: metaLinearIssue,
       jiraIssue: metaJiraIssue,
-      review: newCardStyle ? null : metaReview,
+      review: null,
       comment: metaComment,
       automationProvenance: metaAutomationProvenance,
       cliProvenance: metaCliProvenance
@@ -256,7 +249,6 @@ export function useWorktreeCardSecondaryDetails({
     metaIssue,
     metaLinearIssue,
     metaJiraIssue,
-    metaReview,
     metaAutomationProvenance,
     metaCliProvenance,
     metaComment,

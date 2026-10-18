@@ -31,6 +31,7 @@ import { NativeChatImageAttachmentPreview } from './NativeChatImageAttachmentPre
 import { NativeChatQueueSendConfirmDialog } from './NativeChatQueueSendConfirmDialog'
 import type { NativeChatQueueSendConfirm } from './use-native-chat-held-queue-composer-send'
 import type { NativeChatComposerGoalMode } from './use-native-chat-composer-submit'
+import type { NativeChatPromptMark } from '../../../../shared/native-chat-prompt-marks'
 import { translate } from '@/i18n/i18n'
 import { useNativeChatComposerDraftUnsaved } from './use-native-chat-draft-unsaved'
 
@@ -89,6 +90,9 @@ export type NativeChatComposerFieldProps = {
   contextUsage?: NativeChatContextUsageSummary | null
   sessionOptionsPickerRequest?: NativeChatOptionPickerRequest | null
   goalMode?: NativeChatComposerGoalMode
+  promptMarks?: readonly NativeChatPromptMark[]
+  activePromptMarkId?: string | null
+  onPromptMarkChange?: (id: string | null) => void
 }
 
 export type NativeChatComposerImageAttachment = {
@@ -174,7 +178,10 @@ export function NativeChatComposerField({
   sessionOptionsSnapshot,
   contextUsage,
   sessionOptionsPickerRequest,
-  goalMode
+  goalMode,
+  promptMarks,
+  activePromptMarkId,
+  onPromptMarkChange
 }: NativeChatComposerFieldProps): React.JSX.Element {
   const draftNotSaved = useNativeChatComposerDraftUnsaved(draftScopeKey)
   const optionCount =
@@ -394,6 +401,9 @@ export function NativeChatComposerField({
                 sessionOptionsPickerRequest={sessionOptionsPickerRequest}
                 focusComposer={focusComposer}
                 onExitGoalMode={goalMode?.active ? goalMode.exit : undefined}
+                {...(promptMarks && onPromptMarkChange
+                  ? { promptMarks, activePromptMarkId, onPromptMarkChange }
+                  : {})}
               />
             </div>
           </div>

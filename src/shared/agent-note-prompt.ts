@@ -14,6 +14,14 @@ export const NOTES_AGENT_NOTE_INSTRUCTION = `When you have addressed a note, rep
 
 export const REVIEW_AGENT_NOTE_INSTRUCTION = `Also leave each finding as an agent note on its lines so it shows in the diff: ${ADD_COMMAND}. ${BODY_FORMAT} Skip this if the orca command is not available.`
 
+const STAGE_COMMAND =
+  "orca review comment add --file <path> --line <n> [--end-line <n>] --agent '<your name>' --body '<markdown>'"
+
+// Why a sibling of the note instruction rather than a replacement: a note is commentary on the
+// user's own diff, and this is a review of someone else's pull request. The two CLIs are not
+// interchangeable, and an agent handed the wrong one writes where nobody is looking.
+export const REVIEW_STAGED_COMMENT_INSTRUCTION = `Stage each confirmed finding on its lines in my pending review: ${STAGE_COMMAND}. ${BODY_FORMAT} Lead the body with the severity and what this diff has to do with the problem, like "🔴 Blocker · introduced", then **What:**, **Why:** and **Fix:** lines. Run orca review comment list first in case I already drafted something, and write the verdict and anything without a single line with orca review summary set --body '<markdown>'. Every comment you stage is a proposal: I accept or drop each one and submit the review under my own name, so stage only what you are sure of and keep the rest in your reply. Skip this if the orca command is not available.`
+
 export function githubCommentAgentNoteInstruction(url: string | undefined): string {
   return `When you have addressed a review comment, leave an agent note on the lines you changed saying what you did, linked to that comment: ${ADD_COMMAND} --github-comment ${url ?? '<comment url>'}. ${BODY_FORMAT} Skip this if the orca command is not available.`
 }

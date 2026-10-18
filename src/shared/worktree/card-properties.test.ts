@@ -1,8 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import {
-  getWorktreeCardModeProperties,
-  getWorktreeCardModeUpdates,
-  isDefaultedCompactWorktreeCardProperties,
+  isRetiredCompactWorktreeCardProperties,
   normalizeWorktreeCardProperties
 } from './card-properties'
 
@@ -13,22 +11,16 @@ describe('worktree card properties', () => {
     )
   })
 
-  it('returns combined mode update payloads', () => {
-    expect(getWorktreeCardModeUpdates('Compact')).toEqual({
-      settings: { compactWorktreeCards: true },
-      ui: {
-        worktreeCardProperties: getWorktreeCardModeProperties('Compact'),
-        _worktreeCardModeDefaulted: true
-      }
-    })
+  it('recognizes only exact retired Compact presets', () => {
+    expect(isRetiredCompactWorktreeCardProperties(['status'])).toBe(true)
+    expect(isRetiredCompactWorktreeCardProperties(['status', 'unread'])).toBe(true)
+    expect(isRetiredCompactWorktreeCardProperties(['status', 'automation'])).toBe(true)
+    expect(isRetiredCompactWorktreeCardProperties(['status', 'unread', 'automation'])).toBe(true)
+    expect(isRetiredCompactWorktreeCardProperties(['automation', 'status'])).toBe(false)
+    expect(isRetiredCompactWorktreeCardProperties(['status', 'automation', 'pr'])).toBe(false)
   })
 
-  it('recognizes only exact defaulted Compact presets', () => {
-    expect(isDefaultedCompactWorktreeCardProperties(['status'])).toBe(true)
-    expect(isDefaultedCompactWorktreeCardProperties(['status', 'unread'])).toBe(true)
-    expect(isDefaultedCompactWorktreeCardProperties(['status', 'automation'])).toBe(true)
-    expect(isDefaultedCompactWorktreeCardProperties(['status', 'unread', 'automation'])).toBe(true)
-    expect(isDefaultedCompactWorktreeCardProperties(['automation', 'status'])).toBe(false)
-    expect(isDefaultedCompactWorktreeCardProperties(['status', 'automation', 'pr'])).toBe(false)
+  it('leaves an explicitly chosen property set alone', () => {
+    expect(isRetiredCompactWorktreeCardProperties(['status', 'unread', 'pr'])).toBe(false)
   })
 })

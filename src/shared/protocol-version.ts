@@ -44,9 +44,7 @@ export {
 import { AGENT_SESSION_RESUME_RUNTIME_CAPABILITIES } from './agent-session-resume-runtime-capabilities'
 import { QODER_OWNED_TERMINAL_CREATE_CAPABILITY } from './qoder-terminal-create-capability'
 import { AGENT_SESSION_CONTINUE_INTERRUPTED_RUNTIME_CAPABILITY } from './agent-session-continue-interrupted-capability'
-import { AGENT_SESSION_STRICT_RESPOND_RUNTIME_CAPABILITIES } from './agent-session-strict-respond-capabilities'
-// Why a star: both strict-respond capabilities stay part of the runtime contract this module re-exports.
-export * from './agent-session-strict-respond-capabilities'
+import { AGENT_SESSION_RESPOND_PAYLOAD_RUNTIME_CAPABILITIES } from './agent-session-respond-payload-capabilities'
 import { ORCAD_RUNTIME_CAPABILITIES } from './orcad-runtime-capabilities'
 import { DEVICE_KEY_RUNTIME_CAPABILITIES } from './device-key-capability'
 // Why a star: every resume capability is part of the runtime contract this module re-exports.
@@ -197,6 +195,7 @@ export const AGENT_SESSION_BOUNDARY_RUNTIME_CAPABILITY =
   'agent-session.session-boundary.v1' as const
 export { REMOTE_SERVER_UPDATE_CAPABILITY } from './remote-server-update'
 export * from './agent-session-stop-capabilities'
+export * from './agent-session-respond-payload-capabilities'
 export const AGENT_SESSION_HOST_AUTHORITY_RUNTIME_CAPABILITY =
   'agent-session.host-authority.v1' as const
 // Older launch schemas reject unknown fields; advertise before clients send keyboard support.
@@ -425,7 +424,7 @@ export const RUNTIME_CAPABILITIES = [
   AGENT_SESSION_REWIND_RECOVERY_CAPABILITY,
   AGENT_SESSION_CONVERSATION_OUTLINE_RUNTIME_CAPABILITY,
   AGENT_SESSION_BACKGROUND_TASK_STOP_CAPABILITY,
-  ...AGENT_SESSION_STRICT_RESPOND_RUNTIME_CAPABILITIES,
+  ...AGENT_SESSION_RESPOND_PAYLOAD_RUNTIME_CAPABILITIES,
   AGENT_SESSION_ATTACHMENTS_RUNTIME_CAPABILITY,
   AGENT_SESSION_TURN_ITEM_CAPABILITY,
   AGENT_SESSION_BACKGROUND_TASK_ROW_STOP_CAPABILITY,

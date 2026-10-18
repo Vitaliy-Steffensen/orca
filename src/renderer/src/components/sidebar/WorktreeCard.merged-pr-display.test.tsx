@@ -145,8 +145,7 @@ function renderWorktreeCardMarkup(element: ReactNode): string {
 describe('WorktreeCard merged PR fallback display', () => {
   beforeEach(() => {
     vi.clearAllMocks()
-    settings = { compactWorktreeCards: false, experimentalNewWorktreeCardStyle: false }
-    worktreeCardProperties = ['pr']
+    worktreeCardProperties = ['status']
     hostedReviewCache = {
       'local::repo-1::feature/local-branch': {
         data: null,
@@ -173,7 +172,7 @@ describe('WorktreeCard merged PR fallback display', () => {
       />
     )
 
-    expect(markup).toContain('Linked PR #6340')
+    expect(markup).toContain('PR: Merged')
     expect(markup).not.toContain('Branch')
   })
 
@@ -247,6 +246,6 @@ describe('WorktreeCard merged PR fallback display', () => {
       />
     )
 
-    expect(markup).toContain('Linked PR #6340')
+    expect(markup).toContain('PR: Merged')
   })
 })

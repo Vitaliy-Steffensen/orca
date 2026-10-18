@@ -4,10 +4,7 @@ import type { IssueInfo } from '../../../../shared/github/pull-request-types'
 import type { LinearIssue } from '../../../../shared/linear/issue-types'
 import { getWorktreeCardJiraIssueDisplay } from './worktree-card-jira-issue-display'
 import type { WorktreeCardIssueDisplay } from './WorktreeCardMeta'
-import {
-  coerceWorktreeCardVisibleTitle,
-  getWorktreeCardTitleDisplay
-} from './worktree-card-title-display'
+import { getWorktreeCardTitleDisplay } from './worktree-card-title-display'
 import { useWorkspaceDeleteModifierPressed } from './workspace-delete-quick-action'
 import type { WorktreeCardProps } from './worktree-card-model'
 import type { useWorktreeCardFoundation } from './use-worktree-card-foundation'
@@ -18,7 +15,6 @@ type ReviewDetails = ReturnType<typeof useWorktreeCardReviewDetails>
 
 export function useWorktreeCardLinkedDetails({
   worktree,
-  newCardStyle,
   deleteState,
   branch,
   issueEntry,
@@ -26,7 +22,7 @@ export function useWorktreeCardLinkedDetails({
   linearIssueFallbackEntry,
   prDisplay
 }: Pick<WorktreeCardProps, 'worktree'> &
-  Pick<Foundation, 'newCardStyle' | 'deleteState'> &
+  Pick<Foundation, 'deleteState'> &
   Pick<
     ReviewDetails,
     'branch' | 'issueEntry' | 'linearIssueEntry' | 'linearIssueFallbackEntry' | 'prDisplay'
@@ -84,8 +80,7 @@ export function useWorktreeCardLinkedDetails({
     issueTitle: issueDisplay?.title,
     reviewTitle: prDisplay?.title
   })
-  const legacyCardTitleDisplay = coerceWorktreeCardVisibleTitle(worktree.displayName)
-  const visibleCardTitle = newCardStyle ? cardTitleDisplay : legacyCardTitleDisplay
+  const visibleCardTitle = cardTitleDisplay
   const isDeleting = deleteState?.isDeleting ?? false
   const isQueuedForDeletion = deleteState?.phase === 'queued'
   const deleteLabel = isQueuedForDeletion
