@@ -193,6 +193,7 @@ export const WORKTREE_METHODS = [
         sparsePresetId: params.sparsePresetId,
         baseRef: params.baseRef,
         workspaceStatus: params.workspaceStatus,
+        workspaceAutonomy: params.workspaceAutonomy,
         pushTarget: params.pushTarget,
         diffComments: params.diffComments,
         mobileDiffReview: params.mobileDiffReview,

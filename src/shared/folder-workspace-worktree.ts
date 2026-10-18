@@ -101,6 +101,7 @@ export function folderWorkspaceToWorktree(folderWorkspace: FolderWorkspace): Wor
     pendingFirstAgentMessageRename: folderWorkspace.pendingFirstAgentMessageRename,
     firstAgentMessageRenameError: folderWorkspace.firstAgentMessageRenameError,
     workspaceStatus: folderWorkspace.workspaceStatus,
+    workspaceAutonomy: folderWorkspace.workspaceAutonomy,
     diffComments: folderWorkspace.diffComments,
     path: folderWorkspace.folderPath,
     head: '',

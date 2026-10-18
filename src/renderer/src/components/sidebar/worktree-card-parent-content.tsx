@@ -163,6 +163,7 @@ export function WorktreeCardParentContent({
             reviewChecks={reviewChecks.total > 0 ? reviewChecks : undefined}
             newCardStyle={newCardStyle}
             hasBranchIdentity={Boolean(branchIdentityDisplay)}
+            isArchived={worktree.isArchived}
           />
         </div>
       ) : null}

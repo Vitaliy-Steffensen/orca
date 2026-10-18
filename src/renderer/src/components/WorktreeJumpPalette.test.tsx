@@ -11,11 +11,18 @@ import { encodePaletteIdentity } from '@/lib/palette-match/palette-ranking'
 import WorktreeJumpPalette from './WorktreeJumpPalette'
 import { makeRepo, makeWorktree } from './worktree-jump-palette-test-fixtures'
 
-const { activateAndRevealWorktree } = vi.hoisted(() => ({
-  activateAndRevealWorktree: vi.fn(() => false)
+const { activateAndRevealWorktree, runUnarchiveWorktrees } = vi.hoisted(() => ({
+  activateAndRevealWorktree: vi.fn(() => false),
+  runUnarchiveWorktrees: vi.fn(async () => undefined)
 }))
 
 vi.mock('@/lib/worktree-activation', () => ({ activateAndRevealWorktree }))
+
+vi.mock('@/components/sidebar/archive-worktree-flow', () => ({
+  runArchiveWorktrees: vi.fn(async () => undefined),
+  runArchiveWorktree: vi.fn(async () => undefined),
+  runUnarchiveWorktrees
+}))
 
 vi.mock('react-i18next', async (importOriginal) => {
   const actual = await importOriginal<typeof ReactI18Next>()
@@ -194,6 +201,7 @@ describe('WorktreeJumpPalette', () => {
     globalThis.IS_REACT_ACT_ENVIRONMENT = true
     setCommandQuery = null
     activateAndRevealWorktree.mockClear()
+    runUnarchiveWorktrees.mockClear()
     useAppStore.setState(initialAppState, true)
     testContainer = document.createElement('div')
     document.body.appendChild(testContainer)
@@ -523,6 +531,58 @@ describe('WorktreeJumpPalette', () => {
     })
 
     expect(input?.value).toBe('😉')
+  })
+
+  it('keeps the palette open on archived workspaces and unarchives the one you pick', async () => {
+    const live = makeWorktree('live', 'Live workspace', { lastActivityAt: 50 })
+    const older = makeWorktree('older', 'Older archive', {
+      isArchived: true,
+      lastActivityAt: 10,
+      branch: 'refs/heads/old-branch'
+    })
+    const newer = makeWorktree('newer', 'Newer archive', {
+      isArchived: true,
+      lastActivityAt: 40,
+      branch: 'refs/heads/new-branch'
+    })
+
+    await renderPalette({
+      worktreesByRepo: { 'repo-1': [live, older, newer] },
+      showSleepingWorkspaces: true
+    })
+
+    await act(async () => setCommandQuery?.('archived'))
+    await flushEffects()
+
+    const action = [...testContainer.querySelectorAll('button')].find((button) =>
+      button.textContent?.includes('View Archived Workspaces')
+    )
+    expect(action).toBeDefined()
+    await act(async () => fireEvent.click(action!))
+    await flushEffects()
+
+    expect(useAppStore.getState().activeModal).toBe('worktree-palette')
+    expect(testContainer.querySelector('[data-command-dialog="true"]')).not.toBeNull()
+    expect(getWorktreeRows()).toEqual([
+      expect.stringContaining('Newer archive'),
+      expect.stringContaining('Older archive')
+    ])
+    expect(testContainer.textContent).not.toContain('Live workspace')
+    expect(testContainer.textContent).toContain('Unarchive')
+
+    const newerRow = testContainer.querySelector<HTMLButtonElement>(
+      `[data-command-item="${encodePaletteIdentity(['worktree', '|newer'])}"]`
+    )
+    expect(newerRow).not.toBeNull()
+    await act(async () => fireEvent.click(newerRow!))
+
+    expect(runUnarchiveWorktrees).toHaveBeenCalledWith(['newer'], undefined)
+    expect(activateAndRevealWorktree).not.toHaveBeenCalled()
+    expect(useAppStore.getState().activeModal).toBe('worktree-palette')
+
+    await act(async () => setCommandQuery?.('old-branch'))
+    await flushEffects()
+    expect(getWorktreeRows()).toEqual([expect.stringContaining('Older archive')])
   })
 
   it('renders last active timestamp when worktree has lastActivityAt', async () => {

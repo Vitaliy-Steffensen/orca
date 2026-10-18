@@ -64,6 +64,7 @@ export function useWorktreeJumpPaletteLocalState({
   const fallbackFocusInnerFrameRef = useRef<number | null>(null)
   const preserveCreateLookupOnCloseRef = useRef(false)
   const [expandedSectionCaps, setExpandedSectionCaps] = useState<Record<string, number>>({})
+  const [viewingArchivedWorkspaces, setViewingArchivedWorkspaces] = useState(false)
 
   // Reset expansion and seed each open before the palette paints.
   const [previousQuery, setPreviousQuery] = useState(query)
@@ -75,6 +76,7 @@ export function useWorktreeJumpPaletteLocalState({
     setExpandedSectionCaps({})
     if (visibilityChanged && visible) {
       setFilter(buildPaletteFilterFromSidebarScope(sidebarScope))
+      setViewingArchivedWorkspaces(false)
     }
   }
   return {
@@ -111,7 +113,9 @@ export function useWorktreeJumpPaletteLocalState({
     createLookupGuard,
     preserveCreateLookupOnCloseRef,
     expandedSectionCaps,
-    setExpandedSectionCaps
+    setExpandedSectionCaps,
+    viewingArchivedWorkspaces,
+    setViewingArchivedWorkspaces
   }
 }
 

@@ -212,6 +212,7 @@ export function getDefaultUIState(): PersistedUIState {
     hideDefaultBranchWorkspace: false,
     hideAutomationGeneratedWorkspaces: false,
     hideCliCreatedWorkspaces: false,
+    showArchivedWorkspaces: false,
     hideDetachedHeadWorkspaces: false,
     hideWorkspacesFromOtherDevices: false,
     alwaysShowDefaultBranchWorkspace: true,

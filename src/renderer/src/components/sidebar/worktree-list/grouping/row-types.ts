@@ -18,6 +18,10 @@ export type GroupHeaderRow = {
   type: 'header'
   collapseKey?: string
   key: string
+  /** Set on a workspace-status section header; names the band it opens. */
+  statusSection?: string
+  /** Set on a group header nested inside a section: that section's row key. */
+  parentKey?: string
   label: string
   count: number
   tone: string

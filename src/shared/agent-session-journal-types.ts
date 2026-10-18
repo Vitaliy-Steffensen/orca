@@ -170,6 +170,9 @@ export type AgentJournalResolution = {
   selectedOptionId: string | null
   /** Question answers. Absent on approvals and on rows written before hosts recorded it. */
   answers?: AgentSessionQuestionAnswer[]
+  /** Free text the resolver left beside an approval decision — what to change about a denied
+   *  plan. Absent on questions (their text rides in `answers[].other`) and on older rows. */
+  note?: string
   /** Opaque client identity of the resolver, for "answered on <device>". */
   resolvedBy: string | null
   resolvedAt: number | null

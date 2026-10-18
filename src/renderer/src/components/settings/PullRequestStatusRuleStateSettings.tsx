@@ -7,6 +7,7 @@ import type {
   WorkspaceStatusRuleConfig
 } from '../../../../shared/workspace-status-rule-config'
 import { SettingsRow, SettingsSwitchRow } from './SettingsFormControls'
+import { WorkspaceResolutionSettingRow } from './WorkspaceResolutionSettingRow'
 import { ReviewingRuleSettings } from './ReviewingRuleSettings'
 
 type StateSettingsProps = {
@@ -16,17 +17,17 @@ type StateSettingsProps = {
 
 function DeleteOnResolvedRow({ config, patch }: StateSettingsProps): React.JSX.Element {
   return (
-    <SettingsSwitchRow
+    <WorkspaceResolutionSettingRow
       label={translate(
-        'auto.components.settings.prRules.deleteOnMerge',
-        'Delete the workspace when its pull request is merged or closed'
+        'auto.components.settings.prRules.onMerge',
+        'When a pull request is merged or closed'
       )}
       description={translate(
-        'auto.components.settings.prRules.deleteOnMergeDescription',
-        'Runs your orca.yaml archive script first. A workspace with uncommitted work or a running agent is kept, and Orca says so. The branch itself stays on the remote.'
+        'auto.components.settings.prRules.onMergeDescription',
+        'Archive shuts the workspace down and hides it, keeping the checkout. Delete removes it and runs your orca.yaml archive script first. Either way a workspace with uncommitted work or a running agent is kept, and Orca says so; the branch itself stays on the remote.'
       )}
-      checked={config.onResolved === 'delete'}
-      onChange={() => patch({ onResolved: config.onResolved === 'delete' ? 'none' : 'delete' })}
+      value={config.onResolved}
+      onChange={(onResolved) => patch({ onResolved })}
     />
   )
 }

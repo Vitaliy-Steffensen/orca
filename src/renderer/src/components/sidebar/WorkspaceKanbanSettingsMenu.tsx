@@ -23,6 +23,7 @@ type WorkspaceKanbanSettingsMenuProps = {
   onRenameStatus: (statusId: string, label: string) => void
   onChangeStatusColor: (statusId: string, color: string) => void
   onChangeStatusIcon: (statusId: string, icon: string) => void
+  onChangeStatusSection: (statusId: string, section: string) => void
   onMoveStatus: (statusId: string, direction: -1 | 1) => void
   onRemoveStatus: (statusId: string) => void
   onAddStatus: () => void
@@ -35,6 +36,7 @@ export default function WorkspaceKanbanSettingsMenu({
   onRenameStatus,
   onChangeStatusColor,
   onChangeStatusIcon,
+  onChangeStatusSection,
   onMoveStatus,
   onRemoveStatus,
   onAddStatus
@@ -188,6 +190,26 @@ export default function WorkspaceKanbanSettingsMenu({
                     <Trash2 className="size-3.5" />
                   </Button>
                 </div>
+                <ImeInput
+                  defaultValue={status.section ?? ''}
+                  onBlur={(event) => onChangeStatusSection(status.id, event.target.value)}
+                  onKeyDown={(event) => {
+                    event.stopPropagation()
+                    if (event.key === 'Enter') {
+                      event.currentTarget.blur()
+                    }
+                  }}
+                  placeholder={translate(
+                    'auto.components.sidebar.WorkspaceKanbanSettingsMenu.4f1c0a7b91',
+                    'Section (optional)'
+                  )}
+                  className="mt-1 h-6 w-full rounded-md border border-input bg-background px-2 text-[11px] text-muted-foreground outline-none focus-visible:ring-1 focus-visible:ring-ring"
+                  aria-label={translate(
+                    'auto.components.sidebar.WorkspaceKanbanSettingsMenu.2d6b4e8c13',
+                    'Section for {{value0}}',
+                    { value0: status.label }
+                  )}
+                />
               </div>
             )
           })}

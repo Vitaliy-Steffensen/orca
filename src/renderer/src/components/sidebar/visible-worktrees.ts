@@ -80,6 +80,7 @@ export type VisibleWorktreeOptions = {
   hideDetachedHeadWorkspaces: boolean
   hideTemporaryCheckoutWorkspaces?: boolean
   hideWorkspacesFromOtherDevices: boolean
+  showArchivedWorkspaces?: boolean
   pairedDeviceIdsByEnvironment: ReadonlyMap<string, string>
   alwaysShowDefaultBranchWorkspace?: boolean
   repoMap: Map<string, Repo>
@@ -99,8 +100,11 @@ export function computeVisibleWorktrees(
 ): Worktree[] {
   let all: Worktree[] = getAllWorktreesFromState({ worktreesByRepo })
 
-  // Filter archived
-  all = all.filter((w) => !w.isArchived)
+  // Why opt-in: every other surface (palettes, dashboard, mobile) reads archived as
+  // gone, so the sidebar only reveals them while the user has asked to see them.
+  if (!opts.showArchivedWorkspaces) {
+    all = all.filter((w) => !w.isArchived)
+  }
 
   // Why: sidebar lineage is structural. Archived workspaces stay hidden, but
   // every other valid ancestor can bypass filters so children never orphan.
@@ -286,7 +290,9 @@ export function getVisibleWorktreeIds(): string[] {
   }
 
   const state = useAppStore.getState()
-  const allWorktrees = getAllWorktreesFromState(state).filter((w) => !w.isArchived)
+  const allWorktrees = getAllWorktreesFromState(state).filter(
+    (w) => state.showArchivedWorkspaces || !w.isArchived
+  )
 
   // Hoist repoMap so it's built once and reused across all branches below.
   const repoMap = getRepoMapFromState(state)
@@ -346,7 +352,7 @@ export function getVisibleWorktreeShortcutTargets(): VisibleWorktreeShortcutTarg
   const worktrees = getAllWorktreesFromState(state)
     .filter(
       (worktree) =>
-        !worktree.isArchived &&
+        (state.showArchivedWorkspaces || !worktree.isArchived) &&
         visibleIdRank.has(worktree.id) &&
         worktreeMatchesVisibleHost(worktree, visibleHostIds, repoMap, defaultHostId)
     )

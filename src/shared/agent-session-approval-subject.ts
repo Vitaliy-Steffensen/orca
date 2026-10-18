@@ -23,6 +23,29 @@ export function isNewerApprovalSubject(subject: { kind: string } | undefined): b
   return subject !== undefined && !DRAWN_APPROVAL_SUBJECT_KINDS.has(subject.kind)
 }
 
+/** The one pending plan approval, when that is the only thing waiting. The composer stays open
+ *  for it — Conductor's shape, and the reason: the plan reads in the transcript while the composer
+ *  carries Approve and the adjustments the user types. A second pending prompt means something
+ *  else also wants the slot, so the card takes it back. */
+export function pendingPlanApproval<T extends { body: AgentJournalItemBody }>(
+  items: readonly T[]
+): T | null {
+  let plan: T | null = null
+  for (const item of items) {
+    const { body } = item
+    if (
+      (body.kind === 'approval' || body.kind === 'question') &&
+      body.resolution.state === 'pending'
+    ) {
+      if (body.kind !== 'approval' || !isPlanApprovalSubject(body.subject) || plan) {
+        return null
+      }
+      plan = item
+    }
+  }
+  return plan
+}
+
 /** Every pending prompt is an approval this build cannot answer. Nothing here can settle them, so
  *  the composer stays open and a send starts a turn now instead of queueing behind them; with a
  *  turn running, the card's cancel works. */

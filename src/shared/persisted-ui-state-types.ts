@@ -68,6 +68,8 @@ export type PersistedUIState = {
   hideAutomationGeneratedWorkspaces?: boolean
   /** Hide workspaces created through `orca worktree create`. */
   hideCliCreatedWorkspaces?: boolean
+  /** Reveal archived workspaces in workspace navigation. Off by default. */
+  showArchivedWorkspaces?: boolean
   /** Hide workspaces sitting on a detached HEAD; folder workspaces (no head at all) are unaffected. */
   hideDetachedHeadWorkspaces?: boolean
   hideTemporaryCheckoutWorkspaces?: boolean

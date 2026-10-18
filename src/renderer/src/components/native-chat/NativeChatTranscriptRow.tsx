@@ -98,7 +98,12 @@ export const NativeChatTranscriptRow = memo(function NativeChatTranscriptRow({
       {/* A turn with no user bubble carries its bar above its first row. */}
       {slot.statusAbove ? statusRow : null}
       {!slot.drawsMessage ? null : receipt ? (
-        <NativeChatResolutionReceipt body={receipt} disclosureId={message.id} />
+        <NativeChatResolutionReceipt
+          body={receipt}
+          disclosureId={message.id}
+          {...(context.onLinkClick ? { onLinkClick: context.onLinkClick } : {})}
+          allowFileUriLinks={context.allowFileUriLinks}
+        />
       ) : (
         <MessageRow
           message={message}

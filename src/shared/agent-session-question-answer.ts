@@ -11,15 +11,20 @@ export const AGENT_SESSION_RESPONSE_OPTION_ID_MAX_LENGTH = 1024
 /** Largest typed answer to one question, in UTF-8 bytes. */
 export const AGENT_SESSION_QUESTION_ANSWER_MAX_BYTES = 64 * 1024
 
+/** Largest free text left beside a decision, in UTF-8 bytes; the typed answer's bound. */
+export const AGENT_SESSION_PROMPT_NOTE_MAX_BYTES = AGENT_SESSION_QUESTION_ANSWER_MAX_BYTES
+
 export type AgentSessionQuestionAnswer = {
   questionId: string
   optionIds: string[]
   other?: string
 }
 
-/** What a client chose on a prompt: a decision id for an approval, per-question answers for a question. */
+/** What a client chose on a prompt: a decision id for an approval, per-question answers for a question.
+ *  `note` is free text left beside the decision — what to change about a denied plan. Named for the
+ *  transport, not the use: reading it as a plan revision is the Claude adapter's job. */
 export type AgentSessionPromptResponse =
-  | { kind: 'option'; optionId: string }
+  | { kind: 'option'; optionId: string; note?: string }
   | { kind: 'answers'; answers: AgentSessionQuestionAnswer[] }
 
 /** The questions an item asks: its grouped list, or the item itself as one question. */

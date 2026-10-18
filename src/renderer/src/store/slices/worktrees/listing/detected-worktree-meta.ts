@@ -157,6 +157,7 @@ export function getFolderWorkspaceMetaUpdates(
         'manualOrder',
         'lastActivityAt',
         'workspaceStatus',
+        'workspaceAutonomy',
         'createdWithAgent',
         'pendingFirstAgentMessageRename',
         'firstAgentMessageRenameError',

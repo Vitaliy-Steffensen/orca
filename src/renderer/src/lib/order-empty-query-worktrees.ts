@@ -24,6 +24,32 @@ export type OrderEmptyQueryResult = {
 }
 
 /**
+ * Most-recent first: a recorded visit outranks background activity, then
+ * lastActivityAt, then display name. Shared with the archived-workspace list
+ * so "recent" means the same thing in both palette views.
+ */
+export function comparePaletteWorktreeRecency(
+  lastVisitedAtByWorktreeId: Readonly<Record<string, number>>,
+  a: Worktree,
+  b: Worktree
+): number {
+  const aVisited = getWorktreeVisitTimestamp(lastVisitedAtByWorktreeId, a)
+  const bVisited = getWorktreeVisitTimestamp(lastVisitedAtByWorktreeId, b)
+  if (aVisited != null && bVisited != null) {
+    if (bVisited !== aVisited) {
+      return bVisited - aVisited
+    }
+  } else if (aVisited != null) {
+    return -1
+  } else if (bVisited != null) {
+    return 1
+  } else if (b.lastActivityAt !== a.lastActivityAt) {
+    return b.lastActivityAt - a.lastActivityAt
+  }
+  return compareWorktreeDisplayName(a, b)
+}
+
+/**
  * Pure ordering helper for Cmd+J's empty-query Worktrees section.
  * See docs/cmd-j-empty-query-ordering.md — this function encodes the
  * ordering-rule block:
@@ -51,22 +77,9 @@ export function orderEmptyQueryWorktrees(inputs: OrderEmptyQueryInputs): OrderEm
   // incidental background activity on a local worktree push a just-
   // visited SSH worktree below the fold — the exact bug the feature
   // fixes. Compare presence first, then value within each tier.
-  const sorted = [...switchable].sort((a, b) => {
-    const aVisited = getWorktreeVisitTimestamp(lastVisitedAtByWorktreeId, a)
-    const bVisited = getWorktreeVisitTimestamp(lastVisitedAtByWorktreeId, b)
-    if (aVisited != null && bVisited != null) {
-      if (bVisited !== aVisited) {
-        return bVisited - aVisited
-      }
-    } else if (aVisited != null) {
-      return -1
-    } else if (bVisited != null) {
-      return 1
-    } else if (b.lastActivityAt !== a.lastActivityAt) {
-      return b.lastActivityAt - a.lastActivityAt
-    }
-    return compareWorktreeDisplayName(a, b)
-  })
+  const sorted = [...switchable].sort((a, b) =>
+    comparePaletteWorktreeRecency(lastVisitedAtByWorktreeId, a, b)
+  )
   return {
     visibleWorktreesForState: visibleWorktrees,
     switchableWorktreesForRows: sorted

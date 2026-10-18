@@ -128,6 +128,7 @@ export function createUiHydrationActions(set: UISliceSet, _get: UISliceGet): Par
           hideDefaultBranchWorkspace: ui.hideDefaultBranchWorkspace ?? false,
           hideAutomationGeneratedWorkspaces: ui.hideAutomationGeneratedWorkspaces === true,
           hideCliCreatedWorkspaces: ui.hideCliCreatedWorkspaces === true,
+          showArchivedWorkspaces: ui.showArchivedWorkspaces === true,
           hideDetachedHeadWorkspaces: ui.hideDetachedHeadWorkspaces === true,
           hideTemporaryCheckoutWorkspaces: ui.hideTemporaryCheckoutWorkspaces === true,
           hideWorkspacesFromOtherDevices: ui.hideWorkspacesFromOtherDevices === true,

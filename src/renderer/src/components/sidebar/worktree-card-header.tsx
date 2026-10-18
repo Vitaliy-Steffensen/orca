@@ -1,5 +1,5 @@
 import React from 'react'
-import { AlertCircle, Server, ServerOff, Star, Trash2 } from 'lucide-react'
+import { AlertCircle, Bot, Server, ServerOff, Star, Trash2 } from 'lucide-react'
 
 import { RepoIconGlyph } from '@/components/repo/repo-icon'
 import { Badge } from '@/components/ui/badge'
@@ -14,6 +14,7 @@ import type { WorktreeCardPresentation } from './worktree-card-presentation'
 import { WorktreeCardSshHostControl } from './WorktreeCardSshHostControl'
 import { WorktreeTitleInlineRename } from './WorktreeTitleInlineRename'
 import { WorktreeCardPrAuthor } from './worktree-card-pr-author'
+import { isAutonomousWorkspace } from '../../../../shared/workspace-autonomy'
 import type { WorktreeCardController } from './use-worktree-card-controller'
 
 // Why: pinned repo icon and compact inline badge share this chip shell so both repo cues read as the same affordance.
@@ -258,6 +259,25 @@ export function WorktreeCardHeader({
                   </div>
                 ) : null}
               </div>
+            </TooltipContent>
+          </Tooltip>
+        )}
+
+        {isAutonomousWorkspace(worktree) && (
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <span
+                className="shrink-0 inline-flex items-center"
+                aria-label={translate('workspace.autonomy.cardMarker', 'Autonomous workspace')}
+              >
+                <Bot className="size-3 text-muted-foreground/60" />
+              </span>
+            </TooltipTrigger>
+            <TooltipContent side="right" sideOffset={8}>
+              {translate(
+                'workspace.autonomy.cardMarkerTooltip',
+                'Autonomous: work here runs without the scoping gate'
+              )}
             </TooltipContent>
           </Tooltip>
         )}

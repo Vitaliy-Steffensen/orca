@@ -41,6 +41,7 @@ import {
 import { getOptionalLinearIssueLinkFlag } from './worktree-linear-issue-link'
 import { getOptionalWorktreeUnreadFlag } from './worktree-unread-flag'
 import { getReviewTargetLinkFlags } from './worktree-review-link-flags'
+import { getOptionalWorkspaceAutonomyFlag } from './worktree-autonomy-flag'
 import { withSetupDecisionRecovery } from './worktree-setup-decision-recovery'
 import { assertGitLabLinkFlagProjectsMatch } from './worktree-gitlab-link-context'
 import { assertReferenceWritesSupported, getCreateReferences } from '../reference-input'
@@ -263,6 +264,7 @@ export const WORKTREE_HANDLERS: Record<string, CommandHandler> = {
       ...linearIssueLink,
       comment: getOptionalStringFlag(flags, 'comment'),
       workspaceStatus: getOptionalStringFlag(flags, 'workspace-status'),
+      workspaceAutonomy: getOptionalWorkspaceAutonomyFlag(flags),
       isUnread,
       parentWorktree: await getOptionalWorktreeSelector(flags, 'parent-worktree', cwd, client),
       noParent: flags.get('no-parent') === true

@@ -67,6 +67,7 @@
   --color-chat-inline-code-border: var(--chat-inline-code-border);
   --color-chat-composer-surface: var(--chat-composer-surface);
   --color-chat-composer-border: var(--chat-composer-border);
+  --color-chat-plan-border: var(--chat-plan-border);
   --color-chat-warning: var(--chat-warning);
   --color-chat-diff-added: var(--chat-diff-added);
   --color-chat-diff-removed: var(--chat-diff-removed);
@@ -471,6 +472,19 @@
   --ring: var(--orca-security-ring);
 }
 
+/* The composer's input while a plan waits: a faint hold texture, so the field reads as "answer
+   the plan" rather than "write a new message". A class, not an arbitrary Tailwind gradient, so the
+   repeating geometry lives beside the token it uses. */
+.native-chat-plan-hatch {
+  background-image: repeating-linear-gradient(
+    135deg,
+    var(--chat-plan-hatch) 0px,
+    var(--chat-plan-hatch) 1px,
+    transparent 1px,
+    transparent 7px
+  );
+}
+
 .linear-priority-bars {
   --linear-priority-bar-inactive-fill: color-mix(in srgb, lch(39.576 1.25 282) 34%, transparent);
 }
@@ -624,6 +638,10 @@ body:has(> [data-slot='dialog-overlay'], > [data-slot='sheet-overlay']) {
     var(--chat-source-foreground) var(--chat-composer-border-mix),
     transparent
   );
+  /* The composer while a plan waits on the user: the warm hold colour, mixed from the app's own
+     warning hue rather than a new one, so it reads as "stopped for you" in both schemes. */
+  --chat-plan-border: color-mix(in srgb, var(--status-warning) 55%, var(--chat-composer-border));
+  --chat-plan-hatch: color-mix(in srgb, var(--status-warning) 9%, transparent);
   /* Mixed toward the foreground so each clears text contrast on the canvas in either scheme. */
   --chat-focus-ring: color-mix(in srgb, var(--chat-source-foreground) 50%, var(--chat-canvas));
   --chat-warning: color-mix(in srgb, var(--status-warning) 70%, var(--chat-source-foreground));

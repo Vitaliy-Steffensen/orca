@@ -96,8 +96,36 @@ describe('nativeChatOptionsPillLabel', () => {
     }
   }
 
+  function permissionModeDescriptor(currentValue: string): SessionOptionDescriptor {
+    return {
+      id: 'permissionMode',
+      label: 'Permission mode',
+      category: 'mode',
+      valueSource: 'dispatched',
+      transport: 'agent-session',
+      settable: true,
+      kind: {
+        type: 'select',
+        currentValue,
+        choices: [
+          { value: 'default', label: 'Normal' },
+          { value: 'acceptEdits', label: 'Accept edits' },
+          { value: 'plan', label: 'Plan' }
+        ]
+      }
+    }
+  }
+
   it('names a faster tier and leaves Standard out, as Fast off was', () => {
     expect(nativeChatOptionsPillLabel([speedDescriptor('ultrafast')])).toBe('Ultrafast')
     expect(nativeChatOptionsPillLabel([speedDescriptor('default')])).toBe('Options')
+  })
+
+  it('names a non-default permission mode and leaves Normal out', () => {
+    expect(nativeChatOptionsPillLabel([permissionModeDescriptor('plan')])).toBe('Plan')
+    expect(nativeChatOptionsPillLabel([permissionModeDescriptor('acceptEdits')])).toBe(
+      'Accept edits'
+    )
+    expect(nativeChatOptionsPillLabel([permissionModeDescriptor('default')])).toBe('Options')
   })
 })
