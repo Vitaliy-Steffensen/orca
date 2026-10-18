@@ -11,6 +11,7 @@ import type { WorktreeScanFailureKind } from '../worktree-scan-failure'
 import type { PendingReviewComment } from '../github/pending-review-comment'
 import type { WorkspaceStatusManualOverride } from '../workspace-status-manual-override'
 import type { WorkspaceAutonomy } from '../workspace-autonomy'
+import type { WorkspaceIntent } from '../workspace-intent'
 
 export type WorkspaceAttachmentOrigin = {
   kind: 'observed'
@@ -92,6 +93,13 @@ export type WorkspaceStatusDefinition = {
   icon?: string
   /** Outer band this lane belongs to. Absent means the lane sits at top level. */
   section?: string
+  /**
+   * Icon for that outer band. Stored on each lane so the band's look travels
+   * with its lanes instead of a second list that can drift from them.
+   */
+  sectionIcon?: string
+  /** Color for that outer band. Shared by every lane in the section. */
+  sectionColor?: string
 }
 
 export type Worktree = {
@@ -180,6 +188,7 @@ export type Worktree = {
   /** Clearance for unattended work. Absent (from an older host or an unset workspace) reads as
    *  `supervised` — go through `resolveWorkspaceAutonomy`, never the raw field. */
   workspaceAutonomy?: WorkspaceAutonomy
+  workspaceIntent?: WorkspaceIntent
   diffComments?: DiffComment[]
   agentNotes?: DiffComment[]
   /** Review comments queued locally, not yet submitted to the provider. */

@@ -41,6 +41,10 @@ describe('normalizeRightSidebarTab', () => {
     expect(normalizeRightSidebarTab('plugin:My_Plugin/Panel!')).toBe('explorer')
   })
 
+  it('opens Source Control for a profile still sitting on the retired PR diff viewer', () => {
+    expect(normalizeRightSidebarTab('pr-diff')).toBe('source-control')
+  })
+
   it('normalizes unknown values to the default tab', () => {
     expect(normalizeRightSidebarTab('bogus')).toBe('explorer')
     expect(normalizeRightSidebarTab(undefined)).toBe('explorer')

@@ -113,6 +113,57 @@ export function parseLinearIssueInput(input: string): ParsedLinearIssueInput | n
   }
 }
 
+export type LinearReviewUrlIntent = {
+  organizationUrlKey: string
+  reviewId: string
+}
+
+const LINEAR_REVIEW_ID_PATTERN = /^[A-Za-z0-9][A-Za-z0-9_-]{0,200}$/
+const LINEAR_REVIEW_EMBEDDED_ISSUE = /([A-Za-z][A-Za-z0-9]*-\d+)/
+
+/** `https://linear.app/{org}/review/{id}`, including slugs that embed an issue key. */
+export function parseLinearReviewUrlIntent(input: string): LinearReviewUrlIntent | null {
+  const trimmed = input.trim()
+  try {
+    const url = new URL(trimmed)
+    const pathMatch = /^\/([^/]+)\/review\/([^/]+)\/?$/.exec(url.pathname)
+    if (
+      (url.protocol !== 'https:' && url.protocol !== 'http:') ||
+      url.host !== 'linear.app' ||
+      url.username !== '' ||
+      url.password !== '' ||
+      !pathMatch
+    ) {
+      return null
+    }
+    const organizationUrlKey = decodeURIComponent(pathMatch[1])
+    const reviewId = decodeURIComponent(pathMatch[2])
+    if (
+      !/^[A-Za-z0-9][A-Za-z0-9_-]*$/.test(organizationUrlKey) ||
+      !LINEAR_REVIEW_ID_PATTERN.test(reviewId)
+    ) {
+      return null
+    }
+    return { organizationUrlKey, reviewId }
+  } catch {
+    return null
+  }
+}
+
+/** A review slug such as `eng-123-fix-login` still names the Linear issue it reviews. */
+export function linearIssueIntentFromReview(
+  intent: LinearReviewUrlIntent
+): LinearIssueUrlIntent | null {
+  const match = LINEAR_REVIEW_EMBEDDED_ISSUE.exec(intent.reviewId)
+  if (!match || !LINEAR_IDENTIFIER_PATTERN.test(match[1])) {
+    return null
+  }
+  return {
+    identifier: match[1].toUpperCase(),
+    organizationUrlKey: intent.organizationUrlKey
+  }
+}
+
 export function parseLinearIssueUrlIntent(input: string): LinearIssueUrlIntent | null {
   const trimmed = input.trim()
   try {

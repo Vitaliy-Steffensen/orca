@@ -7,6 +7,7 @@ import { isWorkspaceLinkedItemSourceContextMatch } from '../../../shared/workspa
 import { DiffCommentSchema } from '../../../shared/diff-comment-schema'
 import { normalizeExecutionHostId } from '../../../shared/execution-host'
 import { WORKSPACE_AUTONOMY_VALUES } from '../../../shared/workspace-autonomy'
+import { WORKSPACE_INTENT_VALUES } from '../../../shared/workspace-intent'
 
 export const ProjectGroupCreateArgs = z.object({
   name: z.string().min(1),
@@ -133,6 +134,8 @@ export const FolderWorkspaceCreateArgs = z
   .object({
     projectGroupId: z.string().min(1),
     name: z.string().optional(),
+    workspaceAutonomy: z.enum(WORKSPACE_AUTONOMY_VALUES).optional(),
+    workspaceIntent: z.enum(WORKSPACE_INTENT_VALUES).optional(),
     folderPath: z.string().nullable().optional(),
     connectionId: z.string().nullable().optional(),
     linkedTask: FolderWorkspaceLinkedTaskArgs.optional(),
@@ -163,6 +166,7 @@ export const FolderWorkspaceUpdateArgs = z.object({
       manualOrder: z.number().finite().optional(),
       workspaceStatus: z.string().optional(),
       workspaceAutonomy: z.enum(WORKSPACE_AUTONOMY_VALUES).optional(),
+      workspaceIntent: z.enum(WORKSPACE_INTENT_VALUES).optional(),
       createdWithAgent: z.string().refine(isTuiAgent).optional(),
       pendingFirstAgentMessageRename: z.boolean().optional(),
       firstAgentMessageRenameError: z.string().nullable().optional(),

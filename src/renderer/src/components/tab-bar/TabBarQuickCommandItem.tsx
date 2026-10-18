@@ -83,7 +83,7 @@ export function TabBarQuickCommandItem({
         <span className="block truncate font-mono text-[11px] text-muted-foreground">
           {isTerminalAgentQuickCommand(command)
             ? `${getAgentLabel(command.agent)}: ${command.prompt}`
-            : command.command}
+            : body}
         </span>
       </span>
       <span

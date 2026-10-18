@@ -68,6 +68,8 @@ export type TerminalTab = {
   aiVaultTitle?: AiVaultSessionTitle | null
   /** Stable label from the tab-bar Quick Command that created this terminal. */
   quickCommandLabel?: string | null
+  /** Tab title of a Workspace Run service, so Stop can find the pane after a title change. */
+  workspaceRunServiceLabel?: string | null
   customTitle: string | null
   color: string | null
   /** Pinned tabs survive "close others"; host-persisted for remote servers. */

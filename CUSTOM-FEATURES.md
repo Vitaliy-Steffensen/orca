@@ -10,6 +10,9 @@ Adding a feature here? See the rule at the top of [`CLAUDE.md`](./CLAUDE.md).
 
 - ⌘U narrows the Changes list to files with unstaged edits, and pressing it again shows every change.
 - Every file tree marks each file with how many notes, agent notes, unanswered review threads and unsent review comments it carries.
+- Run on a workspace card starts that project's dev commands together, shows booting then running, and can open the app and sign in.
+- Pick Ask / Supervised / Autonomous when creating a workspace, each with its own agent, model, and prompt.
+
 - ⇧⌘W closes every other tab and keeps the one you are in.
 - ⇧⌘H reveals the file you are looking at in whichever list is in front of you — the Source Control
   changes, the Explorer tree, or the combined diff's own file tree — and flashes the row.
@@ -48,7 +51,10 @@ Adding a feature here? See the rule at the top of [`CLAUDE.md`](./CLAUDE.md).
 - Right-click a workspace to Archive it: everything it is running shuts down and it leaves the
   sidebar, keeping the checkout. Cmd+J's "View Archived Workspaces" brings them back to unarchive,
   and a merged or closed pull request can archive its workspace instead of deleting it.
+- Source Control shows Changes, Staged Changes and Unstaged Changes together. Tick a file off on
+  the Changes list; it unticks itself and shows a dot when that file actually changes.
 - Group workspace status lanes into collapsible sidebar sections, each header counting what it holds.
+- Give a sidebar status section its own icon and color, and count the workspaces in each nested lane.
 
 ## Inherited from `frbarbre/orca`
 

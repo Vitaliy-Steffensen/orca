@@ -53,6 +53,15 @@ vi.mock('../../shared/node-bounded-file-reader', async (importOriginal) =>
 
 import { getBranchCompare, getCommitCompare } from './status'
 
+/** Blob oids have their own parser tests; these assert the status and change shape instead. */
+function withoutBlobOids<T extends { baseOid?: string; headOid?: string; indexOid?: string }>(
+  entries: readonly T[]
+): Omit<T, 'baseOid' | 'headOid' | 'indexOid'>[] {
+  return entries.map(
+    ({ baseOid: _baseOid, headOid: _headOid, indexOid: _indexOid, ...entry }) => entry
+  )
+}
+
 describe('getBranchCompare', () => {
   beforeEach(() => {
     gitExecFileAsyncMock.mockReset()
@@ -212,7 +221,7 @@ describe('getBranchCompare', () => {
       commitsBehind: 4,
       status: 'ready'
     })
-    expect(result.entries).toEqual([
+    expect(withoutBlobOids(result.entries)).toEqual([
       { path: 'file-a.ts', status: 'modified', added: 10, removed: 2 },
       { path: 'new-name.ts', oldPath: 'old-name.ts', status: 'renamed', added: 1, removed: 1 },
       { path: 'new-copy.ts', oldPath: 'old-copy.ts', status: 'copied', added: 3, removed: 0 }
@@ -258,7 +267,7 @@ describe('getBranchCompare', () => {
 
     expect(result.summary.status).toBe('invalid-base')
     expect(result.summary.errorMessage).toContain('origin/missing')
-    expect(result.entries).toEqual([])
+    expect(withoutBlobOids(result.entries)).toEqual([])
   })
 
   it('returns unborn-head when HEAD cannot be resolved', async () => {
@@ -274,7 +283,7 @@ describe('getBranchCompare', () => {
 
     expect(result.summary.status).toBe('unborn-head')
     expect(result.summary.errorMessage).toContain('committed HEAD')
-    expect(result.entries).toEqual([])
+    expect(withoutBlobOids(result.entries)).toEqual([])
   })
 
   it('treats an unborn branch with a resolvable base as having no committed branch changes', async () => {
@@ -298,7 +307,7 @@ describe('getBranchCompare', () => {
       commitsBehind: 0,
       status: 'ready'
     })
-    expect(result.entries).toEqual([])
+    expect(withoutBlobOids(result.entries)).toEqual([])
   })
 
   it('returns no-merge-base when histories do not intersect', async () => {
@@ -314,7 +323,7 @@ describe('getBranchCompare', () => {
 
     expect(result.summary.status).toBe('no-merge-base')
     expect(result.summary.errorMessage).toContain('merge base')
-    expect(result.entries).toEqual([])
+    expect(withoutBlobOids(result.entries)).toEqual([])
   })
 
   it('loads UTF-8 paths and line counts with one diff', async () => {
@@ -332,10 +341,21 @@ describe('getBranchCompare', () => {
     const result = await getBranchCompare('/repo', 'origin/main')
 
     expect(gitExecFileAsyncMock).toHaveBeenCalledWith(
-      ['diff', '--raw', '--numstat', '-z', '-M', '-C', 'merge-base-oid', 'head-oid', '--'],
+      [
+        'diff',
+        '--raw',
+        '--no-abbrev',
+        '--numstat',
+        '-z',
+        '-M',
+        '-C',
+        'merge-base-oid',
+        'head-oid',
+        '--'
+      ],
       expect.objectContaining({ cwd: '/repo' })
     )
-    expect(result.entries).toEqual([
+    expect(withoutBlobOids(result.entries)).toEqual([
       { path: 'docs/日本語/sample.md', status: 'modified', added: 2, removed: 1 }
     ])
   })
@@ -478,10 +498,21 @@ describe('getBranchCompare', () => {
     const result = await getBranchCompare('/repo', 'origin/main')
 
     expect(gitExecFileAsyncMock).toHaveBeenCalledWith(
-      ['diff', '--raw', '--numstat', '-z', '-M', '-C', 'merge-base-oid', 'head-oid', '--'],
+      [
+        'diff',
+        '--raw',
+        '--no-abbrev',
+        '--numstat',
+        '-z',
+        '-M',
+        '-C',
+        'merge-base-oid',
+        'head-oid',
+        '--'
+      ],
       expect.objectContaining({ cwd: '/repo' })
     )
-    expect(result.entries).toEqual([
+    expect(withoutBlobOids(result.entries)).toEqual([
       { path: 'docs/a => b.txt', status: 'modified', added: 1, removed: 0 }
     ])
   })
@@ -512,10 +543,21 @@ describe('getCommitCompare', () => {
     const result = await getCommitCompare('/repo', 'commit-oid')
 
     expect(gitExecFileAsyncMock).toHaveBeenCalledWith(
-      ['diff', '--raw', '--numstat', '-z', '-M', '-C', 'parent-oid', 'commit-oid', '--'],
+      [
+        'diff',
+        '--raw',
+        '--no-abbrev',
+        '--numstat',
+        '-z',
+        '-M',
+        '-C',
+        'parent-oid',
+        'commit-oid',
+        '--'
+      ],
       expect.objectContaining({ cwd: '/repo' })
     )
-    expect(result.entries).toEqual([
+    expect(withoutBlobOids(result.entries)).toEqual([
       { path: 'docs/a => b.txt', status: 'modified', added: 1, removed: 0 }
     ])
   })

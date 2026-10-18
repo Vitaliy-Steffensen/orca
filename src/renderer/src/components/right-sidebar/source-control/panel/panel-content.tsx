@@ -1,5 +1,5 @@
+import React from 'react'
 import { shouldShowSourceControlCompareUnavailableCard } from './header-toolbar'
-import { SourceControlBranchSection } from '../listing/branch-section'
 import { SourceControlAllChangesSection } from '../listing/all-changes-section'
 import { changesFilterBadge, clearChangesFilter } from '@/lib/changes-filter'
 import { SourceControlContentStatus } from '../listing/content-status'
@@ -8,6 +8,7 @@ import {
   shouldShowSourceControlFileCategoryFilter
 } from '../listing/file-category-filter'
 import { SourceControlUncommittedSections } from '../listing/uncommitted-sections'
+import type { SourceControlDisplaySectionId } from '../listing/section-order'
 import { CompareUnavailable } from '../sync/compare-summary'
 import { SourceControlForkPushNotice } from './fork-push-notice'
 import type { SourceControlPanelReadyProps } from './panel-props'
@@ -20,7 +21,8 @@ export function SourceControlPanelContent(props: SourceControlPanelReadyProps) {
     allChangeEntries,
     changesFilter,
     openAllChangesEntry,
-    showAllChanges,
+    reviewByPath,
+    viewedCount,
     totalAllChangeCount,
     visibleAllChangesTreeRows,
     activeConnectionId,
@@ -32,55 +34,33 @@ export function SourceControlPanelContent(props: SourceControlPanelReadyProps) {
     collapsedTreeDirs,
     conflictOperation,
     commentCountsByPath,
-    displaySections,
-    expandedSubmoduleKeys,
     fileFilterState,
     fileListScrollElement,
     filterQuery,
     filteredBranchEntries,
     filteredGrouped,
     handleAbortOperationForConflict,
-    handleContextMenu,
-    handleOpenDiff,
     handleResolveConflictsWithAI,
-    handleSelect,
-    handleStage,
-    handleStageAllPaths,
-    handleStageSectionPaths,
     handleStageWorktreeChanges,
-    handleUnstage,
-    handleUnstagePaths,
     hasUncommittedEntries,
     hiddenFileCategories,
     isAbortingOperation,
     isCategoryFilterActive,
     isExecutingBulk,
     normalizedFilter,
-    openAllDiffs,
-    openBranchAllDiffs,
-    openCommittedDiff,
     openConflictReview,
     presentFileCategories,
     refreshActiveGitStatus,
     refreshBranchCompare,
     repositoryHuge,
-    requestDiscardAllInArea,
-    requestDiscardEntry,
-    requestDiscardPaths,
     revealInExplorer,
-    selectedKeySet,
     setBaseRefDialogOpen,
     sourceControlAiActionsVisible,
     sourceControlViewMode,
     toggleFileCategory,
     toggleSection,
-    toggleSubmodule,
     toggleTreeDir,
-    unresolvedConflictReviewEntries,
-    unfilteredDisplaySectionsById,
-    visibleBranchTreeRows,
-    visibleListRowsBySection,
-    visibleTreeRowsBySection
+    unresolvedConflictReviewEntries
   } = model
 
   const hasFilteredUncommittedEntries =
@@ -128,22 +108,8 @@ export function SourceControlPanelContent(props: SourceControlPanelReadyProps) {
 
       <SourceControlForkPushNotice pushTarget={activeWorktree.pushTarget ?? null} />
 
-      {!showAllChanges &&
-        shouldShowSourceControlFileCategoryFilter(
-          presentFileCategories,
-          isCategoryFilterActive
-        ) && (
-          <SourceControlFileCategoryFilter
-            presentFileCategories={presentFileCategories}
-            hiddenFileCategories={hiddenFileCategories}
-            isCategoryFilterActive={isCategoryFilterActive}
-            onToggleFileCategory={toggleFileCategory}
-          />
-        )}
-
       {/* Why also when empty under a filter: the filters live in this header, so they must stay reachable. */}
-      {showAllChanges &&
-        !changesHidden &&
+      {!changesHidden &&
         (allChangeEntries.length > 0 || isCategoryFilterActive || changesFilter) && (
           <SourceControlAllChangesSection
             baseRef={
@@ -185,65 +151,10 @@ export function SourceControlPanelContent(props: SourceControlPanelReadyProps) {
             commentCountsByPath={commentCountsByPath}
             activeOpenRowKeys={activeOpenRowKeys}
             activeOpenRowKey={activeOpenRowKey}
+            reviewByPath={reviewByPath}
+            viewedCount={viewedCount}
           />
         )}
-
-      {hasFilteredUncommittedEntries && !showAllChanges && !changesHidden && (
-        <SourceControlUncommittedSections
-          displaySections={displaySections}
-          unfilteredDisplaySectionsById={unfilteredDisplaySectionsById}
-          normalizedFilter={normalizedFilter}
-          collapsedSections={collapsedSections}
-          toggleSection={toggleSection}
-          onViewSection={(sectionViewAction) => {
-            if (sectionViewAction.kind === 'conflict-review') {
-              openConflictReview(
-                currentWorktreeId,
-                worktreePath,
-                sectionViewAction.entries,
-                'live-summary'
-              )
-            } else {
-              openAllDiffs(
-                currentWorktreeId,
-                worktreePath,
-                undefined,
-                sectionViewAction.area,
-                sectionViewAction.entries
-              )
-            }
-          }}
-          isExecutingBulk={isExecutingBulk}
-          requestDiscardAllInArea={requestDiscardAllInArea}
-          handleStageAllPaths={handleStageAllPaths}
-          handleStageSectionPaths={handleStageSectionPaths}
-          isStatusTruncated={repositoryHuge !== undefined}
-          handleUnstagePaths={handleUnstagePaths}
-          sourceControlViewMode={sourceControlViewMode}
-          visibleTreeRowsBySection={visibleTreeRowsBySection}
-          visibleListRowsBySection={visibleListRowsBySection}
-          fileListScrollElement={fileListScrollElement}
-          collapsedTreeDirs={collapsedTreeDirs}
-          toggleTreeDir={toggleTreeDir}
-          requestDiscardPaths={requestDiscardPaths}
-          expandedSubmoduleKeys={expandedSubmoduleKeys}
-          toggleSubmodule={toggleSubmodule}
-          currentWorktreeId={currentWorktreeId}
-          worktreePath={worktreePath}
-          selectedKeySet={selectedKeySet}
-          activeOpenRowKeys={activeOpenRowKeys}
-          activeOpenRowKey={activeOpenRowKey}
-          handleSelect={handleSelect}
-          handleContextMenu={handleContextMenu}
-          revealInExplorer={revealInExplorer}
-          activeConnectionId={activeConnectionId}
-          handleOpenDiff={handleOpenDiff}
-          handleStage={handleStage}
-          handleUnstage={handleUnstage}
-          requestDiscardEntry={requestDiscardEntry}
-          commentCountsByPath={commentCountsByPath}
-        />
-      )}
 
       {shouldShowSourceControlCompareUnavailableCard(
         branchSummary,
@@ -257,33 +168,77 @@ export function SourceControlPanelContent(props: SourceControlPanelReadyProps) {
           onRetry={() => void refreshBranchCompare()}
         />
       ) : null}
-
-      {branchSummary?.status === 'ready' &&
-        hasFilteredBranchEntries &&
-        !showAllChanges &&
-        !changesHidden && (
-          <SourceControlBranchSection
-            activeOpenRowKeys={activeOpenRowKeys}
-            activeOpenRowKey={activeOpenRowKey}
-            branchSummary={branchSummary}
-            filteredBranchEntries={filteredBranchEntries}
-            totalBranchEntryCount={branchEntries.length}
-            collapsedSections={collapsedSections}
-            toggleSection={toggleSection}
-            sourceControlViewMode={sourceControlViewMode}
-            visibleBranchTreeRows={visibleBranchTreeRows}
-            fileListScrollElement={fileListScrollElement}
-            collapsedTreeDirs={collapsedTreeDirs}
-            toggleTreeDir={toggleTreeDir}
-            currentWorktreeId={currentWorktreeId}
-            worktreePath={worktreePath}
-            revealInExplorer={revealInExplorer}
-            activeConnectionId={activeConnectionId}
-            openCommittedDiff={openCommittedDiff}
-            openBranchAllDiffs={openBranchAllDiffs}
-            commentCountsByPath={commentCountsByPath}
-          />
-        )}
     </>
+  )
+}
+
+/** Staged, or conflicts plus unstaged and untracked, as one movable shelf. */
+export function SourceControlWorkingTreeShelf({
+  props,
+  sectionIds
+}: {
+  props: SourceControlPanelReadyProps
+  sectionIds: readonly SourceControlDisplaySectionId[]
+}): React.JSX.Element | null {
+  const { currentWorktreeId, model, worktreePath } = props
+  const displaySections = model.displaySections.filter((section) => sectionIds.includes(section.id))
+  if (displaySections.length === 0) {
+    return null
+  }
+  return (
+    <SourceControlUncommittedSections
+      displaySections={displaySections}
+      unfilteredDisplaySectionsById={model.unfilteredDisplaySectionsById}
+      normalizedFilter={model.normalizedFilter}
+      collapsedSections={model.collapsedSections}
+      toggleSection={model.toggleSection}
+      onViewSection={(sectionViewAction) => {
+        if (sectionViewAction.kind === 'conflict-review') {
+          model.openConflictReview(
+            currentWorktreeId,
+            worktreePath,
+            sectionViewAction.entries,
+            'live-summary'
+          )
+        } else {
+          model.openAllDiffs(
+            currentWorktreeId,
+            worktreePath,
+            undefined,
+            sectionViewAction.area,
+            sectionViewAction.entries
+          )
+        }
+      }}
+      isExecutingBulk={model.isExecutingBulk}
+      requestDiscardAllInArea={model.requestDiscardAllInArea}
+      handleStageAllPaths={model.handleStageAllPaths}
+      handleStageSectionPaths={model.handleStageSectionPaths}
+      isStatusTruncated={model.repositoryHuge !== undefined}
+      handleUnstagePaths={model.handleUnstagePaths}
+      sourceControlViewMode={model.sourceControlViewMode}
+      visibleTreeRowsBySection={model.visibleTreeRowsBySection}
+      visibleListRowsBySection={model.visibleListRowsBySection}
+      fileListScrollElement={model.fileListScrollElement}
+      collapsedTreeDirs={model.collapsedTreeDirs}
+      toggleTreeDir={model.toggleTreeDir}
+      requestDiscardPaths={model.requestDiscardPaths}
+      expandedSubmoduleKeys={model.expandedSubmoduleKeys}
+      toggleSubmodule={model.toggleSubmodule}
+      currentWorktreeId={currentWorktreeId}
+      worktreePath={worktreePath}
+      selectedKeySet={model.selectedKeySet}
+      activeOpenRowKeys={model.activeOpenRowKeys}
+      activeOpenRowKey={model.activeOpenRowKey}
+      handleSelect={model.handleSelect}
+      handleContextMenu={model.handleContextMenu}
+      revealInExplorer={model.revealInExplorer}
+      activeConnectionId={model.activeConnectionId}
+      handleOpenDiff={model.handleOpenDiff}
+      handleStage={model.handleStage}
+      handleUnstage={model.handleUnstage}
+      requestDiscardEntry={model.requestDiscardEntry}
+      commentCountsByPath={model.commentCountsByPath}
+    />
   )
 }

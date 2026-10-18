@@ -4,6 +4,7 @@ import { AgentHibernationGate } from '../components/AgentHibernationGate'
 import { AiVaultTabTitleSyncGate } from '../components/AiVaultTabTitleSyncGate'
 import RetainedAgentsSyncGate from '../components/dashboard/RetainedAgentsSyncGate'
 import { WorkspacePortScanner } from '../components/ports/WorkspacePortScanner'
+import { WorkspaceRunSupervisor } from '../components/workspace-run/WorkspaceRunSupervisor'
 import { SavedHostScopeWidenGate } from '../components/sidebar/SavedHostScopeWidenGate'
 import { MacosTccPromptNoticeHost } from '../hooks/MacosTccPromptNoticeHost'
 import { useAppStore } from '../store'
@@ -25,6 +26,7 @@ export function AppBackgroundServices(): React.JSX.Element {
   return (
     <>
       <WorkspacePortScanner enabled={workspaceSessionReady} />
+      <WorkspaceRunSupervisor />
       {/* Why: plugin language-pack discovery must not re-render the App shell. */}
       <MacosTccPromptNoticeHost />
       {/* Why: leaf-mounted retention sync keeps agent-status subscriptions out of the App render tree. */}

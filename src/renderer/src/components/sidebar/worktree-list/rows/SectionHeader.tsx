@@ -141,6 +141,9 @@ export function renderWorktreeSectionHeaderRow(args: {
       : null
   const isPinnedHeader = row.key === PINNED_GROUP_KEY
   const isStatusSectionHeader = row.statusSection !== undefined
+  // Why: a section band already reports its total; each lane nested under it
+  // reports how many workspaces sit in that lane.
+  const showWorkspaceCount = isStatusSectionHeader || row.parentKey !== undefined
   const repoHeaderColor = resolveProjectGroupHeaderColor({
     groupBy: ctx.groupBy,
     headerKey: row.key,
@@ -334,7 +337,7 @@ export function renderWorktreeSectionHeaderRow(args: {
               <div className="min-w-0 truncate text-[13px] font-semibold leading-none">
                 {row.label}
               </div>
-              {isStatusSectionHeader ? (
+              {showWorkspaceCount ? (
                 <span className="shrink-0 rounded-full bg-worktree-sidebar-accent px-1.5 text-[10px] font-medium leading-4 text-muted-foreground tabular-nums">
                   {row.count}
                 </span>

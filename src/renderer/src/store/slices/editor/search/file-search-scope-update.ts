@@ -10,8 +10,7 @@ type ScopedStateMap = Record<string, FileSearchScopedStates>
 export function defaultFileSearchScopedStates(): FileSearchScopedStates {
   return {
     explorer: defaultFileSearchState(),
-    'source-control': defaultFileSearchState(),
-    'pr-diff': defaultFileSearchState()
+    'source-control': defaultFileSearchState()
   }
 }
 

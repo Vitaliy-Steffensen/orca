@@ -3,8 +3,11 @@ import type { TerminalQuickCommand } from '../../../../shared/terminal-quick-com
 import type { TuiAgent } from '../../../../shared/tui-agent'
 import {
   isTerminalAgentQuickCommand,
+  isTerminalCommandQuickCommand,
+  isWorkspaceRunQuickCommand,
   supportsTerminalAgentQuickCommand
 } from '../../../../shared/terminal-quick-commands'
+import { WorkspaceRunCommandEditor } from './WorkspaceRunCommandEditor'
 import { Label } from '@/components/ui/label'
 import {
   Select,
@@ -25,6 +28,7 @@ const QUICK_COMMAND_AGENT_OPTIONS = getTerminalQuickCommandAgentOptions()
 type TerminalQuickCommandContentSectionProps = {
   draft: TerminalQuickCommand
   isAgentAction: boolean
+  isRunAction: boolean
   selectedAgent: TuiAgent
   draftMemoryRef: MutableRefObject<TerminalQuickCommandDialogDraftMemory>
   setDraft: Dispatch<SetStateAction<TerminalQuickCommand>>
@@ -34,12 +38,20 @@ type TerminalQuickCommandContentSectionProps = {
 export function TerminalQuickCommandContentSection({
   draft,
   isAgentAction,
+  isRunAction,
   selectedAgent,
   draftMemoryRef,
   setDraft,
   toggleAppendEnter
 }: TerminalQuickCommandContentSectionProps): React.JSX.Element {
-  const commandText = isTerminalAgentQuickCommand(draft) ? draft.prompt : draft.command
+  if (isRunAction && isWorkspaceRunQuickCommand(draft)) {
+    return <WorkspaceRunCommandEditor draft={draft} setDraft={setDraft} />
+  }
+  const commandText = isTerminalAgentQuickCommand(draft)
+    ? draft.prompt
+    : isTerminalCommandQuickCommand(draft)
+      ? draft.command
+      : ''
   // Why: the frame header is a plain span, so the textarea carries the accessible name itself.
   const commandFieldLabel = isAgentAction
     ? translate(
@@ -163,11 +175,15 @@ export function TerminalQuickCommandContentSection({
                   ...draftMemoryRef.current,
                   terminalCommand: text
                 }
-            setDraft((current) =>
-              isTerminalAgentQuickCommand(current)
-                ? { ...current, prompt: text }
-                : { ...current, command: text }
-            )
+            setDraft((current) => {
+              if (isTerminalAgentQuickCommand(current)) {
+                return { ...current, prompt: text }
+              }
+              if (isTerminalCommandQuickCommand(current)) {
+                return { ...current, command: text }
+              }
+              return current
+            })
           }}
           placeholder={
             isAgentAction
@@ -189,7 +205,7 @@ export function TerminalQuickCommandContentSection({
         />
 
         <div className="flex items-center justify-between gap-3 border-t border-border bg-muted/50 px-3 py-2">
-          {!isTerminalAgentQuickCommand(draft) ? (
+          {isTerminalCommandQuickCommand(draft) ? (
             <TerminalQuickCommandAppendEnterSwitch
               appendEnter={draft.appendEnter}
               onToggle={toggleAppendEnter}

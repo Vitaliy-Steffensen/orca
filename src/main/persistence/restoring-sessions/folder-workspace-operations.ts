@@ -62,6 +62,8 @@ export class FolderWorkspacePersistenceOperations {
     linkedTaskSourceContext?: FolderWorkspace['linkedTaskSourceContext']
     connectionId?: string | null
     creatorProvenance?: FolderWorkspace['creatorProvenance']
+    workspaceAutonomy?: FolderWorkspace['workspaceAutonomy']
+    workspaceIntent?: FolderWorkspace['workspaceIntent']
     createdWithAgent?: FolderWorkspace['createdWithAgent']
     pendingFirstAgentMessageRename?: boolean
   }): FolderWorkspace {
@@ -106,6 +108,8 @@ export class FolderWorkspacePersistenceOperations {
       isUnread: false,
       isPinned: false,
       sortOrder: now,
+      ...(input.workspaceAutonomy ? { workspaceAutonomy: input.workspaceAutonomy } : {}),
+      ...(input.workspaceIntent ? { workspaceIntent: input.workspaceIntent } : {}),
       ...(input.createdWithAgent ? { createdWithAgent: input.createdWithAgent } : {}),
       ...(input.pendingFirstAgentMessageRename === true && input.createdWithAgent
         ? { pendingFirstAgentMessageRename: true }
@@ -136,15 +140,16 @@ export class FolderWorkspacePersistenceOperations {
         | 'sortOrder'
         | 'manualOrder'
         | 'workspaceStatus'
-        | 'workspaceAutonomy'
         | 'createdWithAgent'
         | 'pendingFirstAgentMessageRename'
         | 'firstAgentMessageRenameError'
         | 'lastActivityAt'
         | 'diffComments'
       >
-    > &
-      WorkspaceAttachmentMutation
+    > & {
+      workspaceAutonomy?: FolderWorkspace['workspaceAutonomy'] | null
+      workspaceIntent?: FolderWorkspace['workspaceIntent'] | null
+    } & WorkspaceAttachmentMutation
   ): FolderWorkspace | null {
     const workspace = this.getFolderWorkspace(id)
     if (!workspace) {
@@ -227,7 +232,10 @@ export class FolderWorkspacePersistenceOperations {
       workspace.workspaceStatus = updates.workspaceStatus
     }
     if (updates.workspaceAutonomy !== undefined) {
-      workspace.workspaceAutonomy = updates.workspaceAutonomy
+      workspace.workspaceAutonomy = updates.workspaceAutonomy ?? undefined
+    }
+    if (updates.workspaceIntent !== undefined) {
+      workspace.workspaceIntent = updates.workspaceIntent ?? undefined
     }
     if (updates.createdWithAgent !== undefined) {
       workspace.createdWithAgent = updates.createdWithAgent

@@ -1,5 +1,5 @@
 // @vitest-environment happy-dom
-import { act, renderHook } from '@testing-library/react'
+import { renderHook } from '@testing-library/react'
 import { describe, expect, it, vi } from 'vitest'
 import type { GlobalSettings } from '../../../../../../shared/global-settings-types'
 import { useSourceControlPanelViewState } from './use-panel-view-state'
@@ -15,17 +15,14 @@ function viewState(settings: Partial<GlobalSettings>, updateSettings = vi.fn()) 
 }
 
 describe('source control grouping', () => {
-  it('lists every changed file in one section unless grouping by status was chosen', () => {
-    expect(viewState({}).result.current.sourceControlGrouping).toBe('all')
-    expect(
-      viewState({ sourceControlGrouping: 'status' }).result.current.sourceControlGrouping
-    ).toBe('status')
-  })
-
-  it('saves the other grouping when toggled', () => {
+  it('ignores a persisted grouping preference now that Changes, Staged and Unstaged always show', () => {
     const updateSettings = vi.fn()
-    const { result } = viewState({}, updateSettings)
-    act(() => result.current.handleToggleSourceControlGrouping())
-    expect(updateSettings).toHaveBeenCalledWith({ sourceControlGrouping: 'status' })
+    // A saved profile can still carry the removed key. It is ignored, with no settings rewrite.
+    const persisted: Partial<GlobalSettings> = {}
+    Object.assign(persisted, { sourceControlGrouping: 'status' })
+    const { result } = viewState(persisted, updateSettings)
+    expect(result.current).not.toHaveProperty('sourceControlGrouping')
+    expect(result.current).not.toHaveProperty('handleToggleSourceControlGrouping')
+    expect(updateSettings).not.toHaveBeenCalled()
   })
 })

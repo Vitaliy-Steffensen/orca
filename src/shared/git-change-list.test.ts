@@ -39,8 +39,16 @@ describe('Git change lists', () => {
         ].join('')
       )
     ).toEqual([
-      { path: name, status: 'modified', added: 2, removed: 1 },
-      { path: 'new', oldPath, status: 'renamed', added: 0, removed: 0 }
+      { path: name, status: 'modified', baseOid: 'abc', headOid: 'def', added: 2, removed: 1 },
+      {
+        path: 'new',
+        oldPath,
+        status: 'renamed',
+        baseOid: 'abc',
+        headOid: 'def',
+        added: 0,
+        removed: 0
+      }
     ])
   })
 
@@ -57,9 +65,24 @@ describe('Git change lists', () => {
         ].join('')
       )
     ).toEqual([
-      { path: 'copy', oldPath: 'source', status: 'copied', added: 1, removed: 0 },
-      { path: 'binary', status: 'modified', added: undefined, removed: undefined },
-      { path: 'type', status: 'modified', added: 0, removed: 0 }
+      {
+        path: 'copy',
+        oldPath: 'source',
+        status: 'copied',
+        baseOid: 'abc',
+        headOid: 'def',
+        added: 1,
+        removed: 0
+      },
+      {
+        path: 'binary',
+        status: 'modified',
+        baseOid: 'abc',
+        headOid: 'def',
+        added: undefined,
+        removed: undefined
+      },
+      { path: 'type', status: 'modified', baseOid: 'abc', headOid: 'def', added: 0, removed: 0 }
     ])
   })
 
@@ -88,7 +111,12 @@ describe('Git change lists', () => {
       await git(['add', '.'])
       await git(['commit', '-qm', 'root'])
       const base = (await git(['rev-parse', 'HEAD'])).trim()
-      expect(parseGitChangeList(await git(gitChangeListArgs(null, base)))).toEqual([
+      // Blob oids are real content hashes here, so they are asserted separately below.
+      const withoutOids = (
+        list: ReturnType<typeof parseGitChangeList>
+      ): ReturnType<typeof parseGitChangeList> =>
+        list.map(({ baseOid: _baseOid, headOid: _headOid, ...entry }) => entry)
+      expect(withoutOids(parseGitChangeList(await git(gitChangeListArgs(null, base))))).toEqual([
         { path: 'binary', status: 'added', added: undefined, removed: undefined },
         { path: 'deleted', status: 'added', added: 1, removed: 0 },
         { path: 'old', status: 'added', added: 1, removed: 0 },
@@ -105,7 +133,17 @@ describe('Git change lists', () => {
       await git(['commit', '-qm', 'changes'])
       const head = (await git(['rev-parse', 'HEAD'])).trim()
       const entries = parseGitChangeList(await git(gitChangeListArgs(base, head)))
-      expect(entries).toEqual(
+      // A root comparison has no base side, so only the head blob is an identity there.
+      const rootEntries = parseGitChangeList(await git(gitChangeListArgs(null, base)))
+      expect(rootEntries.every((entry) => entry.baseOid === undefined)).toBe(true)
+      expect(rootEntries.every((entry) => /^[0-9a-f]{7,}$/.test(entry.headOid ?? ''))).toBe(true)
+      // The point of carrying oids: an unchanged file keeps the blob it had at the base.
+      const sourceEntry = entries.find((entry) => entry.path === 'source')
+      expect(sourceEntry?.baseOid).toBe((await git(['rev-parse', `${base}:source`])).trim())
+      expect(sourceEntry?.headOid).toBe((await git(['rev-parse', `${head}:source`])).trim())
+      expect(sourceEntry?.baseOid).not.toBe(sourceEntry?.headOid)
+      expect(entries.find((entry) => entry.path === 'deleted')?.headOid).toBeUndefined()
+      expect(withoutOids(entries)).toEqual(
         expect.arrayContaining([
           { path: 'binary', status: 'modified', added: undefined, removed: undefined },
           { path: 'copy', oldPath: 'source', status: 'copied', added: 0, removed: 0 },
@@ -121,7 +159,7 @@ describe('Git change lists', () => {
           await git(['diff', '--name-status', '-z', '-M', '-C', base, head, '--']),
           'name-status'
         )
-      ).toEqual(entries.map(({ added: _added, removed: _removed, ...entry }) => entry))
+      ).toEqual(withoutOids(entries).map(({ added: _added, removed: _removed, ...entry }) => entry))
       expect(parseGitChangeList(await git(gitChangeListArgs(head, head)))).toEqual([])
     } finally {
       await rm(repo, { recursive: true, force: true })

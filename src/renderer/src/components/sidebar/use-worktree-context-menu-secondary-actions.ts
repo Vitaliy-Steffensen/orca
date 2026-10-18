@@ -34,3 +34,24 @@ export function useWorktreeContextMenuSecondaryActions(args: {
   )
   return { handleRemoveParentLink, suppressOpeningPointerEvent }
 }
+
+export function focusWorktreeSidebarAfterContextMenu(
+  event: Event,
+  pendingParentPicker: boolean,
+  openPendingParentPicker: () => void,
+  scope: HTMLElement | null
+): void {
+  // Why: Radix otherwise restores focus to the hidden context-menu trigger.
+  // When Sleep/Delete clears the active workspace and remounts the sidebar,
+  // that focus restore can scroll the virtual list away from the row the
+  // user just acted on.
+  event.preventDefault()
+  if (pendingParentPicker) {
+    window.setTimeout(openPendingParentPicker, 0)
+    return
+  }
+  const sidebar = scope?.closest('[data-worktree-sidebar]')
+  if (sidebar instanceof HTMLElement) {
+    sidebar.focus({ preventScroll: true })
+  }
+}

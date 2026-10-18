@@ -1,6 +1,6 @@
 import { ImeInput } from '@/lib/ime-text-field'
 import React from 'react'
-import { ArrowDown, ArrowUp, Plus, Settings, Trash2 } from 'lucide-react'
+import { ArrowDown, ArrowUp, Layers, Plus, Settings, Trash2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import {
   DropdownMenu,
@@ -12,6 +12,7 @@ import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip
 import { cn } from '@/lib/utils'
 import { SettingsSwitch } from '../settings/SettingsFormControls'
 import type { WorkspaceStatusDefinition } from '../../../../shared/worktree/types'
+import { getWorkspaceStatusSectionAppearance } from '../../../../shared/workspace-status-sections'
 import { getWorkspaceStatusVisualMeta } from './workspace-status'
 import WorkspaceStatusAppearancePopover from './WorkspaceStatusAppearancePopover'
 import { translate } from '@/i18n/i18n'
@@ -24,9 +25,44 @@ type WorkspaceKanbanSettingsMenuProps = {
   onChangeStatusColor: (statusId: string, color: string) => void
   onChangeStatusIcon: (statusId: string, icon: string) => void
   onChangeStatusSection: (statusId: string, section: string) => void
+  onChangeSectionColor: (section: string, color: string) => void
+  onChangeSectionIcon: (section: string, icon: string) => void
   onMoveStatus: (statusId: string, direction: -1 | 1) => void
   onRemoveStatus: (statusId: string) => void
   onAddStatus: () => void
+}
+
+function SectionAppearanceButton({
+  section,
+  workspaceStatuses,
+  onChangeSectionColor,
+  onChangeSectionIcon
+}: {
+  section: string
+  workspaceStatuses: readonly WorkspaceStatusDefinition[]
+  onChangeSectionColor: (section: string, color: string) => void
+  onChangeSectionIcon: (section: string, icon: string) => void
+}): React.JSX.Element {
+  const appearance = getWorkspaceStatusSectionAppearance(section, workspaceStatuses)
+  return (
+    <WorkspaceStatusAppearancePopover
+      label={section}
+      color={appearance.color}
+      icon={appearance.icon}
+      unsetIcon={Layers}
+      tooltip={translate(
+        'auto.components.sidebar.WorkspaceKanbanSettingsMenu.a31c7e4b92',
+        'Section appearance'
+      )}
+      ariaLabel={translate(
+        'auto.components.sidebar.WorkspaceKanbanSettingsMenu.c4e8a91d07',
+        'Customize {{value0}} section appearance',
+        { value0: section }
+      )}
+      onChangeColor={(color) => onChangeSectionColor(section, color)}
+      onChangeIcon={(icon) => onChangeSectionIcon(section, icon)}
+    />
+  )
 }
 
 export default function WorkspaceKanbanSettingsMenu({
@@ -37,6 +73,8 @@ export default function WorkspaceKanbanSettingsMenu({
   onChangeStatusColor,
   onChangeStatusIcon,
   onChangeStatusSection,
+  onChangeSectionColor,
+  onChangeSectionIcon,
   onMoveStatus,
   onRemoveStatus,
   onAddStatus
@@ -140,9 +178,11 @@ export default function WorkspaceKanbanSettingsMenu({
                     )}
                   />
                   <WorkspaceStatusAppearancePopover
-                    status={status}
-                    onChangeColor={onChangeStatusColor}
-                    onChangeIcon={onChangeStatusIcon}
+                    label={status.label}
+                    color={status.color}
+                    icon={status.icon}
+                    onChangeColor={(color) => onChangeStatusColor(status.id, color)}
+                    onChangeIcon={(icon) => onChangeStatusIcon(status.id, icon)}
                   />
                   <Button
                     type="button"
@@ -190,26 +230,38 @@ export default function WorkspaceKanbanSettingsMenu({
                     <Trash2 className="size-3.5" />
                   </Button>
                 </div>
-                <ImeInput
-                  defaultValue={status.section ?? ''}
-                  onBlur={(event) => onChangeStatusSection(status.id, event.target.value)}
-                  onKeyDown={(event) => {
-                    event.stopPropagation()
-                    if (event.key === 'Enter') {
-                      event.currentTarget.blur()
-                    }
-                  }}
-                  placeholder={translate(
-                    'auto.components.sidebar.WorkspaceKanbanSettingsMenu.4f1c0a7b91',
-                    'Section (optional)'
-                  )}
-                  className="mt-1 h-6 w-full rounded-md border border-input bg-background px-2 text-[11px] text-muted-foreground outline-none focus-visible:ring-1 focus-visible:ring-ring"
-                  aria-label={translate(
-                    'auto.components.sidebar.WorkspaceKanbanSettingsMenu.2d6b4e8c13',
-                    'Section for {{value0}}',
-                    { value0: status.label }
-                  )}
-                />
+                <div className="mt-1 flex items-center gap-1">
+                  {status.section &&
+                  workspaceStatuses.findIndex((entry) => entry.section === status.section) ===
+                    index ? (
+                    <SectionAppearanceButton
+                      section={status.section}
+                      workspaceStatuses={workspaceStatuses}
+                      onChangeSectionColor={onChangeSectionColor}
+                      onChangeSectionIcon={onChangeSectionIcon}
+                    />
+                  ) : null}
+                  <ImeInput
+                    defaultValue={status.section ?? ''}
+                    onBlur={(event) => onChangeStatusSection(status.id, event.target.value)}
+                    onKeyDown={(event) => {
+                      event.stopPropagation()
+                      if (event.key === 'Enter') {
+                        event.currentTarget.blur()
+                      }
+                    }}
+                    placeholder={translate(
+                      'auto.components.sidebar.WorkspaceKanbanSettingsMenu.4f1c0a7b91',
+                      'Section (optional)'
+                    )}
+                    className="h-6 min-w-0 flex-1 rounded-md border border-input bg-background px-2 text-[11px] text-muted-foreground outline-none focus-visible:ring-1 focus-visible:ring-ring"
+                    aria-label={translate(
+                      'auto.components.sidebar.WorkspaceKanbanSettingsMenu.2d6b4e8c13',
+                      'Section for {{value0}}',
+                      { value0: status.label }
+                    )}
+                  />
+                </div>
               </div>
             )
           })}

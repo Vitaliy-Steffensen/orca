@@ -138,6 +138,12 @@ export async function materializeRuntimeLocalWorktree<T>(args: {
       creatorProvenance: request.creatorProvenance ?? { kind: 'host' },
       ...(request.comment !== undefined ? { comment: request.comment } : {}),
       ...(request.manualOrder !== undefined ? { manualOrder: request.manualOrder } : {}),
+      ...(request.workspaceAutonomy !== undefined
+        ? { workspaceAutonomy: request.workspaceAutonomy }
+        : {}),
+      ...(request.workspaceIntent !== undefined
+        ? { workspaceIntent: request.workspaceIntent }
+        : {}),
       ...(request.workspaceStatus !== undefined ? { workspaceStatus: request.workspaceStatus } : {})
     })
   )

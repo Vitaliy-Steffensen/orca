@@ -60,6 +60,10 @@ export function normalizeProjectOrderBy(
 }
 
 export function normalizeRightSidebarTab(tab: unknown): PersistedState['ui']['rightSidebarTab'] {
+  // An older client can still ask for the retired PR diff viewer. It now lives in Source Control.
+  if (tab === 'pr-diff') {
+    return 'source-control'
+  }
   if (
     tab === 'explorer' ||
     tab === 'search' ||
@@ -67,7 +71,6 @@ export function normalizeRightSidebarTab(tab: unknown): PersistedState['ui']['ri
     tab === 'workspaces' ||
     tab === 'pr-checks' ||
     tab === 'source-control' ||
-    tab === 'pr-diff' ||
     tab === 'checks' ||
     tab === 'ports'
   ) {

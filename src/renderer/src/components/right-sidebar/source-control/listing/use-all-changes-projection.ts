@@ -15,25 +15,20 @@ import type { FlatEntry } from './use-selection'
 import { isChangesSourceFilter, useChangesFilter } from '@/lib/changes-filter'
 import { compareFileNames } from '../../../../../../shared/file-name-sort'
 
-const NO_ENTRIES: GitBranchChangeEntry[] = []
 const NO_TREE_ROWS: AllChangesTreeNode[] = []
-const NO_SELECTABLE_ENTRIES: FlatEntry[] = []
 
 /** The all-changes rows, built from the same filtered status and branch entries the sections use. */
 export function useAllChangesProjection({
   activeWorktreeId,
-  sourceControlGrouping,
   visibleSelectionEntries,
   entries,
   branchEntries,
   filteredGrouped,
   filteredBranchEntries,
   sourceControlViewMode,
-  collapsedTreeDirs,
-  forceEnabled = false
+  collapsedTreeDirs
 }: {
   activeWorktreeId: string | null
-  sourceControlGrouping: 'all' | 'status'
   visibleSelectionEntries: FlatEntry[]
   entries: readonly GitStatusEntry[]
   branchEntries: readonly GitBranchChangeEntry[]
@@ -41,10 +36,7 @@ export function useAllChangesProjection({
   filteredBranchEntries: readonly GitBranchChangeEntry[]
   sourceControlViewMode: SourceControlViewMode
   collapsedTreeDirs: ReadonlySet<string>
-  /** The PR diff viewer is definitionally all-changes, so the grouping preference cannot blank it. */
-  forceEnabled?: boolean
 }) {
-  const enabled = forceEnabled || sourceControlGrouping === 'all'
   // Why the merge-base check: a total can outlive the fork point it measured, like the branch chip's.
   const lineCounts = useAppStore((s) => {
     const total = activeWorktreeId ? s.gitBranchLineTotalByWorktree?.[activeWorktreeId] : undefined
@@ -61,9 +53,6 @@ export function useAllChangesProjection({
   const sourceEntries =
     changesFilter && isChangesSourceFilter(changesFilter) ? changesFilter.entries : null
   const allChangeEntries = useMemo(() => {
-    if (!enabled) {
-      return NO_ENTRIES
-    }
     if (sourceEntries) {
       return [...sourceEntries].sort((a, b) => compareFileNames(a.path, b.path))
     }
@@ -73,7 +62,6 @@ export function useAllChangesProjection({
       { uncommittedOnly, unstagedOnly, ...(lineCounts ? { lineCounts } : {}) }
     )
   }, [
-    enabled,
     filteredBranchEntries,
     filteredGrouped,
     lineCounts,
@@ -82,22 +70,19 @@ export function useAllChangesProjection({
     unstagedOnly
   ])
   const totalAllChangeCount = useMemo(() => {
-    if (!enabled) {
-      return 0
-    }
     return sourceEntries
       ? sourceEntries.length
       : buildAllChangeEntries(entries, branchEntries).length
-  }, [branchEntries, enabled, entries, sourceEntries])
+  }, [branchEntries, entries, sourceEntries])
   const visibleAllChangesTreeRows = useMemo(
     () =>
-      enabled && sourceControlViewMode === 'tree'
+      sourceControlViewMode === 'tree'
         ? flattenSourceControlTree(
             compactSourceControlTree(buildSourceControlTree(ALL_CHANGES_AREA, allChangeEntries)),
             collapsedTreeDirs
           )
         : NO_TREE_ROWS,
-    [allChangeEntries, collapsedTreeDirs, enabled, sourceControlViewMode]
+    [allChangeEntries, collapsedTreeDirs, sourceControlViewMode]
   )
   const allChangesReviewOrder = useMemo(
     () =>
@@ -107,9 +92,9 @@ export function useAllChangesProjection({
     [allChangeEntries, sourceControlViewMode, visibleAllChangesTreeRows]
   )
   return {
-    showAllChanges: enabled,
-    // Why: the all-changes rows have no staging, so nothing is selectable while they show.
-    selectableEntries: enabled ? NO_SELECTABLE_ENTRIES : visibleSelectionEntries,
+    // Staged and unstaged rows stay selectable while Changes is on screen. Their keys
+    // (staged::path) do not collide with the review rows (branch-worktree::path).
+    selectableEntries: visibleSelectionEntries,
     changesFilter,
     allChangeEntries,
     totalAllChangeCount,

@@ -93,4 +93,24 @@ describe('SourceControlAllChangesSection', () => {
     expect(screen.queryByRole('button', { name: 'Show all changes' })).toBeNull()
     expect(screen.queryByText('View all')).toBeNull()
   })
+
+  it('counts the files ticked off out of the files listed', () => {
+    renderSection({
+      viewedCount: 2,
+      entries: [
+        { path: 'a.ts', status: 'modified' },
+        { path: 'b.ts', status: 'modified' },
+        { path: 'c.ts', status: 'modified' },
+        { path: 'd.ts', status: 'modified' },
+        { path: 'e.ts', status: 'modified' }
+      ],
+      totalEntryCount: 5
+    })
+    expect(screen.getByTestId('source-control-viewed-count').textContent).toBe('2/5 viewed')
+  })
+
+  it('says nothing about progress when no files are listed', () => {
+    renderSection({ entries: [], totalEntryCount: 0, viewedCount: 0 })
+    expect(screen.queryByTestId('source-control-viewed-count')).toBeNull()
+  })
 })

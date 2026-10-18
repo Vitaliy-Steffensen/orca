@@ -1,5 +1,5 @@
 import React from 'react'
-import { AlertCircle, Bot, Server, ServerOff, Trash2 } from 'lucide-react'
+import { AlertCircle, Bot, MessageCircle, Server, ServerOff, Trash2 } from 'lucide-react'
 
 import { RepoIconGlyph } from '@/components/repo/repo-icon'
 import { Badge } from '@/components/ui/badge'
@@ -14,6 +14,7 @@ import type { WorktreeCardPresentation } from './worktree-card-presentation'
 import { WorktreeCardSshHostControl } from './WorktreeCardSshHostControl'
 import { WorktreeTitleInlineRename } from './WorktreeTitleInlineRename'
 import { displayedPullRequestAuthor, WorktreeCardPrAuthor } from './worktree-card-pr-author'
+import { WorktreeCardRunAction } from './WorktreeCardRunAction'
 import { isAutonomousWorkspace } from '../../../../shared/workspace-autonomy'
 import type { WorktreeCardController } from './use-worktree-card-controller'
 
@@ -260,6 +261,18 @@ export function WorktreeCardHeader({
           </Tooltip>
         )}
 
+        {worktree.workspaceIntent === 'question' && (
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <span className="shrink-0 inline-flex items-center" aria-label="Question workspace">
+                <MessageCircle className="size-3 text-muted-foreground" />
+              </span>
+            </TooltipTrigger>
+            <TooltipContent side="right" sideOffset={8}>
+              Question workspace
+            </TooltipContent>
+          </Tooltip>
+        )}
         {isAutonomousWorkspace(worktree) && (
           <Tooltip>
             <TooltipTrigger asChild>
@@ -290,6 +303,12 @@ export function WorktreeCardHeader({
 
       {showHeaderActions && (
         <div className="ml-auto flex shrink-0 items-center justify-center gap-1 pr-1.5">
+          <WorktreeCardRunAction
+            worktreeId={card.worktree.id}
+            command={card.workspaceRunCommand}
+            active={card.runState !== null}
+          />
+
           {showDeleteQuickAction && (
             <Tooltip>
               <TooltipTrigger asChild>

@@ -19,6 +19,7 @@ type NewWorkspaceComposerFooterProps = Pick<
   | 'primaryActionLabel'
 > & {
   submitShortcutModifierLabel: string
+  hidePrimaryAction?: boolean
 }
 
 export function NewWorkspaceComposerFooter({
@@ -30,7 +31,8 @@ export function NewWorkspaceComposerFooter({
   createDisabled,
   creating,
   primaryActionLabel,
-  submitShortcutModifierLabel
+  submitShortcutModifierLabel,
+  hidePrimaryAction = false
 }: NewWorkspaceComposerFooterProps): React.JSX.Element {
   return (
     <>
@@ -51,37 +53,44 @@ export function NewWorkspaceComposerFooter({
         </div>
       ) : null}
 
-      <div
-        className={cn(
-          'flex items-center gap-3',
-          showCreateMultiple ? 'justify-between' : 'justify-end'
-        )}
-      >
-        {showCreateMultiple ? (
-          <button
-            type="button"
-            role="switch"
-            aria-checked={createMultiple}
-            onClick={() => onCreateMultipleChange?.(!createMultiple)}
-            className="group flex w-fit cursor-pointer items-center gap-2 rounded-md text-xs outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50"
-          >
-            <SwitchIndicator checked={createMultiple} />
-            <span className="text-muted-foreground transition-colors group-hover:text-foreground">
-              {translate('auto.components.NewWorkspaceComposerCard.createMultiple', 'Create more')}
-            </span>
-          </button>
-        ) : null}
-        <Button
-          onClick={() => void onCreate()}
-          disabled={createDisabled}
-          size="sm"
-          className="text-xs"
+      {showCreateMultiple || !hidePrimaryAction ? (
+        <div
+          className={cn(
+            'flex items-center gap-3',
+            showCreateMultiple ? 'justify-between' : 'justify-end'
+          )}
         >
-          {creating ? <LoaderCircle className="size-4 animate-spin" /> : null}
-          {primaryActionLabel}
-          <ButtonKeyHint modifierLabel={submitShortcutModifierLabel} />
-        </Button>
-      </div>
+          {showCreateMultiple ? (
+            <button
+              type="button"
+              role="switch"
+              aria-checked={createMultiple}
+              onClick={() => onCreateMultipleChange?.(!createMultiple)}
+              className="group flex w-fit cursor-pointer items-center gap-2 rounded-md text-xs outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50"
+            >
+              <SwitchIndicator checked={createMultiple} />
+              <span className="text-muted-foreground transition-colors group-hover:text-foreground">
+                {translate(
+                  'auto.components.NewWorkspaceComposerCard.createMultiple',
+                  'Create more'
+                )}
+              </span>
+            </button>
+          ) : null}
+          {hidePrimaryAction ? null : (
+            <Button
+              onClick={() => void onCreate()}
+              disabled={createDisabled}
+              size="sm"
+              className="text-xs"
+            >
+              {creating ? <LoaderCircle className="size-4 animate-spin" /> : null}
+              {primaryActionLabel}
+              <ButtonKeyHint modifierLabel={submitShortcutModifierLabel} />
+            </Button>
+          )}
+        </div>
+      ) : null}
     </>
   )
 }

@@ -17,6 +17,8 @@ import {
   readPendingReviewSummaries,
   writePendingReviewSummary
 } from '../github/pending-review-draft-store'
+import { readViewedFiles, writeViewedFiles } from '../review/viewed-files-store'
+import { normalizeViewedFilesState, type ViewedFilesState } from '../../shared/diff-review-identity'
 import { setPendingReviewDraftSurface } from '../github/pending-review-draft-surface'
 import type {
   PendingReviewComment,
@@ -70,6 +72,16 @@ export function registerMainProcessIpcHandlers(): void {
     'pending-review:drafts-write',
     (_event, worktreeId: string, comments: PendingReviewComment[]) =>
       writePendingReviewDrafts(pendingReviewDraftFile(), worktreeId, comments)
+  )
+
+  // Why beside the drafts: which files a reviewer has ticked off is the reviewer's own progress,
+  // and it has to outlive archiving the workspace, which a remote runtime's metadata would not.
+  const viewedFilesFile = (): string => join(app.getPath('userData'), 'review-viewed-files.json')
+  ipcMain.handle('review-viewed:read', (_event, worktreeId: string) =>
+    readViewedFiles(viewedFilesFile(), worktreeId)
+  )
+  ipcMain.handle('review-viewed:write', (_event, worktreeId: string, state: ViewedFilesState) =>
+    writeViewedFiles(viewedFilesFile(), worktreeId, normalizeViewedFilesState(state))
   )
 
   // Why only outside serve mode: the queue belongs to the device the reviewer submits from, and a

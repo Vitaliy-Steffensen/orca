@@ -36,7 +36,7 @@ export function useSourceControlPanelViewState({
   const [fileListScrollElement, setFileListScrollElement] = useState<HTMLDivElement | null>(null)
   const isMac = useMemo(() => navigator.userAgent.includes('Mac'), [])
   // Why the store: the find chord is global chrome, so the bar's open state is shared with
-  // the Explorer and the PR diff viewer rather than owned per panel.
+  // the Explorer rather than owned by this panel.
   const filterExpanded = useAppStore((s) => s.rightSidebarFindExpanded)
   const setFilterExpanded = useAppStore((s) => s.setRightSidebarFindExpanded)
   const [collapsedSections, setCollapsedSections] = useState<Set<string>>(
@@ -67,14 +67,6 @@ export function useSourceControlPanelViewState({
       sourceControlViewMode: getNextSourceControlViewMode(sourceControlViewMode)
     })
   }, [settings, sourceControlViewMode, updateSettings])
-
-  const sourceControlGrouping = settings?.sourceControlGrouping ?? 'all'
-  const handleToggleSourceControlGrouping = useCallback(() => {
-    if (!settings) {
-      return
-    }
-    updateSettings({ sourceControlGrouping: sourceControlGrouping === 'all' ? 'status' : 'all' })
-  }, [settings, sourceControlGrouping, updateSettings])
 
   // Why: reset during render instead of key-remounting on switch (which caused a Windows IPC storm).
   const [viewStateWorktreeId, setViewStateWorktreeId] = useState(activeWorktreeId)
@@ -170,7 +162,6 @@ export function useSourceControlPanelViewState({
     filterQuery,
     findMode,
     setFindMode,
-    handleToggleSourceControlGrouping,
     handleToggleSourceControlViewMode,
     hiddenFileCategories,
     isGitHistoryExpanded,
@@ -180,7 +171,6 @@ export function useSourceControlPanelViewState({
     setFilterExpanded,
     setFilterQuery,
     sourceControlGroupOrder,
-    sourceControlGrouping,
     sourceControlRef,
     sourceControlViewMode,
     toggleFileCategory,

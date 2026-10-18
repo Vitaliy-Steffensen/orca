@@ -54,6 +54,12 @@ export const PROPERTY_OPTIONS: { id: WorktreeCardProperty; label: string }[] = [
     }
   },
   {
+    id: 'run',
+    get label() {
+      return translate('auto.components.sidebar.worktree.card.display.property.options.run', 'Run')
+    }
+  },
+  {
     id: 'ports',
     get label() {
       return translate('auto.components.sidebar.SidebarWorkspaceOptionsMenu.b64d8bcca0', 'Ports')

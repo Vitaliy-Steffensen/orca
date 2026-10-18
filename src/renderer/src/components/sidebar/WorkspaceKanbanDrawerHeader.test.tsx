@@ -70,6 +70,8 @@ function renderHeader(
     onChangeStatusColor: vi.fn(),
     onChangeStatusIcon: vi.fn(),
     onChangeStatusSection: vi.fn(),
+    onChangeSectionColor: vi.fn(),
+    onChangeSectionIcon: vi.fn(),
     sections: [],
     hiddenSections: new Set<string>(),
     onToggleSection: vi.fn(),

@@ -10,10 +10,17 @@ const CHANGE_STATUS: Record<string, GitBranchChangeStatus> = {
 }
 
 export function gitChangeListArgs(fromOid: string | null, toOid: string): string[] {
-  const format = ['--raw', '--numstat', '-z', '-M', '-C']
+  // Why --no-abbrev: the default abbreviation length grows with the repository, so an abbreviated
+  // blob oid is not a stable identity for "this file is unchanged since you last read it".
+  const format = ['--raw', '--no-abbrev', '--numstat', '-z', '-M', '-C']
   return fromOid
     ? ['diff', ...format, fromOid, toOid, '--']
     : ['diff-tree', '--root', '--no-commit-id', '-r', ...format, toOid, '--']
+}
+
+/** Git prints an all-zero oid when it has no object for that side, which is not an identity. */
+function readBlobOid(value: string | undefined): string | undefined {
+  return value === undefined || /^0+$/.test(value) ? undefined : value
 }
 
 export function parseGitChangeList(
@@ -38,11 +45,13 @@ export function parseGitChangeList(
     const match =
       format === 'name-status'
         ? /^([A-Z])\d*$/.exec(header)
-        : /^:[0-7]{6} [0-7]{6} [0-9a-f]+ [0-9a-f]+ ([A-Z])\d*$/.exec(header)
+        : /^:[0-7]{6} [0-7]{6} ([0-9a-f]+) ([0-9a-f]+) ([A-Z])\d*$/.exec(header)
     if (!match) {
       throw new Error('Invalid Git change record')
     }
-    const code = match[1] ?? ''
+    const code = (format === 'name-status' ? match[1] : match[3]) ?? ''
+    const baseOid = format === 'name-status' ? undefined : readBlobOid(match[1])
+    const headOid = format === 'name-status' ? undefined : readBlobOid(match[2])
     const firstPath = readField()
     const oldPath = code === 'R' || code === 'C' ? firstPath : undefined
     const path = oldPath === undefined ? firstPath : readField()
@@ -52,7 +61,9 @@ export function parseGitChangeList(
     entries.push({
       path,
       status: CHANGE_STATUS[code] ?? 'modified',
-      ...(oldPath === undefined ? {} : { oldPath })
+      ...(oldPath === undefined ? {} : { oldPath }),
+      ...(baseOid === undefined ? {} : { baseOid }),
+      ...(headOid === undefined ? {} : { headOid })
     })
   }
   if (offset === stdout.length) {

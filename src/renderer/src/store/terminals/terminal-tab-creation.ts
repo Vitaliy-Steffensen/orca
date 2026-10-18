@@ -82,6 +82,7 @@ export function createTerminalTabCreationActions(
         const nextOrdinal = getNextTerminalOrdinal(existing)
         const defaultTitle = `Terminal ${nextOrdinal}`
         const quickCommandLabel = options?.quickCommandLabel?.trim()
+        const workspaceRunServiceLabel = options?.workspaceRunServiceLabel?.trim()
         const startupCwd = options?.startupCwd
         const remoteConnectionId = getRemoteConnectionIdForWorktree(s, worktreeId)
         const isRemoteWorktree = Boolean(remoteConnectionId)
@@ -110,6 +111,7 @@ export function createTerminalTabCreationActions(
           title: defaultTitle,
           defaultTitle,
           ...(quickCommandLabel ? { quickCommandLabel } : {}),
+          ...(workspaceRunServiceLabel ? { workspaceRunServiceLabel } : {}),
           customTitle: null,
           color: null,
           sortOrder: existing.length,

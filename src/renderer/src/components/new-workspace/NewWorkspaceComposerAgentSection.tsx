@@ -18,6 +18,7 @@ type NewWorkspaceComposerAgentSectionProps = Pick<
   | 'onToggleAdvanced'
 > & {
   advancedLocked?: boolean
+  showAdvancedToggle?: boolean
   visibleQuickAgents: React.ComponentProps<typeof AgentCombobox>['agents']
   defaultTuiAgent: React.ComponentProps<typeof AgentCombobox>['defaultAgent']
   handleSetDefaultAgent: (
@@ -33,6 +34,7 @@ export function NewWorkspaceComposerAgentSection({
   onCreate,
   advancedOpen,
   advancedLocked = false,
+  showAdvancedToggle = true,
   onToggleAdvanced,
   visibleQuickAgents,
   defaultTuiAgent,
@@ -81,22 +83,24 @@ export function NewWorkspaceComposerAgentSection({
         />
       </div>
 
-      <div className="!mb-2">
-        <Button
-          type="button"
-          variant="ghost"
-          size="sm"
-          onClick={onToggleAdvanced}
-          disabled={advancedLocked}
-          aria-expanded={advancedOpen}
-          className="-ml-2 text-xs focus-visible:ring-inset"
-        >
-          {translate('auto.components.NewWorkspaceComposerCard.f0470c7383', 'Advanced')}
-          <ChevronDown
-            className={cn('size-4 transition-transform', advancedOpen && 'rotate-180')}
-          />
-        </Button>
-      </div>
+      {showAdvancedToggle ? (
+        <div className="!mb-2">
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            onClick={onToggleAdvanced}
+            disabled={advancedLocked}
+            aria-expanded={advancedOpen}
+            className="-ml-2 text-xs focus-visible:ring-inset"
+          >
+            {translate('auto.components.NewWorkspaceComposerCard.f0470c7383', 'Advanced')}
+            <ChevronDown
+              className={cn('size-4 transition-transform', advancedOpen && 'rotate-180')}
+            />
+          </Button>
+        </div>
+      ) : null}
     </>
   )
 }

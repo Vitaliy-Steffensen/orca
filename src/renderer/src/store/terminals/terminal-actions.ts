@@ -76,6 +76,7 @@ export type TerminalActions = {
       /** The pane a host `agent.launch` laid out before its agent existed, while its fate is open. */
       agentLaunchPane?: TerminalTab['agentLaunchPane']
       quickCommandLabel?: string | null
+      workspaceRunServiceLabel?: string | null
       viewMode?: Tab['viewMode']
       startupCwd?: string
       forceHostRuntime?: boolean

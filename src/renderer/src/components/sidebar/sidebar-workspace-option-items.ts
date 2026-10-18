@@ -6,6 +6,7 @@ import { translate } from '@/i18n/i18n'
 import {
   LINEAR_TITLE_CARD_PROPERTY_OPTION,
   PR_AUTHOR_CARD_PROPERTY_OPTION,
+  RUN_CARD_PROPERTY_OPTION,
   REVIEW_FACT_CARD_PROPERTY_OPTIONS
 } from './fork-card-property-options'
 
@@ -130,6 +131,7 @@ const BASE_WORKTREE_CARD_PROPERTY_OPTIONS: WorktreeCardPropertyOption[] = [
       return translate('auto.components.sidebar.SidebarWorkspaceOptionsMenu.cli', 'Orca CLI')
     }
   },
+  RUN_CARD_PROPERTY_OPTION,
   {
     id: 'ports',
     properties: ['ports'],

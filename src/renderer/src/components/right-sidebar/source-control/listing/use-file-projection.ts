@@ -19,11 +19,9 @@ import {
 import {
   applyGitStatusEntryAreasToSourceControlTree,
   buildGitStatusSourceControlTree,
-  buildSourceControlTree,
   compactSourceControlTree,
   flattenSourceControlTree,
-  namespaceSourceControlTreeDirectoryKeys,
-  type SourceControlTreeNode
+  namespaceSourceControlTreeDirectoryKeys
 } from '../../source-control-tree'
 import {
   buildSourceControlDisplaySections,
@@ -65,13 +63,12 @@ export type SourceControlFileProjection = {
   visibleListRowsBySection: Partial<
     Record<SourceControlDisplaySectionId, RenderableSubmoduleListItem[]>
   >
-  visibleBranchTreeRows: readonly SourceControlTreeNode<GitBranchChangeEntry, 'branch'>[]
   visibleSelectionEntries: FlatEntry[]
 }
 
 // Why: only one view mode is ever rendered, so building the other mode's projection is pure dead
 // work (precedent: the combined-diff file tree short-circuits the same way while collapsed).
-// The gates below and both branching consumers (section-file-list.tsx, branch-section.tsx) read the
+// The gates below and the section file list read the
 // same sourceControlViewMode prop within one synchronous render, so a mode switch can never show
 // these. Keep that single source: deriving the mode from a separate store read would let a consumer
 // switch a render before the memos do, and only then could one of these reach the screen.
@@ -84,8 +81,6 @@ const EMPTY_TREE_ROWS_BY_SECTION: Readonly<
 const EMPTY_LIST_ROWS_BY_SECTION: Readonly<
   Partial<Record<SourceControlDisplaySectionId, RenderableSubmoduleListItem[]>>
 > = Object.freeze({})
-const EMPTY_BRANCH_TREE_NODES: readonly SourceControlTreeNode<GitBranchChangeEntry, 'branch'>[] =
-  Object.freeze([])
 
 export function useSourceControlFileProjection({
   entries,
@@ -212,13 +207,17 @@ export function useSourceControlFileProjection({
       const sectionRoots = compactSourceControlTree(
         buildGitStatusSourceControlTree(section.area, section.items)
       )
-      roots[section.id] =
+      const rooted =
         section.id === 'conflicts'
           ? applyGitStatusEntryAreasToSourceControlTree(
               // Why: conflict rows can mirror normal paths, so their folder collapse keys must not share state with normal sections.
               namespaceSourceControlTreeDirectoryKeys(sectionRoots, 'conflicts')
             )
-          : sectionRoots
+          : section.id === 'unstaged'
+            ? // Untracked rows share this section but keep untracked:: keys, so Stage/Delete stay correct.
+              applyGitStatusEntryAreasToSourceControlTree(sectionRoots)
+            : sectionRoots
+      roots[section.id] = rooted
     }
     return roots
   }, [displaySections, sourceControlViewMode])
@@ -265,21 +264,6 @@ export function useSourceControlFileProjection({
     return rows
   }, [displaySections, expandedSubmoduleKeys, sourceControlViewMode, submoduleStatusByKey])
 
-  const branchTreeRoots = useMemo(
-    () =>
-      sourceControlViewMode === 'tree'
-        ? compactSourceControlTree(buildSourceControlTree('branch', filteredBranchEntries))
-        : EMPTY_BRANCH_TREE_NODES,
-    [filteredBranchEntries, sourceControlViewMode]
-  )
-  const visibleBranchTreeRows = useMemo(
-    () =>
-      sourceControlViewMode === 'tree'
-        ? flattenSourceControlTree(branchTreeRoots, collapsedTreeDirs)
-        : EMPTY_BRANCH_TREE_NODES,
-    [branchTreeRoots, collapsedTreeDirs, sourceControlViewMode]
-  )
-
   const visibleSelectionEntries = useMemo(() => {
     const arr: FlatEntry[] = []
     // Why: list view splices in lazy submodule rows, so selection/range bookkeeping must read the injected rows, not the pre-injection entries.
@@ -324,7 +308,6 @@ export function useSourceControlFileProjection({
     filteredBranchEntries,
     visibleTreeRowsBySection,
     visibleListRowsBySection,
-    visibleBranchTreeRows,
     visibleSelectionEntries
   }
 }
