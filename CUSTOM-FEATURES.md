@@ -18,6 +18,16 @@ Adding a feature here? See the rule at the top of [`CLAUDE.md`](./CLAUDE.md).
 - The app releases and auto-updates from this repository instead of upstream's or Frederik's.
 - A relative language server Path is read from the worktree root, and one that never starts keeps
   saying so instead of going quiet after its first warning.
+- Workspace cards come in one style, and carry chips that appear only when something is wrong —
+  failing checks, a conflict with the base, or a branch left behind it.
+- A workspace card shows the pull request author's face when that pull request was opened by someone else.
+- Right-clicking a workspace card lists its linked pull request and issues under "Open in", so the
+  GitHub or Linear page is one menu away.
+- Workspace cards you were asked to review show how long ago the review was asked for, and say when
+  it is a re-request with its own fresh clock.
+- A workspace card shows the pull request diff (`+`/`−`), a frontend/backend/e2e/CI pie, Linear
+  priority, GitHub stack position, unresolved review comments, and `Nd` once the pull request has
+  been open longer than 3 days.
 - An agent can stage inline review comments and the review summary with `orca review comment add`
   and `orca review summary set`, marked as its drafts in the pending-review shelf, for you to accept
   and submit as your own review.

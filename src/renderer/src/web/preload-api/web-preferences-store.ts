@@ -1,10 +1,6 @@
 import type { PreloadApi } from '../../../../preload/api-types'
 import { normalizeAutoRenameBranchFromWorkDefaultOn } from '../../../../shared/auto-rename-branch-from-work-settings'
-import {
-  getDefaultSettings,
-  getDefaultUIState,
-  getWorktreeCardModeProperties
-} from '../../../../shared/constants'
+import { getDefaultSettings, getDefaultUIState } from '../../../../shared/constants'
 import { normalizeWorktreeVisibilityDefaults } from '../../../../shared/external-worktree-visibility'
 import type { GlobalSettings } from '../../../../shared/global-settings-types'
 import {
@@ -299,13 +295,7 @@ export function readLocalWebUIState(): PersistedUIState {
   // every caller then writes back, erasing the arm the stamp can never raise again.
   const storedSettings = getStoredSettings()
   const stored = readJson<Partial<PersistedUIState>>(UI_STORAGE_KEY, {})
-  const base = {
-    ...defaults,
-    // Why: mirror the main-process missing-property seed from legacy card layout mode when runtime ui.get is unavailable.
-    worktreeCardProperties: getWorktreeCardModeProperties(
-      storedSettings.compactWorktreeCards ? 'Compact' : 'Default'
-    )
-  }
+  const base = { ...defaults }
   if (typeof stored.rightSidebarOpen === 'boolean') {
     return mergeWebUIState(base, stored)
   }

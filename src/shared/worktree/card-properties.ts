@@ -1,6 +1,4 @@
-import type { GlobalSettings } from '../global-settings-types'
-import type { PersistedUIState } from '../persisted-ui-state-types'
-import type { WorktreeCardMode, WorktreeCardProperty } from '../ui-chrome-types'
+import type { WorktreeCardProperty } from '../ui-chrome-types'
 
 const FIXED_WORKTREE_CARD_PROPERTIES: WorktreeCardProperty[] = ['status', 'unread']
 
@@ -12,40 +10,45 @@ export const TASK_WORKTREE_CARD_PROPERTIES: WorktreeCardProperty[] = [
 
 export const DEFAULT_WORKTREE_CARD_PROPERTIES: WorktreeCardProperty[] = [
   ...FIXED_WORKTREE_CARD_PROPERTIES,
+  'blocker',
+  'conflict',
   ...TASK_WORKTREE_CARD_PROPERTIES,
   'pr',
+  'pr-author',
+  'diff',
+  'diff-mix',
+  'linear-priority',
+  'stack',
+  'unresolved-comments',
+  'pr-open-age',
   'automation',
   'cli',
   'comment',
   'ports',
-  // Why: agent activity is the primary reason users opt into the feature, so
-  // the Default mode keeps it inline on each card while Compact removes the
-  // extra row.
+  // Why: agent activity is the primary reason users opt into the feature, so it
+  // stays inline on each card by default.
   'inline-agents',
   'host'
 ]
 
-// Why: compact cards default to the quiet preset; metadata icons remain opt-in
-// through Show properties instead of appearing automatically.
-export const COMPACT_WORKTREE_CARD_PROPERTIES: WorktreeCardProperty[] = ['status']
-const NORMALIZED_COMPACT_WORKTREE_CARD_PROPERTIES: WorktreeCardProperty[] = ['status', 'unread']
-
-const LEGACY_COMPACT_WORKTREE_CARD_PROPERTIES_WITH_AUTOMATION: WorktreeCardProperty[] = [
-  'status',
-  'automation'
-]
-
-const LEGACY_NORMALIZED_COMPACT_WORKTREE_CARD_PROPERTIES_WITH_AUTOMATION: WorktreeCardProperty[] = [
-  'status',
-  'unread',
-  'automation'
+// Why: the retired Compact layout defaulted to this near-empty preset. A profile
+// still sitting on it is migrated to the defaults rather than left with a card
+// that shows nothing; an explicitly chosen property set is preserved as-is.
+const RETIRED_COMPACT_PRESETS: readonly WorktreeCardProperty[][] = [
+  ['status'],
+  ['status', 'unread'],
+  ['status', 'automation'],
+  ['status', 'unread', 'automation']
 ]
 
 /** Every card property, in canonical render order. Client schemas derive their
- *  accepted value domain from this so a new property cannot drift out of them. */
+ *  accepted value domain from this so a new property cannot drift out of them.
+ *  The chip rail also resolves its priority from this order. */
 export const WORKTREE_CARD_PROPERTIES = [
   'status',
   'unread',
+  'blocker',
+  'conflict',
   'ci',
   'branch',
   'issue',
@@ -54,6 +57,12 @@ export const WORKTREE_CARD_PROPERTIES = [
   'jira-issue',
   'pr',
   'pr-author',
+  'diff',
+  'diff-mix',
+  'linear-priority',
+  'stack',
+  'unresolved-comments',
+  'pr-open-age',
   'automation',
   'cli',
   'comment',
@@ -75,48 +84,12 @@ export function normalizeWorktreeCardProperties(
   return normalized
 }
 
-export function getWorktreeCardModeProperties(mode: WorktreeCardMode): WorktreeCardProperty[] {
-  return mode === 'Compact'
-    ? [...COMPACT_WORKTREE_CARD_PROPERTIES]
-    : [...DEFAULT_WORKTREE_CARD_PROPERTIES]
-}
-
-export function getWorktreeCardModeUpdates(mode: WorktreeCardMode): {
-  settings: Pick<GlobalSettings, 'compactWorktreeCards'>
-  ui: Pick<PersistedUIState, 'worktreeCardProperties' | '_worktreeCardModeDefaulted'>
-} {
-  return {
-    settings: { compactWorktreeCards: mode === 'Compact' },
-    ui: {
-      worktreeCardProperties: getWorktreeCardModeProperties(mode),
-      _worktreeCardModeDefaulted: true
-    }
-  }
-}
-
-export function isDefaultedCompactWorktreeCardProperties(
+export function isRetiredCompactWorktreeCardProperties(
   properties: readonly unknown[] | null | undefined
 ): boolean {
-  return (
-    matchesWorktreeCardProperties(properties, COMPACT_WORKTREE_CARD_PROPERTIES) ||
-    matchesWorktreeCardProperties(properties, NORMALIZED_COMPACT_WORKTREE_CARD_PROPERTIES) ||
-    matchesWorktreeCardProperties(
-      properties,
-      LEGACY_COMPACT_WORKTREE_CARD_PROPERTIES_WITH_AUTOMATION
-    ) ||
-    matchesWorktreeCardProperties(
-      properties,
-      LEGACY_NORMALIZED_COMPACT_WORKTREE_CARD_PROPERTIES_WITH_AUTOMATION
-    )
+  return RETIRED_COMPACT_PRESETS.some(
+    (preset) =>
+      properties?.length === preset.length &&
+      preset.every((property, index) => properties[index] === property)
   )
-}
-
-function matchesWorktreeCardProperties(
-  properties: readonly unknown[] | null | undefined,
-  expected: readonly WorktreeCardProperty[]
-): boolean {
-  if (properties?.length !== expected.length) {
-    return false
-  }
-  return expected.every((property, index) => properties[index] === property)
 }

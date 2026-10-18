@@ -2,11 +2,11 @@ import type {
   AgentActivityDisplayMode,
   WorktreeCardProperty
 } from '../../../../shared/ui-chrome-types'
-import { TASK_WORKTREE_CARD_PROPERTIES } from '../../../../shared/constants'
 import { translate } from '@/i18n/i18n'
 import {
   LINEAR_TITLE_CARD_PROPERTY_OPTION,
-  PR_AUTHOR_CARD_PROPERTY_OPTION
+  PR_AUTHOR_CARD_PROPERTY_OPTION,
+  REVIEW_FACT_CARD_PROPERTY_OPTIONS
 } from './fork-card-property-options'
 
 export const GROUP_BY_OPTIONS = [
@@ -78,6 +78,26 @@ export type WorktreeCardPropertyOption = {
   label: string
 }
 
+const CHIP_WORKTREE_CARD_PROPERTY_OPTIONS: WorktreeCardPropertyOption[] = [
+  {
+    id: 'blocker',
+    properties: ['blocker'],
+    get label() {
+      return translate('auto.components.sidebar.SidebarWorkspaceOptionsMenu.blocker', 'Blocked on')
+    }
+  },
+  {
+    id: 'conflict',
+    properties: ['conflict'],
+    get label() {
+      return translate(
+        'auto.components.sidebar.SidebarWorkspaceOptionsMenu.conflict',
+        'Merge conflicts'
+      )
+    }
+  }
+]
+
 const BASE_WORKTREE_CARD_PROPERTY_OPTIONS: WorktreeCardPropertyOption[] = [
   {
     id: 'status',
@@ -146,14 +166,6 @@ const BASE_WORKTREE_CARD_PROPERTY_OPTIONS: WorktreeCardPropertyOption[] = [
   }
 ]
 
-const TASK_WORKTREE_CARD_PROPERTY_OPTION: WorktreeCardPropertyOption = {
-  id: 'tasks',
-  properties: TASK_WORKTREE_CARD_PROPERTIES,
-  get label() {
-    return translate('auto.components.sidebar.SidebarWorkspaceOptionsMenu.b5536d5a88', 'Tasks')
-  }
-}
-
 const ISSUE_WORKTREE_CARD_PROPERTY_OPTIONS: WorktreeCardPropertyOption[] = [
   {
     id: 'issue',
@@ -176,6 +188,7 @@ const ISSUE_WORKTREE_CARD_PROPERTY_OPTIONS: WorktreeCardPropertyOption[] = [
     }
   },
   LINEAR_TITLE_CARD_PROPERTY_OPTION,
+  ...REVIEW_FACT_CARD_PROPERTY_OPTIONS,
   {
     id: 'jira-issue',
     properties: ['jira-issue'],
@@ -190,24 +203,19 @@ const ISSUE_WORKTREE_CARD_PROPERTY_OPTIONS: WorktreeCardPropertyOption[] = [
 ]
 
 type WorktreeCardPropertyOptionsInput = {
-  newCardStyle?: boolean
   hasProjectGroups?: boolean
 }
 
 export function getWorktreeCardPropertyOptions({
-  newCardStyle = false,
   hasProjectGroups = false
 }: WorktreeCardPropertyOptionsInput = {}): WorktreeCardPropertyOption[] {
-  const issueOptions = newCardStyle
-    ? ISSUE_WORKTREE_CARD_PROPERTY_OPTIONS
-    : [TASK_WORKTREE_CARD_PROPERTY_OPTION]
   const branchOption: WorktreeCardPropertyOption = {
     id: 'branch',
     properties: ['branch'],
     get label() {
-      // Why: new-card project groups can contain folder workspaces, so the
-      // branch setting copy must describe both repo and folder identity.
-      return newCardStyle && hasProjectGroups
+      // Why: project groups can contain folder workspaces, so the branch setting
+      // copy must describe both repo and folder identity.
+      return hasProjectGroups
         ? translate(
             'auto.components.sidebar.SidebarWorkspaceOptionsMenu.folderPathIdentity',
             'Branch / folder path'
@@ -215,12 +223,9 @@ export function getWorktreeCardPropertyOptions({
         : translate('auto.components.sidebar.SidebarWorkspaceOptionsMenu.219ebf1961', 'Branch name')
     }
   }
-  if (newCardStyle) {
-    return [...issueOptions, ...BASE_WORKTREE_CARD_PROPERTY_OPTIONS.slice(1, -1), branchOption]
-  }
   return [
-    BASE_WORKTREE_CARD_PROPERTY_OPTIONS[0],
-    ...issueOptions,
+    ...CHIP_WORKTREE_CARD_PROPERTY_OPTIONS,
+    ...ISSUE_WORKTREE_CARD_PROPERTY_OPTIONS,
     ...BASE_WORKTREE_CARD_PROPERTY_OPTIONS.slice(1, -1),
     branchOption
   ]

@@ -1,5 +1,12 @@
 import React, { useState } from 'react'
-import { CircleCheck, GitMerge, GitPullRequestArrow, ScanEye, ScanSearch, Upload } from 'lucide-react'
+import {
+  CircleCheck,
+  GitMerge,
+  GitPullRequestArrow,
+  ScanEye,
+  ScanSearch,
+  Upload
+} from 'lucide-react'
 import { useAppStore } from '@/store'
 import { cn } from '@/lib/utils'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'

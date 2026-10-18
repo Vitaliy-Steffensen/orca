@@ -65,12 +65,7 @@ describe('WorktreeCardStatusSlot', () => {
       <WorktreeCardStatusSlot
         worktreeId="wt-1"
         showStatus
-        showUnreadAction={false}
         isUnread={false}
-        unreadTooltip=""
-        onPointerDown={vi.fn()}
-        onToggleUnread={vi.fn()}
-        newCardStyle
         prDisplay={{ ...review, status: 'success' }}
         reviewChecks={summarizeWorkspaceReviewChecks(items, details)}
       />
@@ -85,12 +80,7 @@ describe('WorktreeCardStatusSlot', () => {
       <WorktreeCardStatusSlot
         worktreeId="wt-1"
         showStatus
-        showUnreadAction={false}
         isUnread={false}
-        unreadTooltip=""
-        onPointerDown={vi.fn()}
-        onToggleUnread={vi.fn()}
-        newCardStyle
         prDisplay={{ ...review, status: 'success' }}
         reviewChecks={summarizeWorkspaceReviewChecks(items, {})}
       />
@@ -106,12 +96,7 @@ describe('WorktreeCardStatusSlot', () => {
         <WorktreeCardStatusSlot
           worktreeId="wt-1"
           showStatus
-          showUnreadAction={false}
           isUnread={false}
-          unreadTooltip=""
-          onPointerDown={vi.fn()}
-          onToggleUnread={vi.fn()}
-          newCardStyle
           prDisplay={{ ...review, state: 'draft' }}
           reviewChecks={summarizeWorkspaceReviewChecks(items, {})}
         />
@@ -122,38 +107,9 @@ describe('WorktreeCardStatusSlot', () => {
     }
   )
 
-  it('lets the unread bell replace the visual status dot by default', () => {
+  it('overlays an unread badge on the status dot', () => {
     const markup = renderToStaticMarkup(
-      <WorktreeCardStatusSlot
-        worktreeId="wt-1"
-        showStatus
-        showUnreadAction
-        isUnread
-        unreadTooltip="Mark as read"
-        onPointerDown={vi.fn()}
-        onToggleUnread={vi.fn()}
-      />
-    )
-
-    expect(markup).toContain('aria-label="Mark as read"')
-    expect(markup).toContain('Mark as read')
-    expect(markup).not.toContain('Active · Mark as read')
-    expect(markup).not.toContain('bg-emerald-500')
-    expect(markup).toContain('text-amber-500')
-  })
-
-  it('overlays an unread badge on the status dot when new card style is on', () => {
-    const markup = renderToStaticMarkup(
-      <WorktreeCardStatusSlot
-        worktreeId="wt-1"
-        showStatus
-        showUnreadAction
-        isUnread
-        unreadTooltip="Mark as read"
-        onPointerDown={vi.fn()}
-        onToggleUnread={vi.fn()}
-        newCardStyle
-      />
+      <WorktreeCardStatusSlot worktreeId="wt-1" showStatus isUnread />
     )
 
     expect(markup).not.toContain('aria-label="Mark as read"')
@@ -170,16 +126,7 @@ describe('WorktreeCardStatusSlot', () => {
   it('suppresses the new-card unread badge while unread status is working', () => {
     mocks.status = 'working'
     const markup = renderToStaticMarkup(
-      <WorktreeCardStatusSlot
-        worktreeId="wt-1"
-        showStatus
-        showUnreadAction
-        isUnread
-        unreadTooltip="Mark as read"
-        onPointerDown={vi.fn()}
-        onToggleUnread={vi.fn()}
-        newCardStyle
-      />
+      <WorktreeCardStatusSlot worktreeId="wt-1" showStatus isUnread />
     )
 
     expect(markup).toContain('Working · Unread')
@@ -194,16 +141,7 @@ describe('WorktreeCardStatusSlot', () => {
   it('suppresses the new-card unread badge while unread status is permission', () => {
     mocks.status = 'permission'
     const markup = renderToStaticMarkup(
-      <WorktreeCardStatusSlot
-        worktreeId="wt-1"
-        showStatus
-        showUnreadAction
-        isUnread
-        unreadTooltip="Mark as read"
-        onPointerDown={vi.fn()}
-        onToggleUnread={vi.fn()}
-        newCardStyle
-      />
+      <WorktreeCardStatusSlot worktreeId="wt-1" showStatus isUnread />
     )
 
     expect(markup).toContain('Needs permission · Unread')
@@ -215,78 +153,9 @@ describe('WorktreeCardStatusSlot', () => {
     expect(markup).not.toContain('lucide-bell')
   })
 
-  it('keeps legacy unread working cards on the unread bell control', () => {
-    mocks.status = 'working'
+  it('uses PR status instead of the quiet active dot', () => {
     const markup = renderToStaticMarkup(
-      <WorktreeCardStatusSlot
-        worktreeId="wt-1"
-        showStatus
-        showUnreadAction
-        isUnread
-        unreadTooltip="Mark as read"
-        onPointerDown={vi.fn()}
-        onToggleUnread={vi.fn()}
-      />
-    )
-
-    expect(markup).toContain('aria-label="Mark as read"')
-    expect(markup).toContain('Mark as read')
-    expect(markup).toContain('Working')
-    expect(markup).toContain('text-amber-500')
-    expect(markup).not.toContain('border-yellow-500')
-    expect(markup).not.toContain('data-worktree-unread-alert=""')
-  })
-
-  it('shows status in the unread toggle affordance', () => {
-    const markup = renderToStaticMarkup(
-      <WorktreeCardStatusSlot
-        worktreeId="wt-1"
-        showStatus
-        showUnreadAction
-        isUnread={false}
-        unreadTooltip="Mark as unread"
-        onPointerDown={vi.fn()}
-        onToggleUnread={vi.fn()}
-      />
-    )
-
-    expect(markup).toContain('Active · Mark as unread')
-    expect(markup).toContain('bg-emerald-500')
-    expect(markup.match(/data-tooltip-root/g)).toHaveLength(1)
-  })
-
-  it('keeps the quiet active dot ahead of PR status by default', () => {
-    const markup = renderToStaticMarkup(
-      <WorktreeCardStatusSlot
-        worktreeId="wt-1"
-        showStatus
-        showUnreadAction={false}
-        isUnread={false}
-        unreadTooltip="Mark as unread"
-        onPointerDown={vi.fn()}
-        onToggleUnread={vi.fn()}
-        prDisplay={review}
-      />
-    )
-
-    expect(markup).toContain('Active')
-    expect(markup).toContain('bg-emerald-500')
-    expect(markup).not.toContain('PR checks: Failed')
-  })
-
-  it('uses PR status instead of the quiet active dot when new card style is on', () => {
-    const markup = renderToStaticMarkup(
-      <WorktreeCardStatusSlot
-        worktreeId="wt-1"
-        showStatus
-        showUnreadAction={false}
-        isUnread={false}
-        unreadTooltip="Mark as unread"
-        onPointerDown={vi.fn()}
-        onToggleUnread={vi.fn()}
-        prDisplay={review}
-        newCardStyle
-      />
+      <WorktreeCardStatusSlot worktreeId="wt-1" showStatus isUnread={false} prDisplay={review} />
     )
 
     expect(markup).toContain('PR checks: Failed')
@@ -302,13 +171,8 @@ describe('WorktreeCardStatusSlot', () => {
       <WorktreeCardStatusSlot
         worktreeId="wt-1"
         showStatus
-        showUnreadAction={false}
         isUnread={false}
-        unreadTooltip="Mark as unread"
-        onPointerDown={vi.fn()}
-        onToggleUnread={vi.fn()}
         prDisplay={gitlabReview}
-        newCardStyle
       />
     )
 
@@ -319,43 +183,23 @@ describe('WorktreeCardStatusSlot', () => {
     expect(markup).not.toContain('lucide-git-merge')
   })
 
-  it('uses PR status instead of the quiet done dot when new card style is on', () => {
+  it('uses PR status instead of the quiet done dot', () => {
     mocks.status = 'done'
     const markup = renderToStaticMarkup(
-      <WorktreeCardStatusSlot
-        worktreeId="wt-1"
-        showStatus
-        showUnreadAction={false}
-        isUnread={false}
-        unreadTooltip="Mark as unread"
-        onPointerDown={vi.fn()}
-        onToggleUnread={vi.fn()}
-        prDisplay={review}
-        newCardStyle
-      />
+      <WorktreeCardStatusSlot worktreeId="wt-1" showStatus isUnread={false} prDisplay={review} />
     )
 
     expect(markup).toContain('PR checks: Failed')
     expect(markup).not.toContain('bg-emerald-500')
   })
 
-  it('keeps sleeping distinct from PR status when new card style is on', () => {
+  it('keeps sleeping distinct from PR status', () => {
     // Why done, not inactive: a slept workspace keeps its retained done rows,
     // so its status still reads 'done' — the exact case from #19624.
     mocks.status = 'done'
     mocks.sleeping = true
     const markup = renderToStaticMarkup(
-      <WorktreeCardStatusSlot
-        worktreeId="wt-1"
-        showStatus
-        showUnreadAction={false}
-        isUnread={false}
-        unreadTooltip="Mark as unread"
-        onPointerDown={vi.fn()}
-        onToggleUnread={vi.fn()}
-        prDisplay={review}
-        newCardStyle
-      />
+      <WorktreeCardStatusSlot worktreeId="wt-1" showStatus isUnread={false} prDisplay={review} />
     )
 
     // Why: sleep must stay distinct from awake completion; sleeping never collapses into PR.
@@ -366,20 +210,11 @@ describe('WorktreeCardStatusSlot', () => {
     expect(markup).not.toContain('bg-neutral-500/40')
   })
 
-  it('keeps sleeping moon distinct from the awake green dot when new card style is on', () => {
+  it('keeps sleeping moon distinct from the awake green dot', () => {
     mocks.status = 'done'
     mocks.sleeping = true
     const markup = renderToStaticMarkup(
-      <WorktreeCardStatusSlot
-        worktreeId="wt-1"
-        showStatus
-        showUnreadAction={false}
-        isUnread={false}
-        unreadTooltip="Mark as unread"
-        onPointerDown={vi.fn()}
-        onToggleUnread={vi.fn()}
-        newCardStyle
-      />
+      <WorktreeCardStatusSlot worktreeId="wt-1" showStatus isUnread={false} />
     )
 
     expect(markup).toContain('Sleeping')
@@ -389,37 +224,17 @@ describe('WorktreeCardStatusSlot', () => {
     expect(markup).not.toContain('bg-neutral-500/40')
   })
 
-  it('distinguishes awake branch from sleeping moon when new card style is on', () => {
+  it('distinguishes awake branch from sleeping moon', () => {
     mocks.status = 'done'
     const awakeMarkup = renderToStaticMarkup(
-      <WorktreeCardStatusSlot
-        worktreeId="wt-1"
-        showStatus
-        showUnreadAction={false}
-        isUnread={false}
-        unreadTooltip="Mark as unread"
-        onPointerDown={vi.fn()}
-        onToggleUnread={vi.fn()}
-        newCardStyle
-        hasBranchIdentity
-      />
+      <WorktreeCardStatusSlot worktreeId="wt-1" showStatus isUnread={false} hasBranchIdentity />
     )
     expect(awakeMarkup).toContain('Branch')
     expect(awakeMarkup).toContain('lucide-git-branch')
     expect(awakeMarkup).not.toContain('lucide-moon')
     mocks.sleeping = true
     const sleepingMarkup = renderToStaticMarkup(
-      <WorktreeCardStatusSlot
-        worktreeId="wt-1"
-        showStatus
-        showUnreadAction={false}
-        isUnread={false}
-        unreadTooltip="Mark as unread"
-        onPointerDown={vi.fn()}
-        onToggleUnread={vi.fn()}
-        newCardStyle
-        hasBranchIdentity
-      />
+      <WorktreeCardStatusSlot worktreeId="wt-1" showStatus isUnread={false} hasBranchIdentity />
     )
     // Why: sleeping wins over the branch lane, even with an identity present.
     expect(sleepingMarkup).toContain('Sleeping')
@@ -427,19 +242,10 @@ describe('WorktreeCardStatusSlot', () => {
     expect(sleepingMarkup).not.toContain('lucide-git-branch')
   })
 
-  it('shows the green awake dot for quiet done workspaces when new card style is on', () => {
+  it('shows the green awake dot for quiet done workspaces', () => {
     mocks.status = 'done'
     const markup = renderToStaticMarkup(
-      <WorktreeCardStatusSlot
-        worktreeId="wt-1"
-        showStatus
-        showUnreadAction={false}
-        isUnread={false}
-        unreadTooltip="Mark as unread"
-        onPointerDown={vi.fn()}
-        onToggleUnread={vi.fn()}
-        newCardStyle
-      />
+      <WorktreeCardStatusSlot worktreeId="wt-1" showStatus isUnread={false} />
     )
 
     expect(markup).toContain('Done')
@@ -449,20 +255,10 @@ describe('WorktreeCardStatusSlot', () => {
     expect(markup).toContain('data-tooltip-root')
   })
 
-  it('keeps working activity ahead of PR status in new card style', () => {
+  it('keeps working activity ahead of PR status', () => {
     mocks.status = 'working'
     const markup = renderToStaticMarkup(
-      <WorktreeCardStatusSlot
-        worktreeId="wt-1"
-        showStatus
-        showUnreadAction={false}
-        isUnread={false}
-        unreadTooltip="Mark as unread"
-        onPointerDown={vi.fn()}
-        onToggleUnread={vi.fn()}
-        prDisplay={review}
-        newCardStyle
-      />
+      <WorktreeCardStatusSlot worktreeId="wt-1" showStatus isUnread={false} prDisplay={review} />
     )
 
     expect(markup).toContain('Working')
@@ -473,20 +269,10 @@ describe('WorktreeCardStatusSlot', () => {
     expect(markup).not.toContain('PR checks: Failed')
   })
 
-  it('keeps permission activity ahead of PR status in new card style', () => {
+  it('keeps permission activity ahead of PR status', () => {
     mocks.status = 'permission'
     const markup = renderToStaticMarkup(
-      <WorktreeCardStatusSlot
-        worktreeId="wt-1"
-        showStatus
-        showUnreadAction={false}
-        isUnread={false}
-        unreadTooltip="Mark as unread"
-        onPointerDown={vi.fn()}
-        onToggleUnread={vi.fn()}
-        prDisplay={review}
-        newCardStyle
-      />
+      <WorktreeCardStatusSlot worktreeId="wt-1" showStatus isUnread={false} prDisplay={review} />
     )
 
     expect(markup).toContain('Needs permission')
@@ -497,41 +283,9 @@ describe('WorktreeCardStatusSlot', () => {
     expect(markup).not.toContain('PR checks: Failed')
   })
 
-  it('keeps unread ahead of PR status by default', () => {
+  it('overlays an unread badge on PR status', () => {
     const markup = renderToStaticMarkup(
-      <WorktreeCardStatusSlot
-        worktreeId="wt-1"
-        showStatus
-        showUnreadAction
-        isUnread
-        unreadTooltip="Mark as read"
-        onPointerDown={vi.fn()}
-        onToggleUnread={vi.fn()}
-        prDisplay={review}
-      />
-    )
-
-    expect(markup).toContain('aria-label="Mark as read"')
-    expect(markup).toContain('Mark as read')
-    expect(markup).not.toContain('Active · Mark as read')
-    expect(markup).not.toContain('PR checks: Failed')
-    expect(markup).not.toContain('bg-emerald-500')
-    expect(markup).toContain('text-amber-500')
-  })
-
-  it('overlays an unread badge on PR status when new card style is on', () => {
-    const markup = renderToStaticMarkup(
-      <WorktreeCardStatusSlot
-        worktreeId="wt-1"
-        showStatus
-        showUnreadAction
-        isUnread
-        unreadTooltip="Mark as read"
-        onPointerDown={vi.fn()}
-        onToggleUnread={vi.fn()}
-        prDisplay={review}
-        newCardStyle
-      />
+      <WorktreeCardStatusSlot worktreeId="wt-1" showStatus isUnread prDisplay={review} />
     )
 
     expect(markup).not.toContain('aria-label="Mark as read"')
@@ -549,20 +303,11 @@ describe('WorktreeCardStatusSlot', () => {
     expect(markup).not.toContain('data-tooltip-root')
   })
 
-  it('overlays an unread badge on the sleeping moon in new card style', () => {
+  it('overlays an unread badge on the sleeping moon', () => {
     mocks.status = 'done'
     mocks.sleeping = true
     const markup = renderToStaticMarkup(
-      <WorktreeCardStatusSlot
-        worktreeId="wt-1"
-        showStatus
-        showUnreadAction
-        isUnread
-        unreadTooltip="Mark as read"
-        onPointerDown={vi.fn()}
-        onToggleUnread={vi.fn()}
-        newCardStyle
-      />
+      <WorktreeCardStatusSlot worktreeId="wt-1" showStatus isUnread />
     )
 
     expect(markup).toContain('Sleeping · Unread')

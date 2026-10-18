@@ -1,7 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import { getWorktreeCardModeProperties } from '../../../../shared/constants'
 import type { PersistedUIState } from '../../../../shared/persisted-ui-state-types'
-import type { AppState } from '../types'
 import { createUIStore, makePersistedUI } from './ui-slice-test-harness'
 
 const mocks = vi.hoisted(() => ({
@@ -807,56 +805,6 @@ describe('createUISlice hydratePersistedUI', () => {
     const expected = { githubMode: 'project', linearPreset: 'all', githubItemsPreset: 'my-prs' }
     expect(store.getState().taskResumeState).toEqual(expected)
     expect(setUI).toHaveBeenCalledWith({ taskResumeState: expected })
-  })
-
-  it('sets Default worktree card mode with matching settings and UI writes', () => {
-    const setUI = vi.fn().mockResolvedValue(undefined)
-    const setSettings = vi.fn().mockResolvedValue({ compactWorktreeCards: false })
-    vi.stubGlobal('window', {
-      api: { ui: { set: setUI }, settings: { set: setSettings } }
-    })
-    const store = createUIStore()
-    store.setState({
-      settings: { compactWorktreeCards: true } as AppState['settings'],
-      worktreeCardProperties: ['status', 'branch']
-    })
-
-    store.getState().setWorktreeCardMode('Default')
-
-    const expected = getWorktreeCardModeProperties('Default')
-    expect(store.getState().settings?.compactWorktreeCards).toBe(false)
-    expect(store.getState().worktreeCardProperties).toEqual(expected)
-    expect(setSettings).toHaveBeenCalledWith({ compactWorktreeCards: false })
-    expect(setUI).toHaveBeenCalledWith({
-      worktreeCardProperties: expected,
-      _worktreeCardModeDefaulted: true
-    })
-  })
-
-  it('sets Compact worktree card mode and removes migrated branch', () => {
-    const setUI = vi.fn().mockResolvedValue(undefined)
-    const setSettings = vi.fn().mockResolvedValue({ compactWorktreeCards: true })
-    vi.stubGlobal('window', {
-      api: { ui: { set: setUI }, settings: { set: setSettings } }
-    })
-    const store = createUIStore()
-    store.setState({
-      settings: { compactWorktreeCards: false } as AppState['settings'],
-      worktreeCardProperties: ['status', 'branch', 'inline-agents']
-    })
-
-    store.getState().setWorktreeCardMode('Compact')
-
-    const expected = getWorktreeCardModeProperties('Compact')
-    expect(store.getState().settings?.compactWorktreeCards).toBe(true)
-    expect(store.getState().worktreeCardProperties).toEqual(expected)
-    expect(store.getState().worktreeCardProperties).not.toContain('branch')
-    expect(store.getState().worktreeCardProperties).not.toContain('inline-agents')
-    expect(setSettings).toHaveBeenCalledWith({ compactWorktreeCards: true })
-    expect(setUI).toHaveBeenCalledWith({
-      worktreeCardProperties: expected,
-      _worktreeCardModeDefaulted: true
-    })
   })
 
   it('sets custom worktree card properties', () => {

@@ -77,14 +77,12 @@ describe('single linked reference rich hover details', () => {
         repo: referenceRepo,
         settings: null,
         projectGroups: [],
-        cardProps: ['linear-issue'],
-        newCardStyle: false
+        cardProps: ['linear-issue']
       })
       return {
         review,
         linked: useWorktreeCardLinkedDetails({
           worktree: workspace,
-          newCardStyle: false,
           deleteState: undefined,
           ...review
         })

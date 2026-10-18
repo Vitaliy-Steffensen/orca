@@ -4,6 +4,7 @@ import { useAppStore } from '@/store'
 import { resolveWorktreeRowOpenInRuntimeOwner } from '@/lib/worktree-row-open-in-owner'
 import type { Worktree } from '../../../../shared/worktree/types'
 import { WorktreeOpenInSubMenu } from './WorktreeOpenInMenu'
+import { getWorkspaceReferenceOpenTargets } from './workspace-reference-open-targets'
 
 /** Open in submenu for one sidebar row, guarded by the host that owns that row. */
 export function WorktreeRowOpenInSubMenu({
@@ -11,7 +12,7 @@ export function WorktreeRowOpenInSubMenu({
   connectionId,
   disabled
 }: {
-  worktree: Pick<Worktree, 'id' | 'path' | 'hostId' | 'runtimeOwnerEnvironmentId'>
+  worktree: Worktree
   connectionId: string | null
   disabled?: boolean
 }): React.JSX.Element {
@@ -24,6 +25,7 @@ export function WorktreeRowOpenInSubMenu({
       runtimeEnvironmentId={owner.runtimeEnvironmentId}
       ownerUnresolved={owner.ownerUnresolved}
       disabled={disabled}
+      references={getWorkspaceReferenceOpenTargets(worktree)}
     />
   )
 }
