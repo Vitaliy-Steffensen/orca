@@ -1,10 +1,13 @@
 import { useAppStore } from '@/store'
+import { startWorkspaceRun } from '@/lib/start-workspace-run'
 import { persistAgentLaunchTabOrder } from '@/lib/launch-agent-tab-order'
 import { launchAgentInNewTab } from '@/lib/launch-agent-in-new-tab'
 import { newAgentLaunchRequestId } from '@/lib/agent-launch-request-id'
 import {
   flattenTerminalQuickCommand,
   isTerminalAgentQuickCommand,
+  isTerminalCommandQuickCommand,
+  isWorkspaceRunQuickCommand,
   supportsTerminalAgentQuickCommand
 } from '../../../shared/terminal-quick-commands'
 import type { TerminalQuickCommand } from '../../../shared/terminal-quick-command-types'
@@ -61,6 +64,14 @@ export function runQuickCommandInNewTab({
   historyId = command.id
 }: RunQuickCommandInNewTabArgs): { tabId: string } | null {
   const targetGroupId = groupId ?? undefined
+  if (isWorkspaceRunQuickCommand(command)) {
+    if (!command.services.some((service) => service.command.trim())) {
+      return null
+    }
+    void startWorkspaceRun({ worktreeId, command })
+    return null
+  }
+
   if (isTerminalAgentQuickCommand(command)) {
     if (!command.prompt.trim() || !supportsTerminalAgentQuickCommand(command.agent)) {
       return null
@@ -98,7 +109,7 @@ export function runQuickCommandInNewTab({
 
   // Why: a whitespace-only command would still spawn a terminal but feed it an
   // empty string, leaving the user with an unexplained blank tab. Refuse early.
-  if (!command.command.trim()) {
+  if (!isTerminalCommandQuickCommand(command) || !command.command.trim()) {
     return null
   }
   const store = useAppStore.getState()

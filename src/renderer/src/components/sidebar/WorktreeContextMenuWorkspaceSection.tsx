@@ -4,9 +4,10 @@ import { translate } from '@/i18n/i18n'
 import type { WorkspaceStatusDefinition } from '../../../../shared/worktree/types'
 import type { WorkspaceAutonomy } from '../../../../shared/workspace-autonomy'
 import { WorktreeAutonomyMenuItems } from './WorktreeAutonomyMenuItems'
+import { WorktreeContextMenuRunItem } from './WorktreeContextMenuRunItem'
 import { WorktreeStatusMenuItems } from './WorktreeStatusMenuItems'
 
-/** The top of the card menu: rename, status, and autonomy. */
+/** The top of the card menu: rename, status, autonomy, and Run. */
 export function WorktreeContextMenuWorkspaceSection(props: {
   contextWorkspaceAutonomy: string
   contextWorkspaceStatus: string
@@ -16,7 +17,9 @@ export function WorktreeContextMenuWorkspaceSection(props: {
   onAssignWorkspaceAutonomy: (autonomy: WorkspaceAutonomy) => void
   onAssignWorkspaceStatus: (status: string) => void
   onRename: () => void
+  repoId: string
   workspaceStatuses: readonly WorkspaceStatusDefinition[]
+  worktreeId: string
 }) {
   return (
     <>
@@ -42,6 +45,13 @@ export function WorktreeContextMenuWorkspaceSection(props: {
         isMultiContext={props.isMultiContext}
         onAssignWorkspaceAutonomy={props.onAssignWorkspaceAutonomy}
       />
+      {!props.isMultiContext && (
+        <WorktreeContextMenuRunItem
+          worktreeId={props.worktreeId}
+          repoId={props.repoId}
+          disabled={props.isDeleting}
+        />
+      )}
     </>
   )
 }

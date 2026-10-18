@@ -11,6 +11,7 @@ import {
   WorktreeCardMetaBadges
 } from './WorktreeCardMeta'
 import { WorktreeCardPortsDetails, WorktreeCardPortsTrigger } from './WorktreeCardPorts'
+import { WorktreeCardRunState } from './WorktreeCardRunState'
 import type { WorktreeCardController } from './use-worktree-card-controller'
 
 export function buildWorktreeCardPresentation(card: WorktreeCardController) {
@@ -73,7 +74,10 @@ export function buildWorktreeCardPresentation(card: WorktreeCardController) {
     canUnlinkReview,
     handleUnlinkReview,
     detailsHoverControl,
-    showDeleteQuickAction
+    showDeleteQuickAction,
+    showRun,
+    runState,
+    hasWorkspaceRunAction
   } = card
 
   // Why: pinned trees mix repos, so the repo icon shows regardless of groupBy's hideRepoBadge.
@@ -99,8 +103,9 @@ export function buildWorktreeCardPresentation(card: WorktreeCardController) {
   // Why: the slot owns the unread/status lane; legacy keeps the bell toggle, the new card keeps the glyph passive.
   const showCombinedStatusSlot = showStatus
   const showTitleRowPrimary = compactCards && worktree.isMainWorktree && !isFolder
-  const showMetaRowDetails = !newCardStyle && !compactCards && (hasDetails || hasPorts)
-  const showTitleRowIndicators = (newCardStyle || compactCards) && (hasDetails || hasPorts)
+  const showMetaRowDetails = !newCardStyle && !compactCards && (hasDetails || hasPorts || showRun)
+  const showTitleRowIndicators =
+    (newCardStyle || compactCards) && (hasDetails || hasPorts || showRun)
   // Why: grouped views can hide the repo badge; don't reserve a blank metadata lane unless there's real content.
   const hasDetailedMetaRowContent = Boolean(
     (showRepoBadgeInMetaRow && repo) ||
@@ -116,7 +121,7 @@ export function buildWorktreeCardPresentation(card: WorktreeCardController) {
   const hasMetaRow = compactCards
     ? hasMetadataBadge || cacheStartedAt != null
     : hasDetailedMetaRowContent
-  const showHeaderActions = showTitleRowPrimary || showDeleteQuickAction
+  const showHeaderActions = showTitleRowPrimary || showDeleteQuickAction || hasWorkspaceRunAction
   // Why: normalize the title once so title/branch de-dupe and identity-only hover eligibility stay in sync.
   const trimmedVisibleCardTitle = visibleCardTitle.trim()
   const showBranchIdentityHover = newCardStyle
@@ -177,8 +182,9 @@ export function buildWorktreeCardPresentation(card: WorktreeCardController) {
           : showIssue
   )
   const detailsAndPortsContent =
-    hasDetails || hasPorts ? (
+    hasDetails || hasPorts || showRun ? (
       <div className="flex shrink-0 items-center gap-1">
+        {showRun && runState ? <WorktreeCardRunState state={runState} /> : null}
         {hasPorts && <WorktreeCardPortsTrigger ports={workspacePorts} />}
         {hasDetails && (
           <WorktreeCardMetaBadges

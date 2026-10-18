@@ -8,6 +8,7 @@ Adding a feature here? See the rule at the top of [`CLAUDE.md`](./CLAUDE.md).
 
 ## Added in this repo
 
+- Run on a workspace card starts that project's dev commands together, shows booting then running, and can open the app and sign in.
 - ⇧⌘H reveals the file you are looking at in whichever list is in front of you — the Source Control
   changes, the Explorer tree, or the combined diff's own file tree — and flashes the row.
 - Your `~/.orca/themes/` VS Code theme also colours notebook cells, code excerpts, combined-diff

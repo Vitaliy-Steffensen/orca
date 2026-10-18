@@ -3,7 +3,10 @@ import type { ManagedPane, PaneManager } from '@/lib/pane-manager/pane-manager'
 import type { PtyTransport } from './pty-transport-types'
 import type { PaneCwdMap } from './resolve-split-cwd'
 import type { TerminalQuickCommand } from '../../../../shared/terminal-quick-command-types'
-import { isTerminalAgentQuickCommand } from '../../../../shared/terminal-quick-commands'
+import {
+  isTerminalAgentQuickCommand,
+  isWorkspaceRunQuickCommand
+} from '../../../../shared/terminal-quick-commands'
 import { sendTerminalQuickCommandToPane } from './terminal-quick-command-dispatch'
 import type { TerminalPasteSource } from './terminal-paste-model'
 import { runQuickCommandInNewTab } from '@/lib/run-quick-command-in-new-tab'
@@ -231,7 +234,7 @@ export function useTerminalPaneContextMenu({
     copyAgentSessionContextFromMenuPane(resolveMenuPane())
 
   const onQuickCommand = (command: TerminalQuickCommand, historyId: string): void => {
-    if (isTerminalAgentQuickCommand(command)) {
+    if (isTerminalAgentQuickCommand(command) || isWorkspaceRunQuickCommand(command)) {
       runQuickCommandInNewTab({ command, worktreeId, groupId, historyId })
       return
     }

@@ -11,6 +11,8 @@ import { useWorktreeCardLinkedDetails } from './use-worktree-card-linked-details
 import { useWorktreeCardReviewDetails } from './use-worktree-card-review-details'
 import { useWorktreeCardSecondaryDetails } from './use-worktree-card-secondary-details'
 import { useWorktreeCardWorkspaceActions } from './use-worktree-card-workspace-actions'
+import { useAppStore } from '@/store'
+import { workspaceRunCommandsForWorktree } from '@/lib/workspace-run-command'
 
 export function useWorktreeCardController(props: ResolvedWorktreeCardProps) {
   const { worktree, repo } = props
@@ -45,6 +47,14 @@ export function useWorktreeCardController(props: ResolvedWorktreeCardProps) {
   const showCli = foundation.cardProps.includes('cli')
   const showComment = foundation.cardProps.includes('comment')
   const showPorts = foundation.cardProps.includes('ports')
+  const workspaceRunEntry = useAppStore(
+    (state) => state.workspaceRunByWorktreeId[worktree.id] ?? null
+  )
+  const workspaceRunCommand = useAppStore(
+    (state) => workspaceRunCommandsForWorktree(state, worktree.repoId)[0] ?? null
+  )
+  const showRun = foundation.cardProps.includes('run') && workspaceRunEntry !== null
+  const hasWorkspaceRunAction = workspaceRunCommand !== null || workspaceRunEntry !== null
   const shouldRefreshHostedReview = foundation.newCardStyle ? showStatus : showPR
   const detailsHoverControl = useWorktreeCardDetailsHoverControl()
   const hoverDetailsOpen = detailsHoverControl.hoverOpen
@@ -176,6 +186,10 @@ export function useWorktreeCardController(props: ResolvedWorktreeCardProps) {
     showCli,
     showComment,
     showPorts,
+    showRun,
+    runState: workspaceRunEntry?.state ?? null,
+    hasWorkspaceRunAction,
+    workspaceRunCommand,
     shouldRefreshHostedReview,
     ...activation,
     showDeleteQuickAction,

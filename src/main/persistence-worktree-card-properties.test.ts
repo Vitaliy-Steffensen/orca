@@ -81,6 +81,7 @@ describe('Store', () => {
       'pr',
       'comment',
       'ports',
+      'run',
       'inline-agents',
       'host'
     ])
@@ -119,6 +120,7 @@ describe('Store', () => {
       'pr',
       'comment',
       'ports',
+      'run',
       'inline-agents',
       'host'
     ])
@@ -150,6 +152,7 @@ describe('Store', () => {
       'cli',
       'comment',
       'ports',
+      'run',
       'inline-agents',
       'host'
     ])
@@ -181,6 +184,7 @@ describe('Store', () => {
       'jira-issue',
       'pr',
       'ports',
+      'run',
       'inline-agents',
       'host'
     ])
@@ -204,7 +208,7 @@ describe('Store', () => {
     })
     const store = await createStore()
 
-    expect(store.getUI().worktreeCardProperties).toEqual(['status', 'unread', 'pr', 'host'])
+    expect(store.getUI().worktreeCardProperties).toEqual(['status', 'unread', 'pr', 'run', 'host'])
     expect(store.getUI().worktreeCardProperties).not.toContain('branch')
     expect(store.getUI().worktreeCardProperties).not.toContain('ports')
     expect(store.getUI().worktreeCardProperties).not.toContain('inline-agents')
@@ -273,6 +277,7 @@ describe('Store', () => {
       'pr',
       'comment',
       'ports',
+      'run',
       'host'
     ])
     expect(store.getUI().worktreeCardProperties).not.toContain('branch')
@@ -311,6 +316,7 @@ describe('Store', () => {
       'jira-issue',
       'pr',
       'ports',
+      'run',
       'inline-agents',
       'host'
     ])
@@ -343,6 +349,7 @@ describe('Store', () => {
       'issue',
       'linear-issue',
       'pr',
+      'run',
       'host'
     ])
     expect(store.getUI().worktreeCardProperties).not.toContain('jira-issue')
@@ -454,7 +461,8 @@ describe('Store', () => {
         _inlineAgentsDefaultedForAllUsers: true,
         _expandedWorktreeCardPropertiesDefaulted: true,
         _jiraIssueWorktreeCardPropertyDefaulted: true,
-        _hostWorktreeCardPropertyDefaulted: true
+        _hostWorktreeCardPropertyDefaulted: true,
+        _runWorktreeCardPropertyDefaulted: true
       },
       githubCache: { pr: {}, issue: {} },
       workspaceSession: {}

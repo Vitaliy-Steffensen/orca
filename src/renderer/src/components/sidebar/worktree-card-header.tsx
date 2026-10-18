@@ -14,6 +14,7 @@ import type { WorktreeCardPresentation } from './worktree-card-presentation'
 import { WorktreeCardSshHostControl } from './WorktreeCardSshHostControl'
 import { WorktreeTitleInlineRename } from './WorktreeTitleInlineRename'
 import { WorktreeCardPrAuthor } from './worktree-card-pr-author'
+import { WorktreeCardRunAction } from './WorktreeCardRunAction'
 import { isAutonomousWorkspace } from '../../../../shared/workspace-autonomy'
 import type { WorktreeCardController } from './use-worktree-card-controller'
 
@@ -313,6 +314,12 @@ export function WorktreeCardHeader({
               </TooltipContent>
             </Tooltip>
           )}
+
+          <WorktreeCardRunAction
+            worktreeId={card.worktree.id}
+            command={card.workspaceRunCommand}
+            active={card.runState !== null}
+          />
 
           {showDeleteQuickAction && (
             <Tooltip>

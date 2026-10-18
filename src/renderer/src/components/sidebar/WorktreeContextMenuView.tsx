@@ -168,6 +168,8 @@ export default function WorktreeContextMenuView({ model }: { model: WorktreeCont
             onAssignWorkspaceStatus={handleAssignWorkspaceStatus}
             onRename={handleRename}
             workspaceStatuses={workspaceStatuses}
+            worktreeId={worktree.id}
+            repoId={worktree.repoId}
           />
           <DropdownMenuSeparator />
           {!isMultiContext && (

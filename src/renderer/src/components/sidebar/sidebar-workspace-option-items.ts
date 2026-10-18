@@ -111,6 +111,13 @@ const BASE_WORKTREE_CARD_PROPERTY_OPTIONS: WorktreeCardPropertyOption[] = [
     }
   },
   {
+    id: 'run',
+    properties: ['run'],
+    get label() {
+      return translate('auto.components.sidebar.SidebarWorkspaceOptionsMenu.run', 'Run')
+    }
+  },
+  {
     id: 'ports',
     properties: ['ports'],
     get label() {
