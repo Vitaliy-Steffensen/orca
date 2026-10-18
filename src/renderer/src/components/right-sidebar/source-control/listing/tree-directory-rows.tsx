@@ -16,14 +16,14 @@ import {
   SOURCE_CONTROL_TREE_INDENT_PX
 } from './row-layout'
 
-/** Shared chrome for both directory rows: indentation, collapse toggle, folder icon, name, file count. */
+/** Shared chrome for both directory rows: indentation, collapse toggle, folder icon, and name. */
 function SourceControlTreeDirectoryHeader({
   node,
   isCollapsed,
   onToggle,
   children
 }: {
-  node: Pick<SourceControlTreeDirectoryNode, 'depth' | 'name' | 'fileCount'>
+  node: Pick<SourceControlTreeDirectoryNode, 'depth' | 'name'>
   isCollapsed: boolean
   onToggle: () => void
   children?: React.ReactNode
@@ -47,9 +47,6 @@ function SourceControlTreeDirectoryHeader({
         <MaterialFolderIcon path={node.name} open={!isCollapsed} className="size-4" />
         <span className="min-w-0 flex-1 truncate">{node.name}</span>
       </button>
-      <span className="w-4 shrink-0 text-center text-[10px] font-bold tabular-nums text-muted-foreground/80">
-        {node.fileCount}
-      </span>
       {children}
     </div>
   )
@@ -84,10 +81,11 @@ export function SourceControlTreeDirectoryRow({
   const canStage = !hideBulkActions && actionPaths.stagePaths.length > 0
   const canUnstage = !hideBulkActions && actionPaths.unstagePaths.length > 0
   const canDiscard = !hideBulkActions && actionPaths.discardPaths.length > 0
+  const canDeleteUntracked = !hideBulkActions && actionPaths.untrackedDiscardPaths.length > 0
 
   return (
     <SourceControlTreeDirectoryHeader node={node} isCollapsed={isCollapsed} onToggle={onToggle}>
-      {(canDiscard || canStage || canUnstage) && (
+      {(canDiscard || canDeleteUntracked || canStage || canUnstage) && (
         <div className={SOURCE_CONTROL_ROW_ACTION_OVERLAY_CLASS}>
           {canDiscard && (
             <ActionButton
@@ -106,6 +104,20 @@ export function SourceControlTreeDirectoryRow({
               onClick={(event) => {
                 event.stopPropagation()
                 onRequestDiscardPaths(node.area, actionPaths.discardPaths)
+              }}
+              disabled={isExecutingBulk}
+            />
+          )}
+          {canDeleteUntracked && (
+            <ActionButton
+              icon={Trash}
+              title={translate(
+                'auto.components.right.sidebar.SourceControl.9b367363b6',
+                'Delete untracked in folder'
+              )}
+              onClick={(event) => {
+                event.stopPropagation()
+                onRequestDiscardPaths('untracked', actionPaths.untrackedDiscardPaths)
               }}
               disabled={isExecutingBulk}
             />
@@ -151,7 +163,7 @@ export function SourceControlBranchTreeDirectoryRow({
   onToggle
 }: {
   // Fork: only the header fields, so the all-changes tree can reuse this row.
-  node: Pick<BranchSourceControlTreeDirectoryNode, 'depth' | 'name' | 'fileCount'>
+  node: Pick<BranchSourceControlTreeDirectoryNode, 'depth' | 'name'>
   isCollapsed: boolean
   onToggle: () => void
 }): React.JSX.Element {

@@ -82,3 +82,22 @@ describe('a folder workspace create with a startup agent', () => {
     expect(options).not.toHaveProperty('leafId')
   })
 })
+
+it('persists folder intent and clearance before publishing the workspace', async () => {
+  const { deps } = createDeps()
+  const persist = vi.spyOn(deps.store, 'setWorktreeMeta')
+  await createRuntimeFolderWorktree({
+    request: {
+      repoSelector: 'repo-1',
+      name: 'question',
+      workspaceIntent: 'question',
+      workspaceAutonomy: 'supervised'
+    },
+    repo,
+    deps
+  })
+  expect(persist).toHaveBeenCalledWith(
+    expect.any(String),
+    expect.objectContaining({ workspaceIntent: 'question', workspaceAutonomy: 'supervised' })
+  )
+})

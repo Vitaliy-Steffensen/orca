@@ -69,7 +69,14 @@ export function getSourceControlSectionViewAction(
       ? { kind: 'combined-diff', area, entries: section.items }
       : { kind: 'combined-diff', entries: section.items }
   }
-  return { kind: 'combined-diff', area: section.area, entries: section.items }
+  const [firstItem] = section.items
+  const area =
+    firstItem && section.items.every((item) => item.area === firstItem.area)
+      ? firstItem.area
+      : undefined
+  return area
+    ? { kind: 'combined-diff', area, entries: section.items }
+    : { kind: 'combined-diff', entries: section.items }
 }
 
 export type SplitSourceControlGroups = {
@@ -109,11 +116,21 @@ export function buildSourceControlDisplaySectionsFromSplit(
     sections.push({ id: 'conflicts', area: 'unstaged', items: pinnedConflicts })
   }
 
+  // Untracked files are not staged, so they share the Unstaged section. Each entry keeps its
+  // own area, which is what the per-row Stage / Discard / Delete buttons read.
+  const unstagedItems: GitStatusEntry[] = []
   for (const area of order) {
-    const items = normalGroups[area]
-    if (items.length > 0) {
-      sections.push({ id: area, area, items })
+    if (area === 'staged') {
+      const items = normalGroups.staged
+      if (items.length > 0) {
+        sections.push({ id: 'staged', area: 'staged', items })
+      }
+      continue
     }
+    unstagedItems.push(...normalGroups[area])
+  }
+  if (unstagedItems.length > 0) {
+    sections.push({ id: 'unstaged', area: 'unstaged', items: unstagedItems })
   }
 
   return sections

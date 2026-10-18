@@ -16,6 +16,7 @@ import {
 } from '@/lib/workspace-port-scan-debounce'
 import type { WorkspacePortScanResult } from '../../../../shared/workspace-ports'
 import { buildExecutionHostRegistry } from '../../../../shared/execution-host-registry'
+import { portScanIntervalMsForRunState } from '@/lib/workspace-run-port-poll-interval'
 
 const WORKSPACE_PORT_SCAN_INTERVAL_MS = 30_000
 const WORKSPACE_PORT_ADVERTISED_URL_SETTLE_MS = 1_000
@@ -49,6 +50,14 @@ export function WorkspacePortScanner({ enabled = true }: { enabled?: boolean }):
   const generationRef = useRef(0)
   const wasEnabledRef = useRef(false)
   const lastRefreshStartedAtByKeyRef = useRef(new Map<string, number>())
+  const hasBootingRun = useAppStore((state) =>
+    Object.values(state.workspaceRunByWorktreeId).some((entry) => entry.state === 'booting')
+  )
+  const scanIntervalMs = hasBootingRun
+    ? portScanIntervalMsForRunState(true)
+    : WORKSPACE_PORT_SCAN_INTERVAL_MS
+  const scanIntervalMsRef = useRef(scanIntervalMs)
+  scanIntervalMsRef.current = scanIntervalMs
   const scanTargetsRef = useRef<RuntimeClientTarget[]>([])
   const portScanDebounceRef = useRef<PortScanDebounceState>(new Map())
 
@@ -94,9 +103,7 @@ export function WorkspacePortScanner({ enabled = true }: { enabled?: boolean }):
             // healthy hosts' remote scans.
             const key = workspacePortScanKeyForTarget(target)
             const lastStartedAt = lastRefreshStartedAtByKeyRef.current.get(key)
-            return (
-              lastStartedAt === undefined || now - lastStartedAt >= WORKSPACE_PORT_SCAN_INTERVAL_MS
-            )
+            return lastStartedAt === undefined || now - lastStartedAt >= scanIntervalMsRef.current
           })
       if (targets.length === 0) {
         return Promise.resolve()
@@ -243,7 +250,7 @@ export function WorkspacePortScanner({ enabled = true }: { enabled?: boolean }):
         }
         void refresh({ force: true })
       },
-      intervalMs: WORKSPACE_PORT_SCAN_INTERVAL_MS
+      intervalMs: scanIntervalMs
     })
 
     return () => {
@@ -260,7 +267,8 @@ export function WorkspacePortScanner({ enabled = true }: { enabled?: boolean }):
     setWorkspacePortScan,
     setWorkspacePortScanProjection,
     setWorkspacePortScanRefreshing,
-    replaceWorkspacePortScans
+    replaceWorkspacePortScans,
+    scanIntervalMs
   ])
 
   useEffect(() => {

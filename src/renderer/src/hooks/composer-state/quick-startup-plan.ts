@@ -16,6 +16,7 @@ import {
 } from '@/lib/execution-host-facts'
 
 export type QuickComposerStartupInput = {
+  sessionOptions?: Readonly<Record<string, string>>
   agent: TuiAgent | null
   prompt: string
   draftPrompt: string | null | undefined
@@ -40,6 +41,8 @@ export function buildQuickComposerStartup(input: QuickComposerStartupInput): Qui
       ? null
       : buildAgentDraftLaunchPlan({
           agent,
+          sessionOptions: input.sessionOptions,
+          sessionOptionsOverrideAgentArgs: Boolean(input.sessionOptions),
           draft: draftPrompt,
           cmdOverrides: settings?.agentCmdOverrides ?? {},
           agentArgs: resolveTuiAgentLaunchArgs(agent, settings?.agentDefaultArgs),
@@ -65,6 +68,8 @@ export function buildQuickComposerStartup(input: QuickComposerStartupInput): Qui
     startupPlan = buildAgentStartupPlan({
       agent,
       prompt,
+      sessionOptions: input.sessionOptions,
+      sessionOptionsOverrideAgentArgs: Boolean(input.sessionOptions),
       cmdOverrides: settings?.agentCmdOverrides ?? {},
       agentArgs: resolveTuiAgentLaunchArgs(agent, settings?.agentDefaultArgs),
       agentEnv: resolveTuiAgentLaunchEnv(agent, settings?.agentDefaultEnv),

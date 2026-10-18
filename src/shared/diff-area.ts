@@ -18,8 +18,7 @@ const CI_PATH = /(?:^|[/\\])(?:\.github|\.circleci|\.buildkite|\.gitlab)(?:[/\\]
 const CI_FILE = /(?:^|[/\\])(?:Dockerfile|Jenkinsfile|lefthook\.ya?ml|docker-compose[^/\\]*)$/i
 const E2E_PATH = /(?:^|[/\\])(?:e2e|cypress|playwright)(?:[/\\]|$)/i
 const E2E_FILE = /\.e2e\.[^./\\]+$|(?:^|[/\\])(?:playwright|cypress)\.config\.[^./\\]+$/i
-const FE_PATH =
-  /(?:^|[/\\])(?:frontend|src[/\\]renderer|apps[/\\]web|packages[/\\]ui)(?:[/\\]|$)/i
+const FE_PATH = /(?:^|[/\\])(?:frontend|src[/\\]renderer|apps[/\\]web|packages[/\\]ui)(?:[/\\]|$)/i
 const FE_EXT = /\.(?:tsx|jsx|vue|svelte|css|scss|less)$/i
 
 /** CI and e2e win over a frontend extension, so a Playwright spec is not counted as UI. */

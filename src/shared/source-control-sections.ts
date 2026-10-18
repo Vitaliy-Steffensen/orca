@@ -12,6 +12,8 @@ export const SOURCE_CONTROL_SECTIONS = [
   { id: 'agent-notes', labelKey: 'sourceControlSections.agentNotes', label: 'Agent notes' },
   { id: 'agent-turns', labelKey: 'sourceControlSections.agentTurns', label: 'Agent turns' },
   { id: 'changes', labelKey: 'sourceControlSections.changes', label: 'Changes' },
+  { id: 'staged', labelKey: 'sourceControlSections.staged', label: 'Staged Changes' },
+  { id: 'unstaged', labelKey: 'sourceControlSections.unstaged', label: 'Unstaged Changes' },
   { id: 'commits', labelKey: 'sourceControlSections.commits', label: 'Commits' }
 ] as const
 

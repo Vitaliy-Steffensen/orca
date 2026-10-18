@@ -15,9 +15,7 @@ const NOW = Date.parse('2026-10-18T12:00:00.000Z')
 
 describe('resolveWorktreeCardFacts', () => {
   it('renders nothing for a workspace with no review and no priority', () => {
-    expect(
-      resolveWorktreeCardFacts({ cardProps: PROPERTIES, review: null, now: NOW })
-    ).toEqual([])
+    expect(resolveWorktreeCardFacts({ cardProps: PROPERTIES, review: null, now: NOW })).toEqual([])
   })
 
   it('shows the diff, the mix, a stack, unresolved comments, and an old pull request', () => {

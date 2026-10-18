@@ -9,6 +9,8 @@ import {
   getTerminalQuickCommandAction,
   getTerminalQuickCommandScope,
   isTerminalAgentQuickCommand,
+  isTerminalCommandQuickCommand,
+  isWorkspaceRunQuickCommand,
   supportsTerminalAgentQuickCommand
 } from '../../../../shared/terminal-quick-commands'
 import { createBrowserUuid } from '@/lib/browser-uuid'
@@ -50,6 +52,22 @@ type TerminalQuickCommandDialogProps = {
 
 const EMPTY_REPOS: Pick<Repo, 'id' | 'displayName' | 'path' | 'badgeColor'>[] = []
 
+function canSaveTerminalQuickCommand(draft: TerminalQuickCommand): boolean {
+  if (draft.label.trim().length === 0) {
+    return false
+  }
+  if (isTerminalAgentQuickCommand(draft)) {
+    return draft.prompt.trimEnd().length > 0 && supportsTerminalAgentQuickCommand(draft.agent)
+  }
+  if (isWorkspaceRunQuickCommand(draft)) {
+    return (
+      draft.services.length > 0 &&
+      draft.services.every((service) => service.command.trim().length > 0)
+    )
+  }
+  return draft.command.trimEnd().length > 0
+}
+
 export function createTerminalQuickCommandDraft(
   scope: TerminalQuickCommandScope = { type: 'global' }
 ): TerminalQuickCommand {
@@ -88,6 +106,7 @@ export function TerminalQuickCommandDialog({
   const selectedAction = getTerminalQuickCommandAction(draft)
   const selectedScope = getTerminalQuickCommandScope(draft)
   const isAgentAction = isTerminalAgentQuickCommand(draft)
+  const isRunAction = isWorkspaceRunQuickCommand(draft)
   const selectedRepo =
     selectedScope.type === 'repo'
       ? (repos.find((repo) => repo.id === selectedScope.repoId) ?? null)
@@ -110,7 +129,7 @@ export function TerminalQuickCommandDialog({
   const selectedAgent =
     isAgentAction && supportsTerminalAgentQuickCommand(draft.agent) ? draft.agent : fallbackAgent
 
-  const setAction = (action: 'terminal-command' | 'agent-prompt'): void => {
+  const setAction = (action: 'terminal-command' | 'agent-prompt' | 'workspace-run'): void => {
     setDraft((current) => {
       const next = switchTerminalQuickCommandDialogAction(current, action, draftMemoryRef.current)
       draftMemoryRef.current = next.memory
@@ -119,18 +138,17 @@ export function TerminalQuickCommandDialog({
   }
 
   const toggleAppendEnter = (): void => {
-    setDraft((current) =>
-      isTerminalAgentQuickCommand(current)
-        ? current
-        : (() => {
-            const appendEnter = !current.appendEnter
-            draftMemoryRef.current = {
-              ...draftMemoryRef.current,
-              terminalAppendEnter: appendEnter
-            }
-            return { ...current, appendEnter }
-          })()
-    )
+    setDraft((current) => {
+      if (!isTerminalCommandQuickCommand(current)) {
+        return current
+      }
+      const appendEnter = !current.appendEnter
+      draftMemoryRef.current = {
+        ...draftMemoryRef.current,
+        terminalAppendEnter: appendEnter
+      }
+      return { ...current, appendEnter }
+    })
   }
 
   const saveDraft = (): void => {
@@ -143,31 +161,48 @@ export function TerminalQuickCommandDialog({
           prompt: draft.prompt.trimEnd(),
           scope: selectedScope
         }
-      : {
-          id: draft.id,
-          label: draft.label.trim(),
-          action: 'terminal-command',
-          command: draft.command.trimEnd(),
-          appendEnter: draft.appendEnter,
-          scope: selectedScope
-        }
-    if (
-      !next.label ||
-      (isTerminalAgentQuickCommand(next)
-        ? !next.prompt.trim() || !supportsTerminalAgentQuickCommand(next.agent)
-        : !next.command.trim())
-    ) {
+      : isWorkspaceRunQuickCommand(draft)
+        ? {
+            id: draft.id,
+            label: draft.label.trim(),
+            action: 'workspace-run',
+            services: draft.services.map((service) => ({
+              label: service.label.trim(),
+              command: service.command.trimEnd(),
+              ...(service.readyPort !== undefined ? { readyPort: service.readyPort } : {})
+            })),
+            readyTimeoutSeconds: draft.readyTimeoutSeconds,
+            openBrowser: draft.openBrowser === true,
+            ...(draft.browserServiceIndex !== undefined
+              ? { browserServiceIndex: draft.browserServiceIndex }
+              : {}),
+            ...(draft.browserPath?.trim() ? { browserPath: draft.browserPath.trim() } : {}),
+            ...(draft.autoLogin
+              ? {
+                  autoLogin: {
+                    ...draft.autoLogin,
+                    email: draft.autoLogin.email.trim()
+                  }
+                }
+              : {}),
+            scope: selectedScope
+          }
+        : {
+            id: draft.id,
+            label: draft.label.trim(),
+            action: 'terminal-command',
+            command: draft.command.trimEnd(),
+            appendEnter: draft.appendEnter,
+            scope: selectedScope
+          }
+    if (!canSaveTerminalQuickCommand(next)) {
       return
     }
     onSave(next)
     onOpenChange(false)
   }
 
-  const canSave =
-    draft.label.trim().length > 0 &&
-    (isAgentAction
-      ? draft.prompt.trimEnd().length > 0 && supportsTerminalAgentQuickCommand(draft.agent)
-      : draft.command.trimEnd().length > 0)
+  const canSave = canSaveTerminalQuickCommand(draft)
   const submitShortcutLabel = getScreenSubmitShortcutLabel()
 
   return (
@@ -235,6 +270,7 @@ export function TerminalQuickCommandDialog({
           <TerminalQuickCommandContentSection
             draft={draft}
             isAgentAction={isAgentAction}
+            isRunAction={isRunAction}
             selectedAgent={selectedAgent}
             draftMemoryRef={draftMemoryRef}
             setDraft={setDraft}

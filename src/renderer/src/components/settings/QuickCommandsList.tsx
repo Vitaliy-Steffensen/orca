@@ -7,7 +7,8 @@ import type {
 import {
   getTerminalQuickCommandBody,
   getTerminalQuickCommandScope,
-  isTerminalAgentQuickCommand
+  isTerminalAgentQuickCommand,
+  isWorkspaceRunQuickCommand
 } from '../../../../shared/terminal-quick-commands'
 import { AgentIcon, getAgentLabel } from '@/lib/agent-catalog'
 import { useClipboardTextCopyFeedback } from '@/hooks/use-clipboard-text-copy-feedback'
@@ -32,6 +33,9 @@ function getScopeLabel(
 function getRunModeLabel(command: TerminalQuickCommand): string {
   if (isTerminalAgentQuickCommand(command)) {
     return translate('auto.components.settings.QuickCommandsPane.4ccc63da87', 'Agent')
+  }
+  if (isWorkspaceRunQuickCommand(command)) {
+    return translate('auto.components.settings.QuickCommandsList.runMode', 'Run')
   }
   return command.appendEnter
     ? translate('auto.components.settings.QuickCommandsPane.9b3e338d62', 'Enter')

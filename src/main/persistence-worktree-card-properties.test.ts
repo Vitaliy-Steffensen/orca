@@ -89,6 +89,7 @@ describe('Store', () => {
       'pr-open-age',
       'comment',
       'ports',
+      'run',
       'inline-agents',
       'host'
     ])
@@ -134,6 +135,7 @@ describe('Store', () => {
       'pr-open-age',
       'comment',
       'ports',
+      'run',
       'inline-agents',
       'host'
     ])
@@ -174,6 +176,7 @@ describe('Store', () => {
       'cli',
       'comment',
       'ports',
+      'run',
       'inline-agents',
       'host'
     ])
@@ -212,6 +215,7 @@ describe('Store', () => {
       'unresolved-comments',
       'pr-open-age',
       'ports',
+      'run',
       'inline-agents',
       'host'
     ])
@@ -246,6 +250,7 @@ describe('Store', () => {
       'stack',
       'unresolved-comments',
       'pr-open-age',
+      'run',
       'host'
     ])
     expect(store.getUI().worktreeCardProperties).not.toContain('branch')
@@ -323,6 +328,7 @@ describe('Store', () => {
       'pr-open-age',
       'comment',
       'ports',
+      'run',
       'host'
     ])
     expect(store.getUI().worktreeCardProperties).not.toContain('branch')
@@ -368,6 +374,7 @@ describe('Store', () => {
       'unresolved-comments',
       'pr-open-age',
       'ports',
+      'run',
       'inline-agents',
       'host'
     ])
@@ -407,6 +414,7 @@ describe('Store', () => {
       'stack',
       'unresolved-comments',
       'pr-open-age',
+      'run',
       'host'
     ])
     expect(store.getUI().worktreeCardProperties).not.toContain('jira-issue')
@@ -515,7 +523,8 @@ describe('Store', () => {
         _inlineAgentsDefaultedForAllUsers: true,
         _expandedWorktreeCardPropertiesDefaulted: true,
         _jiraIssueWorktreeCardPropertyDefaulted: true,
-        _hostWorktreeCardPropertyDefaulted: true
+        _hostWorktreeCardPropertyDefaulted: true,
+        _runWorktreeCardPropertyDefaulted: true
       },
       githubCache: { pr: {}, issue: {} },
       workspaceSession: {}

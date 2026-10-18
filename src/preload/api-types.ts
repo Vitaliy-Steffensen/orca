@@ -68,6 +68,7 @@ import type { UiWindowApi } from './api/ui-window-api'
 import type { UpdaterApi } from './api/updater-api'
 import type { WorkspaceCleanupApi, WorkspaceSpaceApi } from './api/workspace-cleanup-api'
 import type { LocalhostWorktreeLabelsApi, WorkspacePortsApi } from './api/workspace-port-api'
+import type { WorkspaceRunCredentialsApi } from './api/workspace-run-credentials-api'
 import type { WorkspaceSessionApi } from './api/workspace-session-api'
 import type {
   ClaudeRemoteSessionUrlResult,
@@ -106,6 +107,7 @@ export type PreloadApi = {
   workspaceCleanup: WorkspaceCleanupApi
   workspaceSpace: WorkspaceSpaceApi
   workspacePorts: WorkspacePortsApi
+  workspaceRunCredentials: WorkspaceRunCredentialsApi
   pty: PtyApi
   feedback: FeedbackApi
   crashReports: CrashReportsApi

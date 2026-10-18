@@ -1,3 +1,8 @@
+import {
+  normalizeNativeChatPromptMarks,
+  SIMPLIFY_PROMPT_MARK_ID
+} from '../../../../shared/native-chat-prompt-marks'
+import type { WorkspaceMode } from '../../../../shared/workspace-mode'
 import type { ComposerModel } from './composer-model'
 
 type FolderSubmitOrchestrationInput = Pick<
@@ -15,6 +20,7 @@ type FolderSubmitOrchestrationInput = Pick<
   | 'linkedWorkItem'
   | 'name'
   | 'note'
+  | 'agentPrompt'
   | 'onCreated'
   | 'persistDraft'
   | 'resolvePendingSmartGitHubSubmit'
@@ -55,6 +61,7 @@ export function useFolderSubmitOrchestration(input: FolderSubmitOrchestrationInp
     isSubmissionCancelled,
     lastAutoNameRef,
     linkedWorkItem,
+    agentPrompt,
     name,
     note,
     onCreated,
@@ -70,7 +77,11 @@ export function useFolderSubmitOrchestration(input: FolderSubmitOrchestrationInp
   const { canResolveFolderSmartGitHubSubmit } = decisions
 
   const submitFolderTarget = useCallback(
-    async (requestedAgent: TuiAgent | null): Promise<void> => {
+    async (
+      requestedAgent: TuiAgent | null,
+      launchSeedOverlay?: Readonly<Record<string, string>>,
+      workspaceMode?: WorkspaceMode
+    ): Promise<void> => {
       if (!selectedProjectGroup?.parentPath || folderCreateDisabled) {
         return
       }
@@ -106,7 +117,12 @@ export function useFolderSubmitOrchestration(input: FolderSubmitOrchestrationInp
           lastAutoName: lastAutoNameRef.current,
           linkedWorkItem: submitLinkedWorkItem,
           linkedTaskSourceContext: taskSourceContext,
-          note,
+          note: agentPrompt.trim() || note,
+          workspaceMode,
+          simplifyMark: normalizeNativeChatPromptMarks(settings?.nativeChatPromptMarks).find(
+            (mark) => mark.id === SIMPLIFY_PROMPT_MARK_ID
+          ),
+          ...(launchSeedOverlay ? { launchSeedOverlay } : {}),
           quickAgent: agent,
           autoRenameBranchFromWork: settings?.autoRenameBranchFromWork,
           agentCmdOverrides: settings?.agentCmdOverrides,
@@ -164,6 +180,7 @@ export function useFolderSubmitOrchestration(input: FolderSubmitOrchestrationInp
       folderTargetRuntimeEnvironmentId,
       folderSourceRepos.length,
       isSubmissionCancelled,
+      agentPrompt,
       linkedWorkItem,
       name,
       note,

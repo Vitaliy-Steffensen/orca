@@ -176,13 +176,4 @@ export function didMobileDiffReviewFileChangeSinceReview(
   )
 }
 
-export function buildMobileDiffIdentity(parts: readonly string[]): string {
-  let hash = 2166136261
-  for (const part of parts) {
-    hash = Math.imul(hash ^ part.length, 16777619)
-    for (let index = 0; index < part.length; index += 1) {
-      hash = Math.imul(hash ^ part.charCodeAt(index), 16777619)
-    }
-  }
-  return `d${(hash >>> 0).toString(36)}`
-}
+export { buildDiffReviewIdentity as buildMobileDiffIdentity } from '../../../src/shared/diff-review-identity'

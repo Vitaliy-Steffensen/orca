@@ -9,6 +9,8 @@ Adding a feature here? See the rule at the top of [`CLAUDE.md`](./CLAUDE.md).
 ## Added in this repo
 
 - A new tab is a new chat: Claude and Cursor are not chosen up front, and the model menu lists both.
+- Run on a workspace card starts that project's dev commands together, shows booting then running, and can open the app and sign in.
+- Pick Ask / Supervised / Autonomous when creating a workspace, each with its own agent, model, and prompt.
 - ⇧⌘W closes every other tab and keeps the one you are in.
 - ⇧⌘H reveals the file you are looking at in whichever list is in front of you — the Source Control
   changes, the Explorer tree, or the combined diff's own file tree — and flashes the row.
@@ -19,6 +21,8 @@ Adding a feature here? See the rule at the top of [`CLAUDE.md`](./CLAUDE.md).
 - The app releases and auto-updates from this repository instead of upstream's or Frederik's.
 - A relative language server Path is read from the worktree root, and one that never starts keeps
   saying so instead of going quiet after its first warning.
+- Workspaces also follow their agent: a blocked, questioning, failed, idle or working agent moves
+  the card to the column you mapped it to, and a card you moved by hand stays put.
 - Workspace cards come in one style, and carry chips that appear only when something is wrong —
   failing checks, a conflict with the base, or a branch left behind it.
 - A workspace card shows the pull request author's face when that pull request was opened by someone else.
@@ -45,7 +49,10 @@ Adding a feature here? See the rule at the top of [`CLAUDE.md`](./CLAUDE.md).
 - Right-click a workspace to Archive it: everything it is running shuts down and it leaves the
   sidebar, keeping the checkout. Cmd+J's "View Archived Workspaces" brings them back to unarchive,
   and a merged or closed pull request can archive its workspace instead of deleting it.
+- Source Control shows Changes, Staged Changes and Unstaged Changes together. Tick a file off on
+  the Changes list; it unticks itself and shows a dot when that file actually changes.
 - Group workspace status lanes into collapsible sidebar sections, each header counting what it holds.
+- Give a sidebar status section its own icon and color, and count the workspaces in each nested lane.
 
 ## Inherited from `frbarbre/orca`
 

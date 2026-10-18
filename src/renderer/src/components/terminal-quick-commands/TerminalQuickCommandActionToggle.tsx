@@ -18,12 +18,12 @@ export function TerminalQuickCommandActionToggle({
       type="single"
       value={selectedAction}
       onValueChange={(value) => {
-        if (value === 'terminal-command' || value === 'agent-prompt') {
+        if (value === 'terminal-command' || value === 'agent-prompt' || value === 'workspace-run') {
           onActionChange(value)
         }
       }}
       // Why: equal columns keep the control width stable when labels differ by locale.
-      className="grid w-[11.5rem] grid-cols-2"
+      className="grid w-[17.5rem] grid-cols-3"
       variant="outline"
     >
       <ToggleGroupItem
@@ -50,6 +50,19 @@ export function TerminalQuickCommandActionToggle({
         {translate(
           'auto.components.terminal.quick.commands.TerminalQuickCommandActionToggle.agent_short',
           'Agent'
+        )}
+      </ToggleGroupItem>
+      <ToggleGroupItem
+        value="workspace-run"
+        className={cn(QUICK_COMMAND_TOGGLE_ITEM_CLASS, 'w-full justify-center')}
+        aria-label={translate(
+          'auto.components.terminal.quick.commands.TerminalQuickCommandActionToggle.run',
+          'Workspace Run'
+        )}
+      >
+        {translate(
+          'auto.components.terminal.quick.commands.TerminalQuickCommandActionToggle.run_short',
+          'Run'
         )}
       </ToggleGroupItem>
     </ToggleGroup>

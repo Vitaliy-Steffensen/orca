@@ -193,7 +193,6 @@ describe('migrateWorktreeIdentity', () => {
       worktreeId: NEW,
       runtimeEnvironmentId: 'runtime-a'
     })
-    expect(s.fileSearchStateByWorktree[NEW]?.['pr-diff'].resultOwner).toBeNull()
     expect(s.lastVisitedAtByWorktreeId[NEW]).toBe(123)
     expect(s.defaultTerminalTabsAppliedByWorktreeId[NEW]).toBe(true)
     // The two maps absent from the purge list are still re-keyed.

@@ -35,7 +35,7 @@ function renderAvatar(enabled: boolean, authorLogin?: string | null) {
 const avatar = (container: HTMLElement) => container.querySelector('[data-worktree-card-pr-author]')
 
 describe('otherPullRequestAuthor', () => {
-  it('keeps someone else\'s login and drops the signed-in user', () => {
+  it("keeps someone else's login and drops the signed-in user", () => {
     expect(otherPullRequestAuthor('MadsenMM', 'vitaliy', true)).toBe('MadsenMM')
     expect(otherPullRequestAuthor('Vitaliy', 'vitaliy', true)).toBeNull()
     expect(otherPullRequestAuthor('madsenmm', null, false)).toBeNull()

@@ -1,5 +1,6 @@
 import type { PreloadApi } from '../../../../preload/api-types'
 import { translate } from '@/i18n/i18n'
+import { EMPTY_VIEWED_FILES_STATE } from '../../../../shared/diff-review-identity'
 
 // Why refused rather than routed: submitting a review acts on the desktop app's own
 // queued comments, which the web client does not hold.
@@ -49,7 +50,10 @@ export function createWebPendingReviewApi(): Pick<PreloadApi, 'pendingReview'> {
             'Attachments are uploaded from the desktop app.'
           )
         }),
-      resolveAssetUrl: () => Promise.resolve(null)
+      resolveAssetUrl: () => Promise.resolve(null),
+      // Why empty: ticked-off files are the desktop reviewer's own progress on that machine.
+      readViewedFiles: () => Promise.resolve(EMPTY_VIEWED_FILES_STATE),
+      writeViewedFiles: () => Promise.resolve()
     }
   }
 }

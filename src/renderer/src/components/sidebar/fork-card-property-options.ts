@@ -88,3 +88,11 @@ export const PR_AUTHOR_CARD_PROPERTY_OPTION: WorktreeCardPropertyOption = {
     return translate('auto.components.sidebar.SidebarWorkspaceOptionsMenu.prAuthor', 'PR author')
   }
 }
+
+export const RUN_CARD_PROPERTY_OPTION: WorktreeCardPropertyOption = {
+  id: 'run',
+  properties: ['run'],
+  get label() {
+    return translate('auto.components.sidebar.SidebarWorkspaceOptionsMenu.run', 'Run')
+  }
+}

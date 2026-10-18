@@ -10,6 +10,7 @@ import { WorktreeCardChipRail } from './worktree-card-chip-rail'
 import { resolveWorktreeCardChips } from './worktree-card-chips'
 import { resolveWorktreeCardFacts } from './worktree-card-facts'
 import { WorktreeCardPortsTrigger } from './WorktreeCardPorts'
+import { WorktreeCardRunState } from './WorktreeCardRunState'
 import type { WorktreeCardController } from './use-worktree-card-controller'
 
 export function buildWorktreeCardPresentation(card: WorktreeCardController) {
@@ -54,7 +55,10 @@ export function buildWorktreeCardPresentation(card: WorktreeCardController) {
     hoverJiraIssue,
     hoverReview,
     hoverComment,
-    showDeleteQuickAction
+    showDeleteQuickAction,
+    showRun,
+    runState,
+    hasWorkspaceRunAction
   } = card
 
   // Why: pinned trees mix repos, so the repo icon shows regardless of groupBy's hideRepoBadge.
@@ -75,7 +79,7 @@ export function buildWorktreeCardPresentation(card: WorktreeCardController) {
       linearPriority: card.linearIssue?.priority,
       branchLineTotal: card.branchLineTotal
     }).length > 0
-  const showTitleRowIndicators = hasDetails || hasPorts || chips.length > 0
+  const showTitleRowIndicators = hasDetails || hasPorts || showRun || chips.length > 0
   const showReviewRequestAge = showPR && viewerReviewRequest !== null
   // Why: grouped views can hide the repo badge; don't reserve a blank metadata lane unless there's real content.
   const hasMetaRow = Boolean(
@@ -87,7 +91,7 @@ export function buildWorktreeCardPresentation(card: WorktreeCardController) {
     showReviewRequestAge ||
     cacheStartedAt != null
   )
-  const showHeaderActions = showDeleteQuickAction
+  const showHeaderActions = showDeleteQuickAction || hasWorkspaceRunAction
   // Why: normalize the title once so identity-only hover eligibility stays in sync with the title.
   const trimmedVisibleCardTitle = visibleCardTitle.trim()
   const hoverBranchName = identityDisplay
@@ -136,8 +140,9 @@ export function buildWorktreeCardPresentation(card: WorktreeCardController) {
           : showIssue
   )
   const detailsAndPorts =
-    hasDetails || hasPorts ? (
+    hasDetails || hasPorts || showRun ? (
       <div className="flex shrink-0 items-center gap-1">
+        {showRun && runState ? <WorktreeCardRunState state={runState} /> : null}
         {hasPorts && <WorktreeCardPortsTrigger ports={workspacePorts} />}
         {hasDetails && (
           <WorktreeCardMetaBadges

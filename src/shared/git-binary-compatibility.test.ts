@@ -200,9 +200,21 @@ describeBinaryCompatibility('real Git binary compatibility', () => {
     const range = await runGit(gitChangeListArgs(head, head))
     expect(parseGitChangeList(range.stdout)).toEqual([])
     const root = await runGit(gitChangeListArgs(null, head))
-    expect(parseGitChangeList(root.stdout)).toEqual([
-      { path: 'tracked.txt', status: 'added', added: 1, removed: 0 }
+    const rootEntries = parseGitChangeList(root.stdout)
+    // Why the oid length matters on every version: the default abbreviation grows with the
+    // repository, and an abbreviated blob is not a stable per-file review identity. `--no-abbrev`
+    // must hold the full oid on the whole supported range, not just on a modern binary.
+    const blobOid = (await runGit(['rev-parse', `${head}:tracked.txt`])).stdout.trim()
+    expect(rootEntries).toEqual([
+      {
+        path: 'tracked.txt',
+        status: 'added',
+        headOid: blobOid,
+        added: 1,
+        removed: 0
+      }
     ])
+    expect(blobOid).toMatch(/^[0-9a-f]{40,}$/)
     const names = await runGit([
       'diff-tree',
       '--root',

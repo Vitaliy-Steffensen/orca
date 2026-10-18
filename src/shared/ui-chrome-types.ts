@@ -54,6 +54,8 @@ export type WorktreeCardProperty =
   | 'cli'
   | 'comment'
   | 'ports'
+  // Workspace Run badge (booting / running). On by default.
+  | 'run'
   // Inline agent-activity list rendered in each workspace card; on by default (see DEFAULT_WORKTREE_CARD_PROPERTIES in shared/constants.ts).
   | 'inline-agents'
   // Execution-host pill, shown only when the visible workspaces span more than one host; on by default.
@@ -108,7 +110,6 @@ export type RightSidebarTab =
   | 'workspaces'
   | 'pr-checks'
   | 'source-control'
-  | 'pr-diff'
   | 'checks'
   | 'ports'
   // Plugin-contributed panels are keyed `plugin:<pluginId>/<panelId>` so the
