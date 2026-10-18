@@ -19,6 +19,11 @@ import { getFolderWorkspaceLaneKey } from '../grouping/folder-workspace-lanes'
 import type { WorktreeGroupBy } from '../grouping/row-types'
 import { getFolderWorkspaceHostId } from '../../folder-workspace-host-id'
 import { getHostSectionCollapseKey } from '../../host-section-collapse'
+import {
+  getWorkspaceStatusSection,
+  getWorkspaceStatusSectionGroupKey
+} from '../../../../../../shared/workspace-status-sections'
+import { getWorkspaceStatusFromGroupKey } from '../../workspace-status'
 
 function findFolderWorkspaceByKey(
   worktreeId: string,
@@ -119,6 +124,13 @@ export function getFolderWorkspaceRevealGroupKeys(
       options.groupBy,
       options.workspaceStatuses ?? []
     )
+    const laneStatus = getWorkspaceStatusFromGroupKey(laneKey, options.workspaceStatuses ?? [])
+    const laneSection = laneStatus
+      ? getWorkspaceStatusSection(laneStatus, options.workspaceStatuses ?? [])
+      : null
+    if (laneSection !== null) {
+      keys.push(getWorkspaceStatusSectionGroupKey(laneSection))
+    }
     keys.push(
       options.hostScopedGroups && options.defaultHostId
         ? getHostSectionCollapseKey(

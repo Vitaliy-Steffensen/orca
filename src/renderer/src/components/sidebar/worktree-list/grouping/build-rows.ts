@@ -43,6 +43,8 @@ import type {
   WorktreeGroupBy
 } from './row-types'
 import { getRenderedNaturalAnchorRepoIds, withRepoSectionDisplayLabels } from './section-order'
+import { hasWorkspaceStatusSections } from '../../../../../../shared/workspace-status-sections'
+import { appendStatusSectionGroups } from './status-section-rows'
 import { buildOrderedGroups } from './worktree-grouping'
 
 export function buildRows(
@@ -230,6 +232,11 @@ export function buildRows(
     worktreeMap,
     nestLineage,
     cyclicLineageIds
+  }
+
+  if (groupBy === 'workspace-status' && hasWorkspaceStatusSections(workspaceStatuses)) {
+    appendStatusSectionGroups(sectionContext, orderedGroups)
+    return result
   }
 
   if (groupBy !== 'repo' || projectGroups.length === 0) {

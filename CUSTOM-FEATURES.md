@@ -90,3 +90,4 @@ Taken whole with every mirror; the fork lineage's work on top of upstream.
 55. The Changes header totals the added and removed lines of the files it lists. (§55)
 56. A review summary shows the verdict it was submitted with. (§56)
 57. `orca file open --line/--column` opens a file with the cursor on that spot. (§57)
+58. Group workspace status lanes into collapsible sidebar sections, each header counting what it holds. (§58)

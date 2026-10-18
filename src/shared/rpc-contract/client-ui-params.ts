@@ -82,7 +82,8 @@ export const WorkspaceStatusDefinition = z.object({
   id: z.string(),
   label: z.string(),
   color: z.string().optional(),
-  icon: z.string().optional()
+  icon: z.string().optional(),
+  section: z.string().optional()
 })
 
 export const FeatureInteractionRecord = z

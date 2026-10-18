@@ -10,7 +10,7 @@ import type {
   WorktreeGroupEntry
 } from './project-grouping'
 import type { WorktreeGroupBy } from './row-types'
-import { getGroupKeyForWorktree } from './worktree-group-keys'
+import { getGroupKeysForWorktree } from './worktree-group-keys'
 
 export function getRenderedNaturalAnchorRepoIds({
   groupBy,
@@ -47,16 +47,20 @@ export function getRenderedNaturalAnchorRepoIds({
     return renderedRepoIds
   }
   for (const worktree of worktrees) {
-    const groupKey = getGroupKeyForWorktree(
+    // Why every ancestor key: a collapsed status section hides its lanes even
+    // though the lane itself is expanded, so checking the lane alone would call
+    // an invisible row rendered and suppress its notice in the Pinned section.
+    const groupKeys = getGroupKeysForWorktree(
       groupBy,
       worktree,
       repoMap,
       prCache,
       workspaceStatuses,
       settings,
+      undefined,
       projectGrouping
     )
-    if (groupKey && !collapsedGroups.has(groupKey)) {
+    if (groupKeys.length > 0 && !groupKeys.some((key) => collapsedGroups.has(key))) {
       renderedRepoIds.add(worktree.repoId)
     }
   }
