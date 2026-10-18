@@ -31,6 +31,7 @@ import { useNativeChatHeldQueueComposerSend } from './use-native-chat-held-queue
 import { useImeEnterGestureOwnership } from '@/lib/ime-composition-keyboard-event'
 import { useNativeChatComposerAppMenuSelection } from './use-native-chat-composer-app-menu-selection'
 import { useNativeChatComposerSubmit } from './use-native-chat-composer-submit'
+import { useNativeChatPromptMark } from './use-native-chat-prompt-mark'
 
 export type {
   NativeChatComposerHandle,
@@ -86,6 +87,7 @@ const NativeChatComposerPane = forwardRef<NativeChatComposerHandle, NativeChatCo
       imeEnterGesture.isComposing
     )
     const [caret, setCaret] = useState(draft.length)
+    const promptMarks = useNativeChatPromptMark()
     useNativeChatLaunchDraftAdoption({
       terminalTabId,
       agent,
@@ -290,7 +292,8 @@ const NativeChatComposerPane = forwardRef<NativeChatComposerHandle, NativeChatCo
       classifySend,
       onOptimisticSend,
       optimisticSendOutcome,
-      terminalTabId
+      terminalTabId,
+      promptMark: promptMarks.active
     })
     const { send, goalMode } = useNativeChatComposerSubmit({
       structuredTransport,
@@ -303,7 +306,8 @@ const NativeChatComposerPane = forwardRef<NativeChatComposerHandle, NativeChatCo
       sendStructured,
       setDraft,
       setCaret,
-      ...(planApproval ? { planApproval } : {})
+      ...(planApproval ? { planApproval } : {}),
+      promptMark: promptMarks.active
     })
 
     const interrupt = useNativeChatComposerInterrupt({
@@ -415,6 +419,9 @@ const NativeChatComposerPane = forwardRef<NativeChatComposerHandle, NativeChatCo
         sessionOptionsSnapshot={sessionOptionsSnapshot}
         contextUsage={contextUsageSummary}
         sessionOptionsPickerRequest={structuredTransport?.optionPickerRequest ?? null}
+        promptMarks={promptMarks.marks}
+        activePromptMarkId={promptMarks.active?.id ?? null}
+        onPromptMarkChange={promptMarks.setActiveId}
       />
     )
   }

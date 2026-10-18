@@ -1,6 +1,7 @@
 import { translate } from '@/i18n/i18n'
 import { AppearanceChatSection } from './AppearanceChatSection'
 import { ChatBehaviorSetting } from './ChatBehaviorSetting'
+import { NativeChatPromptMarksSetting } from './NativeChatPromptMarksSetting'
 import { ChatNamingSetting } from './ChatNamingSetting'
 import { NativeChatInlineVisualsSetting } from './NativeChatInlineVisualsSetting'
 import { SettingsSection } from './SettingsSection'
@@ -84,6 +85,11 @@ export function ChatSettingsSection({
             settings={settings}
             updateSettings={updateSettings}
             forceVisible={showAllBehavior}
+          />
+          <NativeChatPromptMarksSetting
+            settings={settings}
+            updateSettings={updateSettings}
+            forceVisible={matchesSettingsSearch(query, [{ title }])}
           />
           {showDesktopOnlySettings ? (
             <ChatNamingSetting
