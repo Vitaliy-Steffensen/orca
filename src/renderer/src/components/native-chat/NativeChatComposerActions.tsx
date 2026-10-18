@@ -8,6 +8,8 @@ import type {
 } from '../../../../shared/native-chat-session-options'
 import { NativeChatSessionOptionPickers } from './NativeChatSessionOptionPickers'
 import { NativeChatComposerGoalChip } from './NativeChatComposerGoalChip'
+import { NativeChatPromptMarkButton } from './NativeChatPromptMarkButton'
+import type { NativeChatPromptMark } from '../../../../shared/native-chat-prompt-marks'
 import { NativeChatContextUsageRing } from './NativeChatContextUsageRing'
 import type { NativeChatContextUsageSummary } from './native-chat-context-usage-summary'
 import type { NativeChatOptionPickerRequest } from './native-chat-composer-types'
@@ -42,6 +44,10 @@ export type NativeChatComposerActionsProps = {
   focusComposer?: () => void
   /** Present while the composer is in goal mode; the chip calls it to leave. */
   onExitGoalMode?: () => void
+  /** Instructions from Settings the user can attach to this message. Absent hides the control. */
+  promptMarks?: readonly NativeChatPromptMark[]
+  activePromptMarkId?: string | null
+  onPromptMarkChange?: (id: string | null) => void
   /** Absent until the session has reported or the transcript can estimate. */
   contextUsage?: NativeChatContextUsageSummary | null
 }
@@ -68,6 +74,9 @@ export function NativeChatComposerActions({
   sessionOptionsSnapshot,
   sessionOptionsPickerRequest,
   onExitGoalMode,
+  promptMarks,
+  activePromptMarkId = null,
+  onPromptMarkChange,
   contextUsage,
   focusComposer
 }: NativeChatComposerActionsProps): React.JSX.Element {
@@ -141,6 +150,14 @@ export function NativeChatComposerActions({
             {translate('components.native-chat.composer.attach', 'Attach file')}
           </TooltipContent>
         </Tooltip>
+        {onPromptMarkChange ? (
+          <NativeChatPromptMarkButton
+            marks={promptMarks ?? []}
+            activeId={activePromptMarkId}
+            disabled={attachDisabled}
+            onChange={onPromptMarkChange}
+          />
+        ) : null}
         {onExitGoalMode ? <NativeChatComposerGoalChip onExit={onExitGoalMode} /> : null}
       </div>
       <div className="ml-auto flex items-center gap-1.5">

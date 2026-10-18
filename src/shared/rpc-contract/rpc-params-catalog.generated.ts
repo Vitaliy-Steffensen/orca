@@ -470,6 +470,7 @@ import {
   RepoSparsePresetSave,
   RepoUpdate
 } from './repo-params'
+import { ReviewCommentAdd, ReviewCommentRemove, ReviewSummarySet } from './review-draft-params'
 import { BrowserTarget } from './rpc-param-primitives'
 import { ClientCapabilitiesUpdate } from './runtime-client-capabilities-params'
 import { SessionTabsUnsubscribeAllParams } from './session-tabs-params'
@@ -1176,6 +1177,10 @@ export const RPC_PARAMS_BY_METHOD = {
   'repo.show': RepoSelector,
   'repo.sparsePresets': RepoSelector,
   'repo.update': RepoUpdate,
+  'reviewComment.add': ReviewCommentAdd,
+  'reviewComment.list': AgentNoteList,
+  'reviewComment.remove': ReviewCommentRemove,
+  'reviewSummary.set': ReviewSummarySet,
   'runtime.automaticWork.resume': null,
   'runtime.automaticWork.status': null,
   'runtime.clientCapabilities.update': ClientCapabilitiesUpdate,

@@ -39,6 +39,18 @@ const PR_FIELDS_FRAGMENT = `fragment SnapshotPR on PullRequest {
   latestOpinionatedReviews(first: 20) {
     nodes { state author { login } commit { oid } }
   }
+  timelineItems(itemTypes: [REVIEW_REQUESTED_EVENT], last: 20) {
+    nodes {
+      ... on ReviewRequestedEvent {
+        createdAt
+        requestedReviewer {
+          __typename
+          ... on User { login }
+          ... on Team { slug }
+        }
+      }
+    }
+  }
   commits(last: 1) {
     nodes {
       commit {

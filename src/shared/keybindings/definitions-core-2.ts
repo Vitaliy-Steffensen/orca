@@ -168,7 +168,8 @@ export const KEYBINDING_DEFINITION_CORE_2: readonly KeybindingDefinition[] = [
     group: 'Tabs',
     scope: 'tabs',
     searchKeywords: ['shortcut', 'close', 'other', 'others', 'tabs', 'keep active'],
-    defaultBindings: platformBindings(['Mod+Alt+Shift+W'])
+    // Why: Close (Mod+W) and Close All (Mod+Alt+W) already take the other W chords; Shift is the free neighbor.
+    defaultBindings: platformBindings(['Mod+Shift+W'])
   },
   {
     id: 'tab.rename',

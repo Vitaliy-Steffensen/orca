@@ -6,7 +6,6 @@ import { WorktreeCardDisplayMenuSection } from './WorktreeCardDisplayMenuSection
 
 ;(globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true
 
-const setWorktreeCardMode = vi.fn()
 const setWorktreeCardProperties = vi.fn()
 const setAgentActivityDisplayMode = vi.fn()
 
@@ -31,7 +30,6 @@ vi.mock('@/store', () => ({
       agentActivityDisplayMode: 'compact',
       projectGroups,
       setAgentActivityDisplayMode,
-      setWorktreeCardMode,
       setWorktreeCardProperties,
       settings,
       worktreeCardProperties
@@ -129,7 +127,6 @@ beforeEach(() => {
     'inline-agents'
   ]
   setAgentActivityDisplayMode.mockReset()
-  setWorktreeCardMode.mockReset()
   setWorktreeCardProperties.mockReset()
 })
 
@@ -144,24 +141,7 @@ afterEach(() => {
 })
 
 describe('WorktreeCardDisplayMenuSection', () => {
-  it('applies the compact card mode preset from the visible card layout menu', () => {
-    renderMenu()
-
-    const compactLayoutButton = document.querySelector<HTMLButtonElement>(
-      '[data-radio-group-value="detailed"] [data-radio-item-value="compact"]'
-    )
-    expect(compactLayoutButton).not.toBeNull()
-
-    act(() => {
-      compactLayoutButton?.click()
-    })
-
-    expect(setWorktreeCardMode).toHaveBeenCalledWith('Compact')
-  })
-
   it('keeps branch-only copy when project groups are unavailable', () => {
-    settings = { compactWorktreeCards: false, experimentalNewWorktreeCardStyle: true }
-
     renderMenu()
 
     expect(container?.textContent).toContain('Branch name')
@@ -169,7 +149,6 @@ describe('WorktreeCardDisplayMenuSection', () => {
   })
 
   it('mentions folder paths when project groups can create folder workspaces', () => {
-    settings = { compactWorktreeCards: false, experimentalNewWorktreeCardStyle: true }
     projectGroups = [{ id: 'group-1' }]
 
     renderMenu()

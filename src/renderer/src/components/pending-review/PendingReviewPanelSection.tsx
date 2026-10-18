@@ -36,6 +36,7 @@ export function PendingReviewPanelSection({
       comment={comment}
       onChangeBody={(body) => queue.updateBody(comment.id, body)}
       onRemove={() => queue.remove(comment.id)}
+      onAccept={() => queue.accept(comment.id)}
     />
   ))
   if (sectionHeader) {

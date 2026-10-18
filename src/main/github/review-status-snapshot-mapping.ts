@@ -6,6 +6,7 @@ import type {
   ReviewSnapshotPRState,
   ReviewSnapshotPullRequest,
   ReviewSnapshotRequestedReviewer,
+  ReviewSnapshotReviewRequestEvent,
   ReviewSnapshotReviewState
 } from '../../shared/github/review-status-snapshot-types'
 
@@ -85,16 +86,29 @@ function mapChecks(pr: RawNode): ReviewSnapshotCheck[] {
 
 function mapRequestedReviewers(pr: RawNode): ReviewSnapshotRequestedReviewer[] {
   return asNodes(pr.reviewRequests).flatMap<ReviewSnapshotRequestedReviewer>((request) => {
-    const reviewer = asRecord(request.requestedReviewer)
-    if (!reviewer) {
-      return []
-    }
-    const login = asString(reviewer.login)
-    if (login) {
-      return [{ kind: 'user', login }]
-    }
-    const slug = asString(reviewer.slug)
-    return slug ? [{ kind: 'team', slug }] : []
+    const reviewer = mapRequestedReviewer(request.requestedReviewer)
+    return reviewer ? [reviewer] : []
+  })
+}
+
+function mapRequestedReviewer(value: unknown): ReviewSnapshotRequestedReviewer | null {
+  const reviewer = asRecord(value)
+  if (!reviewer) {
+    return null
+  }
+  const login = asString(reviewer.login)
+  if (login) {
+    return { kind: 'user', login }
+  }
+  const slug = asString(reviewer.slug)
+  return slug ? { kind: 'team', slug } : null
+}
+
+function mapReviewRequestEvents(pr: RawNode): ReviewSnapshotReviewRequestEvent[] {
+  return asNodes(pr.timelineItems).flatMap<ReviewSnapshotReviewRequestEvent>((event) => {
+    const reviewer = mapRequestedReviewer(event.requestedReviewer)
+    const requestedAt = Date.parse(asString(event.createdAt))
+    return reviewer && Number.isFinite(requestedAt) ? [{ reviewer, requestedAt }] : []
   })
 }
 
@@ -154,6 +168,7 @@ export function mapReviewSnapshotPullRequest(value: unknown): ReviewSnapshotPull
     // Why both: GitHub drops a reviewer from latestReviews as soon as they are re-requested, and
     // the re-request is exactly when the commit they last reviewed is needed.
     latestOpinionatedReviews: mapReviews(pr.latestOpinionatedReviews),
+    reviewRequestEvents: mapReviewRequestEvents(pr),
     checks: mapChecks(pr)
   }
 }

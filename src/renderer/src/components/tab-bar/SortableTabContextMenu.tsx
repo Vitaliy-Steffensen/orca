@@ -145,6 +145,7 @@ export function SortableTabContextMenu({
   const splitDownShortcut = formatShortcutLabel('terminal.splitDown', keybindings)
 
   const closeShortcut = useOptionalShortcutLabel('tab.close')
+  const closeOthersShortcut = useOptionalShortcutLabel('tab.closeOthers')
   const renameShortcut = useOptionalShortcutLabel('tab.rename')
   // Fork: upstream hid switching a terminal tab into chat view; the View submenu keeps it both ways.
   const showTerminalViewSwitch = canToggleViewMode && onToggleViewMode !== undefined
@@ -202,6 +203,9 @@ export function SortableTabContextMenu({
         <DropdownMenuItem onSelect={() => onCloseOthers(tab.id)} disabled={tabCount <= 1}>
           <ListX className="size-3.5" />
           {translate('auto.components.tab.bar.SortableTabContextMenu.8d16f9cd30', 'Close Others')}
+          {closeOthersShortcut ? (
+            <DropdownMenuShortcut>{closeOthersShortcut}</DropdownMenuShortcut>
+          ) : null}
         </DropdownMenuItem>
         <DropdownMenuItem onSelect={() => onCloseToRight(tab.id)} disabled={!hasTabsToRight}>
           <PanelRightClose className="size-3.5" />

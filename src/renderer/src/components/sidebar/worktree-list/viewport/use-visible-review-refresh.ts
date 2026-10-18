@@ -69,18 +69,13 @@ export function useVisiblePrRefreshReporting(args: {
   currentWorktreeId: string | null
   worktreeMap: Map<string, Worktree>
   groupBy: WorktreeGroupBy
-  newCardStyle: boolean
   renderRows: RenderRow[]
   virtualItems: readonly VirtualItem[]
   scrollRef: React.RefObject<HTMLDivElement | null>
 }): void {
   const publish = useAppStore((s) => s.setVisibleReviewCardWorktreeIds)
   const cardProps = useAppStore((s) => s.worktreeCardProperties)
-  const enabled =
-    args.groupBy === 'pr-status' ||
-    (args.newCardStyle
-      ? cardProps.includes('status')
-      : cardProps.includes('pr') || cardProps.includes('ci'))
+  const enabled = args.groupBy === 'pr-status' || cardProps.includes('status')
 
   useEffect(() => {
     const update = (): void => {

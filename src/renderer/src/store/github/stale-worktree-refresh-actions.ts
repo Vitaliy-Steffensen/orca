@@ -34,9 +34,7 @@ export const createStaleWorktreeRefreshActions = (
     const cardProps = state.worktreeCardProperties ?? []
     const shouldRefreshPR =
       state.groupBy === 'pr-status' ||
-      (state.settings?.experimentalNewWorktreeCardStyle === true
-        ? cardProps.includes('status')
-        : cardProps.includes('pr') || cardProps.some((property: string) => property === 'ci')) ||
+      cardProps.includes('status') ||
       rightSidebarShowsPullRequestData(state)
 
     if (shouldRefreshPR && !worktree.isBare && branch) {

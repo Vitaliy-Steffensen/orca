@@ -3,6 +3,7 @@ import { useAppStore } from '@/store'
 import { installWindowVisibilityTimeoutPoller } from '@/lib/window-visibility-timeout-poller'
 import { getIndexedRepoMap } from '@/store/worktree-repo-index'
 import type { GitHubRepositoryIdentity } from '../../../../shared/github/pull-request-types'
+import type { ReviewStatusSnapshot } from '../../../../shared/github/review-status-snapshot-types'
 import { buildWorkspaceStatusRulePlan } from '../../../../shared/workspace-status-rule-plan'
 import { applyWorkspaceStatusRulePlan } from './apply-workspace-status-rule-plan'
 import {
@@ -12,10 +13,17 @@ import {
 } from './collect-workspace-status-rule-targets'
 import { planReviewHeadSyncs } from '../../../../shared/github/review-head-sync'
 import { setPullRequestAuthors } from './pr-author-store'
+import { setViewerReviewRequests } from './viewer-review-request-store'
+import {
+  readViewerReviewRequest,
+  type ViewerReviewRequest
+} from '../../../../shared/github/viewer-review-request'
+import { readViewerReviewStanding } from '../../../../shared/workspace-status-rules'
 import { launchConflictAgents } from './launch-conflict-agents'
 import { runReviewEnteredCommands } from './run-review-entered-commands'
 import { planNewWorkspaceStatusUpdates } from '../../../../shared/workspace-new-status-plan'
 import { loadPendingReviewDrafts } from '../pending-review/pending-review-draft-store'
+import { runWorkspaceAgentRuleTick } from './run-workspace-agent-rule-tick'
 
 /** Matches the active-workspace review tier; a board does not change faster than this. */
 const POLL_INTERVAL_MS = 60_000
@@ -68,6 +76,9 @@ async function runWorkspaceStatusRuleTick(): Promise<void> {
   // empty and let a workspace with unsent comments be deleted.
   await loadPendingReviewDrafts()
   const scope = collectWorkspaceStatusRuleScope(state, config.repoIds)
+  // Why before the repoPath guard: agent rules need no GitHub call, and a project with no
+  // local checkout for `gh` to run in still has workspaces whose agents move lanes.
+  await runWorkspaceAgentRuleTick(new Set(scope.targets.map((target) => target.worktreeId)))
   if (!scope.repoPath) {
     return
   }
@@ -80,19 +91,7 @@ async function runWorkspaceStatusRuleTick(): Promise<void> {
       : [],
     pmApprovalTeam: config.pmApprovalTeam
   })
-  setPullRequestAuthors(
-    new Map(
-      scope.targets.flatMap((target) => {
-        const author = snapshot.linkedPullRequests.find(
-          (pr) =>
-            pr.number === target.prNumber &&
-            pr.repo.owner.toLowerCase() === target.repo.owner.toLowerCase() &&
-            pr.repo.repo.toLowerCase() === target.repo.repo.toLowerCase()
-        )?.author
-        return author ? [[target.worktreeId, author] as const] : []
-      })
-    )
-  )
+  publishLinkedPullRequestFacts(scope.targets, snapshot)
   const plan = buildWorkspaceStatusRulePlan({
     targets: scope.targets,
     snapshot,
@@ -103,6 +102,37 @@ async function runWorkspaceStatusRuleTick(): Promise<void> {
   await launchConflictAgents(plan, scope.targets, snapshot, config)
   await runReviewEnteredCommands(plan, scope.targets, config)
   await syncReviewWorkspaceHeads(scope.targets, snapshot)
+}
+
+/** Per-workspace facts the sidebar reads straight off the tick, outside the worktree store. */
+function publishLinkedPullRequestFacts(
+  targets: readonly { worktreeId: string; prNumber: number; repo: GitHubRepositoryIdentity }[],
+  snapshot: ReviewStatusSnapshot
+): void {
+  const authors = new Map<string, string>()
+  const reviewRequests = new Map<string, ViewerReviewRequest>()
+  for (const target of targets) {
+    const pr = snapshot.linkedPullRequests.find(
+      (candidate) =>
+        candidate.number === target.prNumber &&
+        candidate.repo.owner.toLowerCase() === target.repo.owner.toLowerCase() &&
+        candidate.repo.repo.toLowerCase() === target.repo.repo.toLowerCase()
+    )
+    if (!pr) {
+      continue
+    }
+    if (pr.author) {
+      authors.set(target.worktreeId, pr.author)
+    }
+    const request = readViewerReviewRequest(pr, snapshot.viewerLogin)
+    // Why the standing check: once the verdict is in, the question has been answered;
+    // a re-request puts the viewer back on the hook with a clock of its own.
+    if (request && !readViewerReviewStanding(pr, snapshot.viewerLogin).isFinished) {
+      reviewRequests.set(target.worktreeId, request)
+    }
+  }
+  setPullRequestAuthors(authors)
+  setViewerReviewRequests(reviewRequests)
 }
 
 async function syncReviewWorkspaceHeads(

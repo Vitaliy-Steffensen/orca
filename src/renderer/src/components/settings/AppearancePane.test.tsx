@@ -385,27 +385,6 @@ describe('AppearancePane', () => {
     expect(updateSettings).toHaveBeenCalledWith({ showAutomationsButton: true })
   })
 
-  it('changes workspace card layout from the Appearance sidebar controls', async () => {
-    mocks.state.settingsSearchQuery = 'workspace card layout'
-    const settings = {
-      ...getDefaultSettings('/tmp'),
-      compactWorktreeCards: false
-    }
-
-    const container = await renderAppearancePane(settings)
-    const compactButton = Array.from(
-      container.querySelectorAll<HTMLButtonElement>('button[role="radio"]')
-    ).find((button) => button.textContent === 'Compact')
-
-    expect(compactButton).toBeDefined()
-
-    await act(async () => {
-      compactButton?.dispatchEvent(new MouseEvent('click', { bubbles: true }))
-    })
-
-    expect(mocks.state.setWorktreeCardMode).toHaveBeenCalledWith('Compact')
-  })
-
   it('renders the three top-level section rows and no Code & Markdown row when not searching', async () => {
     mocks.state.settingsSearchQuery = ''
     const container = await renderAppearancePane(getDefaultSettings('/tmp'))

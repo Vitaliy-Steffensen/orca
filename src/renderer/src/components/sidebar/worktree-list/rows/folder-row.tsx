@@ -25,7 +25,6 @@ import { getWorktreeOptionId } from './option-dom'
 
 export type FolderWorkspaceRowContext = {
   groupBy: WorktreeGroupBy
-  newCardStyle: boolean
   settings: AppState['settings']
   activeWorktreeId: string | null
   activeWorkspaceExecutionHostId: AppState['activeWorkspaceExecutionHostId']
@@ -87,7 +86,6 @@ export function renderFolderWorkspaceVirtualRow(args: {
     settings: ctx.settings
   })
   const { surfaceInset, cardContentIndent } = getFolderWorkspaceRowGeometry({
-    experimentalNewWorktreeCardStyle: ctx.newCardStyle,
     isFolderBackedWorkspaceChild:
       ctx.groupBy === 'repo' && row.projectGroup.createdFrom === 'folder-scan',
     isGrouped: ctx.groupBy !== 'none',

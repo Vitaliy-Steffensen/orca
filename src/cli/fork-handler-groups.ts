@@ -8,5 +8,10 @@ export const BROWSER_AND_FORK_HANDLER_GROUPS: readonly HandlerGroup[] = [
     name: 'notes',
     keys: ['notes add', 'notes reply', 'notes list', 'notes rm'],
     load: async () => (await import('./handlers/notes.js')).NOTES_HANDLERS
+  },
+  {
+    name: 'review',
+    keys: ['review comment add', 'review comment list', 'review comment rm', 'review summary set'],
+    load: async () => (await import('./handlers/review.js')).REVIEW_HANDLERS
   }
 ]

@@ -96,6 +96,7 @@ export function useInlinePRCommentZones({
             onContentResize={() => resizeDiffCommentZone(editor, entry)}
             onChangeBody={(body) => pendingRef.current.updateBody(placement.comment.id, body)}
             onRemove={() => pendingRef.current.remove(placement.comment.id)}
+            onAccept={() => pendingRef.current.accept(placement.comment.id)}
           />
         )
         return

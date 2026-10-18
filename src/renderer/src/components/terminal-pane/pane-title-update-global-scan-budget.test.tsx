@@ -237,7 +237,6 @@ let container: HTMLDivElement | null = null
 let root: Root | null = null
 
 const EMPTY_ASSIGNMENTS = new Map<string, { groupId: string; isActiveInGroup: boolean }>()
-const noop = (): void => {}
 function recordSidebarRowCommit(worktreeId: string): void {
   committedSidebarRows.add(worktreeId)
 }
@@ -248,15 +247,7 @@ function recordSidebarRowCommit(worktreeId: string): void {
 function SidebarRowProbe({ worktreeId }: { worktreeId: string }): React.JSX.Element {
   return (
     <React.Profiler id={worktreeId} onRender={recordSidebarRowCommit}>
-      <WorktreeCardStatusSlot
-        worktreeId={worktreeId}
-        showStatus={true}
-        showUnreadAction={false}
-        isUnread={false}
-        unreadTooltip="unread"
-        onToggleUnread={noop}
-        onPointerDown={noop}
-      />
+      <WorktreeCardStatusSlot worktreeId={worktreeId} showStatus={true} isUnread={false} />
     </React.Profiler>
   )
 }

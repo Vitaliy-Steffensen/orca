@@ -80,6 +80,14 @@ export function getUsageHeadlineSection(p: ProviderRateLimits): UsageSection | n
       return { ...primary, label: shortLabel(p, primary, true) }
     }
   }
+  // Why: the compact footer is the default, and for Claude that one number is the
+  // 5h session limit — not whichever window (usually weekly) is more consumed.
+  if (p.provider === 'claude' && p.session) {
+    const session = usedSections(p).find((section) => section.window === p.session)
+    if (session) {
+      return { ...session, label: shortLabel(p, session, true) }
+    }
+  }
   return getTightestUsageSection(p)
 }
 

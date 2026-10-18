@@ -1,6 +1,7 @@
 import { useCallback } from 'react'
 import { useAppStore } from '@/store'
 import { getWorkspaceStatus } from './workspace-status'
+import { stampManualWorkspaceStatusOverride } from '../../../../shared/workspace-status-manual-override'
 import { switchSortToManualAfterDrop } from './manual-sort-switch-toast'
 import { resolveFullLaneDropIndex } from './workspace-kanban-filtered-drop-index'
 import {
@@ -57,7 +58,7 @@ export function useWorkspaceKanbanWorktreeActions(args: {
       recordInteraction()
       void args.updateWorktreeMeta(
         worktreeId,
-        { workspaceStatus: status },
+        stampManualWorkspaceStatusOverride({ workspaceStatus: status }, Date.now()),
         { executionHostId: current.hostId ?? 'local' }
       )
       args.maybeSyncTaskStatuses([worktreeId], status)
@@ -76,7 +77,7 @@ export function useWorkspaceKanbanWorktreeActions(args: {
         changedIds.push(worktreeId)
         updates.push({
           worktreeId,
-          updates: { workspaceStatus: status },
+          updates: stampManualWorkspaceStatusOverride({ workspaceStatus: status }, Date.now()),
           executionHostId: current.hostId ?? 'local'
         })
       }
@@ -121,7 +122,7 @@ export function useWorkspaceKanbanWorktreeActions(args: {
         }
         updates.push({
           worktreeId,
-          updates: next,
+          updates: stampManualWorkspaceStatusOverride(next, Date.now()),
           executionHostId: current.hostId ?? 'local'
         })
       }

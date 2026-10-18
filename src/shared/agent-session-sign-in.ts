@@ -6,7 +6,8 @@ export const AGENT_SESSION_SIGN_IN = [
   { agent: 'grok', loginCommand: ['grok', 'login'] },
   { agent: 'opencode', loginCommand: ['opencode', 'auth', 'login'] },
   { agent: 'pi', loginCommand: ['pi'], slashCommand: '/login' },
-  { agent: 'omp', loginCommand: [] }
+  { agent: 'omp', loginCommand: [] },
+  { agent: 'cursor', loginCommand: ['cursor-agent', 'login'] }
 ] as const
 
 export function agentSessionSignInFor(agent: string | undefined) {
