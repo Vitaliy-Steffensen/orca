@@ -27,6 +27,7 @@ import {
   selectMenuScopedMap,
   shouldRemoveProjectFromContextMenu
 } from './worktree-context-menu-policy'
+import { resolveWorkspaceArchiveMenuAction } from './workspace-archive-menu-action'
 import { useWorktreeContextMenuCommands } from './use-worktree-context-menu-commands'
 import { useWorktreeParentPickerTransition } from './use-worktree-parent-picker-transition'
 import { useWorktreeContextMenuSecondaryActions } from './use-worktree-context-menu-secondary-actions'
@@ -184,6 +185,10 @@ export function useWorktreeContextMenuModel({
     isMultiContext && sleepableWorktrees.length > 0
       ? `Sleep ${sleepableWorktrees.length} Workspace${sleepableWorktrees.length === 1 ? '' : 's'}`
       : 'Sleep'
+  const archiveAction = useMemo(
+    () => resolveWorkspaceArchiveMenuAction(worktree, activeContextWorktrees, isMultiContext),
+    [worktree, activeContextWorktrees, isMultiContext]
+  )
   const deleteLabel =
     isMultiContext && batchDeleteWorktrees.length > 0
       ? `Delete ${batchDeleteWorktrees.length} Workspace${batchDeleteWorktrees.length === 1 ? '' : 's'}`
@@ -299,6 +304,7 @@ export function useWorktreeContextMenuModel({
     setWorktreesPinnedAndReveal,
     sleepableWorktrees,
     subtreeSleepableWorktrees,
+    archiveTargets: archiveAction.targets,
     updateWorktreeMeta,
     validParentWorktreeId,
     worktree,
@@ -387,6 +393,7 @@ export function useWorktreeContextMenuModel({
     sleepLabel,
     sleepableWorktrees,
     subtreeSleepableWorktrees,
+    archiveAction,
     suppressOpeningPointerEvent,
     tabsByWorktree,
     validParentWorktreeId,

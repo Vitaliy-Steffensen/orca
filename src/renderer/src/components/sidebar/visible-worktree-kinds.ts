@@ -68,6 +68,8 @@ export type SidebarFilterState = {
   hideDetachedHeadWorkspaces: boolean
   hideTemporaryCheckoutWorkspaces?: boolean
   hideWorkspacesFromOtherDevices: boolean
+  /** Reveal archived workspaces; absent means off, which is how every other surface reads them. */
+  showArchivedWorkspaces?: boolean
   /** Keeps each project's main workspace out of the "Hide sleeping" sweep; absent means on. */
   alwaysShowDefaultBranchWorkspace?: boolean
   visibleWorkspaceHostIds?: readonly ExecutionHostId[] | null

@@ -48,6 +48,7 @@ export function useVisibleSidebarWorktrees(args: {
     workspaceHostScope
   } = filterState
   const hideTemporaryCheckoutWorkspaces = useAppStore((s) => s.hideTemporaryCheckoutWorkspaces)
+  const showArchivedWorkspaces = useAppStore((s) => s.showArchivedWorkspaces)
   const worktreesByRepo = useAppStore((s) => s.worktreesByRepo)
   const agentStatusEpoch = useAppStore((s) => (!showSleepingWorkspaces ? s.agentStatusEpoch : 0))
   // Why: skip the clock entirely when the epoch is the opt-out sentinel, so a
@@ -101,6 +102,7 @@ export function useVisibleSidebarWorktrees(args: {
       hideDetachedHeadWorkspaces,
       hideTemporaryCheckoutWorkspaces,
       hideWorkspacesFromOtherDevices,
+      showArchivedWorkspaces,
       pairedDeviceIdsByEnvironment,
       alwaysShowDefaultBranchWorkspace,
       repoMap,
@@ -125,6 +127,7 @@ export function useVisibleSidebarWorktrees(args: {
     hideDetachedHeadWorkspaces,
     hideTemporaryCheckoutWorkspaces,
     hideWorkspacesFromOtherDevices,
+    showArchivedWorkspaces,
     alwaysShowDefaultBranchWorkspace,
     workspaceHostScope,
     visibleWorkspaceHostIds,

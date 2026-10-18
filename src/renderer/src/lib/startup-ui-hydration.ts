@@ -50,6 +50,7 @@ export function getStartupErrorFallbackUI(uiHydrated: boolean): PersistedUIState
     showSleepingWorkspaces: DEFAULT_SHOW_SLEEPING_WORKSPACES,
     hideDefaultBranchWorkspace: false,
     hideCliCreatedWorkspaces: false,
+    showArchivedWorkspaces: false,
     hideDetachedHeadWorkspaces: false,
     hideTemporaryCheckoutWorkspaces: false,
     alwaysShowDefaultBranchWorkspace: true,

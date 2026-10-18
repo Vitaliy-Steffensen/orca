@@ -817,6 +817,27 @@ describe('computeVisibleWorktreeIds', () => {
     expect(result).toEqual([child.id])
   })
 
+  it('hides archived workspaces by default and reveals them on request', () => {
+    const live = makeWorktree('live')
+    const archived = makeWorktree('archived')
+    archived.isArchived = true
+
+    expect(
+      computeVisibleWorktreeIds(
+        { repo1: [live, archived] },
+        [live.id, archived.id],
+        visibleOptions()
+      )
+    ).toEqual([live.id])
+    expect(
+      computeVisibleWorktreeIds(
+        { repo1: [live, archived] },
+        [live.id, archived.id],
+        visibleOptions({ showArchivedWorkspaces: true })
+      )
+    ).toEqual([live.id, archived.id])
+  })
+
   it('does not resurrect archived lineage parents', () => {
     const parent = makeWorktree('parent')
     parent.isArchived = true

@@ -20,7 +20,7 @@ export const WorkspaceStatusRules = z.object({
   statusByCondition: StatusByCondition,
   mergingCheckName: z.string(),
   pmApprovalTeam: z.string().nullable(),
-  onResolved: z.enum(['delete', 'none']),
+  onResolved: z.enum(['delete', 'archive', 'none']),
   reviewInbox: z.object({
     enabled: z.boolean(),
     agent: z.string(),

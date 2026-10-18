@@ -8,6 +8,7 @@ import {
   deferWorktreeContextMenuDeleteIntent
 } from './worktree-context-menu-delete-intent'
 import { runSleepWorktrees } from './sleep-worktree-flow'
+import { runArchiveWorktrees, runUnarchiveWorktrees } from './archive-worktree-flow'
 import { activateAndRevealWorktree } from '@/lib/worktree-activation'
 import { resolveWorktreeDisplayName } from '@/lib/worktree-default-display-name'
 import { VIRTUALIZED_SCROLL_ANCHOR_RECORD_EVENT } from '@/hooks/useVirtualizedScrollAnchor'
@@ -35,6 +36,7 @@ export function useWorktreeContextMenuCommands(args: {
   >['setWorktreesPinnedAndReveal']
   sleepableWorktrees: readonly Worktree[]
   subtreeSleepableWorktrees: readonly Worktree[]
+  archiveTargets: readonly Worktree[]
   updateWorktreeMeta: ReturnType<typeof useAppStore.getState>['updateWorktreeMeta']
   validParentWorktreeId: string | null
   worktree: Worktree
@@ -152,6 +154,17 @@ export function useWorktreeContextMenuCommands(args: {
   const handleCloseTerminals = useCallback(() => {
     sleepWorktreesAfterMenuClose(args.sleepableWorktrees.map((item) => item.id))
   }, [args.sleepableWorktrees, sleepWorktreesAfterMenuClose])
+  const handleArchive = useCallback(() => {
+    const worktreeIds = args.archiveTargets.map((item) => item.id)
+    args.setMenuOpenState(false)
+    // Why deferred like sleep: the dropdown must unmount before the panes tear down.
+    window.setTimeout(() => void runArchiveWorktrees(worktreeIds), 50)
+  }, [args])
+  const handleUnarchive = useCallback(() => {
+    const worktreeIds = args.archiveTargets.map((item) => item.id)
+    args.setMenuOpenState(false)
+    void runUnarchiveWorktrees(worktreeIds)
+  }, [args])
   const handleSleepSubtree = useCallback(() => {
     sleepWorktreesAfterMenuClose(args.subtreeSleepableWorktrees.map((item) => item.id))
   }, [args.subtreeSleepableWorktrees, sleepWorktreesAfterMenuClose])
@@ -175,6 +188,7 @@ export function useWorktreeContextMenuCommands(args: {
     }
   }, [args.validParentWorktreeId])
   return {
+    handleArchive,
     handleAssignWorkspaceStatus,
     handleCloseTerminals,
     handleCopyName,
@@ -189,6 +203,7 @@ export function useWorktreeContextMenuCommands(args: {
     handleSleepSubtree,
     handleSubmitNewProjectGroup,
     handleTogglePin,
-    handleToggleRead
+    handleToggleRead,
+    handleUnarchive
   }
 }

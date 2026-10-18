@@ -1,4 +1,4 @@
-import { FileText, FolderPlus, Globe, Play, SquareTerminal, Trash2 } from 'lucide-react'
+import { Archive, FileText, FolderPlus, Globe, Play, SquareTerminal, Trash2 } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 import type { CmdJQuickActionAvailability, CmdJQuickActionContext } from './quick-action-context'
 import {
@@ -9,6 +9,7 @@ import {
 import { translate } from '@/i18n/i18n'
 import { createLocalizedCatalog } from '@/i18n/localized-catalog'
 import { getNativeChatSplitQuickActions } from './native-chat-split-quick-actions'
+import { useAppStore } from '@/store'
 
 export type CmdJQuickActionRunResult =
   | { status: 'ok' }
@@ -172,6 +173,33 @@ export const getCmdJQuickActions = createLocalizedCatalog((): CmdJQuickAction[] 
         return { status: 'unavailable', reason: availability.reason }
       }
       ctx.deleteActiveWorkspace()
+      return { status: 'ok' }
+    }
+  },
+  {
+    // Why a toggle rather than a separate view: archived workspaces render in
+    // the sidebar they came from, so revealing them is all the palette has to do.
+    id: 'view-archived-workspaces',
+    kind: 'action',
+    title: translate(
+      'auto.components.cmd.j.quick.actions.viewArchivedWorkspaces',
+      'View Archived Workspaces'
+    ),
+    description: translate(
+      'auto.components.cmd.j.quick.actions.viewArchivedWorkspacesDescription',
+      'Show archived workspaces in the sidebar so they can be restored.'
+    ),
+    icon: Archive,
+    verbKeywords: [
+      translate('auto.components.cmd.j.quick.actions.verbs.viewArchived', 'view archived'),
+      translate('auto.components.cmd.j.quick.actions.verbs.archived', 'archived'),
+      translate('auto.components.cmd.j.quick.actions.verbs.unarchive', 'unarchive'),
+      translate('auto.components.cmd.j.quick.actions.verbs.restoreWorkspace', 'restore workspace')
+    ],
+    isAvailable: () => ({ available: true }),
+    run: async () => {
+      const { showArchivedWorkspaces, setShowArchivedWorkspaces } = useAppStore.getState()
+      setShowArchivedWorkspaces(!showArchivedWorkspaces)
       return { status: 'ok' }
     }
   },

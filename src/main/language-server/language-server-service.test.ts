@@ -194,6 +194,38 @@ describe('language server service', () => {
     expect(sessions[0]?.dispose).not.toHaveBeenCalled()
   })
 
+  it("stops every language's servers for one checkout and leaves other checkouts alone", async () => {
+    const { service, sessions } = setup()
+    await service.definition(request)
+    await service.definition(tsRequest)
+    await service.definition({
+      ...request,
+      worktreeRoot: '/wt/e-5139',
+      repoRoot: '/wt/e-5139',
+      filePath: '/wt/e-5139/apps/backend/a.py'
+    })
+
+    service.stopWorktree('/repo')
+
+    expect(sessions[0]?.dispose).toHaveBeenCalled()
+    expect(sessions[1]?.dispose).toHaveBeenCalled()
+    expect(sessions[2]?.dispose).not.toHaveBeenCalled()
+  })
+
+  it('keeps a session two checkouts share until the last one is stopped', async () => {
+    const { service, sessions } = setup()
+    await service.definition(request)
+    // Why the same project: a sibling worktree whose files resolve to the main
+    // checkout's project reuses that server, and stopping one must not blind the other.
+    await service.definition({ ...request, worktreeRoot: '/other', repoRoot: '/repo' })
+
+    service.stopWorktree('/other')
+    expect(sessions[0]?.dispose).not.toHaveBeenCalled()
+
+    service.stopWorktree('/repo')
+    expect(sessions[0]?.dispose).toHaveBeenCalled()
+  })
+
   it('refuses files at a relative path or of the wrong language', async () => {
     const { service, startSession } = setup()
 

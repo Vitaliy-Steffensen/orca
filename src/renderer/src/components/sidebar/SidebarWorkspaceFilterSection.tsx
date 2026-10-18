@@ -1,5 +1,6 @@
 import React from 'react'
 import {
+  Archive,
   CalendarClock,
   GitBranch,
   FolderClock,
@@ -15,6 +16,8 @@ import { FilterToggleRow } from './FilterToggleRow'
 const SidebarWorkspaceFilterSection = React.memo(function SidebarWorkspaceFilterSection() {
   const showSleepingWorkspaces = useAppStore((s) => s.showSleepingWorkspaces)
   const setShowSleepingWorkspaces = useAppStore((s) => s.setShowSleepingWorkspaces)
+  const showArchivedWorkspaces = useAppStore((s) => s.showArchivedWorkspaces)
+  const setShowArchivedWorkspaces = useAppStore((s) => s.setShowArchivedWorkspaces)
   const hideDefaultBranchWorkspace = useAppStore((s) => s.hideDefaultBranchWorkspace)
   const setHideDefaultBranchWorkspace = useAppStore((s) => s.setHideDefaultBranchWorkspace)
   const hideAutomationGeneratedWorkspaces = useAppStore((s) => s.hideAutomationGeneratedWorkspaces)
@@ -135,6 +138,21 @@ const SidebarWorkspaceFilterSection = React.memo(function SidebarWorkspaceFilter
         )}
         checked={hideTemporaryCheckoutWorkspaces}
         onChange={setHideTemporaryCheckoutWorkspaces}
+      />
+      {/* Why not counted as an active filter: it widens the list rather than
+          narrowing it, so Clear Filters has nothing to undo here. */}
+      <FilterToggleRow
+        icon={<Archive className="size-3.5" />}
+        label={translate(
+          'auto.components.sidebar.SidebarWorkspaceFilterSection.showArchived',
+          'Show archived'
+        )}
+        ariaLabel={translate(
+          'auto.components.sidebar.SidebarWorkspaceFilterSection.showArchivedAria',
+          'Show archived workspaces in the sidebar so they can be restored'
+        )}
+        checked={showArchivedWorkspaces}
+        onChange={setShowArchivedWorkspaces}
       />
     </>
   )

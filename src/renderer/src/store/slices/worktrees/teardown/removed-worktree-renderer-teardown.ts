@@ -45,6 +45,11 @@ export async function tearDownRemovedWorktreeRendererState(args: {
       )
     )
   }
+  // Why read before the awaits: the row is gone from the catalog by the time
+  // teardown finishes, and the language server pool is keyed by the checkout path.
+  const worktreePath = get()
+    .allWorktrees()
+    .find((worktree) => worktree.id === worktreeId)?.path
   // Why the captured keys: closing a structured chat keeps its conversation's draft, and a listing
   // refresh may already have dropped these tabs.
   deleteWorkspaceChatDrafts(beforeRemoval.chatDraftKeys)
@@ -86,6 +91,12 @@ export async function tearDownRemovedWorktreeRendererState(args: {
 
   // Why: snapshot the sidebar top-row anchor in the same tick we remove the row; recording at click time goes stale across the await.
   requestVirtualizedScrollAnchorRecord('[data-worktree-sidebar]')
+
+  // Why here too: nothing else disposes the checkout's language servers, and each
+  // one holds a whole project index until its idle timer fires.
+  if (worktreePath) {
+    await window.api?.languageServer?.stopWorktree?.({ worktreeRoot: worktreePath })
+  }
 
   // Why: dispose parked terminal watchers only on explicit deletion; identity migration/remounts must keep buffered PTY state.
   disposeRemovedWorktreeParkedTerminalWatchers(worktreeId, beforeRemoval.terminalPtyIds)

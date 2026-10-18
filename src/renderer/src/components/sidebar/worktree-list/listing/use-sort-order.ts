@@ -58,18 +58,19 @@ export function useSidebarWorktreeSortOrder(args: {
   const { repoMap, sortBy } = args
   // Why settled (not live): the store coalesces bump bursts so rows don't jump (store/settled-sort-epoch.ts).
   const settledSortEpoch = useAppStore((s) => s.settledSortEpoch)
+  const showArchivedWorkspaces = useAppStore((s) => s.showArchivedWorkspaces)
 
   // Why a latching ref: a live signal makes Smart authoritative for the session, even after that activity ends.
   const sessionHasHadLiveSmartSignal = useRef(false)
 
   const recomputedSort = useMemo(() => {
     const state = useAppStore.getState()
-    const nonArchivedWorktrees = getAllWorktreesFromState(state).filter(
-      (worktree) => !worktree.isArchived
+    const sortableWorktrees = getAllWorktreesFromState(state).filter(
+      (worktree) => state.showArchivedWorkspaces || !worktree.isArchived
     )
     const now = Date.now()
     // Why precompute: the label tiebreaker runs on every comparison in every mode.
-    const labels = buildWorktreeSortLabels(nonArchivedWorktrees)
+    const labels = buildWorktreeSortLabels(sortableWorktrees)
     let detectedLiveSmartSignal = false
 
     // Why cold-start detection: agent-status hydrates async, so the warm comparator would collapse all to Class 4; keep the persisted order until a live signal appears.
@@ -84,11 +85,11 @@ export function useSidebarWorktreeSortOrder(args: {
       ) {
         detectedLiveSmartSignal = true
       } else {
-        nonArchivedWorktrees.sort(
+        sortableWorktrees.sort(
           (a, b) => b.sortOrder - a.sortOrder || compareWorktreeSortLabel(a, b, labels)
         )
         return {
-          sortedIds: nonArchivedWorktrees.map((w) => w.id),
+          sortedIds: sortableWorktrees.map((w) => w.id),
           attentionByWorktree: null,
           detectedLiveSmartSignal: false
         }
@@ -99,7 +100,7 @@ export function useSidebarWorktreeSortOrder(args: {
     const attentionByWorktree =
       sortBy === 'smart'
         ? buildAttentionByWorktree(
-            nonArchivedWorktrees,
+            sortableWorktrees,
             state.tabsByWorktree,
             state.agentStatusByPaneKey,
             state.runtimePaneTitlesByTabId,
@@ -109,17 +110,17 @@ export function useSidebarWorktreeSortOrder(args: {
             state.terminalLayoutsByTabId
           )
         : new Map<string, WorktreeAttention>()
-    nonArchivedWorktrees.sort(
+    sortableWorktrees.sort(
       buildWorktreeComparator(sortBy, repoMap, now, attentionByWorktree, labels)
     )
     return {
-      sortedIds: nonArchivedWorktrees.map((w) => w.id),
+      sortedIds: sortableWorktrees.map((w) => w.id),
       attentionByWorktree: sortBy === 'smart' ? attentionByWorktree : null,
       detectedLiveSmartSignal
     }
     // settledSortEpoch is an intentional trigger not read in the memo; its change signals a recompute.
     // oxlint-disable-next-line react-hooks/exhaustive-deps
-  }, [settledSortEpoch, repoMap, sortBy])
+  }, [settledSortEpoch, repoMap, sortBy, showArchivedWorkspaces])
   // Why: stable ID order prevents rank-only refreshes from echoing an unchanged snapshot.
   const sortedIds = useReusedArrayIdentity(recomputedSort.sortedIds)
 

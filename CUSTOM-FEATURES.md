@@ -22,6 +22,9 @@ Adding a feature here? See the rule at the top of [`CLAUDE.md`](./CLAUDE.md).
 - A plan waiting on you reads in the transcript instead of a cramped card, and the composer carries
   the decision: Copy, Approve (⌘⇧↵), and a field where what you type is sent back as the changes to
   make.
+- Right-click a workspace to Archive it: everything it is running shuts down and it leaves the
+  sidebar, keeping the checkout. Cmd+J's "View Archived Workspaces" brings them back to unarchive,
+  and a merged or closed pull request can archive its workspace instead of deleting it.
 
 ## Inherited from `frbarbre/orca`
 
