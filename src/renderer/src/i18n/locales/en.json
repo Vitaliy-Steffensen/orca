@@ -18522,6 +18522,11 @@
       "empty": "No users found"
     },
     "native-chat": {
+      "unifiedChat": {
+        "couldNotStart": "Couldn't start a new chat.",
+        "open": "Open a new chat",
+        "newChat": "New chat"
+      },
       "reasoning": "Reasoning",
       "failureWords": {
         "theAgent": "The agent",
@@ -18785,6 +18790,10 @@
         "chooseInAgentPicker": "Choose in agent picker…",
         "searchModels": "Search models…",
         "noModelsMatch": "No models match your search.",
+        "modelProvider": {
+          "claude": "Claude",
+          "cursor": "Cursor"
+        },
         "toggleOption": "Toggle {{value0}}",
         "pillAccessibleName": "{{value0}} {{value1}}",
         "sentNotConfirmed": "Sent to the agent — not confirmed",

@@ -1,4 +1,6 @@
 import { useMemo, type Dispatch, type SetStateAction } from 'react'
+import { toRuntimeWorktreeSelector } from '@/runtime/runtime-worktree-selector'
+import { useAppStore } from '@/store'
 import { dispatchStructuredAgentSessionComposerCommand } from '../../../../shared/structured-agent-session-composer'
 import { useStructuredAgentAcceptsImages } from '@/runtime/use-host-structured-agent'
 import type {
@@ -7,6 +9,7 @@ import type {
 } from './native-chat-composer-types'
 import type { NativeChatStructuredViewProps } from './native-chat-view-types'
 import type { useStructuredAgentSession } from './use-structured-agent-session'
+import { useUnifiedChatModelMenu } from './use-unified-chat-model-menu'
 import type { StructuredAgentSessionQueuedMessagesController } from './use-structured-agent-session-queued-messages'
 
 /** What the composer of a structured chat sends, picks and runs through, from the chat's controller. */
@@ -30,6 +33,25 @@ export function useNativeChatStructuredComposerTransport(args: {
 }): NativeChatStructuredComposerTransport {
   const { props, controller, sendThroughLaunch, starting, worktreeId, optionPickerRequest } = args
   const { setOptionPickerRequest, onError, onSubmitted, queuedMessages } = args
+  const groupId = useAppStore((state) =>
+    worktreeId
+      ? state.unifiedTabsByWorktree[worktreeId]?.find(
+          (tab) => tab.contentType === 'agent-session' && tab.entityId === props.sessionId
+        )?.groupId
+      : undefined
+  )
+  const unifiedModelMenu = useUnifiedChatModelMenu({
+    agent: props.agent,
+    sessionId: props.sessionId,
+    worktreeId: worktreeId ?? null,
+    groupId,
+    target: props.target,
+    worktreeSelector: worktreeId ? toRuntimeWorktreeSelector(worktreeId) : undefined,
+    journalItems: controller.journalItems,
+    submissionCount: controller.submissions.length,
+    optionSnapshot: controller.optionSnapshot,
+    optionSurface: controller.optionSurface
+  })
   const acceptsImages = useStructuredAgentAcceptsImages(
     props.target,
     props.agent,
@@ -67,9 +89,9 @@ export function useNativeChatStructuredComposerTransport(args: {
         }),
       ...(setThreadGoalObjective ? { threadGoal: { setObjective: setThreadGoalObjective } } : {}),
       sendOut: controller.sendOut || starting,
-      optionsSurface: controller.optionSurface,
+      optionsSurface: unifiedModelMenu.surface,
       conversationCommands: controller.conversationCommands,
-      optionSnapshot: controller.optionSnapshot,
+      optionSnapshot: unifiedModelMenu.snapshot,
       optionPickerRequest,
       sessionCommands: controller.sessionCommands,
       acceptsImages,
@@ -87,6 +109,8 @@ export function useNativeChatStructuredComposerTransport(args: {
   }, [
     acceptsImages,
     controller,
+    unifiedModelMenu.snapshot,
+    unifiedModelMenu.surface,
     worktreeId,
     onError,
     onSubmitted,
