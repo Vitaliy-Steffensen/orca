@@ -3,10 +3,7 @@ import { GitHubUserAvatar } from '@/components/github/github-user-avatar'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
 import { translate } from '@/i18n/i18n'
 import { cn } from '@/lib/utils'
-import {
-  useGitHubViewer,
-  useGitHubViewerLookupSettled
-} from '../pending-review/use-github-viewer'
+import { useGitHubViewer, useGitHubViewerLookupSettled } from '../pending-review/use-github-viewer'
 import { usePullRequestAuthor } from '../workspace-status-rules/pr-author-store'
 
 /**

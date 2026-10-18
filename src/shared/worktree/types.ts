@@ -9,6 +9,7 @@ import type { BuiltInWorktreeVisibilitySourceId } from '../repo-types'
 import type { WorktreeIdentity } from './identity'
 import type { WorktreeScanFailureKind } from '../worktree-scan-failure'
 import type { PendingReviewComment } from '../github/pending-review-comment'
+import type { WorkspaceStatusManualOverride } from '../workspace-status-manual-override'
 import type { WorkspaceAutonomy } from '../workspace-autonomy'
 
 export type WorkspaceAttachmentOrigin = {
@@ -174,6 +175,8 @@ export type Worktree = {
   /** Path-derived worktree ids this worktree had before folder renames. */
   priorWorktreeIds?: string[]
   workspaceStatus?: WorkspaceStatus
+  /** The lane the user last chose by hand, so agent-state rules do not move the card back. */
+  agentRuleManualOverride?: WorkspaceStatusManualOverride
   /** Clearance for unattended work. Absent (from an older host or an unset workspace) reads as
    *  `supervised` — go through `resolveWorkspaceAutonomy`, never the raw field. */
   workspaceAutonomy?: WorkspaceAutonomy
