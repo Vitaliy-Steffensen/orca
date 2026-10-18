@@ -1,3 +1,4 @@
+import { DEFAULT_WORKTREE_CARD_PROPERTIES } from '../shared/worktree/card-properties'
 import { closeTestStores, testState, createStore, writeDataFile } from './persistence-test-harness'
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { rmSync, mkdtempSync } from 'node:fs'
@@ -79,6 +80,13 @@ describe('Store', () => {
       'linear-issue',
       'jira-issue',
       'pr',
+      'pr-author',
+      'diff',
+      'diff-mix',
+      'linear-priority',
+      'stack',
+      'unresolved-comments',
+      'pr-open-age',
       'comment',
       'ports',
       'run',
@@ -118,6 +126,13 @@ describe('Store', () => {
       'linear-issue',
       'jira-issue',
       'pr',
+      'pr-author',
+      'diff',
+      'diff-mix',
+      'linear-priority',
+      'stack',
+      'unresolved-comments',
+      'pr-open-age',
       'comment',
       'ports',
       'run',
@@ -144,10 +159,19 @@ describe('Store', () => {
     expect(store.getUI().worktreeCardProperties).toEqual([
       'status',
       'unread',
+      'blocker',
+      'conflict',
       'issue',
       'linear-issue',
       'jira-issue',
       'pr',
+      'pr-author',
+      'diff',
+      'diff-mix',
+      'linear-priority',
+      'stack',
+      'unresolved-comments',
+      'pr-open-age',
       'automation',
       'cli',
       'comment',
@@ -183,6 +207,13 @@ describe('Store', () => {
       'linear-issue',
       'jira-issue',
       'pr',
+      'pr-author',
+      'diff',
+      'diff-mix',
+      'linear-priority',
+      'stack',
+      'unresolved-comments',
+      'pr-open-age',
       'ports',
       'run',
       'inline-agents',
@@ -208,7 +239,20 @@ describe('Store', () => {
     })
     const store = await createStore()
 
-    expect(store.getUI().worktreeCardProperties).toEqual(['status', 'unread', 'pr', 'run', 'host'])
+    expect(store.getUI().worktreeCardProperties).toEqual([
+      'status',
+      'unread',
+      'pr',
+      'pr-author',
+      'diff',
+      'diff-mix',
+      'linear-priority',
+      'stack',
+      'unresolved-comments',
+      'pr-open-age',
+      'run',
+      'host'
+    ])
     expect(store.getUI().worktreeCardProperties).not.toContain('branch')
     expect(store.getUI().worktreeCardProperties).not.toContain('ports')
     expect(store.getUI().worktreeCardProperties).not.toContain('inline-agents')
@@ -275,6 +319,13 @@ describe('Store', () => {
       'issue',
       'linear-issue',
       'pr',
+      'pr-author',
+      'diff',
+      'diff-mix',
+      'linear-priority',
+      'stack',
+      'unresolved-comments',
+      'pr-open-age',
       'comment',
       'ports',
       'run',
@@ -315,6 +366,13 @@ describe('Store', () => {
       'linear-issue',
       'jira-issue',
       'pr',
+      'pr-author',
+      'diff',
+      'diff-mix',
+      'linear-priority',
+      'stack',
+      'unresolved-comments',
+      'pr-open-age',
       'ports',
       'run',
       'inline-agents',
@@ -349,6 +407,13 @@ describe('Store', () => {
       'issue',
       'linear-issue',
       'pr',
+      'pr-author',
+      'diff',
+      'diff-mix',
+      'linear-priority',
+      'stack',
+      'unresolved-comments',
+      'pr-open-age',
       'run',
       'host'
     ])
@@ -402,8 +467,7 @@ describe('Store', () => {
     const store = await createStore()
 
     expect(store.getSettings().compactWorktreeCards).toBe(true)
-    expect(store.getUI().worktreeCardProperties).toEqual(['status', 'unread'])
-    expect(store.getUI().worktreeCardProperties).not.toContain('automation')
+    expect(store.getUI().worktreeCardProperties).toEqual([...DEFAULT_WORKTREE_CARD_PROPERTIES])
   })
 
   it('preserves the current defaulted Compact preset without expanding display toggles', async () => {
@@ -422,9 +486,7 @@ describe('Store', () => {
     const store = await createStore()
 
     expect(store.getSettings().compactWorktreeCards).toBe(true)
-    expect(store.getUI().worktreeCardProperties).toEqual(['status', 'unread'])
-    expect(store.getUI().worktreeCardProperties).not.toContain('ports')
-    expect(store.getUI().worktreeCardProperties).not.toContain('inline-agents')
+    expect(store.getUI().worktreeCardProperties).toEqual([...DEFAULT_WORKTREE_CARD_PROPERTIES])
   })
 
   it('backfills host once for profiles stamped before it became a card property', async () => {
@@ -469,7 +531,18 @@ describe('Store', () => {
     })
     const store = await createStore()
 
-    expect(store.getUI().worktreeCardProperties).toEqual(['status', 'unread', 'pr'])
+    expect(store.getUI().worktreeCardProperties).toEqual([
+      'status',
+      'unread',
+      'pr',
+      'pr-author',
+      'diff',
+      'diff-mix',
+      'linear-priority',
+      'stack',
+      'unresolved-comments',
+      'pr-open-age'
+    ])
     expect(store.getUI().worktreeCardProperties).not.toContain('host')
   })
 
@@ -494,8 +567,7 @@ describe('Store', () => {
       const store = await createStore()
 
       expect(store.getSettings().compactWorktreeCards).toBe(true)
-      expect(store.getUI().worktreeCardProperties).toEqual(['status', 'unread'])
-      expect(store.getUI().worktreeCardProperties).not.toContain('automation')
+      expect(store.getUI().worktreeCardProperties).toEqual([...DEFAULT_WORKTREE_CARD_PROPERTIES])
       expect(store.getUI()._worktreeCardModeDefaulted).toBe(true)
     }
   )

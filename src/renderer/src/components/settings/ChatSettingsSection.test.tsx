@@ -9,6 +9,7 @@ import { getChatAppearanceSearchEntries } from './chat-appearance-search'
 import { getChatNamingSearchEntry } from './chat-naming-search'
 import { getChatInlineVisualsSearchEntry } from './chat-inline-visuals-search'
 import { getChatBehaviorSearchEntries } from './chat-behavior-search'
+import { getChatPromptMarksSearchEntry } from './chat-prompt-marks-search'
 import { AGENT_SESSION_QUEUED_MESSAGES_RUNTIME_CAPABILITY } from '../../../../shared/protocol-version'
 import { setLocalRuntimeCapabilitiesForTests } from '@/runtime/local-runtime-capabilities'
 import { useStructuredAgentSessionHostQueuesMessages } from '@/runtime/structured-agent-session-host-capability'
@@ -62,6 +63,7 @@ function renderChat(
         searchEntries={[
           ...getChatAppearanceSearchEntries(),
           ...getChatBehaviorSearchEntries(),
+          getChatPromptMarksSearchEntry(),
           ...(showDesktopOnlySettings
             ? [getChatNamingSearchEntry(), getChatInlineVisualsSearchEntry()]
             : [])
@@ -147,6 +149,18 @@ describe('Chat settings page', () => {
     expect(appearance?.contains(appearanceCard)).toBe(true)
     expect(names?.contains(namesCard)).toBe(true)
     expect(container.querySelectorAll('#chat-names')).toHaveLength(1)
+  })
+
+  it('ships Simplify as a prompt mark and saves where its instruction goes', () => {
+    const { updateSettings } = renderChat(true)
+    const instruction = screen.getByRole('textbox', { name: 'Instruction' })
+    expect((instruction as HTMLTextAreaElement).value).toContain('plain language')
+    fireEvent.click(screen.getByRole('radio', { name: 'Put the instruction after your message' }))
+    expect(updateSettings).toHaveBeenCalledWith({
+      nativeChatPromptMarks: [
+        expect.objectContaining({ id: 'simplify', name: 'Simplify', placement: 'suffix' })
+      ]
+    })
   })
 
   it('holds the chat session settings that used to live under Experimental', () => {

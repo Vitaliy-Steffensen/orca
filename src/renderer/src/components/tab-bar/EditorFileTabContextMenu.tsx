@@ -101,6 +101,7 @@ export function EditorFileTabContextMenu({
 }: EditorFileTabContextMenuProps): React.JSX.Element {
   const renameShortcut = useOptionalShortcutLabel('tab.rename')
   const closeShortcut = useOptionalShortcutLabel('tab.close')
+  const closeOthersShortcut = useOptionalShortcutLabel('tab.closeOthers')
   const closeAllShortcut = useOptionalShortcutLabel('tab.closeAll')
   const revealOwner = useAppStore((s) =>
     getWorkspaceFileRevealOwner(s, file.worktreeId, {
@@ -168,6 +169,9 @@ export function EditorFileTabContextMenu({
         <DropdownMenuItem onSelect={onCloseOthers} disabled={tabCount <= 1}>
           <CopyX className="size-3.5" />
           {translate('components.tab.bar.EditorFileTabContextMenu.closeOthers', 'Close Others')}
+          {closeOthersShortcut ? (
+            <DropdownMenuShortcut>{closeOthersShortcut}</DropdownMenuShortcut>
+          ) : null}
         </DropdownMenuItem>
         <DropdownMenuItem onSelect={onCloseAll}>
           <ListX className="size-3.5" />

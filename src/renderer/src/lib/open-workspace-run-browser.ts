@@ -65,7 +65,7 @@ export function workspaceRunBrowserOpenPlan(args: {
   if (!args.command?.openBrowser) {
     return { markOpened: true, port: null }
   }
-  const port = findWorkspaceRunBrowserPort(args)
+  const port = findWorkspaceRunBrowserPort({ ...args, command: args.command })
   return { markOpened: port !== null, port }
 }
 
@@ -152,7 +152,7 @@ export async function openWorkspaceRunBrowser(args: {
   const latest = useAppStore.getState()
   const pageId = workspaceRunLoginPageId(
     latest.browserTabsByWorktree[args.worktreeId] ?? [],
-    latest.activeBrowserTabIdByWorktree[args.worktreeId]
+    latest.activeBrowserTabIdByWorktree[args.worktreeId] ?? undefined
   )
   if (!pageId) {
     return

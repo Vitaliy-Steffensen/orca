@@ -34,6 +34,21 @@ const payload = {
             { state: 'COMMENTED', author: null }
           ]
         },
+        timelineItems: {
+          nodes: [
+            {
+              createdAt: '2026-10-16T09:00:00Z',
+              requestedReviewer: { __typename: 'User', login: 'pmperson' }
+            },
+            {
+              createdAt: '2026-10-17T09:00:00Z',
+              requestedReviewer: { __typename: 'Team', slug: 'pm-approval' }
+            },
+            { createdAt: 'not a date', requestedReviewer: { __typename: 'User', login: 'nope' } },
+            { createdAt: '2026-10-17T10:00:00Z', requestedReviewer: null },
+            {}
+          ]
+        },
         commits: {
           nodes: [
             {
@@ -128,6 +143,21 @@ describe('mapReviewStatusSnapshotResponse', () => {
     expect(pr.latestReviews).toEqual([{ login: 'reviewer', state: 'APPROVED', commitOid: null }])
   })
 
+  it('dates every review request and drops the ones it cannot', () => {
+    const [pr] = mapReviewStatusSnapshotResponse(payload).linkedPullRequests
+
+    expect(pr.reviewRequestEvents).toEqual([
+      {
+        reviewer: { kind: 'user', login: 'pmperson' },
+        requestedAt: Date.parse('2026-10-16T09:00:00Z')
+      },
+      {
+        reviewer: { kind: 'team', slug: 'pm-approval' },
+        requestedAt: Date.parse('2026-10-17T09:00:00Z')
+      }
+    ])
+  })
+
   it('survives an empty or malformed payload', () => {
     for (const value of [null, undefined, {}, { data: null }, { data: { linked0: 7 } }]) {
       expect(mapReviewStatusSnapshotResponse(value)).toEqual({
@@ -152,6 +182,7 @@ describe('buildReviewStatusSnapshotQuery', () => {
     expect(query).toContain(`${snapshotLinkedPRAlias(0)}: repository(owner: "flowbasedk"`)
     expect(query).toContain(`${snapshotLinkedPRAlias(1)}: repository(owner: "frbarbre"`)
     expect(query).not.toContain('inbox: search')
+    expect(query).toContain('timelineItems(itemTypes: [REVIEW_REQUESTED_EVENT]')
   })
 
   it('caps the number of aliases so the document stays bounded', () => {

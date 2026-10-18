@@ -15,6 +15,13 @@ export type ReviewSnapshotRequestedReviewer =
   | { kind: 'user'; login: string }
   | { kind: 'team'; slug: string }
 
+/** One `ReviewRequestedEvent`: who was asked, and when. A re-request adds another. */
+export type ReviewSnapshotReviewRequestEvent = {
+  reviewer: ReviewSnapshotRequestedReviewer
+  /** Epoch milliseconds; the event's `createdAt`. */
+  requestedAt: number
+}
+
 export type ReviewSnapshotLatestReview = {
   login: string
   state: ReviewSnapshotReviewState
@@ -47,6 +54,8 @@ export type ReviewSnapshotPullRequest = {
   latestReviews: ReviewSnapshotLatestReview[]
   /** Each reviewer's last approve or request-changes review, kept after they are re-requested. */
   latestOpinionatedReviews?: ReviewSnapshotLatestReview[]
+  /** Oldest first. Absent on hosts that predate the field, never empty-by-omission. */
+  reviewRequestEvents?: ReviewSnapshotReviewRequestEvent[]
   checks: ReviewSnapshotCheck[]
 }
 
