@@ -14,6 +14,7 @@ import type { WorktreeCardPresentation } from './worktree-card-presentation'
 import { WorktreeCardSshHostControl } from './WorktreeCardSshHostControl'
 import { WorktreeTitleInlineRename } from './WorktreeTitleInlineRename'
 import { displayedPullRequestAuthor, WorktreeCardPrAuthor } from './worktree-card-pr-author'
+import { WorktreeCardRunAction } from './WorktreeCardRunAction'
 import { isAutonomousWorkspace } from '../../../../shared/workspace-autonomy'
 import type { WorktreeCardController } from './use-worktree-card-controller'
 
@@ -302,6 +303,12 @@ export function WorktreeCardHeader({
 
       {showHeaderActions && (
         <div className="ml-auto flex shrink-0 items-center justify-center gap-1 pr-1.5">
+          <WorktreeCardRunAction
+            worktreeId={card.worktree.id}
+            command={card.workspaceRunCommand}
+            active={card.runState !== null}
+          />
+
           {showDeleteQuickAction && (
             <Tooltip>
               <TooltipTrigger asChild>

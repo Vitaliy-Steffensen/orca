@@ -25,6 +25,7 @@ export const DEFAULT_WORKTREE_CARD_PROPERTIES: WorktreeCardProperty[] = [
   'cli',
   'comment',
   'ports',
+  'run',
   // Why: agent activity is the primary reason users opt into the feature, so it
   // stays inline on each card by default.
   'inline-agents',
@@ -67,6 +68,7 @@ export const WORKTREE_CARD_PROPERTIES = [
   'cli',
   'comment',
   'ports',
+  'run',
   'inline-agents',
   'host'
 ] as const satisfies readonly WorktreeCardProperty[]

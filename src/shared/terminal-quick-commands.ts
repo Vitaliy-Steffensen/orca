@@ -4,8 +4,14 @@ import type {
   TerminalCommandQuickCommand,
   TerminalQuickCommand,
   TerminalQuickCommandAction,
-  TerminalQuickCommandScope
+  TerminalQuickCommandScope,
+  WorkspaceRunQuickCommand
 } from './terminal-quick-command-types'
+import {
+  isNormalizedWorkspaceRunQuickCommand,
+  normalizeWorkspaceRunQuickCommand,
+  workspaceRunCommandSummary
+} from './workspace-run-quick-command'
 
 export const MAX_QUICK_COMMANDS = 40
 export const MAX_QUICK_COMMAND_ID_LENGTH = 80
@@ -59,13 +65,31 @@ export function terminalQuickCommandMatchesRepo(
 export function getTerminalQuickCommandAction(
   command: TerminalQuickCommand
 ): TerminalQuickCommandAction {
-  return command.action === 'agent-prompt' ? 'agent-prompt' : 'terminal-command'
+  if (command.action === 'agent-prompt') {
+    return 'agent-prompt'
+  }
+  if (command.action === 'workspace-run') {
+    return 'workspace-run'
+  }
+  return 'terminal-command'
 }
 
 export function isTerminalAgentQuickCommand(
   command: TerminalQuickCommand
 ): command is TerminalAgentQuickCommand {
   return getTerminalQuickCommandAction(command) === 'agent-prompt'
+}
+
+export function isWorkspaceRunQuickCommand(
+  command: TerminalQuickCommand
+): command is WorkspaceRunQuickCommand {
+  return getTerminalQuickCommandAction(command) === 'workspace-run'
+}
+
+export function isTerminalCommandQuickCommand(
+  command: TerminalQuickCommand
+): command is TerminalCommandQuickCommand {
+  return getTerminalQuickCommandAction(command) === 'terminal-command'
 }
 
 export function supportsTerminalAgentQuickCommand(
@@ -75,11 +99,25 @@ export function supportsTerminalAgentQuickCommand(
 }
 
 export function getTerminalQuickCommandBody(command: TerminalQuickCommand): string {
-  return isTerminalAgentQuickCommand(command) ? command.prompt : command.command
+  if (isTerminalAgentQuickCommand(command)) {
+    return command.prompt
+  }
+  if (isWorkspaceRunQuickCommand(command)) {
+    return workspaceRunCommandSummary(command)
+  }
+  return command.command
 }
 
 export function isTerminalQuickCommandComplete(command: TerminalQuickCommand): boolean {
-  return command.label.trim().length > 0 && getTerminalQuickCommandBody(command).trim().length > 0
+  if (!command.label.trim()) {
+    return false
+  }
+  if (isWorkspaceRunQuickCommand(command)) {
+    return (
+      command.services.length > 0 && command.services.every((service) => service.command.trim())
+    )
+  }
+  return getTerminalQuickCommandBody(command).trim().length > 0
 }
 
 export function normalizeTerminalQuickCommands(input: unknown): TerminalQuickCommand[] {
@@ -101,12 +139,21 @@ export function normalizeTerminalQuickCommands(input: unknown): TerminalQuickCom
     }
     const hasLabel = typeof record.label === 'string'
     const action: TerminalQuickCommandAction =
-      record.action === 'agent-prompt' ? 'agent-prompt' : 'terminal-command'
+      record.action === 'agent-prompt'
+        ? 'agent-prompt'
+        : record.action === 'workspace-run'
+          ? 'workspace-run'
+          : 'terminal-command'
     const hasCommand = typeof record.command === 'string'
     const hasPrompt = typeof record.prompt === 'string'
+    const hasServices = Array.isArray(record.services)
     // Why: settings saves on every edit; preserve incomplete rows so a newly
     // added command is not deleted before the user fills in the command text.
-    if (!hasLabel && !hasCommand && !hasPrompt) {
+    if (
+      action === 'workspace-run'
+        ? !hasLabel && !hasServices
+        : !hasLabel && !hasCommand && !hasPrompt
+    ) {
       continue
     }
     const agent = supportsTerminalAgentQuickCommand(record.agent) ? record.agent : null
@@ -130,7 +177,9 @@ export function normalizeTerminalQuickCommands(input: unknown): TerminalQuickCom
       scope: normalizeTerminalQuickCommandScope(record.scope)
     }
 
-    if (action === 'agent-prompt') {
+    if (action === 'workspace-run') {
+      normalized.push(normalizeWorkspaceRunQuickCommand(record, base))
+    } else if (action === 'agent-prompt') {
       if (agent === null) {
         continue
       }
@@ -204,6 +253,9 @@ function isNormalizedTerminalQuickCommand(value: unknown, expected: TerminalQuic
       command.agent === expected.agent &&
       command.prompt === expected.prompt
     )
+  }
+  if (isWorkspaceRunQuickCommand(expected)) {
+    return isNormalizedWorkspaceRunQuickCommand(value, expected)
   }
   return (
     hasExactKeys(command, ['id', 'label', 'action', 'command', 'appendEnter', 'scope']) &&

@@ -81,6 +81,7 @@ export function normalizeLoadedUiState(
   const expandedCardPropsMigrated = parsed.ui?._expandedWorktreeCardPropertiesDefaulted === true
   const jiraIssueCardPropDefaulted = parsed.ui?._jiraIssueWorktreeCardPropertyDefaulted === true
   const hostCardPropDefaulted = parsed.ui?._hostWorktreeCardPropertyDefaulted === true
+  const runCardPropDefaulted = parsed.ui?._runWorktreeCardPropertyDefaulted === true
   const prAuthorCardPropDefaulted = parsed.ui?._prAuthorWorktreeCardPropertyDefaulted === true
   const cardFactsDefaulted = parsed.ui?._worktreeCardFactsDefaulted === true
   const hadExperimentOn = readDeprecatedExperimentFlag(parsed)
@@ -152,7 +153,11 @@ export function normalizeLoadedUiState(
             properties.includes(property) ? properties : [...properties, property],
           prAuthorCandidate
         )
-    const normalized = normalizeWorktreeCardProperties(factsCandidate)
+    const runCandidate =
+      runCardPropDefaulted || factsCandidate.includes('run')
+        ? factsCandidate
+        : [...factsCandidate, 'run' as const]
+    const normalized = normalizeWorktreeCardProperties(runCandidate)
     const changed =
       normalized.length !== rawCardProps.length ||
       normalized.some((property, index) => property !== rawCardProps[index])
@@ -165,7 +170,8 @@ export function normalizeLoadedUiState(
     !jiraIssueCardPropDefaulted ||
     !hostCardPropDefaulted ||
     !prAuthorCardPropDefaulted ||
-    !cardFactsDefaulted
+    !cardFactsDefaulted ||
+    !runCardPropDefaulted
   ) {
     markNeedsSave()
   }
@@ -265,6 +271,7 @@ export function normalizeLoadedUiState(
     _jiraIssueWorktreeCardPropertyDefaulted: true,
     _hostWorktreeCardPropertyDefaulted: true,
     _prAuthorWorktreeCardPropertyDefaulted: true,
-    _worktreeCardFactsDefaulted: true
+    _worktreeCardFactsDefaulted: true,
+    _runWorktreeCardPropertyDefaulted: true
   }
 }

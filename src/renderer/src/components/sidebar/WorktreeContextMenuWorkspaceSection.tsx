@@ -5,10 +5,11 @@ import type { WorkspaceStatusDefinition } from '../../../../shared/worktree/type
 import type { WorkspaceAutonomy } from '../../../../shared/workspace-autonomy'
 import type { WorkspaceIntent } from '../../../../shared/workspace-intent'
 import { WorktreeAutonomyMenuItems } from './WorktreeAutonomyMenuItems'
+import { WorktreeContextMenuRunItem } from './WorktreeContextMenuRunItem'
 import { WorktreeIntentMenuItems } from './WorktreeIntentMenuItems'
 import { WorktreeStatusMenuItems } from './WorktreeStatusMenuItems'
 
-/** The top of the card menu: rename, status, and autonomy. */
+/** The top of the card menu: rename, status, autonomy, and Run. */
 export function WorktreeContextMenuWorkspaceSection(props: {
   contextWorkspaceAutonomy: string
   contextWorkspaceIntent: string
@@ -20,7 +21,9 @@ export function WorktreeContextMenuWorkspaceSection(props: {
   onAssignWorkspaceIntent: (intent: WorkspaceIntent) => void
   onAssignWorkspaceStatus: (status: string) => void
   onRename: () => void
+  repoId: string
   workspaceStatuses: readonly WorkspaceStatusDefinition[]
+  worktreeId: string
 }) {
   return (
     <>
@@ -46,6 +49,13 @@ export function WorktreeContextMenuWorkspaceSection(props: {
         isMultiContext={props.isMultiContext}
         onAssignWorkspaceAutonomy={props.onAssignWorkspaceAutonomy}
       />
+      {!props.isMultiContext && (
+        <WorktreeContextMenuRunItem
+          worktreeId={props.worktreeId}
+          repoId={props.repoId}
+          disabled={props.isDeleting}
+        />
+      )}
       <WorktreeIntentMenuItems
         contextWorkspaceIntent={props.contextWorkspaceIntent}
         deletingContext={props.deletingContext}

@@ -25,6 +25,7 @@ describe('web preload API composition', () => {
       'starNag',
       'platform',
       'workspacePorts',
+      'workspaceRunCredentials',
       'orcaProfiles',
       'e2e',
       'settings',
