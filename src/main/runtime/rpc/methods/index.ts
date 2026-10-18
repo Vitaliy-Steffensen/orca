@@ -59,6 +59,7 @@ import { STRUCTURED_AGENT_SESSION_AGENTS_METHODS } from './structured-agent-sess
 import { ARTIFACT_METHODS } from './artifacts'
 import { AGENT_HOOK_METHODS } from './agent-hooks'
 import { AGENT_NOTE_METHODS } from './agent-notes'
+import { REVIEW_DRAFT_METHODS } from './review-drafts'
 import { AGENT_LAUNCH_METHODS } from './agent-launch'
 import { WORKSPACE_LAYOUT_METHODS } from './workspace-layout'
 
@@ -71,6 +72,7 @@ export const ALL_RPC_METHODS = [
   ...ORCAD_MIGRATION_METHODS,
   ...AGENT_HOOK_METHODS,
   ...AGENT_NOTE_METHODS,
+  ...REVIEW_DRAFT_METHODS,
   ...AI_VAULT_METHODS,
   ...ARTIFACT_METHODS,
   ...AUTOMATION_METHODS,

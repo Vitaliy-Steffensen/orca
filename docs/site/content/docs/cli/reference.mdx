@@ -220,6 +220,19 @@ orca notes rm --id <note-id> --json
 
 `notes list` returns the user's notes and the agent notes. `notes add` leaves an agent note on lines of the current file; Orca shows it in the diff as a bot note, apart from the user's notes, and never sends it to an agent. `--file` is relative to cwd or absolute inside the worktree. `--github-comment <url>` links the note to the GitHub review comment it answers.
 
+## Staged review comments
+
+```bash
+orca review comment add --file src/api.ts --line 42 --body "This retry loop never backs off." --json
+orca review comment list --json
+orca review comment rm --id <comment-id> --json
+orca review summary set --body "Two retry paths need backoff." --json
+```
+
+These draft a review of someone else's pull request. The comments wait in the reviewer's pending-review shelf, marked as agent-drafted, until they accept or drop each one and submit the review themselves — there is no CLI for submitting, and nothing reaches the provider until they do. The attribution lives only in the shelf: a submitted review carries the reviewer's name and nothing else.
+
+`--file` and the line numbers work exactly as in `notes add`. The queue is kept on the device whose Orca app submits the review, so these commands fail on a headless Orca server (`orca serve`) rather than staging where nobody will look.
+
 ## Built-in browser
 
 Browser commands control Orca's embedded browser tab for the selected worktree. They do not control Chrome, Safari, or the Orca desktop UI.

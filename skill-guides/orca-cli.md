@@ -191,6 +191,26 @@ ORCA notes add --file src/api.ts --line 40 --end-line 58 --agent "Claude Code" -
 
 When the user sent you their notes, answer each one with `ORCA notes reply --id <note id> --body "<what you did and why>"`; the note id is in the prompt ("Note id: …") and in `notes list`, and the reply shows under their note. A follow-up question comes with "Earlier in this thread"; answer it the same way. Use `notes add` when a review finds something on specific lines. Line numbers are in the current file. `--file` is relative to cwd or absolute inside the worktree. Name yourself with `--agent`. When the note answers a GitHub review comment, pass its link with `--github-comment <url>`; the note then links to that comment in Orca. `orca notes rm --id <id>` removes one of them.
 
+## Staged Review Comments
+
+When the workspace is for reviewing someone else's pull request, draft the review into the user's
+pending-review shelf. Each comment waits there, marked as yours, until the user accepts or drops it
+and submits the review under their own name — you cannot submit, and nothing reaches the provider
+until they do.
+
+```text
+ORCA review comment add --file src/api.ts --line 42 --body "This retry loop never backs off." --json
+ORCA review comment list --json
+ORCA review comment rm --id <comment id> --json
+ORCA review summary set --body "Two retry paths need backoff." --json
+```
+
+Line numbers and `--file` work as in `notes add`. `review summary set` replaces the whole summary
+box, so list first if the user may have typed there. These are for someone else's pull request;
+`notes add` is for commentary on the user's own diff. The queue lives on the device whose Orca app
+submits the review, so these commands fail on a headless Orca server rather than staging where
+nobody will look.
+
 ## Terminals
 
 Common commands:

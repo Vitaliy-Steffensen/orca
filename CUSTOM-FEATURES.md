@@ -17,6 +17,9 @@ Adding a feature here? See the rule at the top of [`CLAUDE.md`](./CLAUDE.md).
 - The app releases and auto-updates from this repository instead of upstream's or Frederik's.
 - A relative language server Path is read from the worktree root, and one that never starts keeps
   saying so instead of going quiet after its first warning.
+- An agent can stage inline review comments and the review summary with `orca review comment add`
+  and `orca review summary set`, marked as its drafts in the pending-review shelf, for you to accept
+  and submit as your own review.
 
 ## Inherited from `frbarbre/orca`
 

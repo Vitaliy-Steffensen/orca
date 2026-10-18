@@ -1,3 +1,4 @@
+import type { DiffCommentAgentAuthor } from '../diff-comment-types'
 import type { GitHubRepositoryIdentity } from './pull-request-types'
 /** A review comment queued locally, not yet sent to the provider. */
 export type PendingReviewComment = {
@@ -9,6 +10,8 @@ export type PendingReviewComment = {
   startLine?: number
   body: string
   createdAt: number
+  /** Fork: set on a comment an agent staged through `orca review comment add`; never sent to the provider. */
+  agentAuthor?: DiffCommentAgentAuthor
 }
 
 export type ReviewVerdict = 'comment' | 'approve' | 'request-changes'
@@ -26,6 +29,16 @@ export type SubmitReviewVerdictRequest = {
 export type SubmitReviewVerdictResult =
   | { ok: true; url: string; state: string }
   | { ok: false; error: string }
+
+/**
+ * A change an agent made to this device's queue through the CLI, announced to the window
+ * holding it so the shelf shows it without a reload.
+ */
+export type PendingReviewDraftChange = {
+  worktreeId: string
+  comments?: PendingReviewComment[]
+  summary?: string
+}
 
 /** Queued comments per workspace id, kept on this device rather than on the workspace's runtime. */
 export type PendingReviewDraftMap = Record<string, PendingReviewComment[]>
@@ -52,6 +65,22 @@ export function addPendingReviewComment(
   comment: PendingReviewComment
 ): PendingReviewComment[] {
   return [...queue, comment].slice(-MAX_PENDING_REVIEW_COMMENTS)
+}
+
+/**
+ * Unions two queues by id, keeping the order of `base` and appending what only `incoming` has.
+ *
+ * Why a union rather than a replacement: the two sides are the reviewer's window and an agent
+ * staging through the CLI, and either one's copy is missing what the other just wrote.
+ */
+export function mergePendingReviewComments(
+  base: readonly PendingReviewComment[],
+  incoming: readonly PendingReviewComment[]
+): PendingReviewComment[] {
+  const known = new Set(base.map((comment) => comment.id))
+  return [...base, ...incoming.filter((comment) => !known.has(comment.id))].slice(
+    -MAX_PENDING_REVIEW_COMMENTS
+  )
 }
 
 export function updatePendingReviewCommentBody(
@@ -95,6 +124,14 @@ export function canSubmitReviewVerdict(args: {
   return args.pendingCount > 0 || !!args.body.trim()
 }
 
+function asAgentAuthor(value: unknown): DiffCommentAgentAuthor | null {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) {
+    return null
+  }
+  const { name }: Record<string, unknown> = { ...value }
+  return typeof name === 'string' && name.trim() ? { kind: 'agent', name } : null
+}
+
 function sanitizeComment(value: unknown): PendingReviewComment | null {
   if (!value || typeof value !== 'object' || Array.isArray(value)) {
     return null
@@ -110,6 +147,7 @@ function sanitizeComment(value: unknown): PendingReviewComment | null {
   }
   const startLine = raw.startLine
   const createdAt = raw.createdAt
+  const agentAuthor = asAgentAuthor(raw.agentAuthor)
   return {
     id,
     path,
@@ -118,7 +156,8 @@ function sanitizeComment(value: unknown): PendingReviewComment | null {
       ? { startLine }
       : {}),
     body,
-    createdAt: typeof createdAt === 'number' && Number.isFinite(createdAt) ? createdAt : 0
+    createdAt: typeof createdAt === 'number' && Number.isFinite(createdAt) ? createdAt : 0,
+    ...(agentAuthor ? { agentAuthor } : {})
   }
 }
 

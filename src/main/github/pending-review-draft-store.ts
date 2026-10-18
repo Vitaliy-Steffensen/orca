@@ -71,20 +71,36 @@ function updateDraftFile(file: string, change: (current: DraftFile) => void): Pr
   return run
 }
 
+/**
+ * Applies a change to one workspace's queue inside the file's own write order, and answers
+ * with the queue that was stored.
+ *
+ * Why read-modify-write here rather than in the caller: two writers — the reviewer's window and
+ * an agent staging through the CLI — would otherwise each save a copy taken before the other's.
+ */
+export function updatePendingReviewDrafts(
+  file: string,
+  worktreeId: string,
+  change: (comments: PendingReviewComment[]) => readonly PendingReviewComment[]
+): Promise<PendingReviewComment[]> {
+  let next: PendingReviewComment[] = []
+  return updateDraftFile(file, ({ drafts }) => {
+    next = normalizePendingReviewComments(change(drafts[worktreeId] ?? []))
+    if (next.length > 0) {
+      drafts[worktreeId] = next
+    } else {
+      delete drafts[worktreeId]
+    }
+  }).then(() => next)
+}
+
 /** Replaces one workspace's queue on disk. */
 export function writePendingReviewDrafts(
   file: string,
   worktreeId: string,
   comments: readonly PendingReviewComment[]
 ): Promise<void> {
-  return updateDraftFile(file, ({ drafts }) => {
-    const normalized = normalizePendingReviewComments(comments)
-    if (normalized.length > 0) {
-      drafts[worktreeId] = normalized
-    } else {
-      delete drafts[worktreeId]
-    }
-  })
+  return updatePendingReviewDrafts(file, worktreeId, () => comments).then(() => undefined)
 }
 
 /** Replaces one workspace's unsent review summary on disk; an empty one is removed. */
