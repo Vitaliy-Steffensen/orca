@@ -8,6 +8,8 @@ Adding a feature here? See the rule at the top of [`CLAUDE.md`](./CLAUDE.md).
 
 ## Added in this repo
 
+- Pick Ask / Supervised / Autonomous when creating a workspace, each with its own agent, model, and prompt.
+
 - ⇧⌘W closes every other tab and keeps the one you are in.
 - ⇧⌘H reveals the file you are looking at in whichever list is in front of you — the Source Control
   changes, the Explorer tree, or the combined diff's own file tree — and flashes the row.

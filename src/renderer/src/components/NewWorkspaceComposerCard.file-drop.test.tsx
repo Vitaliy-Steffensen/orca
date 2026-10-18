@@ -48,6 +48,9 @@ vi.mock('./new-workspace/NewWorkspaceComposerAdvancedSection', () => ({
 vi.mock('./new-workspace/NewWorkspaceComposerFooter', () => ({
   NewWorkspaceComposerFooter: () => <textarea />
 }))
+vi.mock('./new-workspace/WorkspacePromptComposer', () => ({
+  WorkspacePromptComposer: () => <div data-workspace-prompt-input="true" />
+}))
 
 const runtimeConnections = vi.hoisted(
   () => new Map<string, { connectionStates: Map<string, { connectionGeneration: number }> }>()

@@ -3,6 +3,7 @@ import type { WorktreeMeta } from '../../shared/worktree/meta-types'
 import type { GitWorktreeInfo, Worktree } from '../../shared/worktree/types'
 import { DEFAULT_WORKSPACE_STATUS_ID } from '../../shared/workspace-statuses'
 import { resolveWorkspaceAutonomy } from '../../shared/workspace-autonomy'
+import { resolveWorkspaceIntent } from '../../shared/workspace-intent'
 import { getLinkedWorkItemMetadata } from './worktree-linked-work-item-metadata'
 import { normalizeWorkspaceCreatorProvenance } from '../../shared/workspace-creator-provenance'
 import { createWorktreeIdentity } from '../../shared/worktree/identity'
@@ -108,6 +109,7 @@ export function mergeWorktree(
       ? { agentRuleManualOverride: meta.agentRuleManualOverride }
       : {}),
     workspaceAutonomy: resolveWorkspaceAutonomy(meta?.workspaceAutonomy),
+    workspaceIntent: resolveWorkspaceIntent(meta?.workspaceIntent),
     // Why: diff comments and queued review comments are persisted on WorktreeMeta and
     // forwarded verbatim so the renderer store mirrors on-disk state. A field left out here
     // is written on every change and then silently dropped on the next start.

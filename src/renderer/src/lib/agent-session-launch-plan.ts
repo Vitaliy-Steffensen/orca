@@ -36,6 +36,8 @@ export type AgentSessionLaunchRequest = AgentLaunchRouteArgs & {
   onPromptDelivered?: () => void
   /** The caller keeps the prompt's text if it does not go out (notes), so no composer gets it. */
   promptKeptByCaller?: true
+  /** Options picked before the chat existed, such as plan mode. Merged over the saved seed. */
+  seedOverlay?: Readonly<Record<string, string>>
 }
 
 /**
@@ -56,6 +58,8 @@ export type AgentSessionLaunchVerdict = {
   resumeFrom?: StructuredAgentSessionResumeSource
   onPromptDelivered?: () => void
   promptKeptByCaller?: true
+  /** Options the caller picked before the chat existed. Merged over the saved seed. */
+  seedOverlay?: Readonly<Record<string, string>>
 }
 
 export type AgentSessionStructuredFeasibilityRequest = AgentLaunchRouteArgs & {
@@ -94,7 +98,8 @@ function structuredLaunchOptions(verdict: AgentSessionLaunchVerdict): Structured
     ...(verdict.resumeFrom ? { resumeFrom: verdict.resumeFrom } : {}),
     ...(verdict.onPromptDelivered ? { onPromptDelivered: verdict.onPromptDelivered } : {}),
     ...(verdict.promptKeptByCaller ? { promptKeptByCaller: true as const } : {}),
-    ...(verdict.executionHostId ? { executionHostId: verdict.executionHostId } : {})
+    ...(verdict.executionHostId ? { executionHostId: verdict.executionHostId } : {}),
+    ...(verdict.seedOverlay ? { seedOverlay: verdict.seedOverlay } : {})
   }
 }
 
@@ -286,6 +291,7 @@ export function planAgentSessionLaunch(
     ...(request.promptDelivery ? { promptDelivery: request.promptDelivery } : {}),
     ...(request.resumeFrom ? { resumeFrom: request.resumeFrom } : {}),
     ...(request.onPromptDelivered ? { onPromptDelivered: request.onPromptDelivered } : {}),
-    ...(request.promptKeptByCaller ? { promptKeptByCaller: true as const } : {})
+    ...(request.promptKeptByCaller ? { promptKeptByCaller: true as const } : {}),
+    ...(request.seedOverlay ? { seedOverlay: request.seedOverlay } : {})
   })
 }

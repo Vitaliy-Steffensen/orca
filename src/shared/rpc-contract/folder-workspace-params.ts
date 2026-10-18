@@ -7,6 +7,7 @@ import { isTuiAgent } from '../tui-agent-config'
 import { OptionalFiniteNumber, OptionalString, requiredString } from './rpc-param-primitives'
 import { DiffCommentSchema } from '../diff-comment-schema'
 import { WORKSPACE_AUTONOMY_VALUES } from '../workspace-autonomy'
+import { WORKSPACE_INTENT_VALUES } from '../workspace-intent'
 
 export const FolderWorkspaceLinkedTask = WorkspaceLinkedItemSchema.nullable()
 
@@ -33,6 +34,8 @@ export const FolderWorkspaceCreate = z
   .object({
     projectGroupId: requiredString('Missing project group id'),
     name: OptionalString,
+    workspaceAutonomy: z.enum(WORKSPACE_AUTONOMY_VALUES).optional(),
+    workspaceIntent: z.enum(WORKSPACE_INTENT_VALUES).optional(),
     folderPath: OptionalString.nullable().optional(),
     connectionId: OptionalString.nullable().optional(),
     linkedTask: FolderWorkspaceLinkedTask.optional(),
@@ -63,6 +66,7 @@ export const FolderWorkspaceUpdate = z.object({
       manualOrder: OptionalFiniteNumber,
       workspaceStatus: OptionalString,
       workspaceAutonomy: z.enum(WORKSPACE_AUTONOMY_VALUES).nullish(),
+      workspaceIntent: z.enum(WORKSPACE_INTENT_VALUES).nullish(),
       createdWithAgent: z.string().refine(isTuiAgent).optional(),
       pendingFirstAgentMessageRename: z.boolean().optional(),
       firstAgentMessageRenameError: z.string().nullable().optional(),

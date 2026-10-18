@@ -1,3 +1,4 @@
+import type { WorkspaceMode } from '../../../../shared/workspace-mode'
 import type RepoCombobox from '@/components/repo/RepoCombobox'
 import type { NewWorkspaceProjectOption } from '@/lib/new-workspace-project-options'
 import type {
@@ -19,6 +20,7 @@ import type { SshConnectionStatus } from '../../../../shared/ssh-types'
 import type { TaskSourceContext } from '../../../../shared/task-source-context'
 import type { TuiAgent } from '../../../../shared/tui-agent'
 import type { ExecutionHostId } from '../../../../shared/execution-host'
+import type { Worktree } from '../../../../shared/worktree/types'
 
 export type RepoOption = React.ComponentProps<typeof RepoCombobox>['repos'][number]
 export type EphemeralVmRecipeOption = NonNullable<OrcaHooks['environmentRecipes']>[number]
@@ -36,6 +38,8 @@ export type NewWorkspaceComposerCardProps = {
   composerRef?: React.RefObject<HTMLDivElement | null>
   onComposerNodeChange?: (node: HTMLDivElement | null) => void
   nameInputRef?: React.RefObject<HTMLInputElement | null>
+  workspaceMode?: WorkspaceMode
+  onWorkspaceModeChange?: (mode: WorkspaceMode) => void
   quickAgent: TuiAgent | null
   onQuickAgentChange: (agent: TuiAgent | null) => void
   eligibleRepos: readonly RepoOption[]
@@ -96,6 +100,15 @@ export type NewWorkspaceComposerCardProps = {
   onOpenAgentSettings: () => void
   advancedOpen: boolean
   onToggleAdvanced: () => void
+  /** The prompt sent to the agent. The quick-create card edits this directly. */
+  agentPrompt?: string
+  onAgentPromptChange?: (value: string) => void
+  /** Latest plan-mode seed from the shared session-option picker. */
+  onLaunchSeedChange?: (seed: Readonly<Record<string, string>> | undefined) => void
+  /** Called after a pasted link opened an existing workspace instead of creating one. */
+  onOpenedExistingWorkspace?: () => void
+  /** Latest workspace a pasted link would open. Cmd+Enter reads this before creating. */
+  promptTaskMatchRef?: React.MutableRefObject<Worktree | null>
   createDisabled: boolean
   projectError: string | null
   creating: boolean

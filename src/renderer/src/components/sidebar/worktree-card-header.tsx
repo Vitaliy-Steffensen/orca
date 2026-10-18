@@ -1,5 +1,5 @@
 import React from 'react'
-import { AlertCircle, Bot, Server, ServerOff, Trash2 } from 'lucide-react'
+import { AlertCircle, Bot, MessageCircle, Server, ServerOff, Trash2 } from 'lucide-react'
 
 import { RepoIconGlyph } from '@/components/repo/repo-icon'
 import { Badge } from '@/components/ui/badge'
@@ -260,6 +260,18 @@ export function WorktreeCardHeader({
           </Tooltip>
         )}
 
+        {worktree.workspaceIntent === 'question' && (
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <span className="shrink-0 inline-flex items-center" aria-label="Question workspace">
+                <MessageCircle className="size-3 text-muted-foreground" />
+              </span>
+            </TooltipTrigger>
+            <TooltipContent side="right" sideOffset={8}>
+              Question workspace
+            </TooltipContent>
+          </Tooltip>
+        )}
         {isAutonomousWorkspace(worktree) && (
           <Tooltip>
             <TooltipTrigger asChild>

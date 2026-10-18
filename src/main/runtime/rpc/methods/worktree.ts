@@ -194,6 +194,7 @@ export const WORKTREE_METHODS = [
         baseRef: params.baseRef,
         workspaceStatus: params.workspaceStatus,
         workspaceAutonomy: params.workspaceAutonomy,
+        workspaceIntent: params.workspaceIntent,
         pushTarget: params.pushTarget,
         diffComments: params.diffComments,
         mobileDiffReview: params.mobileDiffReview,

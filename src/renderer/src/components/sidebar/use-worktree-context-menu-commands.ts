@@ -1,3 +1,4 @@
+import type { WorkspaceIntent } from '../../../../shared/workspace-intent'
 import { useCallback } from 'react'
 import type { useAppStore } from '@/store'
 import type { Repo } from '../../../../shared/repo-types'
@@ -148,6 +149,21 @@ export function useWorktreeContextMenuCommands(args: {
     },
     [args]
   )
+  const handleAssignWorkspaceIntent = useCallback(
+    (intent: WorkspaceIntent) => {
+      args.setMenuOpenState(false)
+      void Promise.all(
+        args.activeContextWorktrees.map((worktree) =>
+          args.updateWorktreeMeta(
+            worktree.id,
+            { workspaceIntent: intent },
+            { executionHostId: worktree.hostId ?? 'local' }
+          )
+        )
+      )
+    },
+    [args]
+  )
   const handleRename = useCallback(() => {
     args.openModal('edit-meta', {
       worktreeId: args.worktree.id,
@@ -206,6 +222,7 @@ export function useWorktreeContextMenuCommands(args: {
   return {
     handleArchive,
     handleAssignWorkspaceAutonomy,
+    handleAssignWorkspaceIntent,
     handleAssignWorkspaceStatus,
     handleCloseTerminals,
     handleCopyName,
