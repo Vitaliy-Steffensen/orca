@@ -35,6 +35,7 @@ import { translate } from '@/i18n/i18n'
 import { useOptionalShortcutLabel } from '@/hooks/useShortcutLabel'
 import type { WorktreeContextMenuModel } from './use-worktree-context-menu-model'
 import { WorktreeStatusMenuItems } from './WorktreeStatusMenuItems'
+import { WorktreeAutonomyMenuItems } from './WorktreeAutonomyMenuItems'
 import { WorktreeContextMenuOverlays } from './WorktreeContextMenuOverlays'
 import {
   WORKTREE_CONTEXT_MENU_SCOPE_ATTR,
@@ -53,6 +54,7 @@ export default function WorktreeContextMenuView({ model }: { model: WorktreeCont
     contentClassName,
     contextDeletePending,
     contextMenuOpenedAtRef,
+    contextWorkspaceAutonomy,
     contextWorkspaceStatus,
     deleteLabel,
     deletingContext,
@@ -61,6 +63,7 @@ export default function WorktreeContextMenuView({ model }: { model: WorktreeCont
     eligibleParentCount,
     effectiveSelectedWorktrees,
     folderWorkspaceId,
+    handleAssignWorkspaceAutonomy,
     handleAssignWorkspaceStatus,
     handleCloseAutoFocus,
     handleCloseTerminals,
@@ -169,6 +172,12 @@ export default function WorktreeContextMenuView({ model }: { model: WorktreeCont
             isMultiContext={isMultiContext}
             onAssignWorkspaceStatus={handleAssignWorkspaceStatus}
             workspaceStatuses={workspaceStatuses}
+          />
+          <WorktreeAutonomyMenuItems
+            contextWorkspaceAutonomy={contextWorkspaceAutonomy}
+            deletingContext={deletingContext}
+            isMultiContext={isMultiContext}
+            onAssignWorkspaceAutonomy={handleAssignWorkspaceAutonomy}
           />
           <DropdownMenuSeparator />
           {!isMultiContext && (

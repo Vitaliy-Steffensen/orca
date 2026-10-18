@@ -15,6 +15,7 @@ import { WorkspaceAttachmentsSchema } from '../workspace-attachment-schema'
 import { DiffCommentSchema, MobileDiffReviewSchema } from '../diff-comment-schema'
 import { TaskSourceContextSchema } from '../task-source-context-schema'
 import { isWorkspaceLinkedItemSourceContextMatch } from '../workspace-linked-item-source-context'
+import { WORKSPACE_AUTONOMY_VALUES } from '../workspace-autonomy'
 
 export const OptionalExecutionHostId = z
   .string()
@@ -147,6 +148,8 @@ export const WorktreeSet = WorktreeSelector.extend({
   sparsePresetId: OptionalString,
   baseRef: OptionalString,
   workspaceStatus: OptionalString,
+  // Why nullable: `undefined` means "leave unchanged", so clearing needs its own value.
+  workspaceAutonomy: z.enum(WORKSPACE_AUTONOMY_VALUES).nullish(),
   pushTarget: z
     .object({
       remoteName: z.string(),

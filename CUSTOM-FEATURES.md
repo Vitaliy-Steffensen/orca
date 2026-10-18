@@ -22,6 +22,8 @@ Adding a feature here? See the rule at the top of [`CLAUDE.md`](./CLAUDE.md).
 - A plan waiting on you reads in the transcript instead of a cramped card, and the composer carries
   the decision: Copy, Approve (⌘⇧↵), and a field where what you type is sent back as the changes to
   make.
+- Mark a workspace Autonomous or Supervised from its card menu or `orca worktree set --autonomy`;
+  autonomous ones carry a quiet marker on the card, and the setting never leaves Orca.
 
 ## Inherited from `frbarbre/orca`
 

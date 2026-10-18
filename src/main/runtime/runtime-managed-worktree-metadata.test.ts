@@ -5,6 +5,42 @@ import { updateRuntimeManagedWorktreeMetadata } from './runtime-managed-worktree
 import type { ResolvedWorktree } from './runtime-worktree-path-identity'
 import type { RuntimeStore } from './runtime-store-contract'
 
+// oxlint-disable-next-line typescript/consistent-type-assertions -- SAFETY: the update only reads id, repoId, hostId and instanceId.
+const hostedWorktree = {
+  id: 'repo-1::/workspace/app',
+  repoId: 'repo-1',
+  hostId: 'ssh:build-box',
+  path: '/workspace/app',
+  instanceId: 'instance-1'
+} as unknown as ResolvedWorktree
+
+async function runMetadataUpdate(
+  updates: Parameters<typeof updateRuntimeManagedWorktreeMetadata>[0]['updates']
+) {
+  const setWorktreeMetaForHost = vi.fn()
+  // oxlint-disable-next-line typescript/consistent-type-assertions -- SAFETY: the update only reads these store members.
+  const store = {
+    getRepos: () => [],
+    setWorktreeMeta: vi.fn(),
+    setWorktreeMetaForHost
+  } as unknown as RuntimeStore
+  await updateRuntimeManagedWorktreeMetadata({
+    selector: `id:${hostedWorktree.id}`,
+    updates,
+    store,
+    ports: {
+      resolveWorktree: vi.fn(async () => hostedWorktree),
+      validateParent: vi.fn(),
+      invalidateResolved: vi.fn(),
+      invalidateScan: vi.fn(),
+      notifyChanged: vi.fn(),
+      // oxlint-disable-next-line typescript/consistent-type-assertions -- SAFETY: the update only returns what showWorktree gives it; this test never reads the result.
+      showWorktree: vi.fn(async () => hostedWorktree as unknown as Worktree)
+    }
+  })
+  return { setWorktreeMetaForHost }
+}
+
 describe('updateRuntimeManagedWorktreeMetadata', () => {
   it('writes metadata through the resolved worktree execution host', async () => {
     const worktree = {
@@ -42,6 +78,28 @@ describe('updateRuntimeManagedWorktreeMetadata', () => {
       comment: 'remote row only'
     })
     expect(setWorktreeMeta).not.toHaveBeenCalled()
+  })
+
+  it.each(['autonomous', 'supervised'] as const)('persists workspaceAutonomy %s', async (value) => {
+    const { setWorktreeMetaForHost } = await runMetadataUpdate({ workspaceAutonomy: value })
+
+    expect(setWorktreeMetaForHost).toHaveBeenCalledWith('repo-1::/workspace/app', 'ssh:build-box', {
+      workspaceAutonomy: value
+    })
+  })
+
+  it('clears workspaceAutonomy back to unset on an explicit null', async () => {
+    const { setWorktreeMetaForHost } = await runMetadataUpdate({ workspaceAutonomy: null })
+    const written = setWorktreeMetaForHost.mock.calls[0]?.[2]
+
+    expect(Object.hasOwn(written, 'workspaceAutonomy')).toBe(true)
+    expect(written.workspaceAutonomy).toBeUndefined()
+  })
+
+  it('leaves workspaceAutonomy untouched when the update omits it', async () => {
+    const { setWorktreeMetaForHost } = await runMetadataUpdate({ comment: 'unrelated' })
+
+    expect(setWorktreeMetaForHost.mock.calls[0]?.[2]).not.toHaveProperty('workspaceAutonomy')
   })
 
   describe('a folder workspace removed while its resolution was in flight (#22712)', () => {

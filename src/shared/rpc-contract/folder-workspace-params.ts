@@ -6,6 +6,7 @@ import { isWorkspaceLinkedItemSourceContextMatch } from '../workspace-linked-ite
 import { isTuiAgent } from '../tui-agent-config'
 import { OptionalFiniteNumber, OptionalString, requiredString } from './rpc-param-primitives'
 import { DiffCommentSchema } from '../diff-comment-schema'
+import { WORKSPACE_AUTONOMY_VALUES } from '../workspace-autonomy'
 
 export const FolderWorkspaceLinkedTask = WorkspaceLinkedItemSchema.nullable()
 
@@ -61,6 +62,7 @@ export const FolderWorkspaceUpdate = z.object({
       sortOrder: OptionalFiniteNumber,
       manualOrder: OptionalFiniteNumber,
       workspaceStatus: OptionalString,
+      workspaceAutonomy: z.enum(WORKSPACE_AUTONOMY_VALUES).nullish(),
       createdWithAgent: z.string().refine(isTuiAgent).optional(),
       pendingFirstAgentMessageRename: z.boolean().optional(),
       firstAgentMessageRenameError: z.string().nullable().optional(),
