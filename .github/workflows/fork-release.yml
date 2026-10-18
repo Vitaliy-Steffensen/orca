@@ -16,6 +16,9 @@ name: Fork Release (macOS)
 # them up automatically — and set ORCA_UPDATE_AUTO_INSTALL=1 in the app to restore
 # download-and-install.
 #
+# It runs on every push to main, so a merged pull request ships on its own. For an off-cycle
+# build:
+#
 #   gh workflow run fork-release.yml --ref main
 
 on:
@@ -34,7 +37,10 @@ on:
         required: false
         default: ''
         type: string
+  # Every merge to main publishes the next fork version, so an installed app is never more than
+  # one update check behind main. Pushing a v* tag still releases that exact version by hand.
   push:
+    branches: [main]
     tags: ['v*']
 
 permissions:
@@ -64,7 +70,9 @@ jobs:
         id: release
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          REQUESTED_VERSION: ${{ github.event_name == 'push' && github.ref_name || inputs.version }}
+          # Only a tag push names a version; a branch push leaves it empty so the script counts
+          # the next one from the newest release tag.
+          REQUESTED_VERSION: ${{ startsWith(github.ref, 'refs/tags/') && github.ref_name || inputs.version }}
         run: |
           set -euo pipefail
           git remote add upstream https://github.com/stablyai/orca.git

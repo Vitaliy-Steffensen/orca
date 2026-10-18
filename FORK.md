@@ -2020,9 +2020,17 @@ sync hit exactly that (#23062 landed two commits later) and was fixed by merging
 
 ## Releasing
 
-`gh workflow run fork-release.yml --repo frbarbre/orca --ref main`, or push a `v*` tag. The workflow builds on a
-GitHub-hosted macOS runner and publishes to this fork's releases, which is where the installed app
-looks.
+Every merge to `main` releases. `fork-release.yml` runs on the push, builds on a GitHub-hosted
+macOS runner and publishes to this fork's releases, which is where the installed app looks — so a
+merged pull request becomes an update notice on the next check, with no step to remember.
+
+To release off-cycle, run it by hand — `gh workflow run fork-release.yml --ref main` — or push a
+`v*` tag to release that exact version. A merge and a hand-run both queue rather than cancel each
+other, so two merges in a row publish two versions.
+
+Note a full macOS build per merge is not free: about 10 wall-clock minutes, which macOS runners
+bill at a 10x multiplier — roughly 100 billable minutes a merge, and a docs-only merge costs the
+same as a feature one.
 
 **Versions.** The fork keeps its own version line: each release is the previous fork release plus
 one patch, unless `-f version=` overrides it. It cannot follow upstream's number, because the
