@@ -6,7 +6,11 @@
  * replace a working cron the user never chose to change.
  */
 
-import type { Automation, ExternalAutomationJob } from '../../../../shared/automations-types'
+import {
+  getAutomationKind,
+  type Automation,
+  type ExternalAutomationJob
+} from '../../../../shared/automations-types'
 import { getAutomationRunRepoId } from '../../../../shared/automation-run-identity'
 import {
   isRunnableAutomationCronSchedule,
@@ -21,6 +25,8 @@ export function buildAutomationEditDraft(automation: Automation): AutomationDraf
   const schedule = tryParseAutomationRrule(automation.rrule)
   const hasCustomSchedule = !schedule && isRunnableAutomationSchedule(automation.rrule)
   return {
+    kind: getAutomationKind(automation),
+    enabled: automation.enabled,
     name: automation.name,
     prompt: automation.prompt,
     agentId: automation.agentId,

@@ -5,6 +5,7 @@ export {
   listProjects,
   listProjectsByExactName
 } from './linear-project-queries'
+export { createProjectUpdate, type ProjectUpdateHealth } from './linear-project-update-mutations'
 export { listProjectIssues } from './linear-project-issue-queries'
 export { listProjectTeams } from './linear-project-team-queries'
 export {

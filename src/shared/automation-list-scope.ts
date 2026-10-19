@@ -12,7 +12,7 @@
  * wire.
  */
 
-import type { Automation } from './automations-types'
+import { getAutomationKind, type Automation } from './automations-types'
 import type { AutomationUsageSummary } from './automation-usage-summary'
 import type { FolderWorkspaceHost } from './folder-workspace-execution-host'
 import { getAutomationRunRepoId } from './automation-run-identity'
@@ -146,6 +146,11 @@ export function projectAutomationSelector(
   automation: Automation,
   context: AutomationProjectionContext
 ): AutomationListItemSelector {
+  // The pull-request check has no project by design, so the project lookup below
+  // would read its empty repo id as a project that has since been deleted.
+  if (getAutomationKind(automation) === 'pull_request_sync') {
+    return { kind: 'self' }
+  }
   if (
     context.storageAuthority !== 'runtime' &&
     (automation.schedulerOwner === 'remote_host_service' ||

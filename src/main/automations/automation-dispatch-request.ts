@@ -1,6 +1,11 @@
 import type { WebContents } from 'electron'
 import { isDeepStrictEqual } from 'node:util'
-import type { Automation, AutomationRun } from '../../shared/automations-types'
+import {
+  getAutomationKind,
+  type Automation,
+  type AutomationRun
+} from '../../shared/automations-types'
+import { NO_REVIEW_SURFACE } from '../../shared/no-review-surface'
 import { getRepoExecutionHostId } from '../../shared/execution-host'
 import type { Store } from '../persistence'
 import type { AutomationRunWriter } from './automation-run-writer'
@@ -98,6 +103,35 @@ export async function requestAutomationDispatch(
   run = readRun()
   if (run.status !== 'pending') {
     return returnDurable(run)
+  }
+  if (getAutomationKind(automation) === 'pull_request_sync') {
+    if (!ctx.getRenderer()) {
+      return refuse(ctx.headlessDispatcher ? NO_REVIEW_SURFACE : NO_DISPATCH_HOST)
+    }
+    await ctx.runs.updateRun({
+      runId: run.id,
+      status: 'dispatching',
+      workspaceId: null,
+      error: null
+    })
+    run = readRun()
+    if (run.status !== 'dispatching') {
+      return returnDurable(run)
+    }
+    const renderer = ctx.getRenderer()
+    if (!renderer) {
+      return refuse(NO_DISPATCH_HOST)
+    }
+    return sendRendererDispatch(
+      renderer,
+      {
+        automation,
+        run,
+        dispatchToken: createAutomationDispatchToken(automation.id, run.id)
+      },
+      ctx.runs,
+      run
+    )
   }
   let target = resolveCurrentTarget()
   if (!target.ok || (!ctx.getRenderer() && !ctx.headlessDispatcher)) {

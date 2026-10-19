@@ -21,6 +21,10 @@ import { FLOATING_TERMINAL_WORKTREE_ID } from '../../../shared/constants'
 import { translate } from '@/i18n/i18n'
 import { getKeybindingContext } from './terminal-workspace-model'
 import { resolveTerminalAgentTabShortcut } from './terminal-agent-tab-shortcut'
+import { readDetectedAgentsForWorktree } from '@/lib/agent-detection-target-inventory'
+import { openUnifiedNewChat } from '@/lib/unified-new-chat'
+import { filterEnabledTuiAgents } from '../../../shared/tui-agent-selection'
+import { isUnifiedChatAgent } from '../../../shared/unified-claude-cursor-chat'
 import { handleTerminalWorkspaceEditorShortcut } from './terminal-workspace-editor-shortcuts'
 import { requestCloseOtherTabs } from './tab-group/close-other-tabs-request'
 import type { TerminalActivationController } from './use-terminal-activation-actions'
@@ -82,7 +86,20 @@ export function handleTerminalWorkspaceKeyDown(
     if (agentShortcut.actionId) {
       event.preventDefault()
       notifyTerminalCapture(agentShortcut.actionId)
-      if (agentShortcut.agent) {
+      if (
+        agentShortcut.actionId === 'tab.newAgent' &&
+        agentShortcut.agent &&
+        isUnifiedChatAgent(agentShortcut.agent)
+      ) {
+        const state = useAppStore.getState()
+        const detected = readDetectedAgentsForWorktree(state, activeWorktreeId) ?? []
+        openUnifiedNewChat({
+          worktreeId: activeWorktreeId,
+          availableAgents: filterEnabledTuiAgents(detected, state.settings?.disabledTuiAgents),
+          defaultAgent: state.settings?.defaultTuiAgent,
+          launchSource: 'shortcut'
+        })
+      } else if (agentShortcut.agent) {
         handleNewAgentTab(agentShortcut.agent)
       } else {
         toast.message(

@@ -8,7 +8,7 @@
  * `orca automations show` unable to complete the recovery it is named in.
  */
 
-import type { Automation, AutomationRun } from '../shared/automations-types'
+import { getAutomationKind, type Automation, type AutomationRun } from '../shared/automations-types'
 import type { AutomationListItem } from '../shared/automation-list-scope'
 import type { AutomationOwnerPrecondition } from '../shared/automation-owner-precondition'
 import { getAutomationLegacyRepoId } from '../shared/automation-run-identity'
@@ -54,13 +54,29 @@ export function formatAutomationList(result: AutomationListPayload): string {
       const status = automation.enabled ? 'enabled' : 'disabled'
       const item = hosts.get(automation.id)
       const host = item ? `\nhost: ${formatListItemSelector(item)}` : ''
-      return `${automation.id}  ${automation.name}  ${automation.agentId}  ${status}\n${formatAutomationSchedule(automation.rrule)}  next: ${new Date(automation.nextRunAt).toISOString()}${host}`
+      const kindLabel =
+        getAutomationKind(automation) === 'pull_request_sync'
+          ? 'pull request sync'
+          : automation.agentId
+      return `${automation.id}  ${automation.name}  ${kindLabel}  ${status}\n${formatAutomationSchedule(automation.rrule)}  next: ${new Date(automation.nextRunAt).toISOString()}${host}`
     })
     .join('\n\n')
 }
 
 export function formatAutomationShow(result: AutomationShowPayload): string {
   const automation = result.automation
+  if (getAutomationKind(automation) === 'pull_request_sync') {
+    return [
+      `id: ${automation.id}`,
+      `name: ${automation.name}`,
+      `kind: pull_request_sync`,
+      `enabled: ${automation.enabled}`,
+      `schedule: ${formatAutomationSchedule(automation.rrule)}`,
+      `rrule: ${automation.rrule}`,
+      `nextRunAt: ${new Date(automation.nextRunAt).toISOString()}`,
+      ...(result.owner ? [`host: ${formatOwnerSelector(result.owner.selector)}`] : [])
+    ].join('\n')
+  }
   const runContext = automation.runContext ?? null
   const projectLines = runContext
     ? [

@@ -31,6 +31,7 @@ import {
   listAutomationRuns as listAutomationRunsOperation,
   listAutomationRunsPage as listAutomationRunsOperationPage,
   recordRepeatedAutomationSkip as recordRepeatedAutomationSkipOperation,
+  recordRepeatedNoOpRun as recordRepeatedNoOpRunOperation,
   snapshotAutomationRunWorkspaceDisplayName as snapshotAutomationRunWorkspaceDisplayNameOperation,
   updateAutomationRun as updateAutomationRunOperation,
   type AutomationRunOperations
@@ -182,6 +183,10 @@ export class AutomationPersistence {
       error,
       scheduledFor
     )
+  }
+
+  recordRepeatedNoOpRun(result: AutomationDispatchResult): AutomationRun | null {
+    return recordRepeatedNoOpRunOperation(getAutomationRunOperations(this), result)
   }
 
   updateAutomationRun(result: AutomationDispatchResult): AutomationRun {

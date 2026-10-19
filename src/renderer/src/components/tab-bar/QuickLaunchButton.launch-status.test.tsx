@@ -131,7 +131,10 @@ describe('QuickLaunchAgentMenuItems launches', () => {
         onFocusTerminal={vi.fn()}
       />
     )
-    expect(agentRowDisabled('Claude')).toBe('false')
+    expect(agentRowDisabled('Claude')).toBeUndefined()
+    expect(document.querySelector('[title="Open a new chat"]')?.getAttribute('aria-disabled')).toBe(
+      'false'
+    )
     expect(agentRowDisabled('Codex')).toBe('false')
     cleanup()
 

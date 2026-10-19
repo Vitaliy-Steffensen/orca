@@ -1,4 +1,4 @@
-import type { Automation } from '../../../../shared/automations-types'
+import { getAutomationKind, type Automation } from '../../../../shared/automations-types'
 import { getRepoExecutionHostId, parseExecutionHostId } from '../../../../shared/execution-host'
 import {
   describeRuntimeCompatBlock,
@@ -66,6 +66,9 @@ export function getAutomationTargetAvailability({
   automationHostTarget,
   sourceHostAvailability
 }: AutomationTargetAvailabilityArgs): AutomationTargetAvailability {
+  if (getAutomationKind(automation) === 'pull_request_sync') {
+    return { canRunNow: true, reason: 'available', message: null }
+  }
   if (!repo) {
     return unavailable('missing-project', 'The target project is no longer available.')
   }

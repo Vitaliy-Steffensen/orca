@@ -145,10 +145,7 @@ export function useSourceControlFileListing({
     collapsedTreeDirs
   })
   const { selectableEntries } = allChanges
-  const { reviewByPath, viewedCount } = useChangesReviewProgress(
-    activeWorktreeId,
-    allChanges.allChangeEntries
-  )
+  const reviewProgress = useChangesReviewProgress(activeWorktreeId, allChanges.allChangeEntries)
 
   // Why: modifier-click keeps the current pane intact by opening the file in a fresh split to the right.
   const {
@@ -263,8 +260,7 @@ export function useSourceControlFileListing({
     ...allChanges,
     openAllChangesEntry,
     commentCountsByPath,
-    reviewByPath,
-    viewedCount,
+    ...reviewProgress,
     activeOpenRowKeys,
     activeOpenRowKey,
     bulkStagePaths,

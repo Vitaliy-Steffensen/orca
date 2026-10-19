@@ -143,7 +143,8 @@ describe('AutomationService', () => {
       dtstart: new Date('2026-05-14T00:00:00Z').getTime()
     })
     mutateDataFile((state) => {
-      state.automations[0].runContext = {
+      const record = state.automations.find((entry) => entry.id === automation.id)!
+      record.runContext = {
         kind: 'workspace-run',
         projectId: 'project-1',
         hostId: 'local',
@@ -184,7 +185,8 @@ describe('AutomationService', () => {
       dtstart: new Date('2026-05-14T00:00:00Z').getTime()
     })
     mutateDataFile((state) => {
-      state.automations[0].runContext = {
+      const record = state.automations.find((entry) => entry.id === automation.id)!
+      record.runContext = {
         kind: 'workspace-run',
         projectId: setup.projectId,
         hostId: setup.hostId,

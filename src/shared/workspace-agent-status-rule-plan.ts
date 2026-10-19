@@ -62,7 +62,7 @@ export function buildWorkspaceAgentStatusRulePlan(args: {
     clearedManualOverrides: [],
     dwell: new Map()
   }
-  if (!config.enabled || !config.agentRulesEnabled) {
+  if (!config.agentRulesEnabled) {
     return plan
   }
 

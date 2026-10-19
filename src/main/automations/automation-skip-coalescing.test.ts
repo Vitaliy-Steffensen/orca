@@ -67,7 +67,8 @@ async function seedUnresolvableAutomation(): Promise<{ store: Store; automation:
   await seed.freezeWritesAsync()
   const file = join(testState.dir, 'orca-data.json')
   const state = JSON.parse(readPersistedStateJson(file))
-  state.automations[0].runContext = {
+  const record = state.automations.find((entry: { id: string }) => entry.id === automation.id)
+  record.runContext = {
     kind: 'workspace-run',
     projectId: 'project-1',
     hostId: 'local',

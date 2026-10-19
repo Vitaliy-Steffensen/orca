@@ -13,6 +13,8 @@ import {
   ListCustomViews,
   ListProjects,
   ProjectId,
+  ProjectShow,
+  ProjectUpdateCreate,
   ProjectIssues,
   SearchIssues,
   SelectWorkspace,
@@ -119,9 +121,34 @@ export const LINEAR_METHODS = [
     permission: 'workspace',
     params: ListProjects,
     handler: async (params, { runtime }) =>
-      runtime.linearListProjects(params?.query, params?.limit, params?.workspaceId, params?.force)
+      runtime.linearListProjects(
+        params?.query,
+        params?.limit,
+        params?.workspaceId,
+        params?.force,
+        params?.lead
+      )
   }),
   LINEAR_PROJECT_CREATE_METHOD,
+  defineMethod({
+    name: 'linear.createProjectUpdate',
+    permission: 'workspace',
+    params: ProjectUpdateCreate,
+    handler: async (params, { runtime }) =>
+      runtime.linearCreateProjectUpdate({
+        projectId: params.projectId.trim(),
+        body: params.body,
+        health: params.health,
+        workspaceId: params.workspaceId
+      })
+  }),
+  defineMethod({
+    name: 'linear.showProject',
+    permission: 'workspace',
+    params: ProjectShow,
+    handler: async (params, { runtime }) =>
+      runtime.linearShowProject(params.id.trim(), params.workspaceId, params.force)
+  }),
   defineMethod({
     name: 'linear.getProject',
     permission: 'workspace',

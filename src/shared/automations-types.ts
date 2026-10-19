@@ -3,6 +3,13 @@ import type { SetupDecision } from './worktree/create-types'
 import type { TaskSourceContext, WorkspaceRunContext } from './task-source-context'
 
 export type AutomationWorkspaceMode = 'existing' | 'new_per_run'
+
+/** Absent on a stored record means `agent_prompt`, so older clients keep working. */
+export type AutomationKind = 'agent_prompt' | 'pull_request_sync'
+
+export function getAutomationKind(automation: { kind?: AutomationKind | null }): AutomationKind {
+  return automation.kind === 'pull_request_sync' ? 'pull_request_sync' : 'agent_prompt'
+}
 export type AutomationExecutionTargetType = 'local' | 'ssh'
 export type AutomationSchedulerOwner = 'local_host_service' | 'ssh_bridge' | 'remote_host_service'
 export type AutomationMissedRunPolicy = 'run_once_within_grace'
@@ -18,17 +25,7 @@ export type AutomationRunStatus =
   | 'dispatch_failed'
 export type AutomationRunTrigger = 'scheduled' | 'manual'
 
-/** Statuses a run can never leave; only these are safe to evict from history. */
-export function isFinalAutomationRunStatus(status: AutomationRunStatus): boolean {
-  return (
-    status === 'completed' ||
-    status === 'dispatch_failed' ||
-    status === 'skipped_precheck' ||
-    status === 'skipped_missed' ||
-    status === 'skipped_unavailable' ||
-    status === 'skipped_needs_interactive_auth'
-  )
-}
+export { isFinalAutomationRunStatus } from './automation-run-status'
 
 export type AutomationSchedulePreset = 'hourly' | 'daily' | 'weekdays' | 'weekly' | 'custom'
 export type AutomationRunUsageProvider = 'claude' | 'codex'
@@ -92,6 +89,8 @@ export type Automation = {
   id: string
   /** Optional client request key used to make cross-authority creates retry-safe. */
   creationKey?: string
+  /** Absent means `agent_prompt`. */
+  kind?: AutomationKind
   name: string
   prompt: string
   precheck: AutomationPrecheck | null
@@ -181,6 +180,8 @@ export type AutomationRunsPage = {
 export type AutomationCreateInput = {
   /** Optional idempotency key; repeated creates return the original record. */
   creationKey?: string
+  /** Absent means `agent_prompt`. */
+  kind?: AutomationKind
   name: string
   prompt: string
   precheck?: AutomationPrecheck | null
@@ -207,6 +208,7 @@ export type AutomationCreateInput = {
 export type AutomationUpdateInput = Partial<
   Pick<
     Automation,
+    | 'kind'
     | 'name'
     | 'prompt'
     | 'precheck'

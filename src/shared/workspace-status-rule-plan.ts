@@ -93,9 +93,6 @@ export function buildWorkspaceStatusRulePlan(args: {
   maxCreations?: number
 }): WorkspaceStatusRulePlan {
   const { targets, snapshot, config, existingBranches } = args
-  if (!config.enabled) {
-    return emptyPlan()
-  }
   const plan = emptyPlan()
   const pmTeamLogins = lowercaseLoginSet(snapshot.pmApprovalTeamLogins)
   const byKey = indexSnapshotPRs(snapshot.linkedPullRequests)

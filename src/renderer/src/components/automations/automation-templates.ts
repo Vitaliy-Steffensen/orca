@@ -1,4 +1,7 @@
-import type { AutomationSchedulePreset } from '../../../../shared/automations-types'
+import type {
+  AutomationSchedulePreset,
+  AutomationWorkspaceMode
+} from '../../../../shared/automations-types'
 import type { TuiAgent } from '../../../../shared/tui-agent'
 import { translate } from '@/i18n/i18n'
 import { createLocalizedCatalog } from '@/i18n/localized-catalog'
@@ -14,6 +17,7 @@ export type AutomationTemplate = {
   time?: string
   dayOfWeek?: string
   agentId?: TuiAgent
+  workspaceMode?: AutomationWorkspaceMode
   missedRunGraceMinutes?: string
 }
 
@@ -122,5 +126,63 @@ export const getAutomationTemplates = createLocalizedCatalog((): AutomationTempl
     preset: 'hourly',
     time: '00:15',
     missedRunGraceMinutes: '30'
+  },
+  {
+    id: 'weekly-recap-monday',
+    category: translate(
+      'auto.components.automations.automation.templates.weeklyRecap.category',
+      'Weekly recap'
+    ),
+    label: translate(
+      'auto.components.automations.automation.templates.weeklyRecap.label',
+      'Monday weekly recap'
+    ),
+    description: translate(
+      'auto.components.automations.automation.templates.weeklyRecap.description',
+      'Every Monday, writes what landed on the default branch into a dated file in the run workspace and prints it so it lands in the run history.'
+    ),
+    name: translate(
+      'auto.components.automations.automation.templates.weeklyRecap.name',
+      'Monday weekly recap'
+    ),
+    prompt: translate(
+      'auto.components.automations.automation.templates.weeklyRecap.prompt',
+      'Write a short recap of what landed on the default branch since the previous Monday. Use git log on the default branch for that window, and the pull requests merged in it. Cover behaviour changes, new commands and flags, and how the codebase is worked. Skip refactors, dependency bumps, and mirror merges. Write the recap to a dated file under .context/ in this workspace (for example .context/weekly-recap-YYYY-MM-DD.md) and print the same text, so it is saved in the automation run history.'
+    ),
+    preset: 'weekly',
+    time: '08:00',
+    dayOfWeek: '1',
+    agentId: 'claude',
+    workspaceMode: 'new_per_run',
+    missedRunGraceMinutes: '720'
+  },
+  {
+    id: 'linear-status-wednesday',
+    category: translate(
+      'auto.components.automations.automation.templates.linearStatus.category',
+      'Linear'
+    ),
+    label: translate(
+      'auto.components.automations.automation.templates.linearStatus.label',
+      'Wednesday Linear status'
+    ),
+    description: translate(
+      'auto.components.automations.automation.templates.linearStatus.description',
+      'Every Wednesday, posts a Linear project status update for the projects you lead. To keep a draft instead, change the last step of the prompt to write it under .context/ and stop. That is a text edit, not a code change.'
+    ),
+    name: translate(
+      'auto.components.automations.automation.templates.linearStatus.name',
+      'Wednesday Linear status'
+    ),
+    prompt: translate(
+      'auto.components.automations.automation.templates.linearStatus.prompt',
+      'Post a short Linear project status update for each project you lead. List them with `orca linear project list --lead me --json`. For each project, read `orca linear project show <id> --json` and its issues with `orca linear list-issues --project <id> --json`. Write a short update covering what moved, what is blocked, and what is next. Post it with `orca linear project update post --project <id> --body <text> --health <onTrack|atRisk|offTrack>`. Choose the health from the evidence in the issues, and say why in the body. This posts directly. To keep a draft instead, write it under .context/ and stop.'
+    ),
+    preset: 'weekly',
+    time: '08:00',
+    dayOfWeek: '3',
+    agentId: 'claude',
+    workspaceMode: 'new_per_run',
+    missedRunGraceMinutes: '720'
   }
 ])

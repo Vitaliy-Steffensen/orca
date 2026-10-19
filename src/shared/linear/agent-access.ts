@@ -122,6 +122,7 @@ export type LinearProjectListRequest = {
   query?: string
   limit?: number
   workspaceId?: (string & {}) | 'all'
+  lead?: 'me'
 }
 
 export type LinearStatusSetRequest = LinearWriteTargetRequest & {

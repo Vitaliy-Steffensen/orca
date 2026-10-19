@@ -157,6 +157,39 @@ export function formatLinearProjectList(result: LinearProjectListResult): string
   return formatLinearProjectListRows(result)
 }
 
+export function formatLinearProjectShow(
+  project: {
+    id: string
+    name: string
+    url?: string
+    health?: string | null
+    description?: string
+  } | null
+): string {
+  if (!project) {
+    return 'Linear project not found.'
+  }
+  return [
+    `id: ${project.id}`,
+    `name: ${project.name}`,
+    `health: ${project.health ?? 'null'}`,
+    `url: ${project.url ?? 'null'}`,
+    `description: ${project.description ?? ''}`
+  ].join('\n')
+}
+
+export function formatLinearProjectUpdate(result: {
+  id: string
+  health: string | null
+  url: string | null
+}): string {
+  return [
+    `id: ${result.id}`,
+    `health: ${result.health ?? 'null'}`,
+    `url: ${result.url ?? 'null'}`
+  ].join('\n')
+}
+
 export function formatLinearStatusSet(result: LinearStatusSetResult): string {
   const suffix = result.meta.alreadyInState ? ' (already set)' : ''
   return `Set ${result.issue.identifier} to ${result.state.name}${suffix}.`

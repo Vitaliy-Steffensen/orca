@@ -61,6 +61,7 @@ function makeRunWriter(foldsRepeat: boolean): {
   const writer: AutomationRunWriter = {
     advanceNextRun: async () => brokenAutomation,
     repeatSkip: async () => (foldsRepeat ? makeRun('folded') : null),
+    foldNoOp: async () => null,
     createRun: async () => {
       const run = makeRun(`run-${created.length + 1}`)
       created.push(run.id)

@@ -127,7 +127,7 @@ export function renderAutomationsSettingsSection(
       title={translate('auto.components.settings.automations.title', 'Automations')}
       description={translate(
         'auto.components.settings.automations.description',
-        'Schedule agent work and choose whether Automations appears in the sidebar.'
+        'Schedule agent work, set the rules the pull request check follows, and choose whether Automations appears in the sidebar.'
       )}
       searchEntries={navigation.getSectionSearchEntries('automations')}
     >

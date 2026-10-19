@@ -1,7 +1,9 @@
-import { useEffect } from 'react'
 import { useAppStore } from '@/store'
-import { installWindowVisibilityTimeoutPoller } from '@/lib/window-visibility-timeout-poller'
 import { getIndexedRepoMap } from '@/store/worktree-repo-index'
+import {
+  emptyPullRequestSyncTickSummary,
+  type PullRequestSyncTickSummary
+} from '../../../../shared/pull-request-sync-summary'
 import type { GitHubRepositoryIdentity } from '../../../../shared/github/pull-request-types'
 import type { ReviewStatusSnapshot } from '../../../../shared/github/review-status-snapshot-types'
 import { buildWorkspaceStatusRulePlan } from '../../../../shared/workspace-status-rule-plan'
@@ -24,9 +26,6 @@ import { runReviewEnteredCommands } from './run-review-entered-commands'
 import { planNewWorkspaceStatusUpdates } from '../../../../shared/workspace-new-status-plan'
 import { loadPendingReviewDrafts } from '../pending-review/pending-review-draft-store'
 import { runWorkspaceAgentRuleTick } from './run-workspace-agent-rule-tick'
-
-/** Matches the active-workspace review tier; a board does not change faster than this. */
-const POLL_INTERVAL_MS = 60_000
 
 const slugCache = new Map<string, GitHubRepositoryIdentity>()
 
@@ -53,18 +52,23 @@ async function resolveScopedRepoSlugs(
   return slugs
 }
 
-async function runWorkspaceStatusRuleTick(): Promise<void> {
+export async function runWorkspaceStatusRuleTick(): Promise<PullRequestSyncTickSummary> {
+  const empty = emptyPullRequestSyncTickSummary()
+  if (isDevBuildWithoutOptIn()) {
+    return empty
+  }
   const state = useAppStore.getState()
   const config = state.workspaceStatusRules
-  if (!config.enabled || config.repoIds.length === 0) {
-    return
+  if (config.repoIds.length === 0) {
+    return empty
   }
+  const newStatusUpdates = planNewWorkspaceStatusUpdates(
+    collectNewWorkspaceStatusTargets(state, config.repoIds),
+    config.newWorkspaceStatus,
+    config.newWorkspaceStatusSince
+  )
   await Promise.all(
-    planNewWorkspaceStatusUpdates(
-      collectNewWorkspaceStatusTargets(state, config.repoIds),
-      config.newWorkspaceStatus,
-      config.newWorkspaceStatusSince
-    ).map((update) =>
+    newStatusUpdates.map((update) =>
       state.updateWorktreeMeta(
         update.worktreeId,
         { workspaceStatus: update.status },
@@ -80,7 +84,7 @@ async function runWorkspaceStatusRuleTick(): Promise<void> {
   // local checkout for `gh` to run in still has workspaces whose agents move lanes.
   await runWorkspaceAgentRuleTick(new Set(scope.targets.map((target) => target.worktreeId)))
   if (!scope.repoPath) {
-    return
+    return { ...empty, statusUpdates: newStatusUpdates.length }
   }
   const snapshot = await window.api.reviewStatusRules.snapshot({
     repoPath: scope.repoPath,
@@ -98,10 +102,18 @@ async function runWorkspaceStatusRuleTick(): Promise<void> {
     config,
     existingBranches: scope.existingBranches
   })
-  await applyWorkspaceStatusRulePlan(plan, config)
-  await launchConflictAgents(plan, scope.targets, snapshot, config)
+  const applied = await applyWorkspaceStatusRulePlan(plan, config)
+  const conflictAgents = await launchConflictAgents(plan, scope.targets, snapshot, config)
   await runReviewEnteredCommands(plan, scope.targets, config)
-  await syncReviewWorkspaceHeads(scope.targets, snapshot)
+  const headSyncs = await syncReviewWorkspaceHeads(scope.targets, snapshot)
+  return {
+    statusUpdates: newStatusUpdates.length + applied.statusUpdates,
+    creations: applied.creations,
+    removals: applied.removals,
+    archives: applied.archives,
+    conflictAgents,
+    headSyncs
+  }
 }
 
 /** Per-workspace facts the sidebar reads straight off the tick, outside the worktree store. */
@@ -138,11 +150,12 @@ function publishLinkedPullRequestFacts(
 async function syncReviewWorkspaceHeads(
   targets: Parameters<typeof collectReviewHeadSyncCandidates>[1],
   snapshot: Parameters<typeof planReviewHeadSyncs>[1]
-): Promise<void> {
+): Promise<number> {
   const syncs = planReviewHeadSyncs(
     collectReviewHeadSyncCandidates(useAppStore.getState(), targets),
     snapshot
   )
+  let synced = 0
   // Why one at a time: each is a fetch and a reset in a different checkout of the same repository.
   for (const { worktreeId, ...request } of syncs) {
     const result = await window.api.reviewStatusRules
@@ -157,8 +170,13 @@ async function syncReviewWorkspaceHeads(
         worktreeId,
         result.reason
       )
+      continue
+    }
+    if (result?.kind === 'updated') {
+      synced += 1
     }
   }
+  return synced
 }
 
 const DEV_OPT_IN_STORAGE_KEY = 'orca.devStatusRules'
@@ -174,23 +192,4 @@ function isDevBuildWithoutOptIn(): boolean {
   } catch {
     return true
   }
-}
-
-export function useWorkspaceStatusRulePoller(): void {
-  const enabled = useAppStore(
-    (state) => state.workspaceStatusRules.enabled && !isDevBuildWithoutOptIn()
-  )
-
-  useEffect(() => {
-    if (!enabled) {
-      return
-    }
-    return installWindowVisibilityTimeoutPoller({
-      run: () =>
-        runWorkspaceStatusRuleTick().catch((error) => {
-          console.warn('[workspace-status-rules] tick failed:', error)
-        }),
-      getDelayMs: () => POLL_INTERVAL_MS
-    })
-  }, [enabled])
 }

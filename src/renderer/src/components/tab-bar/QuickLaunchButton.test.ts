@@ -137,7 +137,8 @@ describe('QuickLaunchAgentMenuItems', () => {
 
     expect(html.match(/data-dropdown-shortcut="true"/g) ?? []).toHaveLength(1)
     expect(rowMarkup(html, 'Codex')).toContain('⌘⌥T')
-    expect(rowMarkup(html, 'Claude')).not.toContain('⌘⌥T')
+    expect(html).toContain('New chat')
+    expect(html).not.toContain('Launch Claude')
     expect(rowMarkup(html, 'Gemini')).not.toContain('⌘⌥T')
   })
 

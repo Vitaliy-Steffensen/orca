@@ -516,4 +516,49 @@ describe('Linear project queries', () => {
       after: 'view-cursor-100'
     })
   })
+
+  it('filters projects you lead through the projects query', async () => {
+    rawRequest.mockResolvedValueOnce({
+      data: {
+        projects: {
+          nodes: [rawProject('project-1')],
+          pageInfo: { hasNextPage: false }
+        }
+      }
+    })
+    const { listProjects } = await import('./projects')
+
+    await listProjects(undefined, 20, 'workspace-1', true, 'me')
+
+    expect(rawRequest.mock.calls[0]?.[0]).toContain('query OrcaLinearProjects')
+    expect(rawRequest.mock.calls[0]?.[1]).toEqual({
+      first: 20,
+      orderBy: 'updatedAt',
+      filter: { lead: { isMe: { eq: true } } }
+    })
+  })
+
+  it('rejects a project update body over the cap before calling Linear', async () => {
+    const { LINEAR_WRITE_BODY_CAP } = await import('../../shared/linear/agent-access')
+    const { createProjectUpdate } = await import('./linear-project-update-mutations')
+
+    await expect(
+      createProjectUpdate({
+        projectId: 'project-1',
+        body: 'x'.repeat(LINEAR_WRITE_BODY_CAP + 1)
+      })
+    ).rejects.toMatchObject({ code: 'linear_body_too_large' })
+    expect(rawRequest).not.toHaveBeenCalled()
+  })
+
+  it('maps an auth failure on project update to linear_auth_expired', async () => {
+    isAuthError.mockReturnValue(true)
+    rawRequest.mockRejectedValueOnce(new Error('expired'))
+    const { createProjectUpdate } = await import('./linear-project-update-mutations')
+
+    await expect(
+      createProjectUpdate({ projectId: 'project-1', body: 'Shipped it.' })
+    ).rejects.toMatchObject({ code: 'linear_auth_expired' })
+    expect(clearToken).toHaveBeenCalledWith('workspace-1')
+  })
 })

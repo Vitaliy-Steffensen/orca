@@ -39,8 +39,8 @@ function entry(): WorkspaceRunEntry {
     readyDeadlineAt: 900_000,
     openedBrowser: false,
     services: [
-      { label: 'Backend', tabId: 'backend', readyPort: 23880, ready: false },
-      { label: 'Frontend', tabId: 'frontend', readyPort: 23883, ready: false }
+      { label: 'Backend', tabId: 'run-tab', leafId: 'backend', readyPort: 23880, ready: false },
+      { label: 'Frontend', tabId: 'run-tab', leafId: 'frontend', readyPort: 23883, ready: false }
     ]
   }
 }
@@ -89,14 +89,14 @@ describe('workspace run browser open after boot', () => {
       now: 1_000,
       observations: [
         {
-          tabId: 'backend',
+          leafId: 'backend',
           tabPresent: true,
           ptyAlive: true,
           ptyAliveSince: 0,
           portListening: listening.has(23880)
         },
         {
-          tabId: 'frontend',
+          leafId: 'frontend',
           tabPresent: true,
           ptyAlive: true,
           ptyAliveSince: 0,

@@ -16,10 +16,11 @@ export async function launchConflictAgents(
   targets: readonly WorkspaceStatusRuleTarget[],
   snapshot: Pick<ReviewStatusSnapshot, 'linkedPullRequests'>,
   config: WorkspaceStatusRuleConfig
-): Promise<void> {
+): Promise<number> {
   if (!config.resolveConflictsWithAgent) {
-    return
+    return 0
   }
+  let launched = 0
   // Why only on entering the column: a status update fires when the column changes, so a card already in Conflicts never relaunches.
   for (const update of plan.statusUpdates) {
     if (update.condition !== 'conflicts') {
@@ -54,6 +55,7 @@ export async function launchConflictAgents(
           { number: pr.number }
         )
       })
+      launched += 1
     } catch (error) {
       toast.error(
         translate(
@@ -67,4 +69,5 @@ export async function launchConflictAgents(
       )
     }
   }
+  return launched
 }

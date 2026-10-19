@@ -60,7 +60,6 @@ function makeTarget(overrides: Partial<WorkspaceStatusRuleTarget> = {}): Workspa
 
 const enabled = {
   ...cloneDefaultWorkspaceStatusRuleConfig(),
-  enabled: true,
   statusByCondition: {
     draft: 'draft-col',
     review: 'review-col',
@@ -72,17 +71,6 @@ const enabled = {
 const noBranches = new Set<string>()
 
 describe('buildWorkspaceStatusRulePlan — statuses', () => {
-  it('plans nothing while the rules are disabled', () => {
-    const plan = buildWorkspaceStatusRulePlan({
-      targets: [makeTarget()],
-      snapshot: makeSnapshot({ linkedPullRequests: [makePR({ isDraft: true })] }),
-      config: { ...enabled, enabled: false },
-      existingBranches: noBranches
-    })
-
-    expect(plan.statusUpdates).toEqual([])
-  })
-
   it('moves a workspace whose pull request changed condition', () => {
     const plan = buildWorkspaceStatusRulePlan({
       targets: [makeTarget()],
@@ -361,7 +349,6 @@ describe('closing a workspace once you have reviewed', () => {
   })
   const config = {
     ...cloneDefaultWorkspaceStatusRuleConfig(),
-    enabled: true,
     onReviewed: 'delete' as const
   }
 
