@@ -40,8 +40,7 @@ describe('ReviewIcon', () => {
       <ReviewIcon review={{ ...gitlabReview, status: 'success' }} className="size-3" />
     )
 
-    expect(blocked).toContain('text-amber-500/85')
-    expect(blocked).not.toContain('text-emerald-500/80')
+    expect(blocked).toContain('text-foreground')
     expect(blocked).not.toBe(passing)
   })
 
@@ -70,7 +69,7 @@ describe('ReviewIcon', () => {
     )
 
     expect(draft).toContain('lucide-git-pull-request-draft')
-    expect(draft).not.toContain('text-rose-500/85')
+    expect(draft).not.toContain('text-destructive')
     expect(closed).toContain('lucide-git-pull-request-closed')
     expect(draft).not.toBe(closed)
   })
@@ -84,7 +83,7 @@ describe('ReviewIcon', () => {
       />
     )
 
-    expect(failing).toContain('text-rose-500/85')
+    expect(failing).toContain('text-destructive')
   })
 
   it('renders merged reviews with the merge glyph', () => {
@@ -121,8 +120,9 @@ describe('ReviewIcon', () => {
         />
       )
 
-    expect(stateless('failure')).toContain('text-rose-500/85')
-    expect(stateless('pending')).toContain('text-amber-500/85')
-    expect(stateless('success')).not.toContain('text-emerald-500/80')
+    expect(stateless('failure')).toContain('text-destructive')
+    expect(stateless('pending')).toContain('text-foreground')
+    // Why nothing for success: a passing run is the expected case, so it stays undecorated.
+    expect(stateless('success')).not.toContain('text-destructive')
   })
 })

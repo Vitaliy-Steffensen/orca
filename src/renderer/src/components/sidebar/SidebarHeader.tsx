@@ -7,7 +7,6 @@ import { Button } from '@/components/ui/button'
 import { Popover, PopoverAnchor, PopoverArrow, PopoverContent } from '@/components/ui/popover'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
 import { Sparkles, Bell } from 'lucide-react'
-import { cn } from '@/lib/utils'
 
 type SidebarHeaderProps = {
   onWorkspaceBoardMenuOpenChange: (open: boolean) => void
@@ -72,12 +71,8 @@ const SidebarHeader = React.memo(function SidebarHeader({
                 <PopoverAnchor asChild>
                   <Button
                     type="button"
-                    variant="ghost"
+                    variant={agentsViewActive ? 'secondary' : 'ghost'}
                     size="icon-xs"
-                    className={cn(
-                      'text-muted-foreground',
-                      agentsViewActive && 'bg-primary/15 text-primary hover:bg-primary/20'
-                    )}
                     aria-label={activityLabel}
                     aria-pressed={agentsViewActive}
                     onClick={() => setSidebarBody?.(agentsViewActive ? 'workspaces' : 'agents')}
@@ -103,7 +98,7 @@ const SidebarHeader = React.memo(function SidebarHeader({
             <PopoverArrow />
             <div className="space-y-2.5">
               <div className="flex items-center gap-1.5">
-                <Sparkles className="size-4 shrink-0 text-primary" aria-hidden="true" />
+                <Sparkles className="size-4 shrink-0 text-muted-foreground" aria-hidden="true" />
                 <h3 id={introTitleId} className="text-sm font-semibold text-foreground">
                   {translate('agentsSidebarIntro.migrated.title', 'Agents are easier to find')}
                 </h3>

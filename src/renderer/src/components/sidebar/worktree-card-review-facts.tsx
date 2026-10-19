@@ -52,12 +52,10 @@ function DiffFact({
           className="inline-flex items-center gap-1 text-[10px] leading-none tabular-nums"
           data-worktree-card-fact="diff"
         >
-          <span className="text-[color:var(--git-decoration-added)]">
-            +{formatCount(fact.added)}
-          </span>
-          <span className="text-[color:var(--git-decoration-deleted)]">
-            −{formatCount(fact.removed)}
-          </span>
+          {/* Why no git-decoration hues: the +/− signs already carry direction, and the card
+              reserves colour for a question or a failure. The diff viewer keeps its colours. */}
+          <span className="text-muted-foreground">+{formatCount(fact.added)}</span>
+          <span className="text-muted-foreground/70">−{formatCount(fact.removed)}</span>
         </span>
       </TooltipTrigger>
       <TooltipContent side="right" sideOffset={8}>

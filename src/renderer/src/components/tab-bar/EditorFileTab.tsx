@@ -281,7 +281,7 @@ export default function EditorFileTab({
       {isActive && <span className={ACTIVE_TAB_INDICATOR_CLASSES} aria-hidden />}
       {isConflictReview ? (
         <ShieldAlert
-          className={`w-3 h-3 mr-1 shrink-0 ${isActive ? 'text-orange-400' : 'text-orange-400/70'}`}
+          className={`w-3 h-3 mr-1 shrink-0 ${isActive ? 'text-destructive' : 'text-destructive/70'}`}
         />
       ) : isMarkdownPreviewTab ? (
         <Eye

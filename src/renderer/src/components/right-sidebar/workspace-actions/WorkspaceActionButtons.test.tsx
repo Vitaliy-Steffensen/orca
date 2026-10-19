@@ -30,20 +30,40 @@ describe('WorkspaceActionButtons', () => {
   // render would answer the next test's queries.
   afterEach(cleanup)
 
-  it('offers Re-review beside Review while a pull request is open', async () => {
+  it('keeps Re-review one click deep behind the Review button while a pull request is open', async () => {
     mocks.launch.mockReset().mockResolvedValue(undefined)
     render(<WorkspaceActionButtons />)
 
     expect(screen.getByRole('button', { name: 'Review' })).toBeTruthy()
-    await userEvent.click(screen.getByRole('button', { name: 'Re-review' }))
+    await userEvent.click(screen.getByRole('button', { name: 'More review actions' }))
+    await userEvent.click(await screen.findByRole('menuitem', { name: 'Re-review' }))
     expect(mocks.launch).toHaveBeenCalledWith('re-review')
   })
 
-  it('hides both review buttons when there is no pull request', () => {
+  it('offers Create draft PR from the Create PR chevron', async () => {
+    mocks.launch.mockReset().mockResolvedValue(undefined)
+    render(<WorkspaceActionButtons />)
+
+    expect(screen.getByRole('button', { name: 'Create PR' })).toBeTruthy()
+    await userEvent.click(screen.getByRole('button', { name: 'More pull request actions' }))
+    await userEvent.click(await screen.findByRole('menuitem', { name: 'Create draft PR' }))
+    expect(mocks.launch).toHaveBeenCalledWith('primary-draft')
+  })
+
+  it('offers no chevron on a primary action that has no second form', () => {
+    mocks.state.action = 'commit-and-push'
+    render(<WorkspaceActionButtons />)
+
+    expect(screen.getByRole('button', { name: 'Commit & push' })).toBeTruthy()
+    expect(screen.queryByRole('button', { name: 'More pull request actions' })).toBeNull()
+  })
+
+  it('hides the whole review control when there is no pull request', () => {
+    mocks.state.action = 'create-pull-request'
     mocks.state.pr = null
     render(<WorkspaceActionButtons />)
 
     expect(screen.queryByRole('button', { name: 'Review' })).toBeNull()
-    expect(screen.queryByRole('button', { name: 'Re-review' })).toBeNull()
+    expect(screen.queryByRole('button', { name: 'More review actions' })).toBeNull()
   })
 })

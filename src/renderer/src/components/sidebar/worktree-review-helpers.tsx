@@ -26,20 +26,18 @@ export function getProviderName(review: WorktreeCardPrDisplay): string {
 }
 
 // Why: checks only gate a review that is actually open; draft/closed/merged keep
-// their state tone so the glyph agrees with its tooltip. A stateless row (folder
-// cards render one while a linked review is loading or its details failed) has no
-// state glyph to contradict, so it still flags problems — but never claims success,
-// since emerald would assert an open review we have not confirmed.
+// their state tone so the glyph agrees with its tooltip. Only a failure earns a
+// hue — passing and pending checks are news the glyph already carries.
 export function getReviewChecksTone(status: WorktreeCardPrDisplay['status']): string | null {
   if (status === 'failure') {
-    return 'text-rose-500/85'
+    return 'text-destructive'
   }
+  // Why stronger ink, not a hue: a pending run (a manual gate, say) may be waiting on you,
+  // and it has to stay distinguishable from a passing one, which inherits the quiet row.
   if (status === 'pending') {
-    return 'text-amber-500/85'
+    return 'text-foreground'
   }
-  if (status === 'success') {
-    return 'text-emerald-500/80'
-  }
+  // Why success gets nothing: a passing run is the expected case, so it inherits the row.
   return null
 }
 
@@ -50,18 +48,14 @@ function getCheckTone(review: WorktreeCardPrDisplay): string | null {
   return getReviewChecksTone(review.status)
 }
 
+// Why no hue: the lucide glyph already distinguishes open / merged / closed / draft,
+// so review state rides on shape and weight instead of five competing colours.
 function getStateTone(state: WorktreeCardPrDisplay['state']): string {
-  if (state === 'merged') {
-    return 'text-purple-600/70 dark:text-purple-400/70'
+  if (state === 'open' || state === 'merged') {
+    return 'text-muted-foreground'
   }
-  if (state === 'open') {
-    return 'text-emerald-500/80'
-  }
-  if (state === 'closed') {
+  if (state === 'closed' || state === 'draft') {
     return 'text-muted-foreground/60'
-  }
-  if (state === 'draft') {
-    return 'text-muted-foreground/50'
   }
   return 'text-muted-foreground opacity-70'
 }

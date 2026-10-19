@@ -1,15 +1,29 @@
 import React, { useState } from 'react'
 import {
+  ChevronDown,
   CircleCheck,
   GitMerge,
   GitPullRequestArrow,
+  GitPullRequestDraft,
   ScanEye,
   ScanSearch,
   Upload
 } from 'lucide-react'
 import { useAppStore } from '@/store'
 import { cn } from '@/lib/utils'
-import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger
+} from '@/components/ui/dropdown-menu'
+import {
+  SPLIT_BUTTON_MAIN_SEGMENT_CLASS,
+  SPLIT_BUTTON_MENU_SEGMENT_CLASS,
+  SPLIT_BUTTON_SEGMENT_CLASS,
+  SPLIT_BUTTON_SURFACE_CLASS
+} from '@/components/split-button-surface'
 import { translate } from '@/i18n/i18n'
 import type { WorkspaceActionKind } from '../../../../../shared/workspace-action'
 import { selectWorkspaceActionContext } from './workspace-action-context'
@@ -40,41 +54,89 @@ function primaryCopy(action: WorkspaceActionKind): { label: string; icon: React.
   }
 }
 
-const BUTTON_CLASS =
-  'inline-flex h-6 shrink-0 items-center gap-1 rounded-md border border-border/70 px-2 text-[11px] font-medium text-foreground transition-colors hover:bg-accent disabled:opacity-50'
+type MenuEntry = { kind: WorkspaceActionLaunch; label: string; icon: React.JSX.Element }
 
-function ActionButton({
+/**
+ * One verb, plus the variants of that same verb behind a chevron — the shape the tab bar's
+ * quick-commands button already uses, so the header row reads as one kind of control.
+ */
+function SplitActionButton({
   label,
   icon,
   showLabel,
-  className,
-  ...buttonProps
+  disabled,
+  primaryKind,
+  menuLabel,
+  menuEntries,
+  onRun,
+  ...surfaceProps
 }: {
   label: string
   icon: React.JSX.Element
   showLabel: boolean
-} & React.ComponentProps<'button'>): React.JSX.Element {
-  const button = (
+  disabled: boolean
+  primaryKind: WorkspaceActionLaunch
+  menuLabel: string
+  menuEntries: readonly MenuEntry[]
+  onRun: (kind: WorkspaceActionLaunch) => void
+} & React.ComponentProps<'div'>): React.JSX.Element {
+  const verb = (
     <button
       type="button"
-      className={cn(BUTTON_CLASS, !showLabel && 'px-1.5', className)}
+      className={cn(SPLIT_BUTTON_SEGMENT_CLASS, SPLIT_BUTTON_MAIN_SEGMENT_CLASS)}
       aria-label={label}
-      {...buttonProps}
+      disabled={disabled}
+      onClick={() => onRun(primaryKind)}
     >
       {icon}
-      {showLabel ? label : null}
+      {showLabel ? <span className="text-[12px] font-medium">{label}</span> : null}
     </button>
   )
-  if (showLabel) {
-    return button
-  }
   return (
-    <Tooltip>
-      <TooltipTrigger asChild>{button}</TooltipTrigger>
-      <TooltipContent side="bottom" sideOffset={6}>
-        {label}
-      </TooltipContent>
-    </Tooltip>
+    <TooltipProvider delayDuration={400}>
+      <div className={SPLIT_BUTTON_SURFACE_CLASS} {...surfaceProps}>
+        {/* Why no tooltip with the label visible: it would only repeat what the button says. */}
+        {showLabel ? (
+          verb
+        ) : (
+          <Tooltip>
+            <TooltipTrigger asChild>{verb}</TooltipTrigger>
+            <TooltipContent side="bottom" sideOffset={6}>
+              {label}
+            </TooltipContent>
+          </Tooltip>
+        )}
+        {menuEntries.length > 0 ? (
+          <DropdownMenu modal={false}>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <DropdownMenuTrigger asChild>
+                  <button
+                    type="button"
+                    className={cn(SPLIT_BUTTON_SEGMENT_CLASS, SPLIT_BUTTON_MENU_SEGMENT_CLASS)}
+                    aria-label={menuLabel}
+                    disabled={disabled}
+                  >
+                    <ChevronDown className="size-3" strokeWidth={2.5} />
+                  </button>
+                </DropdownMenuTrigger>
+              </TooltipTrigger>
+              <TooltipContent side="bottom" sideOffset={6}>
+                {menuLabel}
+              </TooltipContent>
+            </Tooltip>
+            <DropdownMenuContent align="end" side="bottom" sideOffset={4}>
+              {menuEntries.map((entry) => (
+                <DropdownMenuItem key={entry.kind} onSelect={() => onRun(entry.kind)}>
+                  {entry.icon}
+                  {entry.label}
+                </DropdownMenuItem>
+              ))}
+            </DropdownMenuContent>
+          </DropdownMenu>
+        ) : null}
+      </div>
+    </TooltipProvider>
   )
 }
 
@@ -97,34 +159,54 @@ export function WorkspaceActionButtons({
     void launchWorkspaceAction(kind).finally(() => setBusy(null))
   }
   const primary = action ? primaryCopy(action) : null
+  // Why only Create PR carries a variant: draft is a property of the pull request being opened.
+  // Commit & push, Resolve conflicts and Ready for review have no second form.
+  const primaryMenuEntries: MenuEntry[] =
+    action === 'create-pull-request'
+      ? [
+          {
+            kind: 'primary-draft',
+            label: translate('auto.components.workspaceActions.createDraftPr', 'Create draft PR'),
+            icon: <GitPullRequestDraft className="size-3.5" />
+          }
+        ]
+      : []
   return (
     <div className="flex shrink-0 items-center gap-1 pr-1" data-workspace-action-buttons="">
       {canReview ? (
-        <ActionButton
+        <SplitActionButton
           label={translate('auto.components.workspaceActions.review', 'Review')}
           icon={<ScanEye className="size-3.5" />}
           showLabel={showLabels}
           disabled={busy !== null}
-          onClick={() => run('review')}
-        />
-      ) : null}
-      {canReview ? (
-        <ActionButton
-          label={translate('auto.components.workspaceActions.reReview', 'Re-review')}
-          icon={<ScanSearch className="size-3.5" />}
-          showLabel={showLabels}
-          disabled={busy !== null}
-          onClick={() => run('re-review')}
+          menuLabel={translate(
+            'auto.components.workspaceActions.moreReviewActions',
+            'More review actions'
+          )}
+          menuEntries={[
+            {
+              kind: 're-review',
+              label: translate('auto.components.workspaceActions.reReview', 'Re-review'),
+              icon: <ScanSearch className="size-3.5" />
+            }
+          ]}
+          primaryKind="review"
+          onRun={run}
         />
       ) : null}
       {primary ? (
-        <ActionButton
+        <SplitActionButton
           label={primary.label}
           icon={primary.icon}
           showLabel={showLabels}
-          className="bg-accent/40"
           disabled={busy !== null}
-          onClick={() => run('primary')}
+          menuLabel={translate(
+            'auto.components.workspaceActions.morePrActions',
+            'More pull request actions'
+          )}
+          menuEntries={primaryMenuEntries}
+          primaryKind="primary"
+          onRun={run}
           data-workspace-action={action}
         />
       ) : null}

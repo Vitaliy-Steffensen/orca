@@ -92,7 +92,7 @@ export async function initializeMainProcessI18nAndMenu(): Promise<void> {
       const ui = store.getUI()
       return {
         showTasksButton: settings.showTasksButton !== false,
-        showAutomationsButton: settings.showAutomationsButton !== false,
+        showAutomationsButton: settings.showAutomationsButton === true,
         showMobileButton: settings.showMobileButton !== false,
         showTitlebarAppName: settings.showTitlebarAppName !== false,
         statusBarVisible: ui.statusBarVisible !== false

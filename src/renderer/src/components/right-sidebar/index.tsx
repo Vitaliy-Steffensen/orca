@@ -6,8 +6,6 @@ import { useSidebarResize } from '@/hooks/useSidebarResize'
 import { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider } from '@/components/ui/tooltip'
 import { ContextMenu, ContextMenuTrigger } from '@/components/ui/context-menu'
 import { getTopActivityBarLayout, showsHeaderActionLabels } from './activity-bar-overflow'
-import { PreviewDeploymentButton } from './PreviewDeploymentButton'
-import { FrontendDevServerButton } from './FrontendDevServerButton'
 import { ActivityBarButton } from './activity-bar-buttons'
 import { getActiveChecksStatus } from './active-checks-status'
 import { useShortcutLabel } from '@/hooks/useShortcutLabel'
@@ -19,25 +17,16 @@ import {
 import { translate } from '@/i18n/i18n'
 import { RightSidebarPanelContent } from './right-sidebar-panel-content'
 import { useMeasuredWidth } from './right-sidebar-measured-width'
-import {
-  isPairedWebClientWindow,
-  shouldRenderDesktopWindowChrome
-} from '@/lib/desktop-window-chrome'
-import { getRendererAppPlatform } from '@/lib/renderer-app-platform'
 import { ActivityBarPositionMenu } from './activity-bar-position-menu'
 import { RightSidebarTopActivityBar } from './right-sidebar-top-activity-bar'
 import { useRightSidebarActivityItems } from './use-right-sidebar-activity-items'
 import { useRightSidebarTabRouting } from './use-right-sidebar-tab-routing'
 import { useWindowWidth } from './use-window-width'
-import { WorkspaceActionButtons } from './workspace-actions/WorkspaceActionButtons'
+import { RightSidebarActionsRow } from './right-sidebar-actions-row'
 
 const ACTIVITY_BAR_SIDE_WIDTH = 40
 
 function RightSidebarInner(): React.JSX.Element {
-  const hasDesktopWindowChrome = shouldRenderDesktopWindowChrome({
-    platform: getRendererAppPlatform(),
-    isWebClient: isPairedWebClientWindow()
-  })
   const rightSidebarShortcut = useShortcutLabel('sidebar.right.toggle')
   const rightSidebarOpen = useAppStore((s) => s.rightSidebarOpen)
   const rightSidebarWidth = useAppStore((s) => s.rightSidebarWidth)
@@ -114,34 +103,36 @@ function RightSidebarInner(): React.JSX.Element {
     />
   ))
 
-  const closeButton = rightSidebarOpen ? (
-    <>
-      <WorkspaceActionButtons showLabels={showsHeaderActionLabels(renderedRightSidebarWidth)} />
-      <FrontendDevServerButton />
-      <PreviewDeploymentButton />
-      <Tooltip>
-        <TooltipTrigger asChild>
-          <button
-            type="button"
-            className="sidebar-toggle mr-1"
-            onClick={toggleRightSidebar}
-            aria-label={translate(
-              'auto.components.right.sidebar.index.e8e2e4ce74',
-              'Toggle right sidebar'
-            )}
-          >
-            <PanelRight size={16} />
-          </button>
-        </TooltipTrigger>
-        <TooltipContent side="bottom" sideOffset={6}>
-          {translate(
-            'auto.components.right.sidebar.index.9fffaf17c1',
-            'Toggle right sidebar ({{value0}})',
-            { value0: rightSidebarShortcut }
+  const panelToggle = rightSidebarOpen ? (
+    <Tooltip>
+      <TooltipTrigger asChild>
+        <button
+          type="button"
+          className="sidebar-toggle mr-1"
+          onClick={toggleRightSidebar}
+          aria-label={translate(
+            'auto.components.right.sidebar.index.e8e2e4ce74',
+            'Toggle right sidebar'
           )}
-        </TooltipContent>
-      </Tooltip>
-    </>
+        >
+          <PanelRight size={16} />
+        </button>
+      </TooltipTrigger>
+      <TooltipContent side="bottom" sideOffset={6}>
+        {translate(
+          'auto.components.right.sidebar.index.9fffaf17c1',
+          'Toggle right sidebar ({{value0}})',
+          { value0: rightSidebarShortcut }
+        )}
+      </TooltipContent>
+    </Tooltip>
+  ) : null
+
+  const actionsRow = rightSidebarOpen ? (
+    <RightSidebarActionsRow
+      showLabels={showsHeaderActionLabels(renderedRightSidebarWidth)}
+      trailing={panelToggle}
+    />
   ) : null
 
   return (
@@ -166,13 +157,12 @@ function RightSidebarInner(): React.JSX.Element {
       >
         {activityBarPosition === 'top' ? (
           <RightSidebarTopActivityBar
-            hasDesktopWindowChrome={hasDesktopWindowChrome}
             topActivityStripRef={topActivityStripRef}
             topActivityLayout={topActivityLayout}
             effectiveTab={effectiveTab}
             onSelectTab={selectActivityTab}
             checksStatus={checksStatus}
-            closeButton={closeButton}
+            actionsRow={actionsRow}
             activityBarPosition={activityBarPosition}
             onChangeActivityBarPosition={setActivityBarPosition}
           />
@@ -189,7 +179,7 @@ function RightSidebarInner(): React.JSX.Element {
               {visibleItems.find((item) => item.id === effectiveTab)?.title ?? ''}
             </span>
             <TooltipProvider delayDuration={400}>
-              <div className="flex items-center">{closeButton}</div>
+              <div className="flex items-center">{actionsRow}</div>
             </TooltipProvider>
           </div>
         )}

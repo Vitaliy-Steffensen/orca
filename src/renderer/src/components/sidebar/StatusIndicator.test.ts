@@ -47,7 +47,7 @@ describe('StatusIndicator', () => {
     expect(markup).toContain('data-state-indicator-tooltip="Monitoring background tasks"')
     expect(markup).not.toContain(' title=')
     expect(markup).toContain('lucide-activity')
-    expect(markup).toContain('text-yellow-500')
+    expect(markup).toContain('text-muted-foreground')
     expect(markup).not.toContain('data-agent-spinner')
   })
 
@@ -60,28 +60,28 @@ describe('StatusIndicator', () => {
     expect(markup).not.toContain('data-agent-spinner')
   })
 
-  it('renders active as full emerald dot', () => {
+  it('renders active as a solid ink dot', () => {
     const classNames = renderDotClassNames('active')
 
-    expect(classNames).toContain('bg-emerald-500')
+    expect(classNames).toContain('bg-foreground')
   })
 
-  it('renders done as an emerald dot', () => {
+  it('renders done as a solid ink dot', () => {
     const classNames = renderDotClassNames('done')
 
-    expect(classNames).toContain('bg-emerald-500')
+    expect(classNames).toContain('bg-foreground')
   })
 
   it("renders a user's Stop muted, distinct from done and from a failure", () => {
     const classNames = renderDotClassNames('interrupted')
 
     expect(classNames).toContain('bg-muted-foreground')
-    expect(classNames).not.toContain('bg-emerald-500')
-    expect(classNames).not.toContain('bg-red-500')
+    expect(classNames).not.toContain('bg-foreground')
+    expect(classNames).not.toContain('bg-destructive')
   })
 
-  it('renders failed as a red dot', () => {
-    expect(renderDotClassNames('failed')).toContain('bg-red-500')
+  it('renders failed as a destructive dot', () => {
+    expect(renderDotClassNames('failed')).toContain('bg-destructive')
   })
 
   it.each([

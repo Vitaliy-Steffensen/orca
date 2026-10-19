@@ -21,6 +21,12 @@ import {
 import { getAgentLabel } from '@/lib/agent-catalog'
 import { TabBarQuickCommandItem } from './TabBarQuickCommandItem'
 import { cn } from '@/lib/utils'
+import {
+  SPLIT_BUTTON_MAIN_SEGMENT_CLASS,
+  SPLIT_BUTTON_MENU_SEGMENT_CLASS,
+  SPLIT_BUTTON_SEGMENT_CLASS,
+  SPLIT_BUTTON_SURFACE_CLASS
+} from '@/components/split-button-surface'
 import { translate } from '@/i18n/i18n'
 import { useImeEnterGestureOwnership } from '@/lib/ime-composition-keyboard-event'
 import { useShortcutKeyComboDetails } from '@/hooks/useShortcutLabel'
@@ -183,19 +189,15 @@ export function TabBarQuickCommandsMenu({
     'auto.components.tab.bar.TabBarQuickCommandsButton.b82e237a4b',
     'More quick commands'
   )
-  const splitButtonClass =
-    'my-auto flex h-7 shrink-0 items-stretch overflow-hidden rounded-md border border-border/60 text-muted-foreground'
-  const innerButtonBase =
-    'flex items-center bg-transparent leading-none text-muted-foreground hover:bg-accent/50 hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent'
   return (
-    <div className={splitButtonClass}>
+    <div className={SPLIT_BUTTON_SURFACE_CLASS}>
       <Tooltip>
         <TooltipTrigger asChild>
           <button
             type="button"
             onClick={() => mostRecent && runAndClose(mostRecent)}
             disabled={!mostRecent}
-            className={cn(innerButtonBase, 'gap-1.5 rounded-l-md rounded-r-none px-1.5')}
+            className={cn(SPLIT_BUTTON_SEGMENT_CLASS, SPLIT_BUTTON_MAIN_SEGMENT_CLASS)}
             aria-label={
               mostRecent
                 ? translate(
@@ -244,10 +246,7 @@ export function TabBarQuickCommandsMenu({
             <DropdownMenuTrigger asChild>
               <button
                 type="button"
-                className={cn(
-                  innerButtonBase,
-                  'justify-center rounded-l-none rounded-r-md border-l border-border/60 px-1'
-                )}
+                className={cn(SPLIT_BUTTON_SEGMENT_CLASS, SPLIT_BUTTON_MENU_SEGMENT_CLASS)}
                 aria-label={moreCommandsLabel}
                 onPointerEnter={allowMoreCommandsTooltip}
                 onBlur={allowMoreCommandsTooltip}

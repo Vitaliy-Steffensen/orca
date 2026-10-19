@@ -7,10 +7,12 @@ import { useAgentBucketCounts } from '@/components/dashboard/useAgentBucketCount
 import { resolveAgentDashboardMode } from '@/components/dashboard/agent-dashboard-open-mode'
 import { translate } from '@/i18n/i18n'
 
+// Why an ink ramp: these three sit side by side as counts, so weight orders them
+// without spending hues the attention bucket needs.
 const DASHBOARD_BUCKET_DOT_CLASS: Record<'working' | 'done' | 'idle', string> = {
-  working: 'bg-yellow-500',
-  done: 'bg-emerald-500',
-  idle: 'bg-neutral-500/50'
+  working: 'bg-foreground',
+  done: 'bg-muted-foreground',
+  idle: 'bg-muted-foreground/40'
 }
 
 function dashboardBucketLabel(bucket: DashboardBucket): string {

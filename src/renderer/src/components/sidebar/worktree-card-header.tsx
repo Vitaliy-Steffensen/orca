@@ -236,10 +236,7 @@ export function WorktreeCardHeader({
         {worktree.isSparse && (
           <Tooltip>
             <TooltipTrigger asChild>
-              <Badge
-                variant="outline"
-                className="h-[16px] px-1.5 text-[10px] font-medium rounded shrink-0 leading-none text-amber-700 dark:text-amber-300 border-amber-500/30 bg-amber-500/5"
-              >
+              <Badge variant="cardChipQuiet">
                 {translate('auto.components.sidebar.WorktreeCard.4f964d5e8c', 'sparse')}
               </Badge>
             </TooltipTrigger>

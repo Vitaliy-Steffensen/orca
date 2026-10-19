@@ -108,6 +108,11 @@ function seedStore(worktrees: Worktree[], overrides: Partial<AppState> = {}): vo
     } as AppState,
     true
   )
+  // Why set separately: main is hidden by default now, and these fixtures assert where it
+  // lands in the order rather than whether it is listed.
+  useAppStore.setState({
+    hideDefaultBranchWorkspace: overrides.hideDefaultBranchWorkspace ?? false
+  })
   setVisibleWorktreeIds(null)
   setVisibleWorktreeShortcutTargets(null)
 }

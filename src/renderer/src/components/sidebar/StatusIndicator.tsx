@@ -58,7 +58,7 @@ const StatusIndicator = React.memo(function StatusIndicator({
         className={cn('inline-flex h-3 w-3 shrink-0 items-center justify-center', className)}
         {...rest}
       >
-        <Activity className="size-3 text-yellow-500" aria-hidden="true" />
+        <Activity className="size-3 text-muted-foreground" aria-hidden="true" />
       </span>
     )
   } else if (status === 'failed') {
@@ -67,11 +67,11 @@ const StatusIndicator = React.memo(function StatusIndicator({
         className={cn('inline-flex h-3 w-3 shrink-0 items-center justify-center', className)}
         {...rest}
       >
-        <span className="block size-1.5 rounded-full bg-red-500" />
+        <span className="block size-1.5 rounded-full bg-destructive" />
       </span>
     )
   } else if (status === 'interrupted') {
-    // Why: a user's Stop is not news; muted, never the fault red or the finished green.
+    // Why: a user's Stop is not news; muted, never the fault red.
     indicator = (
       <span
         className={cn('inline-flex h-3 w-3 shrink-0 items-center justify-center', className)}
@@ -109,11 +109,11 @@ const StatusIndicator = React.memo(function StatusIndicator({
           className={cn(
             'block size-2 rounded-full',
             status === 'done' || status === 'active'
-              ? // Green dot for both hook-reported 'done' and the heuristic
-                // 'active' (terminal open, quiet). Working uses a yellow
-                // ring above; 'inactive' stays grey.
-                'bg-emerald-500'
-              : 'bg-neutral-500/40'
+              ? // Solid ink for both hook-reported 'done' and the heuristic 'active'
+                // (terminal open, quiet). Neither earns a hue — only a question or a
+                // failure does — so weight is what separates them from a user's Stop.
+                'bg-foreground'
+              : 'bg-muted-foreground/40'
           )}
         />
       </span>

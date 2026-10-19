@@ -108,7 +108,12 @@ describe('Cmd+J quick action context', () => {
       openNewTerminalTab: async () => {},
       openCreateWorkspace: () => {},
       deleteActiveWorkspace: () => {},
-      openAddQuickCommand: () => {}
+      openAddQuickCommand: () => {},
+      mainWorkspaceHidden: true,
+      setMainWorkspaceHidden: () => {},
+      automationsButtonVisible: false,
+      setAutomationsButtonVisible: () => {},
+      openAutomations: () => {}
     } satisfies CmdJQuickActionContext
 
     expect(
@@ -142,7 +147,12 @@ describe('Cmd+J quick action context', () => {
       openNewTerminalTab: async () => {},
       openCreateWorkspace: () => {},
       deleteActiveWorkspace: () => {},
-      openAddQuickCommand: () => {}
+      openAddQuickCommand: () => {},
+      mainWorkspaceHidden: true,
+      setMainWorkspaceHidden: () => {},
+      automationsButtonVisible: false,
+      setAutomationsButtonVisible: () => {},
+      openAutomations: () => {}
     } satisfies CmdJQuickActionContext
 
     for (const actionId of workspaceActions) {
@@ -324,7 +334,12 @@ describe('Cmd+J quick action context', () => {
       },
       openCreateWorkspace: () => {},
       deleteActiveWorkspace: () => {},
-      openAddQuickCommand: () => {}
+      openAddQuickCommand: () => {},
+      mainWorkspaceHidden: true,
+      setMainWorkspaceHidden: () => {},
+      automationsButtonVisible: false,
+      setAutomationsButtonVisible: () => {},
+      openAutomations: () => {}
     } satisfies CmdJQuickActionContext
 
     await expect(action?.run(context)).resolves.toEqual({
@@ -353,7 +368,12 @@ describe('Cmd+J quick action context', () => {
       },
       openCreateWorkspace: () => {},
       deleteActiveWorkspace: () => {},
-      openAddQuickCommand: () => {}
+      openAddQuickCommand: () => {},
+      mainWorkspaceHidden: true,
+      setMainWorkspaceHidden: () => {},
+      automationsButtonVisible: false,
+      setAutomationsButtonVisible: () => {},
+      openAutomations: () => {}
     } satisfies CmdJQuickActionContext
 
     expect(actions.get('new-browser-tab')?.isAvailable(context)).toEqual({
@@ -385,7 +405,12 @@ describe('Cmd+J quick action context', () => {
       deleteActiveWorkspace: () => {
         calls.push('delete')
       },
-      openAddQuickCommand: () => {}
+      openAddQuickCommand: () => {},
+      mainWorkspaceHidden: true,
+      setMainWorkspaceHidden: () => {},
+      automationsButtonVisible: false,
+      setAutomationsButtonVisible: () => {},
+      openAutomations: () => {}
     } satisfies CmdJQuickActionContext
 
     await expect(action?.run(context)).resolves.toEqual({ status: 'ok' })
@@ -405,6 +430,11 @@ describe('Cmd+J quick action context', () => {
       openCreateWorkspace: () => {},
       deleteActiveWorkspace: () => {},
       openAddQuickCommand: () => {},
+      mainWorkspaceHidden: true,
+      setMainWorkspaceHidden: () => {},
+      automationsButtonVisible: false,
+      setAutomationsButtonVisible: () => {},
+      openAutomations: () => {},
       canSplitActiveChat: true,
       splitActiveChat: (direction: string) => {
         calls.push(direction)

@@ -35,6 +35,8 @@ export const SCHEMA_VERSION = 1
 export const DEFAULT_APP_FONT_FAMILY = 'Geist'
 export const DEFAULT_SHOW_SLEEPING_WORKSPACES = true
 export const DEFAULT_HIDE_SLEEPING_WORKSPACES = false
+// Why hidden by default: the primary checkout is where you land, not a workspace you pick; Cmd+J brings it back.
+export const DEFAULT_HIDE_DEFAULT_BRANCH_WORKSPACE = true
 export const DEFAULT_AGENT_ACTIVITY_DISPLAY_MODE: AgentActivityDisplayMode = 'compact'
 export const DEFAULT_TERMINAL_INACTIVE_PANE_OPACITY = 0.9
 
@@ -206,7 +208,7 @@ export function getDefaultUIState(): PersistedUIState {
     automationHostFilter: { kind: 'all' },
     manualRepoOrder: [],
     showSleepingWorkspaces: DEFAULT_SHOW_SLEEPING_WORKSPACES,
-    hideDefaultBranchWorkspace: false,
+    hideDefaultBranchWorkspace: DEFAULT_HIDE_DEFAULT_BRANCH_WORKSPACE,
     hideAutomationGeneratedWorkspaces: false,
     hideCliCreatedWorkspaces: false,
     showArchivedWorkspaces: false,
