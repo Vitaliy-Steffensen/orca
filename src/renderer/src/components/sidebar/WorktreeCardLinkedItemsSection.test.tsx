@@ -146,7 +146,7 @@ describe('workspace linked references in hover details', () => {
     ).find((node) => node.textContent?.includes('Merged sibling'))
     const icon = siblingRow?.querySelector('svg')
     expect(icon?.classList.contains('lucide-git-merge')).toBe(true)
-    expect(icon?.classList.contains('dark:text-purple-400/70')).toBe(true)
+    expect(icon?.classList.contains('text-muted-foreground')).toBe(true)
   })
   it('shows grouped peers and only each review’s own known checks', () => {
     const { container } = render(<Fixture onManage={vi.fn()} />)

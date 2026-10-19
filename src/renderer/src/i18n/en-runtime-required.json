@@ -11,6 +11,10 @@
       "title": "Meet your Agents tab"
     }
   },
+  "allChanges": {
+    "groupByStatus": "Group by status",
+    "showOneList": "Show all changes in one list"
+  },
   "auto": {
     "App": {
       "1b9d9d065f": "settings",
@@ -870,6 +874,7 @@
             "d4ef4bafc5": "Changes",
             "d4f8c2a901": "Clear and close filter",
             "d62bc0c7d8": "untracked",
+            "d7ae61269b": "Committed on Branch",
             "e59bca888a": "markdown",
             "eae2d051af": "Copy all notes",
             "f3a1b8c204": "upstream",
@@ -1242,7 +1247,10 @@
           "f63ea281e3": "Threaded left-sidebar feed for agent completions and blocking states.",
           "fb82ea1d7a": "Automatically materialize configured files or folders into newly created worktrees.",
           "newWorktreeCardStyle": {
-            "copy": "Preview updated worktree-card layout, metadata placement, card-display menu options, and status presentation."
+            "copy": "Preview updated worktree-card layout, metadata placement, card-display menu options, and status presentation.",
+            "description": "Preview updated worktree-card layout, metadata placement, card-display menu options, and status presentation.",
+            "title": "New card style",
+            "toggleLabel": "Toggle new card style"
           }
         },
         "GeneralRemoteServerUpdates": {
@@ -1684,6 +1692,21 @@
             "ff8de8a2ad": "display"
           }
         },
+        "appearance": {
+          "search": {
+            "workspaceCardLayout": {
+              "cardLayout": "card layout",
+              "compact": "compact",
+              "compactDisplay": "compact display",
+              "description": "Workspace cards can use compact or detailed layouts.",
+              "detailed": "detailed",
+              "title": "Workspace Card Layout",
+              "workspaceCards": "workspace cards",
+              "workspaceOptions": "workspace options",
+              "worktreeCards": "worktree cards"
+            }
+          }
+        },
         "artifacts": {
           "account": "Orca account",
           "connected": "Connected",
@@ -1739,6 +1762,17 @@
             "nativeChat": {
               "description": "Open supported new agents in Chat UI.",
               "queue": "queue"
+            },
+            "newWorktreeCardStyle": {
+              "card": "card",
+              "cards": "cards",
+              "description": "Preview updated worktree-card layout, metadata placement, card-display menu options, and status presentation.",
+              "menu": "menu",
+              "metadata": "metadata",
+              "status": "status",
+              "title": "New card style",
+              "worktree": "worktree",
+              "worktrees": "worktrees"
             }
           }
         },
@@ -1807,6 +1841,12 @@
               "b730ff7049": "experimental"
             }
           }
+        },
+        "prRules": {
+          "deleteOnMerge": "Delete the workspace when its pull request is merged or closed",
+          "deleteOnMergeDescription": "Runs your orca.yaml archive script first. A workspace with uncommitted work or a running agent is kept, and Orca says so. The branch itself stays on the remote.",
+          "deleteOnReviewed": "Close a review workspace once you have reviewed",
+          "deleteOnReviewedDescription": "Applies to pull requests you did not write, once you have approved or requested changes. A workspace holding unsent review comments, uncommitted work or a running agent is kept. If the author asks you again, the workspace comes back with the diff pointed at the commit you last reviewed."
         },
         "providerAccountScope": {
           "localMac": "Local Mac"
@@ -1988,8 +2028,12 @@
         },
         "SidebarWorkspaceOptionsMenu": {
           "2d4f0eb933": "Default",
+          "320b675c9a": "Card layout",
+          "3d4b9c4997": "Hover",
           "631b97eea9": "Host scope",
           "680043342f": "compact",
+          "b5536d5a88": "Tasks",
+          "ba87080fb7": "Show properties",
           "bc96dbd041": "Workspace options ({{value0}})",
           "c7591b6014": "repo"
         },
@@ -2002,6 +2046,7 @@
         "WorktreeCard": {
           "01f45d3d8a": "sidebar",
           "021538e1d1": "SSH disconnected",
+          "0d224eff10": "Primary worktree",
           "1d66d84f0b": "string",
           "93aebe4529": "Folder",
           "automationCreated": "Created by automation",
@@ -3193,6 +3238,10 @@
         "title": "Browse through SSH workspace hosts"
       }
     }
+  },
+  "sourceControlSections": {
+    "staged": "Staged Changes",
+    "unstaged": "Unstaged Changes"
   },
   "sparsePreset": {
     "description": "Choose the folders a new workspace checks out.",

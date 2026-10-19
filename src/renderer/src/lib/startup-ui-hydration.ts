@@ -1,4 +1,5 @@
 import {
+  DEFAULT_HIDE_DEFAULT_BRANCH_WORKSPACE,
   DEFAULT_HIDE_SLEEPING_WORKSPACES,
   DEFAULT_SHOW_SLEEPING_WORKSPACES,
   DEFAULT_STATUS_BAR_ITEMS,
@@ -48,7 +49,7 @@ export function getStartupErrorFallbackUI(uiHydrated: boolean): PersistedUIState
     showActiveOnly: false,
     hideSleepingWorkspaces: DEFAULT_HIDE_SLEEPING_WORKSPACES,
     showSleepingWorkspaces: DEFAULT_SHOW_SLEEPING_WORKSPACES,
-    hideDefaultBranchWorkspace: false,
+    hideDefaultBranchWorkspace: DEFAULT_HIDE_DEFAULT_BRANCH_WORKSPACE,
     hideCliCreatedWorkspaces: false,
     showArchivedWorkspaces: false,
     hideDetachedHeadWorkspaces: false,

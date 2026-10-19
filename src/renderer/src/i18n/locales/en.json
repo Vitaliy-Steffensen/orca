@@ -5948,7 +5948,15 @@
           "workspaceOptions": "Workspace options",
           "linearTitle": "Linear title",
           "prAuthor": "PR author",
-          "run": "Run"
+          "run": "Run",
+          "diff": "Diff size",
+          "diffMix": "Frontend / backend mix",
+          "linearPriority": "Linear priority",
+          "stack": "GitHub stack",
+          "unresolvedComments": "Unresolved comments",
+          "prOpenAge": "Pull request age",
+          "blocker": "Blocked on",
+          "conflict": "Merge conflicts"
         },
         "SshTargetRow": {
           "4677394048": "Connecting…",
@@ -5978,7 +5986,9 @@
           "87d24a0c2f": "Sync board and issue status",
           "4c2eaa78cc": "Moving a linked workspace updates its Linear issue status when a matching workflow state exists.",
           "4f1c0a7b91": "Section (optional)",
-          "2d6b4e8c13": "Section for {{value0}}"
+          "2d6b4e8c13": "Section for {{value0}}",
+          "a31c7e4b92": "Section appearance",
+          "c4e8a91d07": "Customize {{value0}} section appearance"
         },
         "WorkspaceKanbanStatusLane": {
           "8ad104642b": "Empty",
@@ -6862,6 +6872,42 @@
               "failedSome": "Failed to archive some workspaces"
             }
           }
+        },
+        "worktreeCardChips": {
+          "overflow": "+{{value0}}",
+          "conflict": "Conflict",
+          "conflictTooltip": "This branch conflicts with its base",
+          "ciFailing": "CI",
+          "ciFailingTooltip": "Checks are failing",
+          "stale": "{{value0}} behind",
+          "staleTooltip": "This branch is behind its base",
+          "awaitingReview": "In review",
+          "awaitingReviewTooltip": "Open and waiting on reviewers"
+        },
+        "worktreeCardFacts": {
+          "diffFiles": "{{value0}} {{value1}}",
+          "file": "file",
+          "files": "files",
+          "diffWithFiles": "+{{value0}} −{{value1}} across {{value2}}",
+          "diff": "+{{value0}} −{{value1}}",
+          "diffMix": "Frontend {{value0}}, backend {{value1}}, e2e {{value2}}, CI {{value3}}",
+          "priority": {
+            "urgent": "Urgent",
+            "high": "High",
+            "medium": "Medium",
+            "low": "Low"
+          },
+          "priorityTooltip": "Linear priority: {{value0}}",
+          "stack": "Pull request {{value0}} of {{value1}} in a GitHub stack",
+          "unresolved": "{{value0}} unresolved review comments",
+          "openAge": "{{value0}}d",
+          "openAgeTooltip": "Open for {{value0}} days"
+        },
+        "reviewRequestAge": {
+          "reAsked": "re-asked {{age}}",
+          "asked": "asked {{age}}",
+          "reAskedTooltip": "Review requested again {{relative}} — you had already been asked on this pull request",
+          "askedTooltip": "You were asked to review {{relative}}"
         }
       },
       "shared": {
@@ -16744,14 +16790,34 @@
                 "viewArchived": "view archived",
                 "archived": "archived",
                 "unarchive": "unarchive",
-                "restoreWorkspace": "restore workspace"
+                "restoreWorkspace": "restore workspace",
+                "showMain": "show main",
+                "main": "main",
+                "defaultBranch": "default branch",
+                "hideMain": "hide main",
+                "automations": "automations",
+                "schedules": "schedules",
+                "cron": "cron",
+                "showAutomations": "show automations",
+                "pinAutomations": "pin automations",
+                "hideAutomations": "hide automations"
               },
               "splitChatRight": "Split Chat Right",
               "splitChatRightDescription": "Open the active chat in a split pane to the right.",
               "splitChatDown": "Split Chat Down",
               "splitChatDownDescription": "Open the active chat in a split pane below.",
               "viewArchivedWorkspaces": "View Archived Workspaces",
-              "viewArchivedWorkspacesDescription": "Browse archived workspaces and restore one."
+              "viewArchivedWorkspacesDescription": "Browse archived workspaces and restore one.",
+              "showMainWorkspace": "Show Main Workspace",
+              "showMainWorkspaceDescription": "List the default-branch workspace in the sidebar.",
+              "hideMainWorkspace": "Hide Main Workspace",
+              "hideMainWorkspaceDescription": "Keep the default-branch workspace out of the sidebar.",
+              "openAutomations": "Automations",
+              "openAutomationsDescription": "Open the automations page.",
+              "showAutomationsInSidebar": "Show Automations in Sidebar",
+              "showAutomationsInSidebarDescription": "Pin an Automations entry to the sidebar navigation.",
+              "hideAutomationsInSidebar": "Hide Automations in Sidebar",
+              "hideAutomationsInSidebarDescription": "Remove the Automations entry from the sidebar navigation."
             }
           },
           "palette": {
@@ -18428,7 +18494,11 @@
         "createPrTab": "Create PR",
         "launchFailed": "Could not start the agent: {{reason}}",
         "reReview": "Re-review",
-        "reReviewTab": "Re-review #{{number}}"
+        "reReviewTab": "Re-review #{{number}}",
+        "moreReviewActions": "More review actions",
+        "createDraftPr": "Create draft PR",
+        "morePrActions": "More pull request actions",
+        "createDraftPrTab": "Create draft PR"
       },
       "workspaceStatusRules": {
         "kept": "Kept {{name}}: {{reason}}",
@@ -18859,7 +18929,12 @@
         "tooManyAttachments": "Attach {{value0}} or fewer files at a time.",
         "pasteFailed": "Paste failed.",
         "commandAttachmentsUnsupported": "Remove attachments before using a chat-session command.",
-        "permissionMode": "Permission mode"
+        "permissionMode": "Permission mode",
+        "promptMarkOn": "Prompt mark: {{value0}}",
+        "promptMark": "Mark this message",
+        "promptMarkHint": "Attach an instruction from Settings. Separate from Ask mode.",
+        "promptMarkMenu": "Prompt mark",
+        "promptMarkOff": "Off"
       },
       "tool": {
         "exitCode": "exit {{value0}}",
@@ -19623,7 +19698,21 @@
         "queueSearchSteer": "steer",
         "shellEnvSearchVariables": "environment variables",
         "shellEnvSearchPath": "PATH",
-        "shellEnvSearchProxy": "proxy"
+        "shellEnvSearchProxy": "proxy",
+        "promptMarksNewName": "New mark",
+        "promptMarksAdd": "Add prompt mark",
+        "promptMarksName": "Name",
+        "promptMarksPrompt": "Instruction",
+        "promptMarksPlacement": "Where it goes",
+        "promptMarksBefore": "Before",
+        "promptMarksBeforeAria": "Put the instruction before your message",
+        "promptMarksAfter": "After",
+        "promptMarksAfterAria": "Put the instruction after your message",
+        "promptMarksRemove": "Remove {{value0}}",
+        "promptMarksTitle": "Prompt marks",
+        "promptMarksCopy": "Attach an instruction to the message you send. It works with every model, and it is separate from Ask mode.",
+        "promptMarksSearchSimplify": "simplify",
+        "promptMarksSearchExplain": "explain"
       },
       "claudeWeb": {
         "defaultViewTitle": "Open Claude in Claude web",
@@ -19643,6 +19732,19 @@
     },
     "automations": {
       "runTerminalUnavailable": "Run terminal is unavailable."
+    },
+    "newWorkspace": {
+      "prompt": {
+        "restore": "Restore",
+        "open": "Open",
+        "restoreHint": "Enter restores “{{name}}”",
+        "openHint": "Enter opens “{{name}}”",
+        "linkGitHub": "Links GitHub {{kind}} #{{number}}",
+        "linkLinear": "Links Linear {{id}}",
+        "linkLinearReview": "Links Linear review",
+        "placeholder": "Describe the workspace, or paste a GitHub or Linear link",
+        "changeProject": "Change project"
+      }
     }
   },
   "dashboardPopout": {
@@ -20339,6 +20441,12 @@
       "supervised": "Supervised",
       "cardMarker": "Autonomous workspace",
       "cardMarkerTooltip": "Autonomous: work here runs without the scoping gate"
+    },
+    "intent": {
+      "menuMulti": "Set Intent",
+      "menu": "Intent",
+      "question": "Question",
+      "task": "Task"
     }
   },
   "settings.agents.environmentName": "Environment variable name",

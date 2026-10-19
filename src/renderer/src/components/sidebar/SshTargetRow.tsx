@@ -36,9 +36,9 @@ export function SshTargetRow({
   const isConnected = status === 'connected'
   const isBusy = connecting || isConnectingSshStatus(status)
   const dotColor = isConnected
-    ? 'bg-green-500'
+    ? 'bg-foreground'
     : isBusy
-      ? 'bg-yellow-500'
+      ? 'bg-muted-foreground'
       : 'bg-muted-foreground/30'
 
   const handleRowClick = (): void => {

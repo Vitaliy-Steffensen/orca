@@ -29,10 +29,12 @@ export type ActivityBarItem = {
   statusIndicator?: CheckStatus
 }
 
+// Why only failure is coloured: a passing or pending run is not news, and a tab rail
+// dotted in three hues trains you to ignore the one dot that means something broke.
 const STATUS_DOT_COLOR: Record<CheckStatus, string> = {
-  success: 'bg-emerald-500',
-  failure: 'bg-rose-500',
-  pending: 'bg-amber-500',
+  success: 'bg-muted-foreground',
+  failure: 'bg-destructive',
+  pending: 'bg-muted-foreground',
   neutral: 'bg-muted-foreground'
 }
 

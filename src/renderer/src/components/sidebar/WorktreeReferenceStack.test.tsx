@@ -47,7 +47,7 @@ describe('fixed workspace reference stacks', () => {
     )
     const { container } = render(<WorktreeReferenceStack items={items} details={details} />)
     expect(
-      container.querySelector('[data-reference-front] svg')?.classList.contains('text-rose-500/85')
+      container.querySelector('[data-reference-front] svg')?.classList.contains('text-destructive')
     ).toBe(true)
     expect(container.querySelectorAll('.workspace-reference-stack-ghost')).toHaveLength(2)
     expect(container.querySelector('[data-reference-count]')?.textContent).toBe('3')

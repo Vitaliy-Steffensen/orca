@@ -12,13 +12,15 @@ import {
 // agent hover share a single state vocabulary. Most states render as a dot;
 // 'working' renders a spinner. 'done' intentionally diverges from the
 // sidebar's StatusIndicator: the dashboard uses a check icon so completion
-// is visually distinct from 'idle' (grey dot) and the sidebar's 'active'
-// (emerald dot), while the sidebar collapses 'done'/'active' to the same
-// emerald dot and relies on a tooltip. It sits next to the agent icon
+// is visually distinct from 'idle', while the sidebar collapses 'done'/'active'
+// to one dot and relies on a tooltip. It sits next to the agent icon
 // (Claude/Codex/etc.) — two distinct glyphs: one for *who* (agent icon) and
 // one for *what state* (this indicator). Keeping them separate keeps each
 // scannable instead of fused into one decorated icon.
 
+// Why: only two states earn a hue — the agent is waiting on you
+// (--agent-question) and something broke (--destructive). Every other state is
+// drawn in neutral ink so those two stay the only colour in a list of agents.
 export type AgentDotState =
   | 'working'
   | 'monitoring'
@@ -112,31 +114,29 @@ export const AgentStateDot = React.memo(function AgentStateDot({
         className={cn('inline-flex shrink-0 items-center justify-center', box, className)}
         aria-label={agentStateLabel(state)}
       >
-        <Activity className={cn('text-yellow-500', icon)} aria-hidden="true" />
+        <Activity className={cn('text-muted-foreground', icon)} aria-hidden="true" />
       </span>
     )
   } else if (state === 'done') {
     // Why: the dashboard lists many agents, so a check glyph scans well for
     // agent-reported completion and keeps 'done' visually distinct from
-    // 'idle' and other dot states at a glance. The sidebar's StatusIndicator
-    // intentionally diverges (emerald dot + tooltip) — see file header.
+    // 'idle' and other dot states at a glance — the glyph, not a hue, carries it.
     indicator = (
       <span
         className={cn('inline-flex shrink-0 items-center justify-center', box, className)}
         aria-label={agentStateLabel(state)}
       >
-        <CircleCheck className={cn('text-emerald-500', icon)} aria-hidden="true" />
+        <CircleCheck className={cn('text-muted-foreground', icon)} aria-hidden="true" />
       </span>
     )
   } else if (state === 'unverifiable' || state === 'unconfirmed') {
-    // Why: a dashed ring reads as "incomplete information" rather than a state claim,
-    // and amber carries warning weight without borrowing 'done' green or 'working' yellow.
+    // Why: a dashed ring reads as "incomplete information" rather than a state claim.
     indicator = (
       <span
         className={cn('inline-flex shrink-0 items-center justify-center', box, className)}
         aria-label={agentStateLabel(state)}
       >
-        <CircleDashed className={cn('text-amber-500', icon)} aria-hidden="true" />
+        <CircleDashed className={cn('text-muted-foreground', icon)} aria-hidden="true" />
       </span>
     )
   } else if (state === 'permission' || state === 'waiting') {
@@ -159,11 +159,11 @@ export const AgentStateDot = React.memo(function AgentStateDot({
             'block rounded-full',
             inner,
             state === 'blocked' || state === 'failed'
-              ? 'bg-red-500'
-              : // Why: a user's Stop is not news; muted, never the fault red or the finished green.
+              ? 'bg-destructive'
+              : // Why: a user's Stop is not news; muted, never the fault red.
                 state === 'interrupted'
                 ? 'bg-muted-foreground'
-                : 'bg-neutral-500/40'
+                : 'bg-muted-foreground/40'
           )}
         />
       </span>

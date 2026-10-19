@@ -32,7 +32,7 @@ export function WorktreeCardRunAction({
             type="button"
             data-workspace-board-preserve-open=""
             aria-label={label}
-            className="inline-flex size-4 items-center justify-center rounded text-primary opacity-100 hover:bg-accent"
+            className="inline-flex size-4 items-center justify-center rounded text-foreground opacity-100 hover:bg-accent"
             onPointerDown={stopCardPointer}
             onClick={(event) => {
               stopCardPointer(event)

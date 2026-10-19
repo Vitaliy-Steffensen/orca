@@ -199,7 +199,7 @@ export default function BrowserTab({
         faviconUrl={tab.faviconUrl}
         loading={tab.loading && !tab.loadError && !isBlankBrowserTab(tab)}
         className="size-3 mr-1"
-        fallbackClassName="text-blue-500"
+        fallbackClassName="text-muted-foreground"
       />
       {isPinned && <Pin className="mr-1 size-3 shrink-0 text-muted-foreground" aria-hidden />}
       <span className={`${TAB_LABEL_WIDTH_CLASSES} mr-1`}>{tabLabel}</span>

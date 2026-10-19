@@ -6,10 +6,7 @@ import { renderToStaticMarkup } from 'react-dom/server'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import RightSidebar from './index'
 import { TopActivityOverflowMenu } from './activity-bar-buttons'
-import {
-  RIGHT_SIDEBAR_HEADER_NO_DRAG_CLASS_NAME,
-  RIGHT_SIDEBAR_WINDOWS_TOP_ACTIVITY_STRIP_CLASS_NAME
-} from './right-sidebar-titlebar-drag-regions'
+import { RIGHT_SIDEBAR_HEADER_NO_DRAG_CLASS_NAME } from './right-sidebar-titlebar-drag-regions'
 import type { ActiveRightSidebarTab } from '@/store/slices/editor'
 import { resetRendererAppPlatformCacheForTests } from '@/lib/renderer-app-platform'
 
@@ -79,6 +76,8 @@ vi.mock('@/store', async () => {
       toggleRightSidebar: vi.fn(),
       activeWorktreeId: mockAppState.activeWorktreeId,
       getKnownWorktreeById: getMockKnownWorktree,
+      activeGroupIdByWorktree: {},
+      groupsByWorktree: {},
       activityBarPosition: mockAppState.activityBarPosition,
       setActivityBarPosition: vi.fn(),
       checksByWorktreeId: {},
@@ -237,44 +236,32 @@ describe('rendered right sidebar titlebar drag regions', () => {
     mockAppState.cachedWorktree = null
   })
 
-  it('keeps the rendered top activity strip draggable, context-menuable, and only controls no-drag', () => {
+  it('keeps the actions row draggable while the tabs row below it is all controls', () => {
     const markup = renderToStaticMarkup(<RightSidebar />)
     const header = openingTag(markup, 'right-sidebar-header-drag')
     const activityStrip = openingTag(markup, 'right-sidebar-activity-strip')
 
     expect(header).not.toContain(RIGHT_SIDEBAR_HEADER_NO_DRAG_CLASS_NAME)
-    expect(activityStrip).not.toContain(RIGHT_SIDEBAR_HEADER_NO_DRAG_CLASS_NAME)
+    // Why no-drag now: the tabs sit on their own row below the titlebar, so nothing
+    // on that row should swallow a click to move the window.
+    expect(activityStrip).toContain(RIGHT_SIDEBAR_HEADER_NO_DRAG_CLASS_NAME)
     expect(activityStrip).toContain('data-context-menu-trigger="true"')
-    expect(markup).toContain('right-sidebar-header-drag')
 
     expectNoDrag(buttonOpeningTag(markup, 'Explorer'))
     expectNoDrag(buttonOpeningTag(markup, 'Source Control'))
     expectNoDrag(buttonOpeningTag(markup, 'Checks'))
     expect(buttonOpeningTag(markup, 'Toggle right sidebar')).toContain('sidebar-toggle')
-    expect(markup).toContain(RIGHT_SIDEBAR_HEADER_NO_DRAG_CLASS_NAME)
   })
 
-  it('uses the custom desktop chrome top strip on Linux desktop', () => {
+  it('uses the same two-row header on every desktop platform', () => {
     setRendererPlatform('linux')
 
     const markup = renderToStaticMarkup(<RightSidebar />)
     const activityStrip = openingTag(markup, 'right-sidebar-activity-strip')
 
-    expect(activityStrip).toContain('h-10')
+    expect(activityStrip).toContain('h-[36px]')
     expect(activityStrip).toContain('border-b')
-    expect(markup).toContain(RIGHT_SIDEBAR_WINDOWS_TOP_ACTIVITY_STRIP_CLASS_NAME)
-  })
-
-  it('keeps paired Linux web clients on the browser-style top strip', () => {
-    setRendererPlatform('linux')
-    ;(globalThis as { __ORCA_WEB_CLIENT__?: boolean }).__ORCA_WEB_CLIENT__ = true
-
-    const markup = renderToStaticMarkup(<RightSidebar />)
-    const activityStrip = openingTag(markup, 'right-sidebar-activity-strip')
-
-    expect(activityStrip).toContain('pl-2')
-    expect(activityStrip).not.toContain('h-10')
-    expect(markup).not.toContain(RIGHT_SIDEBAR_WINDOWS_TOP_ACTIVITY_STRIP_CLASS_NAME)
+    expect(markup).toContain('right-sidebar-header-drag')
   })
 
   it('keeps the overflow trigger no-drag when it renders', () => {

@@ -3,6 +3,7 @@ import { createUiWorkspaceStatusRuleActions } from './ui-slice-workspace-status-
 import { createAgentsViewPreferenceActions } from './ui-slice-agents-view-preference-actions'
 import {
   DEFAULT_AGENT_ACTIVITY_DISPLAY_MODE,
+  DEFAULT_HIDE_DEFAULT_BRANCH_WORKSPACE,
   DEFAULT_SHOW_SLEEPING_WORKSPACES,
   DEFAULT_STATUS_BAR_ITEMS,
   DEFAULT_WORKTREE_CARD_PROPERTIES,
@@ -96,7 +97,7 @@ export function createUiPreferenceActions(set: UISliceSet, get: UISliceGet): Par
     },
     manualRepoOrder: [],
 
-    hideDefaultBranchWorkspace: false,
+    hideDefaultBranchWorkspace: DEFAULT_HIDE_DEFAULT_BRANCH_WORKSPACE,
     setHideDefaultBranchWorkspace: (v) => set({ hideDefaultBranchWorkspace: v }),
     hideAutomationGeneratedWorkspaces: false,
     setHideAutomationGeneratedWorkspaces: (v) => set({ hideAutomationGeneratedWorkspaces: v }),

@@ -71,7 +71,7 @@ export default function ClientHostedBrowserTab({
         >
           {isActive && <span className={ACTIVE_TAB_INDICATOR_CLASSES} aria-hidden />}
           <PageIcon
-            className={`mr-1 size-3 shrink-0 ${loading ? 'motion-safe:animate-spin' : ''} ${row.hostAbsent ? 'text-muted-foreground' : 'text-blue-500'}`}
+            className={`mr-1 size-3 shrink-0 ${loading ? 'motion-safe:animate-spin' : ''} text-muted-foreground`}
             aria-hidden
           />
           <span

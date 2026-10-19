@@ -15,6 +15,7 @@ import { normalizeFeatureInteractions } from '../../../../../shared/feature-inte
 import { normalizeContextualTourIds } from '../../../../../shared/contextual-tours'
 import { normalizeFeatureTipIds } from '../../../../../shared/feature-tips'
 import {
+  DEFAULT_HIDE_DEFAULT_BRANCH_WORKSPACE,
   DEFAULT_HIDE_SLEEPING_WORKSPACES,
   normalizeWorktreeCardProperties,
   normalizeAgentActivityDisplayMode
@@ -125,7 +126,8 @@ export function createUiHydrationActions(set: UISliceSet, _get: UISliceGet): Par
           manualRepoOrder,
           // Why: apply the desktop-owned overlay immediately since UI state can arrive after a catalog or from another client.
           repos: orderedRepos,
-          hideDefaultBranchWorkspace: ui.hideDefaultBranchWorkspace ?? false,
+          hideDefaultBranchWorkspace:
+            ui.hideDefaultBranchWorkspace ?? DEFAULT_HIDE_DEFAULT_BRANCH_WORKSPACE,
           hideAutomationGeneratedWorkspaces: ui.hideAutomationGeneratedWorkspaces === true,
           hideCliCreatedWorkspaces: ui.hideCliCreatedWorkspaces === true,
           showArchivedWorkspaces: ui.showArchivedWorkspaces === true,

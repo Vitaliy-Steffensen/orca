@@ -30,6 +30,12 @@ const badgeVariants = cva(
           'h-4 rounded border-status-warning-border bg-status-warning-background px-1.5 text-[10px] leading-none text-status-warning',
         cardChipQuiet:
           'h-4 rounded border-border bg-transparent px-1.5 text-[10px] leading-none text-muted-foreground',
+        /** The workspace card's PR / issue / checks metadata row. Quiet by default so the
+         *  glyph names the state; `Alert` is the only one that earns a hue. */
+        cardMetadataQuiet:
+          'h-4 gap-1 rounded border-border bg-transparent px-1.5 text-[9px] leading-none text-muted-foreground [&>svg]:size-2.5',
+        cardMetadataAlert:
+          'h-4 gap-1 rounded border-destructive/30 bg-destructive/10 px-1.5 text-[9px] leading-none text-destructive [&>svg]:size-2.5',
         /** A skill or file sitting inline in the chat message box, ringed while selected. */
         promptPill:
           'max-w-full border-border bg-secondary px-1.5 py-0 align-baseline text-muted-foreground data-[selected=true]:ring-1 data-[selected=true]:ring-ring'

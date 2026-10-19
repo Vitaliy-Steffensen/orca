@@ -26,7 +26,7 @@ import {
   type WorkspaceActionContext
 } from './workspace-action-context'
 
-export type WorkspaceActionLaunch = 'primary' | 'review' | 're-review'
+export type WorkspaceActionLaunch = 'primary' | 'primary-draft' | 'review' | 're-review'
 
 const PROMPT_BY_ACTION: Record<
   Exclude<NonNullable<WorkspaceActionContext['action']>, 'resolve-conflicts'>,
@@ -63,7 +63,13 @@ function buildConflictPrompt(context: WorkspaceActionContext): string {
   ).trim()
 }
 
-function buildTemplatePrompt(context: WorkspaceActionContext, id: WorkspaceActionPromptId): string {
+function buildTemplatePrompt(
+  context: WorkspaceActionContext,
+  id: WorkspaceActionPromptId,
+  // Why an override: the Create PR split button lets you pick draft per pull request, which has to
+  // win over the repo's configured default rather than silently agree with it.
+  draftOverride?: boolean
+): string {
   const state = useAppStore.getState()
   const settings = state.settings
   const prDefaults = settings
@@ -87,7 +93,8 @@ function buildTemplatePrompt(context: WorkspaceActionContext, id: WorkspaceActio
       prNumber: context.pr ? String(context.pr.number) : '',
       prUrl: context.pr?.url ?? '',
       prTitle: context.pr?.title ?? '',
-      draftMode: prDefaults?.draft ? 'as a draft' : 'ready for review (not a draft)',
+      draftMode:
+        (draftOverride ?? prDefaults?.draft) ? 'as a draft' : 'ready for review (not a draft)',
       templateRule: prDefaults?.useTemplate
         ? "Fill in the repository's pull request template if it has one."
         : 'Do not use a pull request template.',
@@ -99,6 +106,9 @@ function buildTemplatePrompt(context: WorkspaceActionContext, id: WorkspaceActio
 }
 
 function actionTitle(kind: WorkspaceActionLaunch, context: WorkspaceActionContext): string {
+  if (kind === 'primary-draft') {
+    return translate('auto.components.workspaceActions.createDraftPrTab', 'Create draft PR')
+  }
   if (kind === 'review') {
     return translate('auto.components.workspaceActions.reviewTab', 'Review #{{number}}', {
       number: context.pr?.number ?? ''
@@ -125,7 +135,10 @@ function actionTitle(kind: WorkspaceActionLaunch, context: WorkspaceActionContex
 export async function launchWorkspaceAction(kind: WorkspaceActionLaunch): Promise<void> {
   const state = useAppStore.getState()
   const context = selectWorkspaceActionContext(state)
-  if (!context || (kind === 'primary' ? !context.action : !context.pr)) {
+  if (kind === 'primary-draft' && context?.action !== 'create-pull-request') {
+    return
+  }
+  if (!context || (kind.startsWith('primary') ? !context.action : !context.pr)) {
     return
   }
   const prompt =
@@ -133,9 +146,14 @@ export async function launchWorkspaceAction(kind: WorkspaceActionLaunch): Promis
       ? buildTemplatePrompt(context, 'reviewPullRequest')
       : kind === 're-review'
         ? buildTemplatePrompt(context, 'reReviewPullRequest')
-        : context.action === 'resolve-conflicts'
-          ? buildConflictPrompt(context)
-          : buildTemplatePrompt(context, PROMPT_BY_ACTION[context.action ?? 'create-pull-request'])
+        : kind === 'primary-draft'
+          ? buildTemplatePrompt(context, 'createPullRequest', true)
+          : context.action === 'resolve-conflicts'
+            ? buildConflictPrompt(context)
+            : buildTemplatePrompt(
+                context,
+                PROMPT_BY_ACTION[context.action ?? 'create-pull-request']
+              )
   try {
     const launched = await launchAgentBackgroundSession({
       agent: state.workspaceStatusRules.reviewInbox.agent,

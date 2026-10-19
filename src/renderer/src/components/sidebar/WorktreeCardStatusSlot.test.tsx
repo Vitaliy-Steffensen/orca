@@ -71,7 +71,7 @@ describe('WorktreeCardStatusSlot', () => {
       />
     )
     expect(markup).toContain('Reviews: 2 · Checks: Failed')
-    expect(markup).toContain('text-rose-500/85')
+    expect(markup).toContain('text-destructive')
     expect(markup).not.toContain('checks: Passing')
   })
   it('keeps incomplete collection checks neutral instead of claiming passing', () => {
@@ -117,8 +117,8 @@ describe('WorktreeCardStatusSlot', () => {
     expect(markup).toContain('Active · Unread')
     expect(markup).toContain('data-worktree-status-lane-unread=""')
     expect(markup).toContain('data-worktree-unread-alert=""')
-    expect(markup).toContain('bg-amber-500')
-    expect(markup).toContain('bg-emerald-500')
+    expect(markup).toContain('data-worktree-unread-alert')
+    expect(markup).toContain('size-2 rounded-full bg-foreground')
     expect(markup).not.toContain('lucide-bell')
     expect(markup).not.toContain('text-amber-500')
   })
@@ -130,7 +130,7 @@ describe('WorktreeCardStatusSlot', () => {
     )
 
     expect(markup).toContain('Working · Unread')
-    expect(markup).toContain('border-yellow-500')
+    expect(markup).toContain('border-muted-foreground')
     expect(markup).not.toContain('data-worktree-status-lane-unread=""')
     expect(markup).not.toContain('data-worktree-unread-alert=""')
     expect(markup).not.toContain('aria-label="Mark as read"')
@@ -161,8 +161,8 @@ describe('WorktreeCardStatusSlot', () => {
     expect(markup).toContain('PR checks: Failed')
     expect(markup).toContain('inline-flex size-5 items-center justify-center')
     expect(markup).toContain('size-[13px] translate-x-px')
-    expect(markup).toContain('text-rose-500/85')
-    expect(markup).not.toContain('bg-emerald-500')
+    expect(markup).toContain('text-destructive')
+    expect(markup).not.toContain('size-2 rounded-full bg-foreground')
     expect(markup).not.toContain('data-tooltip-root')
   })
 
@@ -179,7 +179,7 @@ describe('WorktreeCardStatusSlot', () => {
     expect(markup).toContain('MR checks: Pending')
     expect(markup).toContain('viewBox="0 0 16 16"')
     expect(markup).toContain('size-[13px] translate-x-px')
-    expect(markup).toContain('text-amber-500/85')
+    expect(markup).toContain('text-foreground')
     expect(markup).not.toContain('lucide-git-merge')
   })
 
@@ -190,7 +190,7 @@ describe('WorktreeCardStatusSlot', () => {
     )
 
     expect(markup).toContain('PR checks: Failed')
-    expect(markup).not.toContain('bg-emerald-500')
+    expect(markup).not.toContain('size-2 rounded-full bg-foreground')
   })
 
   it('keeps sleeping distinct from PR status', () => {
@@ -206,7 +206,7 @@ describe('WorktreeCardStatusSlot', () => {
     expect(markup).toContain('Sleeping')
     expect(markup).toContain('lucide-moon')
     expect(markup).not.toContain('PR checks: Failed')
-    expect(markup).not.toContain('text-rose-500/85')
+    expect(markup).not.toContain('text-destructive')
     expect(markup).not.toContain('bg-neutral-500/40')
   })
 
@@ -220,7 +220,7 @@ describe('WorktreeCardStatusSlot', () => {
     expect(markup).toContain('Sleeping')
     expect(markup).toContain('lucide-moon')
     expect(markup).not.toContain('lucide-git-branch')
-    expect(markup).not.toContain('bg-emerald-500')
+    expect(markup).not.toContain('size-2 rounded-full bg-foreground')
     expect(markup).not.toContain('bg-neutral-500/40')
   })
 
@@ -242,14 +242,14 @@ describe('WorktreeCardStatusSlot', () => {
     expect(sleepingMarkup).not.toContain('lucide-git-branch')
   })
 
-  it('shows the green awake dot for quiet done workspaces', () => {
+  it('shows the quiet awake dot for done workspaces', () => {
     mocks.status = 'done'
     const markup = renderToStaticMarkup(
       <WorktreeCardStatusSlot worktreeId="wt-1" showStatus isUnread={false} />
     )
 
     expect(markup).toContain('Done')
-    expect(markup).toContain('bg-emerald-500')
+    expect(markup).toContain('size-2 rounded-full bg-foreground')
     expect(markup).not.toContain('lucide-git-branch')
     expect(markup).not.toContain('lucide-moon')
     expect(markup).toContain('data-tooltip-root')
@@ -263,7 +263,7 @@ describe('WorktreeCardStatusSlot', () => {
 
     expect(markup).toContain('Working')
     expect(markup).toContain('inline-flex size-5 items-center justify-center')
-    expect(markup).toContain('border-yellow-500')
+    expect(markup).toContain('border-muted-foreground')
     expect(markup).toContain('data-tooltip-root')
     expect(markup).toContain('data-tooltip-content="">Working')
     expect(markup).not.toContain('PR checks: Failed')
@@ -295,11 +295,11 @@ describe('WorktreeCardStatusSlot', () => {
     expect(markup).toContain('data-worktree-unread-alert=""')
     expect(markup).not.toContain('group/unread')
     expect(markup).not.toContain('cursor-pointer')
-    expect(markup).toContain('text-rose-500/85')
-    expect(markup).toContain('bg-amber-500')
+    expect(markup).toContain('text-destructive')
+    expect(markup).toContain('data-worktree-unread-alert')
     expect(markup).not.toContain('lucide-bell')
     expect(markup).not.toContain('text-amber-500')
-    expect(markup).not.toContain('bg-emerald-500')
+    expect(markup).not.toContain('size-2 rounded-full bg-foreground')
     expect(markup).not.toContain('data-tooltip-root')
   })
 
@@ -317,10 +317,10 @@ describe('WorktreeCardStatusSlot', () => {
     expect(markup).not.toContain('group/unread')
     expect(markup).not.toContain('cursor-pointer')
     expect(markup).toContain('lucide-moon')
-    expect(markup).toContain('bg-amber-500')
+    expect(markup).toContain('data-worktree-unread-alert')
     expect(markup).not.toContain('lucide-bell')
     expect(markup).not.toContain('text-amber-500')
-    expect(markup).not.toContain('bg-emerald-500')
+    expect(markup).not.toContain('size-2 rounded-full bg-foreground')
     expect(markup).not.toContain('data-tooltip-root')
   })
 })

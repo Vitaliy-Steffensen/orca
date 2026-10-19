@@ -95,7 +95,7 @@ export default function CacheTimer({
         <div
           className={cn(
             'inline-flex items-center gap-1 text-[10px] font-mono tabular-nums select-none leading-none',
-            expired ? 'text-red-400' : warning ? 'text-yellow-400' : 'text-muted-foreground'
+            expired ? 'text-destructive' : warning ? 'text-status-warning' : 'text-muted-foreground'
           )}
         >
           <Timer className="size-2.5" />

@@ -1,10 +1,12 @@
 import type { DiffAreaTotals } from '../../../../shared/diff-area'
 
+// Why an opacity ramp and not four hues: these are four slices of one quantity, and the
+// git-decoration tokens they used to borrow mean git status, not categories (STYLEGUIDE.md).
 const AREA_COLOR: Record<keyof DiffAreaTotals, string> = {
-  fe: 'var(--git-decoration-added)',
-  be: 'var(--chart-2)',
-  e2e: 'var(--git-decoration-modified)',
-  ci: 'var(--git-decoration-ignored)'
+  fe: 'color-mix(in srgb, var(--foreground) 70%, var(--background))',
+  be: 'color-mix(in srgb, var(--foreground) 50%, var(--background))',
+  e2e: 'color-mix(in srgb, var(--foreground) 32%, var(--background))',
+  ci: 'color-mix(in srgb, var(--foreground) 16%, var(--background))'
 }
 
 const AREA_ORDER: (keyof DiffAreaTotals)[] = ['fe', 'be', 'e2e', 'ci']

@@ -12,7 +12,6 @@ import {
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
 import TabBar from '../tab-bar/TabBar'
 
-import { TabBarQuickCommandsButton } from '../tab-bar/TabBarQuickCommandsButton'
 import { useTabGroupWorkspaceModel } from './useTabGroupWorkspaceModel'
 import { useCloseOtherTabsRequest } from './close-other-tabs-request'
 import { closeTerminalTab } from '../terminal/terminal-tab-actions'
@@ -306,10 +305,9 @@ export default function TabGroupPanel({
               className="ml-1.5 flex shrink-0 items-center gap-0.5"
               style={{ WebkitAppRegion: 'no-drag' } as React.CSSProperties}
             >
+              {/* Why quick commands moved out: it now lives in the right sidebar's actions
+                  row with the other verbs, so each tab strip carries only pane chrome. */}
               <div className={focusedActionChromeClassName}>
-                {isFocused ? (
-                  <TabBarQuickCommandsButton worktreeId={worktreeId} groupId={groupId} />
-                ) : null}
                 {isFocused && hasSplitGroups ? (
                   <Tooltip>
                     <DropdownMenu modal={false}>

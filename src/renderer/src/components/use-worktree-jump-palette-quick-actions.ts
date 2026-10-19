@@ -59,6 +59,7 @@ export function useWorktreeJumpPaletteQuickActions({
   unifiedTabsByWorktree,
   isLoading,
   settings,
+  hideDefaultBranchWorkspace,
   runtimeStatusByEnvironmentId,
   deferredQuery,
   settingsResults
@@ -133,7 +134,9 @@ export function useWorktreeJumpPaletteQuickActions({
     void unifiedTabsByWorktree
     void isLoading
     void settings?.activeRuntimeEnvironmentId
+    void settings?.showAutomationsButton
     void runtimeStatusByEnvironmentId
+    void hideDefaultBranchWorkspace
     const context = buildQuickActionContext()
     return actionResults.filter((action) => action.isAvailable(context).available)
   }, [
@@ -149,7 +152,9 @@ export function useWorktreeJumpPaletteQuickActions({
     unifiedTabsByWorktree,
     isLoading,
     settings?.activeRuntimeEnvironmentId,
-    runtimeStatusByEnvironmentId
+    settings?.showAutomationsButton,
+    runtimeStatusByEnvironmentId,
+    hideDefaultBranchWorkspace
   ])
   const middleItems = useMemo<(SettingsPaletteItem | QuickActionPaletteItem)[]>(
     () =>

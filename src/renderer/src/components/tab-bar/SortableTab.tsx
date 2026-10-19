@@ -231,7 +231,7 @@ export default function SortableTab({
       {isActive && <span className={ACTIVE_TAB_INDICATOR_CLASSES} aria-hidden />}
       {showUnreadActivity && (
         // Why: a real DOM child keeps both drop-indicator pseudo-elements free and pointer events reaching the tab.
-        <span aria-hidden className="pointer-events-none absolute inset-0 bg-amber-500/10" />
+        <span aria-hidden className="pointer-events-none absolute inset-0 bg-foreground/[0.06]" />
       )}
       <TerminalTabLeadingIcon
         agent={tabAgent}

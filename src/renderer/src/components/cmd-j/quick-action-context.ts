@@ -9,6 +9,7 @@ import {
   runActiveNativeChatSplit
 } from '@/components/native-chat/native-chat-layout-actions'
 import type { NativeChatSplitDirection } from '@/components/native-chat/native-chat-split-shortcut'
+import { shouldShowAutomationsButton } from '@/components/sidebar/sidebar-nav-visibility'
 
 export type CmdJUnavailableReason =
   | 'loading'
@@ -17,6 +18,7 @@ export type CmdJUnavailableReason =
   | 'no-active-group'
   | 'no-active-chat'
   | 'client-action-unsupported'
+  | 'not-applicable'
 
 export type CmdJQuickActionAvailability =
   | { available: true }
@@ -42,6 +44,11 @@ export type CmdJQuickActionContext = {
   openCreateWorkspace: () => void
   deleteActiveWorkspace: () => void
   openAddQuickCommand: () => void
+  mainWorkspaceHidden: boolean
+  setMainWorkspaceHidden: (hidden: boolean) => void
+  automationsButtonVisible: boolean
+  setAutomationsButtonVisible: (visible: boolean) => void
+  openAutomations: () => void
   canSplitActiveChat?: boolean
   splitActiveChat?: (direction: NativeChatSplitDirection) => boolean
 }
@@ -195,6 +202,13 @@ export function buildCmdJQuickActionContext(args: {
     openCreateWorkspace: args.openCreateWorkspace,
     deleteActiveWorkspace: args.deleteActiveWorkspace,
     openAddQuickCommand: args.openAddQuickCommand,
+    mainWorkspaceHidden: args.state.hideDefaultBranchWorkspace,
+    setMainWorkspaceHidden: args.state.setHideDefaultBranchWorkspace,
+    automationsButtonVisible: shouldShowAutomationsButton(args.state.settings),
+    setAutomationsButtonVisible: (visible) => {
+      void args.state.updateSettings({ showAutomationsButton: visible })
+    },
+    openAutomations: args.state.openAutomationsPage,
     canSplitActiveChat: canRunNativeChatSplitTarget(args.state, activeChatTarget),
     splitActiveChat: (direction) =>
       runActiveNativeChatSplit(activeWorktreeId, activeGroupId, direction)
@@ -218,5 +232,7 @@ export function getUnavailableQuickActionMessage(
       return `Can't ${actionTitle.toLowerCase()} — no movable chat is active.`
     case 'client-action-unsupported':
       return `Can't ${actionTitle.toLowerCase()} — this client and runtime do not support it.`
+    case 'not-applicable':
+      return `Can't ${actionTitle.toLowerCase()} — it is already in that state.`
   }
 }

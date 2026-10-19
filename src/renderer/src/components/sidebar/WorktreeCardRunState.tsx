@@ -23,7 +23,7 @@ export function WorktreeCardRunState({ state }: { state: WorkspaceRunState }): R
       <TooltipTrigger asChild>
         <span className="inline-flex size-4 items-center justify-center" aria-label={label}>
           {state === 'running' ? (
-            <Play className="size-3 fill-current text-primary" strokeWidth={0} />
+            <Play className="size-3 fill-current text-foreground" strokeWidth={0} />
           ) : (
             <Loader2 className="size-3 animate-spin text-muted-foreground" />
           )}
