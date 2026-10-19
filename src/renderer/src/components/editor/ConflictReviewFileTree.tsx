@@ -10,6 +10,11 @@ import {
   type SourceControlTreeNode
 } from '@/components/right-sidebar/source-control-tree'
 import { VirtualizedList } from '@/components/virtualized-list'
+import { FileCommentBadges } from '@/components/diff-comments/FileCommentBadges'
+import {
+  useWorkspaceFileCommentCounts,
+  type FileCommentCounts
+} from '@/components/diff-comments/file-comment-counts'
 import type { ConflictReviewEntry } from '@/store/slices/editor'
 import type { GitStatusEntry } from '../../../../shared/git-status-types'
 import { translate } from '@/i18n/i18n'
@@ -36,17 +41,20 @@ function buildConflictReviewRows(
 
 export function ConflictReviewFileTree({
   entries,
+  worktreeId,
   collapsed,
   onCollapsedChange,
   selectedPath,
   onOpenEntry
 }: {
   entries: readonly ConflictReviewTreeEntry[]
+  worktreeId: string | null
   collapsed: boolean
   onCollapsedChange: (collapsed: boolean) => void
   selectedPath: string | null
   onOpenEntry: (entry: GitStatusEntry) => void
 }): React.JSX.Element | null {
+  const commentCountsByPath = useWorkspaceFileCommentCounts(worktreeId)
   const [collapsedDirectoryKeys, setCollapsedDirectoryKeys] = React.useState<Set<string>>(
     () => new Set()
   )
@@ -114,6 +122,9 @@ export function ConflictReviewFileTree({
                 node={node}
                 isCollapsed={collapsedDirectoryKeys.has(node.key)}
                 isSelected={node.type === 'file' && node.entry.path === selectedPath}
+                commentCounts={
+                  node.type === 'file' ? commentCountsByPath.get(node.entry.path) : undefined
+                }
                 onToggleDirectory={toggleDirectory}
                 onOpenEntry={onOpenEntry}
               />
@@ -129,12 +140,14 @@ function ConflictReviewFileTreeRow({
   node,
   isCollapsed,
   isSelected,
+  commentCounts,
   onToggleDirectory,
   onOpenEntry
 }: {
   node: ConflictReviewTreeNode
   isCollapsed: boolean
   isSelected: boolean
+  commentCounts: FileCommentCounts | undefined
   onToggleDirectory: (key: string) => void
   onOpenEntry: (entry: GitStatusEntry) => void
 }): React.JSX.Element {
@@ -193,6 +206,7 @@ function ConflictReviewFileTreeRow({
       <span className="min-w-0 flex-1 truncate">
         <span className="text-foreground">{node.name}</span>
       </span>
+      <FileCommentBadges counts={commentCounts} />
       <span
         className={cn(
           'ml-1 shrink-0 rounded-full px-1.5 py-0.5 text-[10px] font-semibold',

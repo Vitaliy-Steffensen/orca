@@ -1,6 +1,7 @@
 import React from 'react'
-import { MessageSquare, MessagesSquare, PencilLine } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import { FileCommentBadges } from '@/components/diff-comments/FileCommentBadges'
+import type { FileCommentCounts } from '@/components/diff-comments/file-comment-counts'
 import { REVEAL_FLASH_CLASS } from '@/lib/reveal-flash-class'
 import { useSourceControlRowRevealFlash } from '@/lib/source-control-row-reveal'
 import { getFileTypeIcon } from '@/lib/file-type-icons'
@@ -8,7 +9,6 @@ import { basename, dirname, joinPath } from '@/lib/path'
 import { WORKSPACE_FILE_PATH_MIME } from '@/lib/workspace-file-drag'
 import { writeWorkspaceFileDragSourceForWorkspace } from '@/lib/workspace-file-drag-source'
 import { translate } from '@/i18n/i18n'
-import { AgentNoteFileBadge } from './agent-note-file-badge'
 import type { GitBranchChangeEntry } from '../../../../../../shared/git-diff-compare-types'
 import { DiffLineCounts } from './diff-line-counts'
 import { SourceControlEntryContextMenu } from './entry-context-menu'
@@ -33,9 +33,7 @@ export function BranchEntryRow({
   onRevealInExplorer,
   connectionId,
   onOpen,
-  commentCount,
-  reviewThreadCount,
-  pendingReviewCount,
+  commentCounts,
   isOpenFile = false,
   showPathHint = true,
   review
@@ -48,9 +46,7 @@ export function BranchEntryRow({
   onRevealInExplorer: (worktreeId: string, absolutePath: string) => void
   connectionId?: string | null
   onOpen: (event?: SourceControlRowOpenEvent) => void
-  commentCount: number
-  reviewThreadCount: number
-  pendingReviewCount: number
+  commentCounts: FileCommentCounts | undefined
   isOpenFile?: boolean
   showPathHint?: boolean
   review?: BranchEntryRowReview
@@ -116,46 +112,7 @@ export function BranchEntryRow({
             <span className="ml-1.5 text-[11px] text-muted-foreground">{dirPath}</span>
           )}
         </span>
-        {commentCount > 0 && (
-          <span
-            className="flex shrink-0 items-center gap-0.5 text-[10px] text-muted-foreground"
-            title={translate(
-              'auto.components.right.sidebar.SourceControl.657e0c90ad',
-              '{{value0}} note{{value1}}',
-              { value0: commentCount, value1: commentCount === 1 ? '' : 's' }
-            )}
-          >
-            <MessageSquare className="size-3" />
-            <span className="tabular-nums">{commentCount}</span>
-          </span>
-        )}
-        <AgentNoteFileBadge filePath={entry.path} />
-        {reviewThreadCount > 0 && (
-          <span
-            className="flex shrink-0 items-center gap-0.5 text-[10px] text-status-warning"
-            title={translate(
-              'auto.components.right.sidebar.SourceControl.unresolvedThreads',
-              '{{value0}} unresolved review thread{{value1}}',
-              { value0: reviewThreadCount, value1: reviewThreadCount === 1 ? '' : 's' }
-            )}
-          >
-            <MessagesSquare className="size-3" />
-            <span className="tabular-nums">{reviewThreadCount}</span>
-          </span>
-        )}
-        {pendingReviewCount > 0 && (
-          <span
-            className="flex shrink-0 items-center gap-0.5 text-[10px] text-status-warning"
-            title={translate(
-              'auto.components.pendingReview.rowBadge',
-              '{{value0}} review comment{{value1}} waiting to be submitted',
-              { value0: pendingReviewCount, value1: pendingReviewCount === 1 ? '' : 's' }
-            )}
-          >
-            <PencilLine className="size-3" />
-            <span className="tabular-nums">{pendingReviewCount}</span>
-          </span>
-        )}
+        <FileCommentBadges counts={commentCounts} />
         <DiffLineCounts added={entry.added} removed={entry.removed} />
         <span
           className="w-4 shrink-0 text-center text-[10px] font-bold"

@@ -368,6 +368,7 @@ export default function CombinedDiffViewer({
             mode={entrySet.treeMode}
             worktreePath={file.filePath}
             sourceWorkspaceId={file.worktreeId}
+            commentCountsByPath={notes.commentCountsByPath}
             entries={entrySet.entries}
             sectionIndexByKey={treeNavigation.sectionIndexByKey}
             activeSectionKey={treeNavigation.activeTreeSectionKey}

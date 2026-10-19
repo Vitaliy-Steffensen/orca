@@ -203,12 +203,8 @@ vi.mock('@/store/selectors', () => ({
 
 // Why stubbed: this suite walks the element tree by hand rather than rendering it, so a component
 // that uses real React hooks cannot run. The badge is not what these assertions are about.
-vi.mock('@/components/pr-comments/UnresolvedThreadBadge', () => ({
-  UnresolvedThreadBadge: () => null
-}))
-
-vi.mock('@/components/pending-review/PendingReviewCountBadge', () => ({
-  PendingReviewCountBadge: () => null
+vi.mock('@/components/pending-review/DiffFileCommentBadges', () => ({
+  DiffFileCommentBadges: () => null
 }))
 
 vi.mock('@/store', () => {

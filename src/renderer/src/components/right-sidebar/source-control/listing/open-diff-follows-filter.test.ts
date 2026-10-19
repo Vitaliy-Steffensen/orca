@@ -4,7 +4,8 @@ import type { GitStatusEntry } from '../../../../../../shared/git-status-types'
 import {
   changesFilterKey,
   findFollowEntry,
-  pickUncommittedRowEntry
+  pickUncommittedRowEntry,
+  pickUnstagedRowEntry
 } from './open-diff-follows-filter'
 
 const compare = { commitOid: 'c2', parentOid: 'c1', compareRef: 'c2', baseRef: 'c1' }
@@ -21,10 +22,11 @@ describe('changesFilterKey', () => {
     const keys = [
       changesFilterKey(null),
       changesFilterKey({ kind: 'uncommitted' }),
+      changesFilterKey({ kind: 'unstaged' }),
       changesFilterKey(turn('c2')),
       changesFilterKey(turn('c3'))
     ]
-    expect(new Set(keys).size).toBe(4)
+    expect(new Set(keys).size).toBe(5)
     expect(changesFilterKey(turn('c2'))).toBe(changesFilterKey(turn('c2')))
   })
 })
@@ -48,6 +50,18 @@ describe('findFollowEntry', () => {
     expect(findFollowEntry(file, 'other', entries)).toBeNull()
     expect(findFollowEntry({ ...file, relativePath: 'src/gone.ts' }, 'wt', entries)).toBeNull()
     expect(findFollowEntry(undefined, 'wt', entries)).toBeNull()
+  })
+})
+
+describe('pickUnstagedRowEntry', () => {
+  const entry = (area: GitStatusEntry['area']): GitStatusEntry =>
+    ({ path: 'src/app.ts', area, status: 'modified' }) as GitStatusEntry
+
+  it('opens the unstaged edit and ignores a staged or untracked copy of the file', () => {
+    expect(
+      pickUnstagedRowEntry([entry('staged'), entry('unstaged'), entry('untracked')])?.area
+    ).toBe('unstaged')
+    expect(pickUnstagedRowEntry([entry('staged'), entry('untracked')])).toBeUndefined()
   })
 })
 

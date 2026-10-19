@@ -52,9 +52,12 @@ export function buildAllChangeEntries(
   branchEntries: readonly GitBranchChangeEntry[],
   {
     uncommittedOnly = false,
+    unstagedOnly = false,
     lineCounts
   }: {
     uncommittedOnly?: boolean
+    /** Tracked working-tree edits only: staged and untracked files stay out. */
+    unstagedOnly?: boolean
     lineCounts?: Readonly<Record<string, { added?: number; removed?: number }>>
   } = {}
 ): GitBranchChangeEntry[] {
@@ -72,25 +75,27 @@ export function buildAllChangeEntries(
   }
 
   const entries: GitBranchChangeEntry[] = []
+  const narrowing = uncommittedOnly || unstagedOnly
   for (const [path, { branch, local }] of byPath) {
-    if (uncommittedOnly && local.length === 0) {
+    const scoped = unstagedOnly ? local.filter((entry) => entry.area === 'unstaged') : local
+    if (narrowing && scoped.length === 0) {
       continue
     }
     const deletedLocally =
-      local.some((entry) => entry.status === 'deleted') &&
-      !local.some((entry) => entry.status === 'untracked')
-    // Fork: uncommitted-only rows describe the uncommitted change, not the file against the base.
+      scoped.some((entry) => entry.status === 'deleted') &&
+      !scoped.some((entry) => entry.status === 'untracked')
+    // Fork: a narrowed row describes that working-tree change, not the file against the base.
     const fromBase =
-      branch && !uncommittedOnly
+      branch && !narrowing
         ? { status: branch.status, oldPath: branch.oldPath }
-        : localStatus(local)
+        : localStatus(scoped)
     if (deletedLocally && fromBase.status === 'added') {
       continue
     }
     // Why only a single source: per-area counts overlap, so adding them would double-count a line
     // touched both on the branch and since.
-    const sources = uncommittedOnly ? local : [...(branch ? [branch] : []), ...local]
-    const measured = uncommittedOnly ? undefined : lineCounts?.[path]
+    const sources = narrowing ? scoped : [...(branch ? [branch] : []), ...local]
+    const measured = narrowing ? undefined : lineCounts?.[path]
     const counts: { added?: number; removed?: number } =
       measured ?? (sources.length === 1 ? sources[0] : {})
     // Why both sides: the committed blobs identify the branch's version of the file, the staged

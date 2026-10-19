@@ -8,6 +8,8 @@ Adding a feature here? See the rule at the top of [`CLAUDE.md`](./CLAUDE.md).
 
 ## Added in this repo
 
+- ⌘U narrows the Changes list to files with unstaged edits, and pressing it again shows every change.
+- Every file tree marks each file with how many notes, agent notes, unanswered review threads and unsent review comments it carries.
 - Pull request sync is an automation: it runs on a schedule even when the window is hidden, and each check shows up in the run history.
 - A Monday weekly recap template writes what landed on the default branch into the run's workspace and its history.
 - A Wednesday template posts a Linear project status update for the projects you lead.

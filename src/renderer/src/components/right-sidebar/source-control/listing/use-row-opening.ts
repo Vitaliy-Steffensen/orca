@@ -19,6 +19,7 @@ import { openChangesFilterEntry } from '@/store/slices/editor/actions/open-chang
 import { getChangesFilter } from '@/lib/changes-filter'
 import {
   pickUncommittedRowEntry,
+  pickUnstagedRowEntry,
   useOpenDiffFollowsChangesFilter
 } from './open-diff-follows-filter'
 import type { useAllChangesProjection } from './use-all-changes-projection'
@@ -208,12 +209,15 @@ export function useSourceControlRowOpening({
       }
       const local = statusEntries.filter((candidate) => candidate.path === entry.path)
       // Why: a conflicted file opens its resolver, and with no base to compare against the plain
-      // uncommitted diff is the closest view. Showing only uncommitted work opens that work too.
+      // uncommitted diff is the closest view. A narrowed list opens that working-tree change.
+      const filterKind = getChangesFilter(activeWorktreeId)?.kind
       const fallback =
         local.find((candidate) => candidate.conflictKind && candidate.conflictStatus) ??
-        (getChangesFilter(activeWorktreeId)?.kind === 'uncommitted'
+        (filterKind === 'uncommitted'
           ? pickUncommittedRowEntry(local)
-          : undefined) ??
+          : filterKind === 'unstaged'
+            ? pickUnstagedRowEntry(local)
+            : undefined) ??
         (branchSummary?.status === 'ready' ? undefined : local[0])
       if (fallback) {
         handleOpenDiff(fallback, event)

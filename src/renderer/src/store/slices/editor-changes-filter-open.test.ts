@@ -47,6 +47,36 @@ describe('opening a Changes row under a turn or commit filter', () => {
     })
   })
 
+  it('shows the unstaged edit while unstaged changes are shown', () => {
+    const store = createEditorStore()
+    const summary = {
+      baseRef: 'refs/remotes/origin/main',
+      baseOid: 'base-1',
+      compareRef: 'feature',
+      headOid: 'head-1',
+      mergeBase: 'base-1',
+      changedFiles: 1,
+      commitsAhead: 1,
+      status: 'ready' as const
+    }
+    store.getState().beginGitBranchCompareRequest('wt-1', 'req-1', summary.baseRef)
+    store.getState().setGitBranchCompareResult('wt-1', 'req-1', {
+      summary,
+      entries: [{ path: 'src/a.ts', status: 'modified' }]
+    })
+    store.setState({
+      gitStatusByWorktree: {
+        'wt-1': [
+          { path: 'src/a.ts', status: 'modified', area: 'staged' },
+          { path: 'src/a.ts', status: 'modified', area: 'unstaged' }
+        ]
+      }
+    })
+    setChangesFilter('wt-1', { kind: 'unstaged' })
+    stepOnto(store)
+    expect(store.getState().openFiles[0]).toMatchObject({ diffSource: 'unstaged' })
+  })
+
   it('shows only the uncommitted change while uncommitted changes are shown', () => {
     const store = createEditorStore()
     const summary = {

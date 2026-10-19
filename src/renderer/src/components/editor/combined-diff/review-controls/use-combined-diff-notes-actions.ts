@@ -4,9 +4,14 @@ import { formatDiffComments } from '@/lib/diff-comments-format'
 import { translate } from '@/i18n/i18n'
 import type { DiffComment } from '../../../../../../shared/diff-comment-types'
 import type { DiffCommentsClearOptions } from '@/store/slices/diffComments'
+import {
+  useWorkspaceFileCommentCounts,
+  type FileCommentCountsByPath
+} from '@/components/diff-comments/file-comment-counts'
 
 export type CombinedDiffNotesActions = {
   clearNotesDialogVisible: boolean
+  commentCountsByPath: FileCommentCountsByPath
   diffCommentCount: number
   handleConfirmClearNotes: () => Promise<void>
   handleCopyNotes: () => Promise<void>
@@ -29,6 +34,7 @@ export function useCombinedDiffNotesActions({
   worktreeId: string
 }): CombinedDiffNotesActions {
   const diffCommentCount = diffCommentsForWorktree.length
+  const commentCountsByPath = useWorkspaceFileCommentCounts(worktreeId)
   const diffCommentsPrompt = React.useMemo(
     () => formatDiffComments(diffCommentsForWorktree),
     [diffCommentsForWorktree]
@@ -131,6 +137,7 @@ export function useCombinedDiffNotesActions({
 
   return {
     clearNotesDialogVisible,
+    commentCountsByPath,
     diffCommentCount,
     handleConfirmClearNotes,
     handleCopyNotes,

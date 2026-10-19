@@ -20390,6 +20390,7 @@
     "groupByStatus": "Group by status",
     "showCommitInChanges": "Show in Changes",
     "uncommittedOnly": "Uncommitted",
+    "unstagedOnly": "Unstaged",
     "latestTurn": "Latest turn",
     "historicalChanges": "Historical changes",
     "commit": "Commit {{ref}}"

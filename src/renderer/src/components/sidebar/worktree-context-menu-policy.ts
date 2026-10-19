@@ -232,6 +232,19 @@ export type WorkspaceStatusAssignmentPlan =
 // Linear-sync path when the board wired a callback, else a local-only write of
 // only the status-changed worktrees. Extracted pure so the routing and the
 // no-op filter stay unit-testable without opening the Radix menu.
+// Why: a mixed selection must show no checked radio, so only a value shared by every row counts.
+export function sharedSelectionValue<T extends string>(
+  worktrees: readonly Worktree[],
+  read: (worktree: Worktree) => T
+): T | '' {
+  const [first, ...rest] = worktrees
+  if (!first) {
+    return ''
+  }
+  const value = read(first)
+  return rest.every((worktree) => read(worktree) === value) ? value : ''
+}
+
 export function planWorkspaceStatusAssignment(
   worktrees: readonly Worktree[],
   status: WorkspaceStatus,
