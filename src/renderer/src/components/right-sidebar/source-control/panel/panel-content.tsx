@@ -33,9 +33,7 @@ export function SourceControlPanelContent(props: SourceControlPanelReadyProps) {
     collapsedSections,
     collapsedTreeDirs,
     conflictOperation,
-    diffCommentCountByPath,
-    reviewThreadCountByPath,
-    pendingReviewCountByPath,
+    commentCountsByPath,
     fileFilterState,
     fileListScrollElement,
     filterQuery,
@@ -150,9 +148,7 @@ export function SourceControlPanelContent(props: SourceControlPanelReadyProps) {
             }
             filterBadge={changesFilterBadge(changesFilter)}
             onClearFilter={() => clearChangesFilter(currentWorktreeId)}
-            diffCommentCountByPath={diffCommentCountByPath}
-            reviewThreadCountByPath={reviewThreadCountByPath}
-            pendingReviewCountByPath={pendingReviewCountByPath}
+            commentCountsByPath={commentCountsByPath}
             activeOpenRowKeys={activeOpenRowKeys}
             activeOpenRowKey={activeOpenRowKey}
             reviewByPath={reviewByPath}
@@ -242,9 +238,7 @@ export function SourceControlWorkingTreeShelf({
       handleStage={model.handleStage}
       handleUnstage={model.handleUnstage}
       requestDiscardEntry={model.requestDiscardEntry}
-      diffCommentCountByPath={model.diffCommentCountByPath}
-      reviewThreadCountByPath={model.reviewThreadCountByPath}
-      pendingReviewCountByPath={model.pendingReviewCountByPath}
+      commentCountsByPath={model.commentCountsByPath}
     />
   )
 }

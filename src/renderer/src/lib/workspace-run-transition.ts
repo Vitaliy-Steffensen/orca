@@ -1,13 +1,18 @@
+/** 'starting-runtime' is the container engine coming up before any service starts. */
+export type WorkspaceRunState = 'starting-runtime' | 'booting' | 'running'
+
 export type WorkspaceRunServiceState = {
   label: string
+  /** Every service of one run shares a tab; the pane inside it is the service. */
   tabId: string
+  leafId: string
   readyPort?: number
   ready: boolean
 }
 
 export type WorkspaceRunEntry = {
   commandId: string
-  state: 'booting' | 'running'
+  state: WorkspaceRunState
   startedAt: number
   readyDeadlineAt: number
   services: WorkspaceRunServiceState[]
@@ -15,7 +20,7 @@ export type WorkspaceRunEntry = {
 }
 
 export type WorkspaceRunServiceObservation = {
-  tabId: string
+  leafId: string
   tabPresent: boolean
   ptyAlive: boolean
   ptyAliveSince: number | null
@@ -54,18 +59,20 @@ export function transitionWorkspaceRun(args: {
   observations: readonly WorkspaceRunServiceObservation[]
 }): WorkspaceRunTransition {
   const { entry, now } = args
-  const byTabId = new Map(args.observations.map((observation) => [observation.tabId, observation]))
+  const byLeafId = new Map(
+    args.observations.map((observation) => [observation.leafId, observation])
+  )
 
-  if (entry.services.length === 0) {
+  if (entry.state === 'starting-runtime' || entry.services.length === 0) {
     return { entry, shouldOpenBrowser: false }
   }
 
-  const present = entry.services.filter((service) => byTabId.get(service.tabId)?.tabPresent)
+  const present = entry.services.filter((service) => byLeafId.get(service.leafId)?.tabPresent)
   if (present.length === 0) {
     return { entry: null, shouldOpenBrowser: false }
   }
 
-  const allPtysDead = present.every((service) => !byTabId.get(service.tabId)?.ptyAlive)
+  const allPtysDead = present.every((service) => !byLeafId.get(service.leafId)?.ptyAlive)
   if (allPtysDead) {
     return {
       entry: null,
@@ -76,12 +83,12 @@ export function transitionWorkspaceRun(args: {
 
   if (
     entry.state === 'running' &&
-    present.some((service) => !byTabId.get(service.tabId)?.ptyAlive)
+    present.some((service) => !byLeafId.get(service.leafId)?.ptyAlive)
   ) {
     return { entry: null, shouldOpenBrowser: false }
   }
 
-  const services = present.map((service) => withReady(service, byTabId.get(service.tabId), now))
+  const services = present.map((service) => withReady(service, byLeafId.get(service.leafId), now))
   if (
     entry.state === 'booting' &&
     now >= entry.readyDeadlineAt &&
@@ -97,7 +104,7 @@ export function transitionWorkspaceRun(args: {
     services.every(
       (service, index) =>
         service.ready === entry.services[index]?.ready &&
-        service.tabId === entry.services[index]?.tabId
+        service.leafId === entry.services[index]?.leafId
     )
   // Leave openedBrowser false until the browser port is actually found. A
   // Docker/OrbStack listener can show up a scan later than the other service.
@@ -133,7 +140,7 @@ export function nextWorkspaceRunWakeMs(args: {
     if (service.readyPort !== undefined || service.ready) {
       continue
     }
-    const observation = args.observations.find((item) => item.tabId === service.tabId)
+    const observation = args.observations.find((item) => item.leafId === service.leafId)
     if (!observation?.ptyAlive || observation.ptyAliveSince === null) {
       continue
     }

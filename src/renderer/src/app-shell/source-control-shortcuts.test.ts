@@ -27,6 +27,14 @@ vi.mock('sonner', () => ({ toast: { info: vi.fn(), error: vi.fn() } }))
 const actions = { openDiffNotesSendMenuForActiveWorktree: () => false }
 
 describe('takeSourceControlShortcut', () => {
+  it('toggles the unstaged-only Changes filter for the active workspace', () => {
+    const match = (id: string): boolean => id === 'sourceControl.toggleUnstagedOnly'
+    expect(takeSourceControlShortcut(match, true, actions)).toBe('sourceControl.toggleUnstagedOnly')
+    expect(getChangesFilter('wt-shortcut')).toEqual({ kind: 'unstaged' })
+    takeSourceControlShortcut(match, true, actions)
+    expect(getChangesFilter('wt-shortcut')).toBeNull()
+  })
+
   it('toggles the uncommitted-only Changes filter for the active workspace', () => {
     const match = (id: string): boolean => id === 'sourceControl.toggleUncommittedOnly'
     expect(takeSourceControlShortcut(match, true, actions)).toBe(
@@ -65,6 +73,13 @@ describe('takeSourceControlShortcut', () => {
       expect(store.setRightSidebarOpen).toHaveBeenCalledWith(true)
       expect(store.setRightSidebarTab).toHaveBeenCalledWith('source-control')
     }
+
+    it('switches to Source Control when toggling unstaged-only', () => {
+      const match = (id: string): boolean => id === 'sourceControl.toggleUnstagedOnly'
+      takeSourceControlShortcut(match, true, actions)
+      expectSourceControlRevealed()
+      takeSourceControlShortcut(match, true, actions)
+    })
 
     it('switches to Source Control when toggling uncommitted-only', () => {
       const match = (id: string): boolean => id === 'sourceControl.toggleUncommittedOnly'

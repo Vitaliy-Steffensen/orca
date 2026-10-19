@@ -1,6 +1,6 @@
 import { useEffect, useRef } from 'react'
 import { useAppStore } from '@/store'
-import type { ChangesFilter } from '@/lib/changes-filter'
+import { isChangesSourceFilter, type ChangesFilter } from '@/lib/changes-filter'
 import type { OpenFile } from '@/store/slices/editor/types/open-file'
 import type { GitBranchChangeEntry } from '../../../../../../shared/git-diff-compare-types'
 import type { GitStatusEntry } from '../../../../../../shared/git-status-types'
@@ -9,9 +9,11 @@ export function changesFilterKey(filter: ChangesFilter | null): string {
   if (!filter) {
     return 'all'
   }
-  return filter.kind === 'uncommitted'
-    ? 'uncommitted'
-    : `${filter.kind}:${filter.compare.commitOid}`
+  return isChangesSourceFilter(filter) ? `${filter.kind}:${filter.compare.commitOid}` : filter.kind
+}
+
+export function pickUnstagedRowEntry(local: readonly GitStatusEntry[]): GitStatusEntry | undefined {
+  return local.find((entry) => entry.area === 'unstaged')
 }
 
 export function findFollowEntry(

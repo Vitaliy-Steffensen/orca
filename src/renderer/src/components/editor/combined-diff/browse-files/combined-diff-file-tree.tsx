@@ -15,6 +15,7 @@ import {
   type CombinedDiffTreeRevealRequest
 } from './use-combined-diff-tree-reveal'
 import { translate } from '@/i18n/i18n'
+import type { FileCommentCountsByPath } from '@/components/diff-comments/file-comment-counts'
 import {
   buildCombinedDiffBranchTreeRoots,
   buildCombinedDiffUncommittedTreeGroups,
@@ -42,6 +43,7 @@ export function CombinedDiffFileTree({
   activeSectionKey,
   viewedSectionKeys,
   collapsed,
+  commentCountsByPath,
   revealRequest = null,
   onCollapsedChange,
   onNavigate
@@ -54,6 +56,8 @@ export function CombinedDiffFileTree({
   activeSectionKey: string | null
   viewedSectionKeys: ReadonlySet<string>
   collapsed: boolean
+  /** Absent where the host has no comments to report, such as a bare commit view. */
+  commentCountsByPath?: FileCommentCountsByPath
   /** Absent for the read-only PR viewers, which have no app shortcut to reveal from. */
   revealRequest?: CombinedDiffTreeRevealRequest | null
   onCollapsedChange: (collapsed: boolean) => void
@@ -230,6 +234,7 @@ export function CombinedDiffFileTree({
     activeSectionKey,
     sectionIndexByKey,
     collapsedDirectoryKeys,
+    commentCountsByPath,
     scrollElement: listScrollElement,
     flashRowKey: reveal.flashRowKey,
     // Why unscoped: a list that does not hold the key resolves it to index -1 and returns.

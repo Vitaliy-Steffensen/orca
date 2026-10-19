@@ -11,7 +11,6 @@ vi.mock('@/i18n/i18n', () => ({
 vi.mock('@/lib/source-control-row-reveal', () => ({
   useSourceControlRowRevealFlash: () => false
 }))
-vi.mock('./agent-note-file-badge', () => ({ AgentNoteFileBadge: () => null }))
 vi.mock('./entry-context-menu', () => ({
   SourceControlEntryContextMenu: ({ children }: { children: React.ReactNode }) => <>{children}</>
 }))
@@ -30,9 +29,7 @@ function renderRow(review?: Parameters<typeof BranchEntryRow>[0]['review']) {
       worktreePath="/repo"
       onRevealInExplorer={vi.fn()}
       onOpen={onOpen}
-      commentCount={0}
-      reviewThreadCount={0}
-      pendingReviewCount={0}
+      commentCounts={undefined}
       review={review}
     />
   )

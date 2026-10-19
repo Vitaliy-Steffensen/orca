@@ -1,7 +1,12 @@
 import { toast } from 'sonner'
 import { translate } from '@/i18n/i18n'
 import { openLatestAgentTurn } from '@/lib/agent-turn-open'
-import { clearChangesFilter, getChangesFilter, toggleUncommittedOnly } from '@/lib/changes-filter'
+import {
+  clearChangesFilter,
+  getChangesFilter,
+  toggleUncommittedOnly,
+  toggleUnstagedOnly
+} from '@/lib/changes-filter'
 import { showInChanges } from '@/lib/show-in-changes'
 import { sendQueuedPRCommentsForActiveWorktree } from '@/components/right-sidebar/queued-pr-comments-send'
 import {
@@ -15,6 +20,7 @@ type SourceControlShortcutId =
   | 'sourceControl.sendReviewNotes'
   | 'sourceControl.openLatestAgentTurn'
   | 'sourceControl.toggleUncommittedOnly'
+  | 'sourceControl.toggleUnstagedOnly'
   | 'sourceControl.sendQueuedComments'
   | 'sourceControl.focusReviewSummary'
 
@@ -94,6 +100,11 @@ export function takeSourceControlShortcut(
     toggleUncommittedOnly(activeWorktreeId)
     revealSourceControl(canRevealRightSidebar)
     return 'sourceControl.toggleUncommittedOnly'
+  }
+  if (matchShortcut('sourceControl.toggleUnstagedOnly') && activeWorktreeId) {
+    toggleUnstagedOnly(activeWorktreeId)
+    revealSourceControl(canRevealRightSidebar)
+    return 'sourceControl.toggleUnstagedOnly'
   }
   if (
     matchShortcut('sourceControl.sendQueuedComments') &&

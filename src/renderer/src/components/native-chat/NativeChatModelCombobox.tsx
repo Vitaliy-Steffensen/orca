@@ -3,6 +3,7 @@ import { Check } from 'lucide-react'
 import {
   Command,
   CommandEmpty,
+  CommandGroup,
   CommandInput,
   CommandItem,
   CommandList
@@ -33,6 +34,25 @@ function modelChoiceFilter(value: string, search: string, keywords?: string[]): 
   const haystack = [value, ...(keywords ?? [])].join(' ').toLowerCase()
   const terms = search.toLowerCase().split(/\s+/).filter(Boolean)
   return terms.every((term) => haystack.includes(term)) ? 1 : 0
+}
+
+function modelChoiceGroups(
+  choices: readonly SessionOptionSelectChoice[]
+): { heading?: string; choices: SessionOptionSelectChoice[] }[] {
+  if (!choices.some((choice) => choice.group)) {
+    return [{ choices: [...choices] }]
+  }
+  const groups: { heading?: string; choices: SessionOptionSelectChoice[] }[] = []
+  for (const choice of choices) {
+    const heading = choice.group
+    const current = groups.at(-1)
+    if (current && current.heading === heading) {
+      current.choices.push(choice)
+    } else {
+      groups.push({ ...(heading ? { heading } : {}), choices: [choice] })
+    }
+  }
+  return groups
 }
 
 export function NativeChatModelCombobox({
@@ -87,30 +107,39 @@ export function NativeChatModelCombobox({
                 'No models match your search.'
               )}
             </CommandEmpty>
-            {choices.map((choice) => {
-              const label = nativeChatSessionChoiceLabel(choice)
-              const current = choice.value === currentValue
-              return (
-                <CommandItem
-                  key={choice.value}
-                  value={choice.value}
-                  keywords={[label, choice.description ?? '']}
-                  disabled={readOnly}
-                  aria-current={current || undefined}
-                  onSelect={() => {
-                    focusReturn.notePick()
-                    setOpen(false)
-                    onSelect(choice.value)
-                  }}
-                >
-                  <span className="flex size-3.5 shrink-0 items-center justify-center">
-                    {current ? <Check className="size-3.5" /> : null}
-                  </span>
-                  <NativeChatSessionOptionChoiceBody
-                    label={label}
-                    description={choice.description}
-                  />
-                </CommandItem>
+            {modelChoiceGroups(choices).map((group) => {
+              const rows = group.choices.map((choice) => {
+                const label = nativeChatSessionChoiceLabel(choice)
+                const current = choice.value === currentValue
+                return (
+                  <CommandItem
+                    key={choice.value}
+                    value={choice.value}
+                    keywords={[label, choice.description ?? '', choice.group ?? '']}
+                    disabled={readOnly}
+                    aria-current={current || undefined}
+                    onSelect={() => {
+                      focusReturn.notePick()
+                      setOpen(false)
+                      onSelect(choice.value)
+                    }}
+                  >
+                    <span className="flex size-3.5 shrink-0 items-center justify-center">
+                      {current ? <Check className="size-3.5" /> : null}
+                    </span>
+                    <NativeChatSessionOptionChoiceBody
+                      label={label}
+                      description={choice.description}
+                    />
+                  </CommandItem>
+                )
+              })
+              return group.heading ? (
+                <CommandGroup key={group.heading} heading={group.heading}>
+                  {rows}
+                </CommandGroup>
+              ) : (
+                rows
               )
             })}
           </CommandList>

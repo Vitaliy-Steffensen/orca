@@ -1,4 +1,4 @@
-import { resolveWorkspaceIntent } from '../../../../shared/workspace-intent'
+import { uniformWorkspaceIntent } from '../../../../shared/workspace-intent'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useAppStore } from '@/store'
 import { useAllWorktrees, useRepoById, useRepoMap, useWorktreeMap } from '@/store/selectors'
@@ -27,6 +27,7 @@ import {
   hasWorktreeParentLink,
   isContextWorktreeDeletable,
   selectMenuScopedMap,
+  sharedSelectionValue,
   shouldRemoveProjectFromContextMenu
 } from './worktree-context-menu-policy'
 import { resolveWorkspaceArchiveMenuAction } from './workspace-archive-menu-action'
@@ -167,37 +168,25 @@ export function useWorktreeContextMenuModel({
     (item) => getDeleteStateForWorktreeHost(item, deleteStateByWorktreeId)?.isDeleting
   )
   const contextDeletePending = isMultiContext ? deletingContext : deletingSubtree
-  const contextWorkspaceStatus = useMemo(() => {
-    const [first, ...rest] = activeContextWorktrees
-    if (!first) {
-      return ''
-    }
-    const status = getWorkspaceStatus(first, workspaceStatuses)
-    return rest.every((item) => getWorkspaceStatus(item, workspaceStatuses) === status)
-      ? status
-      : ''
-  }, [activeContextWorktrees, workspaceStatuses])
+  const contextWorkspaceStatus = useMemo(
+    () =>
+      sharedSelectionValue(activeContextWorktrees, (item) =>
+        getWorkspaceStatus(item, workspaceStatuses)
+      ),
+    [activeContextWorktrees, workspaceStatuses]
+  )
   // Why: a mixed multi-selection shows no radio checked, matching the status submenu.
-  const contextWorkspaceAutonomy = useMemo(() => {
-    const [first, ...rest] = activeContextWorktrees
-    if (!first) {
-      return ''
-    }
-    const autonomy = resolveWorkspaceAutonomy(first.workspaceAutonomy)
-    return rest.every((item) => resolveWorkspaceAutonomy(item.workspaceAutonomy) === autonomy)
-      ? autonomy
-      : ''
-  }, [activeContextWorktrees])
-  const contextWorkspaceIntent = useMemo(() => {
-    const [first, ...rest] = activeContextWorktrees
-    if (!first) {
-      return ''
-    }
-    const intent = resolveWorkspaceIntent(first.workspaceIntent)
-    return rest.every((item) => resolveWorkspaceIntent(item.workspaceIntent) === intent)
-      ? intent
-      : ''
-  }, [activeContextWorktrees])
+  const contextWorkspaceAutonomy = useMemo(
+    () =>
+      sharedSelectionValue(activeContextWorktrees, (item) =>
+        resolveWorkspaceAutonomy(item.workspaceAutonomy)
+      ),
+    [activeContextWorktrees]
+  )
+  const contextWorkspaceIntent = useMemo(
+    () => uniformWorkspaceIntent(activeContextWorktrees),
+    [activeContextWorktrees]
+  )
   const batchDeleteWorktrees = useMemo(
     () =>
       activeContextWorktrees.filter((item) => {

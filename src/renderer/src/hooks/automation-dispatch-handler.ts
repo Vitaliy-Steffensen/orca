@@ -6,10 +6,13 @@ import { observeExistingAutomationSession } from '@/lib/automation-session-obser
 import { findReusableAutomationSession } from '@/lib/automation-session-reuse'
 import type { AutomationTerminalOwnership } from '@/lib/automation-terminal-ownership'
 import { useAppStore } from '@/store'
-import type {
-  AutomationDispatchRequest,
-  AutomationDispatchResult
+import {
+  getAutomationKind,
+  type AutomationDispatchRequest,
+  type AutomationDispatchResult
 } from '../../../shared/automations-types'
+import { formatPullRequestSyncTickSummary } from '../../../shared/pull-request-sync-summary'
+import { runWorkspaceStatusRuleTick } from '@/components/workspace-status-rules/use-workspace-status-rule-poller'
 import { createAutomationDispatchCompletion } from './automation-dispatch-completion'
 import {
   prepareAutomationDispatchWorkspace,
@@ -36,6 +39,28 @@ export async function handleAutomationDispatchRequest({
     // (automation-run-writer.ts) before this reply returns, and an unscoped one
     // here would arrive second and invalidate every host in the catalog.
     await window.api.automations.markDispatchResult(result)
+  }
+  if (getAutomationKind(automation) === 'pull_request_sync') {
+    try {
+      const summary = await runWorkspaceStatusRuleTick()
+      await markDispatchResult({
+        runId: run.id,
+        status: 'completed',
+        outputSnapshot: {
+          format: 'plain_text',
+          content: formatPullRequestSyncTickSummary(summary),
+          capturedAt: Date.now(),
+          truncated: false
+        }
+      })
+    } catch (error) {
+      await markDispatchResult({
+        runId: run.id,
+        status: 'dispatch_failed',
+        error: error instanceof Error ? error.message : String(error)
+      })
+    }
+    return
   }
   const state = useAppStore.getState()
   const focusBeforeDispatch = {

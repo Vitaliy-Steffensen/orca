@@ -6,6 +6,8 @@ export type SessionOptionSelectChoice = {
   value: string
   label: string
   description?: string
+  /** Groups a model menu, such as Claude beside Cursor. Absent leaves one flat list. */
+  group?: string
 }
 
 /** `default` is the catalog's own value shown before anything is observed —

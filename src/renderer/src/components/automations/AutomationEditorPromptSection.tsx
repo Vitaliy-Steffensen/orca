@@ -4,6 +4,7 @@ import { Pencil } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
 import { translate } from '@/i18n/i18n'
+import { useAppStore } from '@/store'
 import type { AutomationDraft } from './AutomationEditorDialog'
 import { AutomationEditorPromptEditor } from './AutomationEditorPromptEditor'
 
@@ -19,6 +20,9 @@ export function AutomationEditorPromptSection({
   onDismiss
 }: AutomationEditorPromptSectionProps): React.JSX.Element {
   const titleRef = React.useRef<HTMLTextAreaElement>(null)
+  const openSettingsPage = useAppStore((state) => state.openSettingsPage)
+  const openSettingsTarget = useAppStore((state) => state.openSettingsTarget)
+  const pullRequestSync = draft.kind === 'pull_request_sync'
   const namePlaceholder = translate(
     'auto.components.automations.AutomationEditorDialogHeader.1d9826933e',
     'Weekday repo audit'
@@ -74,32 +78,53 @@ export function AutomationEditorPromptSection({
           </TooltipContent>
         </Tooltip>
       </div>
-      <div className="mb-2 text-[11px] font-semibold uppercase tracking-[0.05em] text-muted-foreground">
-        {translate('auto.components.automations.AutomationEditorDialog.058c23cb3f', 'Prompt')}
-      </div>
-      <AutomationEditorPromptEditor
-        value={draft.prompt}
-        placeholder={translate(
-          'auto.components.automations.AutomationEditorDialog.6d778190b7',
-          'Run the weekly dependency audit and summarize risky changes.'
-        )}
-        ariaLabel={translate(
-          'auto.components.automations.AutomationEditorDialog.058c23cb3f',
-          'Prompt'
-        )}
-        onChange={(prompt) => onDraftChange((current) => ({ ...current, prompt }))}
-        onDismiss={onDismiss}
-      />
-      <p className="mt-2 text-xs text-muted-foreground">
-        {translate(
-          'auto.components.automations.AutomationEditorDialog.827b25a81e',
-          'Supports skills, file paths, and built-in commands like'
-        )}{' '}
-        <code className="rounded bg-muted px-1 font-mono text-[11px]">
-          {translate('auto.components.automations.AutomationEditorDialog.a4ac8fcc62', '/goal')}
-        </code>
-        .
-      </p>
+      {pullRequestSync ? (
+        <p className="text-sm text-muted-foreground">
+          <button
+            type="button"
+            className="text-foreground underline underline-offset-2"
+            onClick={() => {
+              onDismiss()
+              openSettingsPage()
+              openSettingsTarget({ pane: 'automations', repoId: null })
+            }}
+          >
+            {translate(
+              'auto.components.automations.pullRequestSync.configure',
+              'Configure what it does → Settings → Automations → Pull request rules'
+            )}
+          </button>
+        </p>
+      ) : (
+        <>
+          <div className="mb-2 text-[11px] font-semibold uppercase tracking-[0.05em] text-muted-foreground">
+            {translate('auto.components.automations.AutomationEditorDialog.058c23cb3f', 'Prompt')}
+          </div>
+          <AutomationEditorPromptEditor
+            value={draft.prompt}
+            placeholder={translate(
+              'auto.components.automations.AutomationEditorDialog.6d778190b7',
+              'Run the weekly dependency audit and summarize risky changes.'
+            )}
+            ariaLabel={translate(
+              'auto.components.automations.AutomationEditorDialog.058c23cb3f',
+              'Prompt'
+            )}
+            onChange={(prompt) => onDraftChange((current) => ({ ...current, prompt }))}
+            onDismiss={onDismiss}
+          />
+          <p className="mt-2 text-xs text-muted-foreground">
+            {translate(
+              'auto.components.automations.AutomationEditorDialog.827b25a81e',
+              'Supports skills, file paths, and built-in commands like'
+            )}{' '}
+            <code className="rounded bg-muted px-1 font-mono text-[11px]">
+              {translate('auto.components.automations.AutomationEditorDialog.a4ac8fcc62', '/goal')}
+            </code>
+            .
+          </p>
+        </>
+      )}
     </div>
   )
 }

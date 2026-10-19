@@ -38,7 +38,8 @@ export const LinearIssueList = z.object({
 export const LinearProjectList = z.object({
   query: OptionalString,
   limit: OptionalFiniteNumber,
-  workspaceId: z.union([z.string(), z.literal('all')]).optional()
+  workspaceId: z.union([z.string(), z.literal('all')]).optional(),
+  lead: z.enum(['me']).optional()
 })
 
 export const LinearIncludeFlags = z.object({

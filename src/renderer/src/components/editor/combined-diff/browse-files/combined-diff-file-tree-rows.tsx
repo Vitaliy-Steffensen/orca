@@ -1,5 +1,6 @@
 import React from 'react'
 import { VirtualizedList } from '@/components/virtualized-list'
+import type { FileCommentCountsByPath } from '@/components/diff-comments/file-comment-counts'
 import type {
   CombinedDiffFileTreeEntry,
   CombinedDiffFileTreeMode
@@ -24,6 +25,7 @@ export function CombinedDiffFileTreeRows({
   sectionIndexByKey,
   collapsedDirectoryKeys,
   visibleFileCounts,
+  commentCountsByPath,
   scrollElement,
   flashRowKey,
   scrollToRowKey,
@@ -38,6 +40,7 @@ export function CombinedDiffFileTreeRows({
   sectionIndexByKey: ReadonlyMap<string, number>
   collapsedDirectoryKeys: ReadonlySet<string>
   visibleFileCounts: ReadonlyMap<string, number> | undefined
+  commentCountsByPath: FileCommentCountsByPath | undefined
   scrollElement: HTMLDivElement | null
   flashRowKey: string | null
   scrollToRowKey: string | null
@@ -63,6 +66,11 @@ export function CombinedDiffFileTreeRows({
           isCollapsed={collapsedDirectoryKeys.has(node.key)}
           isFlashing={node.key === flashRowKey}
           visibleFileCount={visibleFileCounts?.get(node.key)}
+          // Why resolved here, not in the row: the row is memo'd, so passing the whole map would
+          // re-render every row whenever any comment anywhere changes.
+          commentCounts={
+            node.type === 'file' ? commentCountsByPath?.get(node.entry.path) : undefined
+          }
           onToggleDirectory={onToggleDirectory}
           onNavigate={onNavigate}
         />

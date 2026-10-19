@@ -67,6 +67,7 @@ import { getPtyIdForPaneKey } from '../pty/pane/key-state'
 import { registerClaudeAccountHandlers } from '../claude-accounts'
 import { registerOpenCodeGoCredentialsHandlers } from '../opencode-go-credentials'
 import { registerMiniMaxCredentialsHandlers } from '../minimax-credentials'
+import { registerContainerRuntimeHandlers } from '../container-runtime'
 import { registerWorkspaceRunCredentialHandlers } from '../workspace-run-credentials'
 import { registerZcodePlanCredentialsHandlers } from '../zcode-plan-credentials'
 import { registerGrokAccountHandlers } from '../grok-accounts'
@@ -181,6 +182,7 @@ export function registerCoreHandlers(
   registerOpenCodeGoCredentialsHandlers(rateLimits)
   registerMiniMaxCredentialsHandlers(rateLimits)
   registerWorkspaceRunCredentialHandlers(runtime)
+  registerContainerRuntimeHandlers()
   registerZcodePlanCredentialsHandlers(rateLimits)
   registerGrokAccountHandlers()
   registerCursorAccountHandlers()

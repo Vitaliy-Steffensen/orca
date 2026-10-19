@@ -53,6 +53,20 @@ describe('buildChangedFileSearchPaths', () => {
     ).toEqual(['src/a.ts'])
   })
 
+  it('honours the unstaged-only changes filter', () => {
+    expect(
+      buildChangedFileSearchPaths(
+        [
+          status({ path: 'src/dirty.ts' }),
+          status({ path: 'src/staged.ts', area: 'staged' }),
+          status({ path: 'src/new.ts', area: 'untracked', status: 'untracked' })
+        ],
+        [{ path: 'src/committed.ts', status: 'modified' }],
+        { unstagedOnly: true }
+      )
+    ).toEqual(['src/dirty.ts'])
+  })
+
   it('honours the uncommitted-only changes filter', () => {
     const entries = [status({ path: 'src/dirty.ts' })]
     const branch: GitBranchChangeEntry[] = [{ path: 'src/committed.ts', status: 'modified' }]

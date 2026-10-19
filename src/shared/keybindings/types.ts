@@ -111,6 +111,7 @@ export type KeybindingActionId =
   | 'sourceControl.sendReviewNotes'
   | 'sourceControl.openLatestAgentTurn'
   | 'sourceControl.toggleUncommittedOnly'
+  | 'sourceControl.toggleUnstagedOnly'
   | 'sourceControl.sendQueuedComments'
   | 'sourceControl.focusReviewSummary'
   | 'fileExplorer.undo'

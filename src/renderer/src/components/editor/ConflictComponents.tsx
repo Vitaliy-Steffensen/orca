@@ -289,6 +289,7 @@ export function ConflictReviewPanel({
     <div className="flex h-full min-h-0 bg-background">
       <ConflictReviewFileTree
         entries={treeEntries}
+        worktreeId={file.worktreeId}
         collapsed={fileTreeCollapsed}
         onCollapsedChange={setFileTreeCollapsed}
         selectedPath={selectedFile?.relativePath ?? null}

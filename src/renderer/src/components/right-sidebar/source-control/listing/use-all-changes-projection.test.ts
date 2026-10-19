@@ -4,7 +4,12 @@ import { describe, expect, it } from 'vitest'
 import type { GitStatusEntry } from '../../../../../../shared/git-status-types'
 import { useAllChangesProjection } from './use-all-changes-projection'
 import type { FlatEntry } from './use-selection'
-import { clearChangesFilter, setChangesFilter, toggleUncommittedOnly } from '@/lib/changes-filter'
+import {
+  clearChangesFilter,
+  setChangesFilter,
+  toggleUncommittedOnly,
+  toggleUnstagedOnly
+} from '@/lib/changes-filter'
 
 const unstaged: GitStatusEntry = { path: 'src/ui/b.ts', status: 'modified', area: 'unstaged' }
 const untracked: GitStatusEntry = { path: 'README.md', status: 'untracked', area: 'untracked' }
@@ -88,6 +93,27 @@ describe('useAllChangesProjection', () => {
       'branch-worktree::src/ui/a.ts',
       'branch-worktree::src/ui/b.ts'
     ])
+  })
+
+  it('narrows to unstaged files when the workspace toggles that filter on', () => {
+    const staged: GitStatusEntry = { path: 'src/ui/c.ts', status: 'modified', area: 'staged' }
+    const { result } = renderHook(() =>
+      useAllChangesProjection({
+        activeWorktreeId: 'wt-unstaged',
+        visibleSelectionEntries: [],
+        entries: [unstaged, untracked, staged],
+        branchEntries: [committed],
+        filteredGrouped: { staged: [staged], unstaged: [unstaged], untracked: [untracked] },
+        filteredBranchEntries: [committed],
+        sourceControlViewMode: 'list',
+        collapsedTreeDirs: new Set()
+      })
+    )
+    act(() => toggleUnstagedOnly('wt-unstaged'))
+    expect(result.current.changesFilter).toEqual({ kind: 'unstaged' })
+    expect(result.current.allChangeEntries.map((entry) => entry.path)).toEqual(['src/ui/b.ts'])
+    expect(result.current.totalAllChangeCount).toBe(4)
+    act(() => clearChangesFilter('wt-unstaged'))
   })
 
   it('narrows to uncommitted files when the workspace toggles that filter on', () => {

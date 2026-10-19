@@ -64,8 +64,6 @@ function renderUncommittedSections({
         selectedKeySet={new Set()}
         activeOpenRowKeys={new Set()}
         activeOpenRowKey={null}
-        reviewThreadCountByPath={new Map()}
-        pendingReviewCountByPath={new Map()}
         handleSelect={vi.fn()}
         handleContextMenu={vi.fn()}
         revealInExplorer={vi.fn()}
@@ -74,7 +72,7 @@ function renderUncommittedSections({
         handleStage={vi.fn()}
         handleUnstage={vi.fn()}
         requestDiscardEntry={vi.fn()}
-        diffCommentCountByPath={new Map()}
+        commentCountsByPath={new Map()}
       />
     </TooltipProvider>
   )
@@ -114,7 +112,10 @@ describe('source control section header actions', () => {
 
   it('routes the Changes header Stage all through the section handler', () => {
     const handleStageSectionPaths = vi.fn(async () => {})
-    renderUncommittedSections({ handleStageSectionPaths, isStatusTruncated: true })
+    renderUncommittedSections({
+      handleStageSectionPaths,
+      isStatusTruncated: true
+    })
 
     fireEvent.click(screen.getByRole('button', { name: 'Stage all' }))
 
@@ -127,11 +128,17 @@ describe('source control section header actions', () => {
       area: 'untracked',
       items: [{ path: 'new.ts', status: 'untracked', area: 'untracked' }]
     }
-    renderUncommittedSections({ sections: [untracked], isStatusTruncated: true })
+    renderUncommittedSections({
+      sections: [untracked],
+      isStatusTruncated: true
+    })
     expect(screen.queryByRole('button', { name: 'Stage all' })).toBeNull()
 
     cleanup()
-    renderUncommittedSections({ sections: [untracked], isStatusTruncated: false })
+    renderUncommittedSections({
+      sections: [untracked],
+      isStatusTruncated: false
+    })
     expect(screen.getByRole('button', { name: 'Stage all' })).toBeInTheDocument()
   })
 })

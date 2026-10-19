@@ -163,8 +163,8 @@ describe('AutomationService prechecks', () => {
       path: '/repo/old'
     }
     mutateDataFile((state) => {
-      state.automations[0].runContext = staleRunContext
-      state.automationRuns[0].runContext = staleRunContext
+      state.automations.find((entry) => entry.id === automation.id)!.runContext = staleRunContext
+      state.automationRuns.find((entry) => entry.id === run.id)!.runContext = staleRunContext
     })
     const reloaded = await createStore()
     const service = new AutomationService(reloaded, { tickMs: 60_000 })

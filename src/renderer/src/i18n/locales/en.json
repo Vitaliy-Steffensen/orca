@@ -989,6 +989,15 @@
               "searchFailed": "Unable to search with {{value0}}."
             }
           }
+        },
+        "run": {
+          "container": {
+            "runtime": {
+              "start": {
+                "timedOut": "OrbStack is still starting — the run is going ahead anyway"
+              }
+            }
+          }
         }
       },
       "worktree": {
@@ -1228,7 +1237,8 @@
       "start": {
         "workspace": {
           "run": {
-            "failed": "Run didn't start"
+            "failed": "Run didn't start",
+            "tabTitle": "Run"
           }
         }
       }
@@ -6845,8 +6855,9 @@
           "run": "Run"
         },
         "WorktreeCardRunState": {
-          "booting": "Run starting",
-          "running": "Run is up"
+          "startingRuntime": "Starting OrbStack…",
+          "booting": "Spinning up…",
+          "running": "Running and ready"
         },
         "WorktreeContextMenuRunItem": {
           "stop": "Stop run",
@@ -12522,19 +12533,23 @@
           "howItWorksTitle": "How Automations work",
           "howItWorksDescription": "Schedule agent work once, then let Orca create each run and keep its results together.",
           "defineStepTitle": "Describe the work",
-          "defineStepDescription": "Choose a project, agent, prompt, and schedule.",
+          "defineStepDescription": "Choose a project, agent, prompt, and schedule — or a built-in check, which needs none of them.",
           "runStepTitle": "Orca starts each run",
-          "runStepDescription": "The selected agent gets a fresh workspace when the schedule is due.",
+          "runStepDescription": "When the schedule is due, an agent run gets a fresh workspace; a built-in check runs without one.",
           "reviewStepTitle": "Review the results",
           "reviewStepDescription": "Inspect recent runs and continue the work whenever you need to.",
           "openAutomations": "Open Automations",
           "openAutomationsDescription": "Create schedules and inspect recent runs.",
           "title": "Automations",
-          "description": "Schedule agent work and choose whether Automations appears in the sidebar.",
+          "description": "Schedule agent work, set the rules the pull request check follows, and choose whether Automations appears in the sidebar.",
           "keywordAutomations": "automations",
           "keywordSchedule": "schedule",
           "keywordAgent": "agent",
-          "keywordRuns": "runs"
+          "keywordRuns": "runs",
+          "keywordPullRequest": "pull request",
+          "keywordReview": "review",
+          "keywordBoardColumn": "board column",
+          "keywordStatusRules": "status rules"
         },
         "AgentAwakeSetting": {
           "on": "On",
@@ -12956,8 +12971,6 @@
           "noColumn": "Do nothing",
           "newWorkspace": "New workspaces start in",
           "newWorkspaceDescription": "Where a workspace Orca creates in these projects goes before it has a pull request. Workspaces that already exist keep their column.",
-          "enable": "Move workspaces by pull request state",
-          "enableDescription": "Checks the linked pull request every minute while Orca is open, and sets the board column to match.",
           "checkName": "Merge gate check name",
           "checkNameDescription": "The check that decides \"Merge gate passed\" above. Matches a check run or a commit status by name.",
           "pmTeam": "PM approval team",
@@ -13016,6 +13029,9 @@
           "reviewDescription": "Open, not a draft, and none of the conditions above apply.",
           "onMerge": "When a pull request is merged or closed",
           "onMergeDescription": "Archive shuts the workspace down and hides it, keeping the checkout. Delete removes it and runs your orca.yaml archive script first. Either way a workspace with uncommitted work or a running agent is kept, and Orca says so; the branch itself stays on the remote.",
+          "scheduledBy": "Scheduled by the Pull request sync automation",
+          "scheduledByDescription": "When it runs, and whether it runs, is on the Automations page. The rules below are what each check does.",
+          "openAutomation": "Open automation",
           "onReviewed": "Once you have reviewed a review workspace",
           "onReviewedDescription": "Applies to pull requests you did not write, once you have approved or requested changes. A workspace holding unsent review comments, uncommitted work or a running agent is kept. If the author asks you again, the workspace comes back with the diff pointed at the commit you last reviewed.",
           "resolution": {
@@ -17387,6 +17403,20 @@
               "category": "Maintenance",
               "name": "Hourly maintenance check",
               "prompt": "Check for stuck work, stale generated files, failing validation, and anything that needs human attention. Report only actionable issues."
+            },
+            "weeklyRecap": {
+              "category": "Weekly recap",
+              "label": "Monday weekly recap",
+              "description": "Every Monday, writes what landed on the default branch into a dated file in the run workspace and prints it so it lands in the run history.",
+              "name": "Monday weekly recap",
+              "prompt": "Write a short recap of what landed on the default branch since the previous Monday. Use git log on the default branch for that window, and the pull requests merged in it. Cover behaviour changes, new commands and flags, and how the codebase is worked. Skip refactors, dependency bumps, and mirror merges. Write the recap to a dated file under .context/ in this workspace (for example .context/weekly-recap-YYYY-MM-DD.md) and print the same text, so it is saved in the automation run history."
+            },
+            "linearStatus": {
+              "category": "Linear",
+              "label": "Wednesday Linear status",
+              "description": "Every Wednesday, posts a Linear project status update for the projects you lead. To keep a draft instead, change the last step of the prompt to write it under .context/ and stop. That is a text edit, not a code change.",
+              "name": "Wednesday Linear status",
+              "prompt": "Post a short Linear project status update for each project you lead. List them with `orca linear project list --lead me --json`. For each project, read `orca linear project show <id> --json` and its issues with `orca linear list-issues --project <id> --json`. Write a short update covering what moved, what is blocked, and what is next. Post it with `orca linear project update post --project <id> --body <text> --health <onTrack|atRisk|offTrack>`. Choose the health from the evidence in the issues, and say why in the body. This posts directly. To keep a draft instead, write it under .context/ and stop."
             }
           },
           "list": {
@@ -17599,6 +17629,10 @@
           "useFreshSessions": "Use fresh sessions",
           "helper": "Added to this host's default arguments for each fresh session.",
           "detailLabel": "Extra arguments"
+        },
+        "pullRequestSync": {
+          "configure": "Configure what it does → Settings → Automations → Pull request rules",
+          "enabled": "Enabled"
         }
       },
       "agent": {
@@ -18592,6 +18626,11 @@
       "empty": "No users found"
     },
     "native-chat": {
+      "unifiedChat": {
+        "couldNotStart": "Couldn't start a new chat.",
+        "open": "Open a new chat",
+        "newChat": "New chat"
+      },
       "reasoning": "Reasoning",
       "failureWords": {
         "theAgent": "The agent",
@@ -18855,6 +18894,10 @@
         "chooseInAgentPicker": "Choose in agent picker…",
         "searchModels": "Search models…",
         "noModelsMatch": "No models match your search.",
+        "modelProvider": {
+          "claude": "Claude",
+          "cursor": "Cursor"
+        },
         "toggleOption": "Toggle {{value0}}",
         "pillAccessibleName": "{{value0}} {{value1}}",
         "sentNotConfirmed": "Sent to the agent — not confirmed",
@@ -20455,6 +20498,7 @@
     "groupByStatus": "Group by status",
     "showCommitInChanges": "Show in Changes",
     "uncommittedOnly": "Uncommitted",
+    "unstagedOnly": "Unstaged",
     "latestTurn": "Latest turn",
     "historicalChanges": "Historical changes",
     "commit": "Commit {{ref}}"

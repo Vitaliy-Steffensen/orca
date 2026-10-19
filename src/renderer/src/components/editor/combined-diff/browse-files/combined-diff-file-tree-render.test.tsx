@@ -5,6 +5,7 @@ import { createRoot, type Root } from 'react-dom/client'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import type { GitBranchChangeEntry } from '../../../../../../shared/git-diff-compare-types'
 import type { CombinedDiffFileTreeRow as CombinedDiffFileTreeRowComponent } from './combined-diff-file-tree-row'
+import type { FileCommentCountsByPath } from '@/components/diff-comments/file-comment-counts'
 
 const rowRenders = vi.hoisted(() => ({ count: 0 }))
 const mountedRows = vi.hoisted(() => ({ count: 0 }))
@@ -43,6 +44,12 @@ const { useCombinedDiffSectionIndexMap } =
 const { getCombinedDiffBranchEntriesInTreeOrder } = await import('./combined-diff-file-tree-filter')
 
 const EMPTY_VIEWED_KEYS: ReadonlySet<string> = new Set()
+
+function countsFor(paths: readonly string[]): FileCommentCountsByPath {
+  return new Map(
+    paths.map((path) => [path, { notes: 0, agentNotes: 1, unresolvedThreads: 0, pendingReview: 0 }])
+  )
+}
 
 class NoopResizeObserver implements ResizeObserver {
   observe(): void {}
@@ -91,14 +98,18 @@ let loadSectionAt: (index: number) => void = () => {}
  * Mirrors how both PR viewers feed the tree: an on-demand section load replaces the sections
  * array, and the navigate callback closes over the section index map.
  */
+let rebuildCommentCounts: () => void = () => {}
+
 function TreeHarness({
   entries,
   initialSections,
-  stableSectionIndexMap
+  stableSectionIndexMap,
+  commentCountPaths
 }: {
   entries: readonly GitBranchChangeEntry[]
   initialSections: TestSection[]
   stableSectionIndexMap: boolean
+  commentCountPaths?: readonly string[]
 }): ReactElement {
   const [sections, setSections] = useState(initialSections)
   loadSectionAt = (index) => {
@@ -114,6 +125,15 @@ function TreeHarness({
   const onNavigate = useCallback(() => {
     void sectionIndexByKey
   }, [sectionIndexByKey])
+  // Why rebuilt rather than mutated: a comment landing anywhere replaces the whole map, which is
+  // exactly the identity change the per-row lookup has to absorb.
+  const [commentCountsGeneration, setCommentCountsGeneration] = useState(0)
+  rebuildCommentCounts = () => setCommentCountsGeneration((prev) => prev + 1)
+  const commentCountsByPath = useMemo(
+    () => (commentCountPaths ? countsFor(commentCountPaths) : undefined),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [commentCountPaths, commentCountsGeneration]
+  )
 
   return (
     <CombinedDiffFileTree
@@ -123,6 +143,7 @@ function TreeHarness({
       sectionIndexByKey={sectionIndexByKey}
       activeSectionKey={null}
       viewedSectionKeys={EMPTY_VIEWED_KEYS}
+      commentCountsByPath={commentCountsByPath}
       collapsed={false}
       onCollapsedChange={() => {}}
       onNavigate={onNavigate}
@@ -137,7 +158,8 @@ function mountedRowCount(): number {
 function renderHarness(
   entries: readonly GitBranchChangeEntry[],
   sections: TestSection[],
-  stableSectionIndexMap: boolean
+  stableSectionIndexMap: boolean,
+  commentCountPaths?: readonly string[]
 ): void {
   act(() => {
     root.render(
@@ -145,6 +167,7 @@ function renderHarness(
         entries={entries}
         initialSections={sections}
         stableSectionIndexMap={stableSectionIndexMap}
+        commentCountPaths={commentCountPaths}
       />
     )
   })
@@ -178,5 +201,29 @@ describe('combined diff file tree re-renders on section loads', () => {
     expect(mountedRowCount()).toBeGreaterThan(SMALL_FILE_COUNT)
 
     expect(runScrollPass(SCROLL_PASS_LOADS)).toBe(0)
+  })
+})
+
+describe('combined diff file tree comment badges', () => {
+  it('marks only the files that carry comments', () => {
+    const entries = buildEntries(6, 2)
+    const withComments = [entries[0].path, entries[1].path]
+    renderHarness(entries, buildSections(entries), true, withComments)
+
+    const badges = host.querySelectorAll('[data-file-comment-badge]')
+    expect(badges.length).toBe(withComments.length)
+    expect(badges[0].getAttribute('data-file-comment-badge')).toBe('agentNotes')
+  })
+
+  // Why this is worth a test: the lookup lives in the rows wrapper precisely so a rebuilt map
+  // does not re-render every row in a large review.
+  it('re-renders only the rows that have comments when the counts map is rebuilt', () => {
+    const entries = buildEntries(30, 3)
+    renderHarness(entries, buildSections(entries), true, [entries[0].path, entries[1].path])
+    expect(mountedRowCount()).toBeGreaterThan(30)
+
+    rowRenders.count = 0
+    act(() => rebuildCommentCounts())
+    expect(rowRenders.count).toBe(2)
   })
 })

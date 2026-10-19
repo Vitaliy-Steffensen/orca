@@ -1,5 +1,5 @@
 import React, { useCallback } from 'react'
-import { Settings as SettingsIcon } from 'lucide-react'
+import { MessageSquare, Settings as SettingsIcon } from 'lucide-react'
 import { toast } from 'sonner'
 import { DropdownMenuItem, DropdownMenuShortcut } from '@/components/ui/dropdown-menu'
 import { getAgentCatalog, AgentIcon } from '@/lib/agent-catalog'
@@ -18,6 +18,11 @@ import {
 import { translate } from '@/i18n/i18n'
 import { newAgentPromptOutcome } from '@/lib/new-agent-prompt-outcome'
 import { activeAgentNotesSendFailureMessage } from '@/lib/active-agent-note-send-result'
+import { openUnifiedNewChat } from '@/lib/unified-new-chat'
+import {
+  isUnifiedChatAgent,
+  type UnifiedChatAgent
+} from '../../../../shared/unified-claude-cursor-chat'
 
 export type QuickLaunchAgentMenuItemsProps = {
   worktreeId: string
@@ -222,6 +227,33 @@ function QuickLaunchAgentMenuItemsInner({
 
   const enabledDetectedIds = detectedIds ? filterEnabledTuiAgents(detectedIds, disabledAgents) : []
   const agents = detectedIds ? orderAgents(defaultAgent, enabledDetectedIds) : []
+  // A prompt is a send to one agent (notes). A plain new tab is one chat, and the model menu
+  // chooses Claude or Cursor after it opens.
+  const unifiedAgents: UnifiedChatAgent[] =
+    prompt === undefined
+      ? agents.filter((agent): agent is UnifiedChatAgent => isUnifiedChatAgent(agent))
+      : []
+  const listedAgents =
+    unifiedAgents.length > 0 ? agents.filter((agent) => !isUnifiedChatAgent(agent)) : agents
+  const newChatShowsShortcut =
+    newAgentShortcut !== null &&
+    typeof defaultAgent === 'string' &&
+    defaultAgent !== 'blank' &&
+    isUnifiedChatAgent(defaultAgent) &&
+    unifiedAgents.includes(defaultAgent)
+
+  const openNewChat = (): void => {
+    if (disabled || unifiedAgents.length === 0) {
+      return
+    }
+    openUnifiedNewChat({
+      worktreeId,
+      groupId,
+      availableAgents: unifiedAgents,
+      defaultAgent,
+      launchSource: launchSource ?? 'tab_bar_quick_launch'
+    })
+  }
 
   return (
     <>
@@ -251,7 +283,23 @@ function QuickLaunchAgentMenuItemsInner({
                   )}
         </DropdownMenuItem>
       ) : null}
-      {agents.map((agent) => {
+      {unifiedAgents.length > 0 ? (
+        <DropdownMenuItem
+          disabled={disabled}
+          onSelect={openNewChat}
+          className="gap-2 rounded-[7px] px-2 py-1.5 text-[12px] leading-5 font-medium"
+          title={translate('components.native-chat.unifiedChat.open', 'Open a new chat')}
+        >
+          <MessageSquare className="size-3.5" />
+          <span className="flex-1">
+            {translate('components.native-chat.unifiedChat.newChat', 'New chat')}
+          </span>
+          {newChatShowsShortcut ? (
+            <DropdownMenuShortcut>{newAgentShortcut}</DropdownMenuShortcut>
+          ) : null}
+        </DropdownMenuItem>
+      ) : null}
+      {listedAgents.map((agent) => {
         const entry = getCatalogEntry(agent)
         const label = entry?.label ?? agent
         const showsDefaultAgentShortcut =

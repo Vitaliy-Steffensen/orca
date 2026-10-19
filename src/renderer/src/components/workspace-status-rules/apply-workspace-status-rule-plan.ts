@@ -19,9 +19,10 @@ async function applyStatusUpdates(plan: WorkspaceStatusRulePlan): Promise<void> 
   )
 }
 
-async function applyRemovals(plan: WorkspaceStatusRulePlan): Promise<void> {
+async function applyRemovals(plan: WorkspaceStatusRulePlan): Promise<number> {
   const { removeWorktree, forgetPullRequestHandled } = useAppStore.getState()
   const forget: string[] = []
+  let removed = 0
   for (const removal of plan.removals) {
     // Why force stays off: Git refuses a checkout holding uncommitted work or a
     // live agent session, and that refusal is the safety net for an automatic
@@ -44,15 +45,17 @@ async function applyRemovals(plan: WorkspaceStatusRulePlan): Promise<void> {
     if (removal.forgetHandledKey) {
       forget.push(removal.forgetHandledKey)
     }
+    removed += 1
   }
   if (forget.length > 0) {
     forgetPullRequestHandled(forget)
   }
+  return removed
 }
 
-async function applyArchives(plan: WorkspaceStatusRulePlan): Promise<void> {
+async function applyArchives(plan: WorkspaceStatusRulePlan): Promise<number> {
   if (plan.archives.length === 0) {
-    return
+    return 0
   }
   const { forgetPullRequestHandled } = useAppStore.getState()
   // Why one batch: the teardown clears the active workspace once for the whole
@@ -66,6 +69,7 @@ async function applyArchives(plan: WorkspaceStatusRulePlan): Promise<void> {
       .map((worktree) => worktree.id)
   )
   const forget: string[] = []
+  let archived = 0
   for (const archive of plan.archives) {
     if (stillPresent.has(archive.worktreeId)) {
       // Why no toast: runArchiveWorktrees already said what went wrong.
@@ -74,10 +78,12 @@ async function applyArchives(plan: WorkspaceStatusRulePlan): Promise<void> {
     if (archive.forgetHandledKey) {
       forget.push(archive.forgetHandledKey)
     }
+    archived += 1
   }
   if (forget.length > 0) {
     forgetPullRequestHandled(forget)
   }
+  return archived
 }
 
 /** Why in memory and not the persisted ledger: a create that fails for a passing
@@ -89,7 +95,8 @@ const MAX_CREATE_ATTEMPTS = 3
 async function applyCreations(
   plan: WorkspaceStatusRulePlan,
   config: WorkspaceStatusRuleConfig
-): Promise<void> {
+): Promise<number> {
+  let created = 0
   for (const creation of plan.creations) {
     const attempts = failedCreateAttempts.get(creation.handledKey) ?? 0
     if (attempts >= MAX_CREATE_ATTEMPTS) {
@@ -97,6 +104,7 @@ async function applyCreations(
     }
     const result = await createReviewWorkspace(creation.pr, config, creation.sinceReviewCommit)
     if (result.ok) {
+      created += 1
       failedCreateAttempts.delete(creation.handledKey)
       useAppStore.getState().markPullRequestHandled([creation.handledKey])
       toast.success(
@@ -127,14 +135,28 @@ async function applyCreations(
       )
     }
   }
+  return created
+}
+
+export type WorkspaceStatusRuleApplyCounts = {
+  statusUpdates: number
+  removals: number
+  archives: number
+  creations: number
 }
 
 export async function applyWorkspaceStatusRulePlan(
   plan: WorkspaceStatusRulePlan,
   config: WorkspaceStatusRuleConfig
-): Promise<void> {
+): Promise<WorkspaceStatusRuleApplyCounts> {
   await applyStatusUpdates(plan)
-  await applyRemovals(plan)
-  await applyArchives(plan)
-  await applyCreations(plan, config)
+  const removals = await applyRemovals(plan)
+  const archives = await applyArchives(plan)
+  const creations = await applyCreations(plan, config)
+  return {
+    statusUpdates: plan.statusUpdates.length,
+    removals,
+    archives,
+    creations
+  }
 }

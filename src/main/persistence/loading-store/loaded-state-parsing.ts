@@ -25,6 +25,10 @@ import {
   normalizeWorktreeLinkedItemMetadata
 } from '../tracking-repos/worktree-metadata-normalization'
 import { backfillLegacyAutomationContexts } from '../scheduling-automations/automation-context-migration'
+import {
+  readLegacyWorkspaceStatusRulesEnabled,
+  seedPullRequestSyncAutomation
+} from '../scheduling-automations/pull-request-sync-seed'
 import { migrateAutomationOwners } from '../../automations/automation-owner-migration'
 import {
   ENCRYPTED_SSH_PTY_OWNER_LEASE_MAX_LENGTH,
@@ -88,6 +92,7 @@ export class LoadedStateParsingOperations {
     let result: PersistedState | null = null
     let parsed: PersistedState | undefined
     let nativeChatUpgradeTipAudience: NativeChatUpgradeTipAudience | null = null
+    let legacyPullRequestSyncEnabled = false
     try {
       if (fileExistedOnLoad) {
         const readStartedAt = performance.now()
@@ -107,6 +112,7 @@ export class LoadedStateParsingOperations {
         if (parsed === undefined) {
           throw new Error('Profile state startup snapshot is missing')
         }
+        legacyPullRequestSyncEnabled = readLegacyWorkspaceStatusRulesEnabled(parsed)
         // Why: decide from the profile as saved, before defaults or migrations can touch Chat UI.
         nativeChatUpgradeTipAudience = this.cohorts.captureNativeChatUpgradeTipAudience(parsed)
         // Why: secrets are stored encrypted via safeStorage; decrypt at the load boundary so the app sees plaintext.
@@ -247,6 +253,12 @@ export class LoadedStateParsingOperations {
       sshTargets: automationOwnerMigration.sshTargets,
       sshTargetGenerationCounter: automationOwnerMigration.sshTargetGenerationCounter
     }
+
+    const pullRequestSyncSeed = seedPullRequestSyncAutomation(result, legacyPullRequestSyncEnabled)
+    if (pullRequestSyncSeed.changed) {
+      this.runtime.loadNeedsSave = true
+    }
+    result = pullRequestSyncSeed.state
 
     const folderScopeConnectionMigration = backfillFolderScopeConnectionIds({
       ...result,

@@ -12,12 +12,10 @@ import { useSourceControlFileProjection } from './use-file-projection'
 import type { SourceControlFileCategory } from './file-category'
 import { useSourceControlReviewAttributes } from './use-review-attributes'
 import { usePublishedSourceControlReviewOrder } from './use-published-review-order'
-import { usePRCommentScope } from '@/components/pr-comments/use-pr-comment-scope'
-import { buildUnresolvedThreadCountByPath } from '@/components/pr-comments/unresolved-thread-count'
 import { useSourceControlRowOpening } from './use-row-opening'
 import { usePublishedOpenInSelectionPath } from './use-open-in-selection-path'
 import type { SourceControlWorktreeContext } from './use-worktree-context'
-import { usePendingReviewCountByPath } from '@/components/pending-review/pending-review-count'
+import { useWorkspaceFileCommentCounts } from '@/components/diff-comments/file-comment-counts'
 import { useAllChangesProjection } from './use-all-changes-projection'
 import { useChangesReviewProgress } from './use-changes-review-progress'
 
@@ -147,10 +145,7 @@ export function useSourceControlFileListing({
     collapsedTreeDirs
   })
   const { selectableEntries } = allChanges
-  const { reviewByPath, viewedCount } = useChangesReviewProgress(
-    activeWorktreeId,
-    allChanges.allChangeEntries
-  )
+  const reviewProgress = useChangesReviewProgress(activeWorktreeId, allChanges.allChangeEntries)
 
   // Why: modifier-click keeps the current pane intact by opening the file in a fresh split to the right.
   const {
@@ -207,12 +202,7 @@ export function useSourceControlFileListing({
 
   // Why here: this hook already owns what the panel renders, and the map has to be built once for
   // the list rather than per row on every filter keystroke.
-  const { groups: prCommentGroups } = usePRCommentScope(activeWorktreeId)
-  const reviewThreadCountByPath = useMemo(
-    () => buildUnresolvedThreadCountByPath(prCommentGroups),
-    [prCommentGroups]
-  )
-  const pendingReviewCountByPath = usePendingReviewCountByPath(activeWorktreeId)
+  const commentCountsByPath = useWorkspaceFileCommentCounts(activeWorktreeId)
 
   usePublishedOpenInSelectionPath({
     worktreePath,
@@ -269,10 +259,8 @@ export function useSourceControlFileListing({
   return {
     ...allChanges,
     openAllChangesEntry,
-    reviewByPath,
-    viewedCount,
-    reviewThreadCountByPath,
-    pendingReviewCountByPath,
+    commentCountsByPath,
+    ...reviewProgress,
     activeOpenRowKeys,
     activeOpenRowKey,
     bulkStagePaths,

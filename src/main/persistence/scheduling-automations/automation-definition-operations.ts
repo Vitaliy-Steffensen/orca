@@ -65,16 +65,25 @@ export function createAutomation(
       return existing
     }
   }
-  const repo = operations.state.repos.find((entry) => entry.id === input.projectId)
+  const pullRequestSync = input.kind === 'pull_request_sync'
+  const repo = pullRequestSync
+    ? undefined
+    : operations.state.repos.find((entry) => entry.id === input.projectId)
   const now = Date.now()
-  const workspaceId = input.workspaceMode === 'existing' ? (input.workspaceId ?? null) : null
+  const workspaceId = pullRequestSync
+    ? null
+    : input.workspaceMode === 'existing'
+      ? (input.workspaceId ?? null)
+      : null
   const workspaceSshPin = automationWorkspaceSshPin(operations.state, workspaceId)
-  const executionTarget = deriveAutomationExecutionTargetForCreate({
-    repo,
-    sshTargetGeneration: sshTargetGenerationForConnection(operations.state, repo?.connectionId),
-    workspaceSshPin
-  })
-  if (options?.destination) {
+  const executionTarget = pullRequestSync
+    ? { executionTargetType: 'local' as const, executionTargetId: 'local' }
+    : deriveAutomationExecutionTargetForCreate({
+        repo,
+        sshTargetGeneration: sshTargetGenerationForConnection(operations.state, repo?.connectionId),
+        workspaceSshPin
+      })
+  if (options?.destination && !pullRequestSync) {
     const context = automationProjectionContext(
       operations.state,
       operations.storageAuthority,
@@ -83,12 +92,15 @@ export function createAutomation(
     assertAutomationDestination(options.destination, context)
     assertExecutionTargetMatchesDestination(executionTarget, options.destination, workspaceSshPin)
   }
-  const schedulerOwner = getAutomationSchedulerOwner(repo)
-  const contexts = getAutomationContextsForRepo(repo, operations.state.projectHostSetups ?? [])
+  const schedulerOwner = pullRequestSync ? 'local_host_service' : getAutomationSchedulerOwner(repo)
+  const contexts = pullRequestSync
+    ? { runContext: null, sourceContext: null }
+    : getAutomationContextsForRepo(repo, operations.state.projectHostSetups ?? [])
   const extraAgentArgs = storedExtraAgentArgs(input.extraAgentArgs)
   const automation: Automation = {
     id: randomUUID(),
     ...(input.creationKey ? { creationKey: input.creationKey } : {}),
+    ...(pullRequestSync ? { kind: 'pull_request_sync' as const } : {}),
     name: input.name.trim() || 'Untitled automation',
     prompt: input.prompt,
     precheck: normalizeAutomationPrecheck(input.precheck),
@@ -97,26 +109,29 @@ export function createAutomation(
     // Why own contexts win: a wire context speaks the client's perspective —
     // 'runtime:<id>' is a client-assigned name this store cannot interpret, and
     // persisting it makes the projection orphan a record this authority owns.
-    runContext: contexts.runContext ?? input.runContext ?? null,
-    sourceContext: contexts.sourceContext ?? input.sourceContext ?? null,
-    projectId: input.projectId,
+    runContext: pullRequestSync ? null : (contexts.runContext ?? input.runContext ?? null),
+    sourceContext: pullRequestSync ? null : (contexts.sourceContext ?? input.sourceContext ?? null),
+    projectId: pullRequestSync ? '' : input.projectId,
     ...executionTarget,
     schedulerOwner,
-    workspaceMode: input.workspaceMode,
+    workspaceMode: pullRequestSync ? 'existing' : input.workspaceMode,
     workspaceId,
-    baseBranch: input.workspaceMode === 'new_per_run' ? (input.baseBranch ?? null) : null,
-    setupDecision: normalizeAutomationSetupDecisionForWorkspaceMode(
-      input.workspaceMode,
-      input.setupDecision
-    ),
-    reuseSession: input.workspaceMode === 'existing' ? (input.reuseSession ?? false) : false,
+    baseBranch:
+      !pullRequestSync && input.workspaceMode === 'new_per_run' ? (input.baseBranch ?? null) : null,
+    setupDecision: pullRequestSync
+      ? undefined
+      : normalizeAutomationSetupDecisionForWorkspaceMode(input.workspaceMode, input.setupDecision),
+    reuseSession:
+      !pullRequestSync && input.workspaceMode === 'existing'
+        ? (input.reuseSession ?? false)
+        : false,
     timezone: input.timezone,
     rrule: input.rrule,
     dtstart: input.dtstart,
     enabled: input.enabled ?? true,
     nextRunAt: nextAutomationOccurrenceAfter(input.rrule, input.dtstart, now),
     missedRunPolicy: 'run_once_within_grace',
-    missedRunGraceMinutes: input.missedRunGraceMinutes ?? 720,
+    missedRunGraceMinutes: input.missedRunGraceMinutes ?? (pullRequestSync ? 5 : 720),
     createdAt: now,
     updatedAt: now
   }

@@ -8,8 +8,6 @@ import type {
   LinearIssueListRequest,
   LinearIssueListResult,
   LinearIssueContextResult,
-  LinearProjectListRequest,
-  LinearProjectListResult,
   LinearIssueTaskUpdateRequest,
   LinearIssueTaskUpdateResult,
   LinearSearchResult,
@@ -51,7 +49,6 @@ import {
   formatLinearCreate,
   formatLinearIssue,
   formatLinearIssueList,
-  formatLinearProjectList,
   formatLinearTaskUpdate,
   formatLinearSearch,
   formatLinearStatusSet,
@@ -61,9 +58,9 @@ import {
   formatLinearTeamStates,
   printLinearIssueWarnings,
   printLinearListWarnings,
-  printLinearProjectListWarnings,
   printLinearSearchWarnings
 } from '../linear-format'
+import { LINEAR_PROJECT_HANDLERS } from './linear-project-handlers'
 import { runLinearListIssues } from './linear-list-issues'
 import { linearRelationWriteHandler } from './linear-relation-write'
 import { runLinearSaveIssue } from './linear-save-issue'
@@ -128,19 +125,7 @@ export const LINEAR_HANDLERS: Record<string, CommandHandler> = {
     })
     printResult(response, json, formatLinearTeamLabels)
   },
-  'linear project list': async ({ flags, client, json }) => {
-    const limit = clampLinearSearchLimit(getOptionalPositiveIntegerFlag(flags, 'limit'))
-    const request: LinearProjectListRequest = {
-      query: getOptionalStringFlag(flags, 'query'),
-      limit,
-      workspaceId: getOptionalStringFlag(flags, 'workspace')
-    }
-    const response = await client.call<LinearProjectListResult>('linear.agentProjectList', request)
-    if (!json) {
-      printLinearProjectListWarnings(response.result)
-    }
-    printResult(response, json, formatLinearProjectList)
-  },
+  ...LINEAR_PROJECT_HANDLERS,
   'linear list': async ({ flags, client, json }) => {
     const limit = getOptionalPositiveIntegerFlag(flags, 'limit')
     const filter = getLinearListFilter(flags)

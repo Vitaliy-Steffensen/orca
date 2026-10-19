@@ -61,7 +61,17 @@ ORCA linear team states --team <key-or-id> --workspace <workspaceId> --json
 ORCA linear team labels --team <key-or-id> --workspace <workspaceId> --json
 ORCA linear team members --team <key-or-id> --workspace <workspaceId> --json
 ORCA linear project list --query <project-name> --workspace <workspaceId> --json
+ORCA linear project list --lead me --json
+ORCA linear project show <id> --json
 ```
+
+`--lead me` lists only the projects you lead. Read one with `project show`, and post a status update with:
+
+```bash
+ORCA linear project update post --project <id> --body-file - --health onTrack --json
+```
+
+`--health` is `onTrack`, `atRisk`, or `offTrack`.
 
 Prefer IDs for automation. Names are accepted only when they exactly and uniquely match in the relevant team or workspace.
 

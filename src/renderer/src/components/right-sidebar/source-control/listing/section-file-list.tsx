@@ -1,3 +1,4 @@
+import type { FileCommentCountsByPath } from '@/components/diff-comments/file-comment-counts'
 import React from 'react'
 import type { GitStatusEntry } from '../../../../../../shared/git-status-types'
 import type { SourceControlViewMode } from '../../../../../../shared/ui-chrome-types'
@@ -43,9 +44,7 @@ export function SourceControlSectionFileList({
   handleStage,
   handleUnstage,
   requestDiscardEntry,
-  diffCommentCountByPath,
-  reviewThreadCountByPath,
-  pendingReviewCountByPath
+  commentCountsByPath
 }: {
   sourceControlViewMode: SourceControlViewMode
   treeRows: RenderableSourceControlNode[]
@@ -73,9 +72,7 @@ export function SourceControlSectionFileList({
   handleStage: (path: string) => Promise<void>
   handleUnstage: (path: string, oldPath?: string) => Promise<void>
   requestDiscardEntry: (entry: GitStatusEntry) => void
-  diffCommentCountByPath: Map<string, number>
-  reviewThreadCountByPath: Map<string, number>
-  pendingReviewCountByPath: Map<string, number>
+  commentCountsByPath: FileCommentCountsByPath
 }): React.JSX.Element {
   const revealRequestId = useSourceControlRowRevealRequestId(activeOpenRowKey)
   return sourceControlViewMode === 'tree' ? (
@@ -136,9 +133,7 @@ export function SourceControlSectionFileList({
             onStage={handleStage}
             onUnstage={handleUnstage}
             onDiscard={requestDiscardEntry}
-            commentCount={diffCommentCountByPath.get(node.entry.path) ?? 0}
-            reviewThreadCount={reviewThreadCountByPath.get(node.entry.path) ?? 0}
-            pendingReviewCount={pendingReviewCountByPath.get(node.entry.path) ?? 0}
+            commentCounts={commentCountsByPath.get(node.entry.path)}
             showPathHint={false}
             submoduleExpansion={submoduleExpansion}
           />
@@ -178,8 +173,7 @@ export function SourceControlSectionFileList({
             key={key}
             entryKey={key}
             entry={entry}
-            reviewThreadCount={reviewThreadCountByPath.get(entry.path) ?? 0}
-            pendingReviewCount={pendingReviewCountByPath.get(entry.path) ?? 0}
+            commentCounts={commentCountsByPath.get(entry.path)}
             currentWorktreeId={currentWorktreeId}
             worktreePath={worktreePath}
             depth={entry.submoduleRoot ? 1 : 0}
@@ -193,7 +187,6 @@ export function SourceControlSectionFileList({
             onStage={handleStage}
             onUnstage={handleUnstage}
             onDiscard={requestDiscardEntry}
-            commentCount={diffCommentCountByPath.get(entry.path) ?? 0}
             submoduleExpansion={submoduleExpansion}
           />
         )

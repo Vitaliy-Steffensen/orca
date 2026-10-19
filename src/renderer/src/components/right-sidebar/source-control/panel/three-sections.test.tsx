@@ -63,9 +63,7 @@ function renderUncommitted(sections: SourceControlDisplaySection[]): void {
         handleStage={vi.fn()}
         handleUnstage={vi.fn()}
         requestDiscardEntry={vi.fn()}
-        diffCommentCountByPath={new Map()}
-        reviewThreadCountByPath={new Map()}
-        pendingReviewCountByPath={new Map()}
+        commentCountsByPath={new Map()}
       />
     </TooltipProvider>
   )
@@ -94,9 +92,7 @@ describe('source control file sections', () => {
         revealInExplorer={vi.fn()}
         activeConnectionId={null}
         onOpen={vi.fn()}
-        diffCommentCountByPath={new Map()}
-        reviewThreadCountByPath={new Map()}
-        pendingReviewCountByPath={new Map()}
+        commentCountsByPath={new Map()}
         activeOpenRowKeys={new Set()}
         activeOpenRowKey={null}
       />

@@ -1,5 +1,6 @@
 import { randomUUID } from 'node:crypto'
 import { isFinalAutomationRunStatus } from '../../../shared/automations-types'
+import { PULL_REQUEST_SYNC_NO_OP_TEXT } from '../../../shared/pull-request-sync-summary'
 import { invalidateLocalWorktreeMetadataPruneInputs } from '../../local-worktree-metadata-prune-gate'
 import type {
   Automation,
@@ -153,6 +154,59 @@ export function recordRepeatedAutomationSkip(
   operations.state.automationRuns = runs.map((run) => (run.id === latest.id ? updated : run))
   operations.recordAutomationRunsMutation?.(operations.state.automationRuns)
   touchAutomation(operations.state, automationId, now)
+  operations.flush()
+  return updated
+}
+
+function latestOtherRun(
+  runs: readonly AutomationRun[],
+  automationId: string,
+  exceptId: string
+): AutomationRun | null {
+  return runs
+    .filter((run) => run.automationId === automationId && run.id !== exceptId)
+    .reduce<AutomationRun | null>(
+      (newest, run) => (!newest || run.createdAt > newest.createdAt ? run : newest),
+      null
+    )
+}
+
+/** Folds a just-created no-op into the previous no-op row and drops the new one. */
+export function recordRepeatedNoOpRun(
+  operations: AutomationRunOperations,
+  result: AutomationDispatchResult
+): AutomationRun | null {
+  if (result.outputSnapshot?.content !== PULL_REQUEST_SYNC_NO_OP_TEXT) {
+    return null
+  }
+  const runs = operations.state.automationRuns ?? []
+  const current = runs.find((run) => run.id === result.runId)
+  if (!current || current.trigger !== 'scheduled') {
+    return null
+  }
+  const latest = latestOtherRun(runs, current.automationId, current.id)
+  if (
+    !latest ||
+    latest.status !== 'completed' ||
+    latest.trigger !== 'scheduled' ||
+    latest.outputSnapshot?.content !== PULL_REQUEST_SYNC_NO_OP_TEXT
+  ) {
+    return null
+  }
+  const now = Date.now()
+  const updated: AutomationRun =
+    (latest.lastOccurrenceAt ?? latest.scheduledFor) === current.scheduledFor
+      ? latest
+      : {
+          ...latest,
+          occurrenceCount: (latest.occurrenceCount ?? 1) + 1,
+          lastOccurrenceAt: current.scheduledFor
+        }
+  operations.state.automationRuns = runs
+    .filter((run) => run.id !== current.id)
+    .map((run) => (run.id === latest.id ? updated : run))
+  operations.recordAutomationRunsMutation?.(operations.state.automationRuns)
+  touchAutomation(operations.state, current.automationId, now)
   operations.flush()
   return updated
 }

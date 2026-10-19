@@ -4,9 +4,11 @@ import {
   clearChangesFilter,
   getChangesFilter,
   isUncommittedOnly,
+  isUnstagedOnly,
   setChangesFilter,
   syncLatestAgentTurn,
   toggleUncommittedOnly,
+  toggleUnstagedOnly,
   type ChangesFilter
 } from './changes-filter'
 
@@ -55,9 +57,20 @@ describe('changes filter', () => {
     expect(getChangesFilter('wt')).toBeNull()
   })
 
+  it('replaces Uncommitted with Unstaged, and toggling Unstaged again shows every change', () => {
+    toggleUncommittedOnly('wt')
+    toggleUnstagedOnly('wt')
+    expect(isUncommittedOnly('wt')).toBe(false)
+    expect(isUnstagedOnly('wt')).toBe(true)
+    expect(getChangesFilter('wt')).toEqual({ kind: 'unstaged' })
+    toggleUnstagedOnly('wt')
+    expect(getChangesFilter('wt')).toBeNull()
+  })
+
   it('names each filter for its badge', () => {
     expect(changesFilterBadge(null)).toBeNull()
     expect(changesFilterBadge({ kind: 'uncommitted' })).toEqual({ label: 'Uncommitted' })
+    expect(changesFilterBadge({ kind: 'unstaged' })).toEqual({ label: 'Unstaged' })
     expect(changesFilterBadge(turn('t'.repeat(40), true))).toEqual({
       label: 'Latest turn',
       title: 'Do the thing'

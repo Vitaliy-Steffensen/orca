@@ -139,6 +139,12 @@ When the automation list is open, type in the search field and press **ArrowUp**
 
 Use `edit` to change the name, prompt, provider, target, schedule, or enabled state. `remove` deletes an automation and its run history.
 
+## Pull request sync
+
+`orca automations create --kind pull-request-sync` creates the desktop check that moves workspaces from pull request state. It has no project and no prompt. The name defaults to "Pull request sync", the schedule to every minute, and the missed-run grace to five minutes. What each check does is configured in Settings, not on the automation.
+
+The scheduler owns the clock, so a hidden Orca window still runs the check. A fully closed app does nothing and records `skipped_unavailable` rather than staying silent. A headless `orca serve` host refuses the run, because there is no review surface there.
+
 ## Run on demand
 
 After creating an automation, trigger it manually to check the prompt and target before waiting for the next scheduled time:

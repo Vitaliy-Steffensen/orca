@@ -3,7 +3,7 @@ import { joinPath } from '@/lib/path'
 import type { EditorGet, EditorSet } from '../types/editor-set-get'
 import type { EditorSlice } from '../types/editor-slice'
 import { openChangesFilterEntry } from './open-changes-filter-entry'
-import { isUncommittedOnly } from '@/lib/changes-filter'
+import { isUncommittedOnly, isUnstagedOnly } from '@/lib/changes-filter'
 
 export function createOpenDiffAtLocation(
   _set: EditorSet,
@@ -39,11 +39,12 @@ export function createOpenDiffAtLocation(
       }
       const branchSummary = state.gitBranchCompareSummaryByWorktree[worktreeId]
       // Fork: an all-changes row is one file from the branch base to disk, however it changed,
-      // unless only uncommitted changes are shown, where it is that uncommitted change.
+      // unless the list is narrowed to uncommitted or unstaged work, where it is that work.
       if (
         area === 'branch-worktree' &&
         branchSummary?.status === 'ready' &&
-        !isUncommittedOnly(worktreeId)
+        !isUncommittedOnly(worktreeId) &&
+        !isUnstagedOnly(worktreeId)
       ) {
         const entry = (state.gitBranchChangesByWorktree[worktreeId] ?? []).find(
           (candidate) => candidate.path === relativePath

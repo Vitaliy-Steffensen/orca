@@ -133,23 +133,27 @@ afterEach(async () => {
 
 const OWNED_SSH = { selector: { kind: 'ssh', targetId: 'ssh-1', targetGeneration: 7 } } as const
 
+/** The seeded pull-request check is Self-owned and present in every store, so the
+ *  cases below name only the records they created. */
+type AutomationRow = { id: string; kind?: string }
+const authored = (rows: readonly AutomationRow[]): string[] =>
+  rows.filter((entry) => entry.kind !== 'pull_request_sync').map((entry) => entry.id)
+
 describe('scoped automation list', () => {
   it('keeps the parameterless list at the authority-complete legacy shape', async () => {
     const store = await createStore()
-    expect(store.listAutomations().map((entry) => entry.id)).toEqual([
-      'local-1',
-      'ssh-1-a',
-      'orphan-1'
-    ])
+    expect(authored(store.listAutomations())).toEqual(['local-1', 'ssh-1-a', 'orphan-1'])
   })
 
   it('qualifies every row and reports the authority orphan count', async () => {
     const store = await createStore()
     const result = store.listAutomationsForScope({ selector: { kind: 'self' } })
-    expect(result.automations.map((entry) => entry.id)).toEqual(['local-1'])
-    expect(result.items).toEqual([
-      { automationId: 'local-1', selector: { kind: 'self' }, usageSummary: null }
-    ])
+    expect(authored(result.automations)).toEqual(['local-1'])
+    expect(result.items).toContainEqual({
+      automationId: 'local-1',
+      selector: { kind: 'self' },
+      usageSummary: null
+    })
     expect(result.orphanCount).toBe(1)
   })
 
@@ -223,14 +227,14 @@ describe('owner-fenced mutations', () => {
       store.assertAutomationOwnerFence({ id: 'ssh-1-a', operation: 'execute' })
     ).toThrowError(required)
     expect(store.listAutomations().find((entry) => entry.id === 'ssh-1-a')?.enabled).toBe(true)
-    expect(store.listAutomations()).toHaveLength(3)
+    expect(authored(store.listAutomations())).toHaveLength(3)
   })
 
   it('leaves a legacy client unaffected on a self record', async () => {
     const store = await createStore()
     expect(store.updateAutomation('local-1', { enabled: false }).enabled).toBe(false)
     store.deleteAutomation('local-1')
-    expect(store.listAutomations().map((entry) => entry.id)).toEqual(['ssh-1-a', 'orphan-1'])
+    expect(authored(store.listAutomations())).toEqual(['ssh-1-a', 'orphan-1'])
   })
 
   it('keeps delete available on an orphan but refuses to dispatch it', async () => {
@@ -239,7 +243,7 @@ describe('owner-fenced mutations', () => {
       store.assertAutomationOwnerFence({ id: 'orphan-1', operation: 'execute' })
     ).toThrowError(expect.objectContaining({ code: AUTOMATION_OWNER_CONFLICT_CODES.targetRemoved }))
     store.deleteAutomation('orphan-1', { expectedOwner: { selector: { kind: 'orphan' } } })
-    expect(store.listAutomations().map((entry) => entry.id)).toEqual(['local-1', 'ssh-1-a'])
+    expect(authored(store.listAutomations())).toEqual(['local-1', 'ssh-1-a'])
   })
 
   it('rejects a create whose destination is not a current registration', async () => {

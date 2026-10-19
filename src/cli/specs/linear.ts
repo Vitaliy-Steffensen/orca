@@ -69,11 +69,30 @@ export const LINEAR_COMMAND_SPECS: CommandSpec[] = [
     path: ['linear', 'project', 'list'],
     summary: 'List connected Linear projects',
     usage:
-      'orca linear project list [--query <text>] [--limit <n>] [--workspace <id>|all] [--json]',
-    allowedFlags: [...GLOBAL_FLAGS, 'query', 'limit', 'workspace'],
+      'orca linear project list [--query <text>] [--lead me] [--limit <n>] [--workspace <id>|all] [--json]',
+    allowedFlags: [...GLOBAL_FLAGS, 'query', 'lead', 'limit', 'workspace'],
     examples: [
       'orca linear project list --query launch --json',
+      'orca linear project list --lead me --json',
       'orca linear project list --workspace all --json'
+    ]
+  },
+  {
+    path: ['linear', 'project', 'show'],
+    summary: 'Show one Linear project',
+    usage: 'orca linear project show <id> [--workspace <id>] [--json]',
+    allowedFlags: [...GLOBAL_FLAGS, 'id', 'workspace'],
+    positionalArgs: ['id'],
+    examples: ['orca linear project show <id> --json']
+  },
+  {
+    path: ['linear', 'project', 'update', 'post'],
+    summary: 'Post a Linear project status update',
+    usage:
+      'orca linear project update post --project <id> (--body <text> | --body-file <path|->) [--health onTrack|atRisk|offTrack] [--workspace <id>] [--json]',
+    allowedFlags: [...GLOBAL_FLAGS, 'project', 'body', 'body-file', 'health', 'workspace'],
+    examples: [
+      'orca linear project update post --project <id> --body "Shipped the sync." --health onTrack --json'
     ]
   },
   {

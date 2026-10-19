@@ -8,10 +8,16 @@ Adding a feature here? See the rule at the top of [`CLAUDE.md`](./CLAUDE.md).
 
 ## Added in this repo
 
+- ⌘U narrows the Changes list to files with unstaged edits, and pressing it again shows every change.
+- Every file tree marks each file with how many notes, agent notes, unanswered review threads and unsent review comments it carries.
+- Pull request sync is an automation: it runs on a schedule even when the window is hidden, and each check shows up in the run history.
+- A Monday weekly recap template writes what landed on the default branch into the run's workspace and its history.
+- A Wednesday template posts a Linear project status update for the projects you lead.
+- A new tab is a new chat: Claude and Cursor are not chosen up front, and the model menu lists both.
 - Run on a workspace card starts that project's dev commands together, shows booting then running, and can open the app and sign in.
+- Run brings OrbStack up first when the stack needs containers, puts every service in one split terminal, and the card says whether it is spinning up or running and ready.
 - Pick Ask / Supervised / Autonomous when creating a workspace, each with its own agent, model, and prompt.
 - Calmer chrome: the right sidebar splits into an actions row over a view-tabs row, workspace cards keep colour for agent questions and failures only, and main plus Automations are hidden until you add them back from ⌘J.
-
 - ⇧⌘W closes every other tab and keeps the one you are in.
 - ⇧⌘H reveals the file you are looking at in whichever list is in front of you — the Source Control
   changes, the Explorer tree, or the combined diff's own file tree — and flashes the row.

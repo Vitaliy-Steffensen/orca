@@ -3,6 +3,7 @@ import { Dialog, DialogContent } from '@/components/ui/dialog'
 import { getAgentCatalog } from '@/lib/agent-catalog'
 import { filterEnabledTuiAgents } from '../../../../shared/tui-agent-selection'
 import type {
+  AutomationKind,
   AutomationSchedulePreset,
   AutomationWorkspaceMode
 } from '../../../../shared/automations-types'
@@ -35,6 +36,10 @@ export const AUTOMATION_EDITOR_SEGMENTED_ITEM_CLASS =
   'h-7 rounded-sm border-0 bg-transparent shadow-none hover:bg-card/70 data-[state=on]:bg-card data-[state=on]:text-card-foreground data-[state=on]:shadow-xs'
 
 export type AutomationDraft = {
+  /** Absent means an ordinary agent prompt. */
+  kind?: AutomationKind
+  /** Present when editing a pull-request sync, whose switch lives in this dialog. */
+  enabled?: boolean
   name: string
   prompt: string
   agentId: TuiAgent
