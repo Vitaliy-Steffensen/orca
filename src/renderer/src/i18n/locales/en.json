@@ -18524,7 +18524,7 @@
         "readyForReview": "Ready for review",
         "createPr": "Create PR",
         "review": "Review",
-        "reviewTab": "Review #{{number}}",
+        "reviewTab": "Review {{branch}}",
         "commitTab": "Commit & push",
         "conflictsTab": "Resolve conflicts",
         "readyTab": "Ready for review",

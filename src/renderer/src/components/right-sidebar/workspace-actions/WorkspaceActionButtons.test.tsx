@@ -4,12 +4,17 @@ import { afterEach, describe, expect, it, vi } from 'vitest'
 import { cleanup, render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 
-type ActionContextStub = { action: string | null; pr: { state: string } | null }
+type ActionContextStub = {
+  action: string | null
+  pr: { state: string } | null
+  canReviewBranch: boolean
+}
 
 const mocks = vi.hoisted(() => {
-  const state: { action: string | null; pr: { state: string } | null } = {
+  const state: ActionContextStub = {
     action: 'create-pull-request',
-    pr: { state: 'open' }
+    pr: { state: 'open' },
+    canReviewBranch: true
   }
   return { state, launch: vi.fn() }
 })
@@ -58,9 +63,20 @@ describe('WorkspaceActionButtons', () => {
     expect(screen.queryByRole('button', { name: 'More pull request actions' })).toBeNull()
   })
 
-  it('hides the whole review control when there is no pull request', () => {
+  it('runs the review pipeline from the Review button without a pull request', async () => {
+    mocks.launch.mockReset().mockResolvedValue(undefined)
+    mocks.state.pr = null
+    render(<WorkspaceActionButtons />)
+
+    await userEvent.click(screen.getByRole('button', { name: 'Review' }))
+    expect(mocks.launch).toHaveBeenCalledWith('review')
+    expect(screen.queryByRole('button', { name: 'More review actions' })).toBeNull()
+  })
+
+  it('hides the whole review control when there is nothing to review', () => {
     mocks.state.action = 'create-pull-request'
     mocks.state.pr = null
+    mocks.state.canReviewBranch = false
     render(<WorkspaceActionButtons />)
 
     expect(screen.queryByRole('button', { name: 'Review' })).toBeNull()

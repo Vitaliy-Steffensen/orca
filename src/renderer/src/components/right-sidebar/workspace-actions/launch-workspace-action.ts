@@ -110,8 +110,8 @@ function actionTitle(kind: WorkspaceActionLaunch, context: WorkspaceActionContex
     return translate('auto.components.workspaceActions.createDraftPrTab', 'Create draft PR')
   }
   if (kind === 'review') {
-    return translate('auto.components.workspaceActions.reviewTab', 'Review #{{number}}', {
-      number: context.pr?.number ?? ''
+    return translate('auto.components.workspaceActions.reviewTab', 'Review {{branch}}', {
+      branch: context.branch
     })
   }
   if (kind === 're-review') {
@@ -138,12 +138,21 @@ export async function launchWorkspaceAction(kind: WorkspaceActionLaunch): Promis
   if (kind === 'primary-draft' && context?.action !== 'create-pull-request') {
     return
   }
-  if (!context || (kind.startsWith('primary') ? !context.action : !context.pr)) {
+  if (!context) {
+    return
+  }
+  if (
+    kind === 'review'
+      ? !context.canReviewBranch
+      : kind.startsWith('primary')
+        ? !context.action
+        : !context.pr
+  ) {
     return
   }
   const prompt =
     kind === 'review'
-      ? buildTemplatePrompt(context, 'reviewPullRequest')
+      ? buildTemplatePrompt(context, 'reviewPipeline')
       : kind === 're-review'
         ? buildTemplatePrompt(context, 'reReviewPullRequest')
         : kind === 'primary-draft'

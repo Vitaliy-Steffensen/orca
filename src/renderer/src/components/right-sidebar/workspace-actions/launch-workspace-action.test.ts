@@ -82,9 +82,11 @@ describe('launchWorkspaceAction', () => {
     expect(mocks.launch.mock.calls[0]?.[0].prompt).toContain('Resolve the merge conflicts')
   })
 
-  it('reviews the current pull request', async () => {
+  it('reviews the current branch with the review pipeline', async () => {
     setContext({
       action: null,
+      canReviewBranch: true,
+      branch: 'feature/scale',
       pr: {
         number: 3145,
         state: 'open',
@@ -95,8 +97,9 @@ describe('launchWorkspaceAction', () => {
     })
     await launchWorkspaceAction('review')
     const call = mocks.launch.mock.calls[0]?.[0]
-    expect(call.title).toBe('Review #3145')
-    expect(call.prompt).toContain('Review pull request #3145 — "Scale"')
+    expect(call.title).toBe('Review feature/scale')
+    expect(call.prompt).toContain('orca-review skill')
+    expect(call.prompt).toContain('review-fe')
   })
 
   it('re-reviews the current pull request against the review already left on it', async () => {
@@ -118,8 +121,8 @@ describe('launchWorkspaceAction', () => {
     expect(call.prompt).not.toMatch(/\{\{\w+\}\}/)
   })
 
-  it('does nothing without an action or a pull request to review', async () => {
-    setContext({ action: null })
+  it('does nothing without an action, changes or a pull request to review', async () => {
+    setContext({ action: null, canReviewBranch: false })
     await launchWorkspaceAction('primary')
     await launchWorkspaceAction('review')
     await launchWorkspaceAction('re-review')

@@ -80,6 +80,7 @@ ${REVIEW_STAGED_COMMENT_INSTRUCTION}`,
 
 - Use the orca-review skill: it rates and groups the changed files, delegates to whatever review rulebooks this repository ships, screenshots the UI when the frontend diff earns it, and stages the findings. Otherwise follow the rest of this prompt.
 - Read every changed file, not only the diff hunks, and say which ones are worth reading first.
+- Run every review skill you have whose area the diff touches, such as review-fe for frontend changes and review-be for backend changes, in parallel, and treat their rules as the authority on what is a defect.
 - Only report a finding you can tie to the input or state that makes it go wrong, and only when this branch caused it or made it worse.
 - Do not change any code.
 

@@ -18,6 +18,7 @@ export type WorkspaceActionContext = {
   pr: PRInfo | null
   unresolvedConflicts: GitStatusEntry[]
   action: WorkspaceActionKind | null
+  canReviewBranch: boolean
 }
 
 const EMPTY_ENTRIES: GitStatusEntry[] = []
@@ -50,14 +51,23 @@ export function selectWorkspaceActionContext(state: AppState): WorkspaceActionCo
     (entry) => entry.conflictStatus === 'unresolved' && entry.conflictKind
   )
   const upstream = state.remoteStatusesByWorktree[worktree.id]
+  const isDefaultBranch = worktree.isMainWorktree || branch === 'main' || branch === 'master'
   const action = resolveWorkspaceAction({
     hasUncommittedChanges: entries.length > unresolvedConflicts.length,
     hasUpstream: upstream?.hasUpstream === true,
     unpushedCommits: upstream?.hasUpstream ? upstream.ahead : 0,
     hasLocalConflicts: unresolvedConflicts.length > 0,
-    isDefaultBranch: worktree.isMainWorktree || branch === 'main' || branch === 'master',
+    isDefaultBranch,
     pullRequest: pr ? { state: pr.state, conflicting: pr.mergeable === 'CONFLICTING' } : null,
     pullRequestKnown: entry !== undefined && !entry.error
   })
-  return { worktree, repo, branch, pr, unresolvedConflicts, action }
+  return {
+    worktree,
+    repo,
+    branch,
+    pr,
+    unresolvedConflicts,
+    action,
+    canReviewBranch: entries.length > 0 || !isDefaultBranch
+  }
 }

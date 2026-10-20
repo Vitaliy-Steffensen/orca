@@ -19,6 +19,7 @@ import {
   DropdownMenuTrigger
 } from '@/components/ui/dropdown-menu'
 import {
+  SPLIT_BUTTON_FOLLOWING_SEGMENT_CLASS,
   SPLIT_BUTTON_MAIN_SEGMENT_CLASS,
   SPLIT_BUTTON_MENU_SEGMENT_CLASS,
   SPLIT_BUTTON_SEGMENT_CLASS,
@@ -56,73 +57,78 @@ function primaryCopy(action: WorkspaceActionKind): { label: string; icon: React.
 
 type MenuEntry = { kind: WorkspaceActionLaunch; label: string; icon: React.JSX.Element }
 
+type ActionSegment = {
+  kind: WorkspaceActionLaunch
+  label: string
+  icon: React.JSX.Element
+  menuLabel: string
+  menuEntries: readonly MenuEntry[]
+  dataAction?: WorkspaceActionKind
+}
+
 /**
  * One verb, plus the variants of that same verb behind a chevron — the shape the tab bar's
  * quick-commands button already uses, so the header row reads as one kind of control.
  */
-function SplitActionButton({
-  label,
-  icon,
+function ActionSegmentPair({
+  segment,
+  following,
   disabled,
-  primaryKind,
-  menuLabel,
-  menuEntries,
-  onRun,
-  ...surfaceProps
+  onRun
 }: {
-  label: string
-  icon: React.JSX.Element
+  segment: ActionSegment
+  following: boolean
   disabled: boolean
-  primaryKind: WorkspaceActionLaunch
-  menuLabel: string
-  menuEntries: readonly MenuEntry[]
   onRun: (kind: WorkspaceActionLaunch) => void
-} & React.ComponentProps<'div'>): React.JSX.Element {
+}): React.JSX.Element {
   return (
-    <TooltipProvider delayDuration={400}>
-      <div className={SPLIT_BUTTON_SURFACE_CLASS} {...surfaceProps}>
-        {/* Why no tooltip: the label is always visible, so it would only repeat the button. */}
-        <button
-          type="button"
-          className={cn(SPLIT_BUTTON_SEGMENT_CLASS, SPLIT_BUTTON_MAIN_SEGMENT_CLASS)}
-          aria-label={label}
-          disabled={disabled}
-          onClick={() => onRun(primaryKind)}
-        >
-          {icon}
-          <span className="text-[12px] font-medium">{label}</span>
-        </button>
-        {menuEntries.length > 0 ? (
-          <DropdownMenu modal={false}>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <DropdownMenuTrigger asChild>
-                  <button
-                    type="button"
-                    className={cn(SPLIT_BUTTON_SEGMENT_CLASS, SPLIT_BUTTON_MENU_SEGMENT_CLASS)}
-                    aria-label={menuLabel}
-                    disabled={disabled}
-                  >
-                    <ChevronDown className="size-3" strokeWidth={2.5} />
-                  </button>
-                </DropdownMenuTrigger>
-              </TooltipTrigger>
-              <TooltipContent side="bottom" sideOffset={6}>
-                {menuLabel}
-              </TooltipContent>
-            </Tooltip>
-            <DropdownMenuContent align="end" side="bottom" sideOffset={4}>
-              {menuEntries.map((entry) => (
-                <DropdownMenuItem key={entry.kind} onSelect={() => onRun(entry.kind)}>
-                  {entry.icon}
-                  {entry.label}
-                </DropdownMenuItem>
-              ))}
-            </DropdownMenuContent>
-          </DropdownMenu>
-        ) : null}
-      </div>
-    </TooltipProvider>
+    <>
+      {/* Why no tooltip: the label is always visible, so it would only repeat the button. */}
+      <button
+        type="button"
+        className={cn(
+          SPLIT_BUTTON_SEGMENT_CLASS,
+          SPLIT_BUTTON_MAIN_SEGMENT_CLASS,
+          following && SPLIT_BUTTON_FOLLOWING_SEGMENT_CLASS
+        )}
+        aria-label={segment.label}
+        disabled={disabled}
+        onClick={() => onRun(segment.kind)}
+        data-workspace-action={segment.dataAction}
+      >
+        {segment.icon}
+        <span className="text-[12px] font-medium">{segment.label}</span>
+      </button>
+      {segment.menuEntries.length > 0 ? (
+        <DropdownMenu modal={false}>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <DropdownMenuTrigger asChild>
+                <button
+                  type="button"
+                  className={cn(SPLIT_BUTTON_SEGMENT_CLASS, SPLIT_BUTTON_MENU_SEGMENT_CLASS)}
+                  aria-label={segment.menuLabel}
+                  disabled={disabled}
+                >
+                  <ChevronDown className="size-3" strokeWidth={2.5} />
+                </button>
+              </DropdownMenuTrigger>
+            </TooltipTrigger>
+            <TooltipContent side="bottom" sideOffset={6}>
+              {segment.menuLabel}
+            </TooltipContent>
+          </Tooltip>
+          <DropdownMenuContent align="end" side="bottom" sideOffset={4}>
+            {segment.menuEntries.map((entry) => (
+              <DropdownMenuItem key={entry.kind} onSelect={() => onRun(entry.kind)}>
+                {entry.icon}
+                {entry.label}
+              </DropdownMenuItem>
+            ))}
+          </DropdownMenuContent>
+        </DropdownMenu>
+      ) : null}
+    </>
   )
 }
 
@@ -132,8 +138,12 @@ export function WorkspaceActionButtons(): React.JSX.Element | null {
     const pr = selectWorkspaceActionContext(state)?.pr
     return pr?.state === 'open' || pr?.state === 'draft'
   })
+  const canReviewBranch = useAppStore((state) => {
+    const context = selectWorkspaceActionContext(state)
+    return context?.canReviewBranch === true
+  })
   const [busy, setBusy] = useState<WorkspaceActionLaunch | null>(null)
-  if (!action && !canReview) {
+  if (!action && !canReview && !canReviewBranch) {
     return null
   }
   const run = (kind: WorkspaceActionLaunch): void => {
@@ -153,43 +163,53 @@ export function WorkspaceActionButtons(): React.JSX.Element | null {
           }
         ]
       : []
-  return (
-    <div className="flex shrink-0 items-center gap-1 pr-1" data-workspace-action-buttons="">
-      {canReview ? (
-        <SplitActionButton
-          label={translate('auto.components.workspaceActions.review', 'Review')}
-          icon={<ScanEye className="size-3.5" />}
-          disabled={busy !== null}
-          menuLabel={translate(
-            'auto.components.workspaceActions.moreReviewActions',
-            'More review actions'
-          )}
-          menuEntries={[
+  const segments: ActionSegment[] = []
+  if (canReviewBranch) {
+    segments.push({
+      kind: 'review',
+      label: translate('auto.components.workspaceActions.review', 'Review'),
+      icon: <ScanEye className="size-3.5" />,
+      menuLabel: translate(
+        'auto.components.workspaceActions.moreReviewActions',
+        'More review actions'
+      ),
+      menuEntries: canReview
+        ? [
             {
               kind: 're-review',
               label: translate('auto.components.workspaceActions.reReview', 'Re-review'),
               icon: <ScanSearch className="size-3.5" />
             }
-          ]}
-          primaryKind="review"
-          onRun={run}
-        />
-      ) : null}
-      {primary ? (
-        <SplitActionButton
-          label={primary.label}
-          icon={primary.icon}
-          disabled={busy !== null}
-          menuLabel={translate(
-            'auto.components.workspaceActions.morePrActions',
-            'More pull request actions'
-          )}
-          menuEntries={primaryMenuEntries}
-          primaryKind="primary"
-          onRun={run}
-          data-workspace-action={action}
-        />
-      ) : null}
-    </div>
+          ]
+        : []
+    })
+  }
+  if (primary && action) {
+    segments.push({
+      kind: 'primary',
+      label: primary.label,
+      icon: primary.icon,
+      menuLabel: translate(
+        'auto.components.workspaceActions.morePrActions',
+        'More pull request actions'
+      ),
+      menuEntries: primaryMenuEntries,
+      dataAction: action
+    })
+  }
+  return (
+    <TooltipProvider delayDuration={400}>
+      <div className={cn(SPLIT_BUTTON_SURFACE_CLASS, 'mr-1')} data-workspace-action-buttons="">
+        {segments.map((segment, index) => (
+          <ActionSegmentPair
+            key={segment.kind}
+            segment={segment}
+            following={index > 0}
+            disabled={busy !== null}
+            onRun={run}
+          />
+        ))}
+      </div>
+    </TooltipProvider>
   )
 }
