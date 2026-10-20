@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-import { getChangesFilter, isUncommittedOnly, setChangesFilter } from '@/lib/changes-filter'
+import { getChangesFilter, setChangesFilter } from '@/lib/changes-filter'
 import { publishPRCommentQueueContext } from '@/components/right-sidebar/pr-comment-queue-context'
 import { setPRCommentsListGroupQueued } from '@/components/right-sidebar/pr-comments-list-selection'
 import { consumeSendQueuedPRCommentsRequest } from '@/components/right-sidebar/queued-pr-comments-send'
@@ -35,14 +35,17 @@ describe('takeSourceControlShortcut', () => {
     expect(getChangesFilter('wt-shortcut')).toBeNull()
   })
 
-  it('toggles the uncommitted-only Changes filter for the active workspace', () => {
+  it('drops a previewed commit to show the uncommitted changes', () => {
+    setChangesFilter('wt-shortcut', {
+      kind: 'commit',
+      compare: { commitOid: 'c2', parentOid: 'c1', compareRef: 'c2', baseRef: 'c1' },
+      entries: []
+    })
     const match = (id: string): boolean => id === 'sourceControl.toggleUncommittedOnly'
     expect(takeSourceControlShortcut(match, true, actions)).toBe(
       'sourceControl.toggleUncommittedOnly'
     )
-    expect(isUncommittedOnly('wt-shortcut')).toBe(true)
-    takeSourceControlShortcut(match, true, actions)
-    expect(isUncommittedOnly('wt-shortcut')).toBe(false)
+    expect(getChangesFilter('wt-shortcut')).toBeNull()
   })
 
   it('turns the latest agent turn off when it is already showing', () => {
@@ -81,7 +84,7 @@ describe('takeSourceControlShortcut', () => {
       takeSourceControlShortcut(match, true, actions)
     })
 
-    it('switches to Source Control when toggling uncommitted-only', () => {
+    it('switches to Source Control when showing uncommitted changes', () => {
       const match = (id: string): boolean => id === 'sourceControl.toggleUncommittedOnly'
       takeSourceControlShortcut(match, true, actions)
       expectSourceControlRevealed()

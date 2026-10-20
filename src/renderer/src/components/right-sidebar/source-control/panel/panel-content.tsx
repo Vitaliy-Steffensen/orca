@@ -1,7 +1,12 @@
 import React from 'react'
 import { shouldShowSourceControlCompareUnavailableCard } from './header-toolbar'
 import { SourceControlAllChangesSection } from '../listing/all-changes-section'
-import { changesFilterBadge, clearChangesFilter } from '@/lib/changes-filter'
+import {
+  changesFilterBadge,
+  clearChangesFilter,
+  isChangesSourceFilter,
+  type ChangesFilter
+} from '@/lib/changes-filter'
 import { SourceControlContentStatus } from '../listing/content-status'
 import {
   SourceControlFileCategoryFilter,
@@ -11,7 +16,20 @@ import { SourceControlUncommittedSections } from '../listing/uncommitted-section
 import type { SourceControlDisplaySectionId } from '../listing/section-order'
 import { CompareUnavailable } from '../sync/compare-summary'
 import { SourceControlForkPushNotice } from './fork-push-notice'
-import type { SourceControlPanelReadyProps } from './panel-props'
+import type { SourceControlPanelMode, SourceControlPanelReadyProps } from './panel-props'
+
+/**
+ * Local changes always keeps the working tree split into Staged and Unstaged, so only a previewed
+ * commit or turn — which lists files the working tree has no sections for — brings the flat list.
+ */
+export function shouldShowSourceControlAllChangesSection(
+  mode: SourceControlPanelMode,
+  changesFilter: ChangesFilter | null
+): boolean {
+  return mode === 'pull-request'
+    ? !changesFilter
+    : changesFilter !== null && isChangesSourceFilter(changesFilter)
+}
 
 /** The Changes section: status, commit affordances and the file sections. */
 export function SourceControlPanelContent(props: SourceControlPanelReadyProps) {
@@ -114,7 +132,7 @@ export function SourceControlPanelContent(props: SourceControlPanelReadyProps) {
 
       {/* Why also when empty under a filter: the filters live in this header, so they must stay reachable. */}
       {!changesHidden &&
-        (mode === 'pull-request' ? !changesFilter : Boolean(changesFilter)) &&
+        shouldShowSourceControlAllChangesSection(mode, changesFilter) &&
         (allChangeEntries.length > 0 || isCategoryFilterActive || changesFilter) && (
           <SourceControlAllChangesSection
             baseRef={

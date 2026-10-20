@@ -9,6 +9,7 @@ Adding a feature here? See the rule at the top of [`CLAUDE.md`](./CLAUDE.md).
 ## Added in this repo
 
 - The right sidebar has separate Local changes and Pull request tabs (Checks is now CI), and ⌘U opens Local changes.
+- Local changes always lists files under Staged and Unstaged headings, with no filter or shortcut needed.
 - Every file tree marks each file with how many notes, agent notes, unanswered review threads and unsent review comments it carries.
 - Pull request sync is an automation: it runs on a schedule even when the window is hidden, and each check shows up in the run history.
 - A Monday weekly recap template writes what landed on the default branch into the run's workspace and its history.

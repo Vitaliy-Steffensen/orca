@@ -1,7 +1,7 @@
 import { toast } from 'sonner'
 import { translate } from '@/i18n/i18n'
 import { openLatestAgentTurn } from '@/lib/agent-turn-open'
-import { clearChangesFilter, getChangesFilter, toggleUncommittedOnly } from '@/lib/changes-filter'
+import { clearChangesFilter, getChangesFilter } from '@/lib/changes-filter'
 import { showInChanges } from '@/lib/show-in-changes'
 import { sendQueuedPRCommentsForActiveWorktree } from '@/components/right-sidebar/queued-pr-comments-send'
 import {
@@ -91,8 +91,9 @@ export function takeSourceControlShortcut(
     return 'sourceControl.openLatestAgentTurn'
   }
   const activeWorktreeId = useAppStore.getState().activeWorktreeId
+  // Local changes is the uncommitted view, so this only has to drop a commit or turn preview.
   if (matchShortcut('sourceControl.toggleUncommittedOnly') && activeWorktreeId) {
-    toggleUncommittedOnly(activeWorktreeId)
+    clearChangesFilter(activeWorktreeId)
     revealSourceControl(canRevealRightSidebar)
     return 'sourceControl.toggleUncommittedOnly'
   }
