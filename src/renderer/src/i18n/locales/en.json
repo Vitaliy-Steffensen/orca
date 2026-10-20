@@ -1375,7 +1375,9 @@
         "automationsDescription": "Schedule agent work and choose whether Automations appears in the sidebar.",
         "shareSkillsTitle": "Share Skills",
         "shareSkillsDescription": "Share your skills with an unlisted link. Anyone who has it can install them.",
-        "floatingWorkspaceWebDescription": "Global terminal and markdown tabs."
+        "floatingWorkspaceWebDescription": "Global terminal and markdown tabs.",
+        "reviewPipelineTitle": "Review",
+        "reviewPipelineDescription": "The skill and prompt behind an agent review."
       },
       "useAppMenuPaste": {
         "pasteTooLarge": "Paste is too large."
@@ -8894,7 +8896,9 @@
           "devDescription": "Dev-only tools for exercising UI states.",
           "linearTitle": "Linear",
           "linearDescription": "How Linear works in Orca, setup checklist, agent skill, and example prompts.",
-          "tasksDescription": "Connect providers, install the Linear skill, and choose what appears in Tasks."
+          "tasksDescription": "Connect providers, install the Linear skill, and choose what appears in Tasks.",
+          "reviewPipelineTitle": "Review",
+          "reviewPipelineDescription": "The skill and prompt behind an agent review."
         },
         "SettingsFormControls": {
           "42a4d15a30": "No matching fonts.",
@@ -13095,7 +13099,31 @@
           "review": "Review",
           "title": "Top bar actions",
           "description": "Prompts for the buttons beside the right sidebar toggle. Supports {{branch}}, {{baseRef}}, {{worktreePath}}, {{prNumber}}, {{prUrl}}, {{prTitle}}, {{draftMode}}, {{templateRule}} and {{prInstructions}}. Resolve conflicts uses the Source Control conflict template. Clear a box to go back to the built-in prompt.",
-          "reReview": "Re-review"
+          "reReview": "Re-review",
+          "reviewPipeline": "Review pipeline"
+        },
+        "ReviewPipelinePane": {
+          "title": "Review pipeline",
+          "description": "How an agent reviews a branch: which files it reads first, when it opens the app, and how its findings reach your diff.",
+          "skillTitle": "Review skill",
+          "skillDescription": "Installs the review pipeline into every agent you picked, so the same review runs whichever one you launch. It uses the repository's own review rules when it has any.",
+          "promptTitle": "Review prompt",
+          "promptDescription": "What the agent is asked when a review starts. Supports {{branch}}, {{baseRef}}, {{worktreePath}}, {{prNumber}}, {{prUrl}} and {{prTitle}}. Clear the box to go back to the built-in prompt.",
+          "promptLabel": "Prompt"
+        },
+        "reviewPipeline": {
+          "search": {
+            "title": "Review pipeline",
+            "description": "The skill and prompt behind an agent review: grouped files, screenshots, and findings staged on the diff.",
+            "review": "review",
+            "pipeline": "pipeline",
+            "codeReview": "code review",
+            "pullRequest": "pull request",
+            "diff": "diff",
+            "findings": "findings",
+            "prompt": "prompt",
+            "skill": "skill"
+          }
         }
       },
       "right": {

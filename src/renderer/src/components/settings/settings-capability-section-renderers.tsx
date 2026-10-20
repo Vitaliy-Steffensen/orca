@@ -3,6 +3,7 @@ import { AgentsPane } from './AgentsPane'
 import { ComputerUsePane } from './ComputerUsePane'
 import { LinearAgentSkillPane } from './LinearAgentSkillPane'
 import { OrchestrationPane } from './OrchestrationPane'
+import { ReviewPipelinePane } from './ReviewPipelinePane'
 import { VoicePane } from './VoicePane'
 import { SettingsSection } from './SettingsSection'
 import { SettingsHostScopeUnavailableNotice } from './SettingsHostScopePicker'
@@ -84,6 +85,25 @@ export function renderOrchestrationSettingsSection(
       {view.isSectionMounted('orchestration') ? (
         <OrchestrationPane settings={model.settings} updateSettings={model.updateSettings} />
       ) : null}
+    </SettingsSection>
+  )
+}
+
+export function renderReviewPipelineSettingsSection(
+  context: SettingsRenderContext
+): React.JSX.Element {
+  const { navigation, view } = context
+  return (
+    <SettingsSection
+      id="review-pipeline"
+      title={translate('auto.components.settings.Settings.reviewPipelineTitle', 'Review')}
+      description={translate(
+        'auto.components.settings.Settings.reviewPipelineDescription',
+        'The skill and prompt behind an agent review.'
+      )}
+      searchEntries={navigation.getSectionSearchEntries('review-pipeline')}
+    >
+      {view.isSectionMounted('review-pipeline') ? <ReviewPipelinePane /> : null}
     </SettingsSection>
   )
 }

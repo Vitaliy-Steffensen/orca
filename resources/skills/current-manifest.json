@@ -114,6 +114,22 @@
       ]
     },
     {
+      "name": "orca-review",
+      "sourcePath": "skills/orca-review",
+      "packageDigest": "a031d7a80390e26fb334b45bebeeac963f1d0fbdd761f09c7d7ef05a6e2561f4",
+      "files": [
+        {
+          "path": "SKILL.md",
+          "size": 2571,
+          "executable": false,
+          "classification": "text",
+          "exactSha256": "d1119c2ecb8fef2ff68f0347b8b1b68f9aa5c7a87b15bd2f23a10c1707f3bc5a",
+          "textNormalizedSha256": "d1119c2ecb8fef2ff68f0347b8b1b68f9aa5c7a87b15bd2f23a10c1707f3bc5a",
+          "identitySha256": "d1119c2ecb8fef2ff68f0347b8b1b68f9aa5c7a87b15bd2f23a10c1707f3bc5a"
+        }
+      ]
+    },
+    {
       "name": "orchestration",
       "sourcePath": "skills/orchestration",
       "packageDigest": "195f26431ecfb6df41b941b22958a2330b110bac7b7e97004e0b35fe586e41d9",

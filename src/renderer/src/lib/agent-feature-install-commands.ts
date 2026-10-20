@@ -4,6 +4,7 @@ import {
   EPHEMERAL_VMS_SKILL_NAME,
   ORCA_CLI_SKILL_NAME,
   ORCA_LINEAR_SKILL_NAME,
+  ORCA_REVIEW_SKILL_NAME,
   ORCHESTRATION_SKILL_NAME
 } from '../../../shared/agent-feature-install-commands'
 
@@ -14,6 +15,7 @@ export {
   LINEAR_TICKETS_SKILL_NAME,
   ORCA_CLI_SKILL_NAME,
   ORCA_LINEAR_SKILL_NAME,
+  ORCA_REVIEW_SKILL_NAME,
   ORCHESTRATION_SKILL_NAME
 } from '../../../shared/agent-feature-install-commands'
 
@@ -45,4 +47,8 @@ export const ORCA_CLI_ORCHESTRATION_SKILL_INSTALL_COMMAND = buildAgentFeatureSki
 
 export const ORCA_LINEAR_SKILL_INSTALL_COMMAND = buildAgentFeatureSkillInstallCommand([
   ORCA_LINEAR_SKILL_NAME
+])
+
+export const ORCA_REVIEW_SKILL_INSTALL_COMMAND = buildAgentFeatureSkillInstallCommand([
+  ORCA_REVIEW_SKILL_NAME
 ])

@@ -1,11 +1,18 @@
 import { REVIEW_STAGED_COMMENT_INSTRUCTION } from './agent-note-prompt'
 
-export const WORKSPACE_ACTION_PROMPT_IDS = [
+// Why split: these are the prompts behind the workspace top bar's own buttons, while
+// `reviewPipeline` is configured on its own Settings pane and launched from elsewhere.
+export const TOP_BAR_WORKSPACE_ACTION_PROMPT_IDS = [
   'commitAndPush',
   'createPullRequest',
   'readyForReview',
   'reviewPullRequest',
   'reReviewPullRequest'
+] as const
+
+export const WORKSPACE_ACTION_PROMPT_IDS = [
+  ...TOP_BAR_WORKSPACE_ACTION_PROMPT_IDS,
+  'reviewPipeline'
 ] as const
 
 export type WorkspaceActionPromptId = (typeof WORKSPACE_ACTION_PROMPT_IDS)[number]
@@ -66,6 +73,14 @@ The branch {{branch}} is checked out in {{worktreePath}}; its base is {{baseRef}
 - Find the review I already left on this pull request — inline comments, review summaries and conversation comments — and the commit I left it on. Diff from there, not from the base.
 - For each point I made, say how it was answered: done as asked, done differently, covered by a follow-up task, argued against with a reason that holds, argued against with a reason that does not, or not addressed at all. Quote the code that settles it.
 - Then flag anything new that arrived in those commits and was not part of what I asked for.
+- Do not change any code.
+
+${REVIEW_STAGED_COMMENT_INSTRUCTION}`,
+  reviewPipeline: `Review the work on branch {{branch}} in {{worktreePath}} against {{baseRef}}.
+
+- Use the orca-review skill: it rates and groups the changed files, delegates to whatever review rulebooks this repository ships, screenshots the UI when the frontend diff earns it, and stages the findings. Otherwise follow the rest of this prompt.
+- Read every changed file, not only the diff hunks, and say which ones are worth reading first.
+- Only report a finding you can tie to the input or state that makes it go wrong, and only when this branch caused it or made it worse.
 - Do not change any code.
 
 ${REVIEW_STAGED_COMMENT_INSTRUCTION}`
