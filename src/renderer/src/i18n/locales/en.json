@@ -19832,6 +19832,8 @@
       "dashboardLabel": "Agent Dashboard",
       "openActivity": "View activity",
       "more": "More",
+      "hideMainWorkspace": "Hide main workspace",
+      "showMainWorkspace": "Show main workspace",
       "closeActivity": "Turn off activity view",
       "projects": "Projects",
       "workspaces": "Workspaces"

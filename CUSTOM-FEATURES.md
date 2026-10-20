@@ -130,3 +130,4 @@ Taken whole with every mirror; the fork lineage's work on top of upstream.
 58. The sidebar header and bottom bar tuck their secondary actions (activity, workspace options, add project, reveal workspace, board, help) under "…" menus. (§58)
 59. Tasks and Automations moved out of the sidebar nav into the bottom "…" menu. (§59)
 60. The workspace header action buttons always show their label next to the icon, at any panel width. (§60)
+61. The sidebar header "…" menu toggles the main workspace out of the list and back in one click. (§61)
