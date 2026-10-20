@@ -7,6 +7,7 @@ import type { WorkspaceStatusRuleTarget } from '../../../../shared/workspace-sta
 import type { NewWorkspaceStatusTarget } from '../../../../shared/workspace-new-status-plan'
 import { getPendingReviewDrafts } from '../pending-review/pending-review-draft-store'
 import type { ReviewHeadSyncCandidate } from '../../../../shared/github/review-head-sync'
+import { isAutoPullWorkspaceStatus } from '../../../../shared/workspace-status-automation'
 
 export type WorkspaceStatusRuleScope = {
   targets: WorkspaceStatusRuleTarget[]
@@ -127,7 +128,11 @@ export function collectReviewHeadSyncCandidates(
         localHead: worktree.head,
         isLocal: !repo?.connectionId && (worktree.hostId ?? 'local') === 'local',
         repo: target.repo,
-        prNumber: target.prNumber
+        prNumber: target.prNumber,
+        isAutoPullLane: isAutoPullWorkspaceStatus(
+          state.workspaceStatuses,
+          worktree.workspaceStatus ?? null
+        )
       }
     ]
   })

@@ -204,6 +204,12 @@ function normalizeWorkspaceStatusesInternal(
       label,
       color: sanitizeWorkspaceStatusColor(raw.color, id, label, statuses.length, options),
       icon: sanitizeWorkspaceStatusIcon(raw.icon, id, label, options),
+      // Why spread: an absent flag must stay absent so an untouched install
+      // round-trips to a byte-identical payload, same as `section` below.
+      ...(raw.autoFilled === true ? { autoFilled: true } : {}),
+      ...(raw.locked === true ? { locked: true } : {}),
+      ...(raw.holdsAutomation === true ? { holdsAutomation: true } : {}),
+      ...(raw.autoPull === true ? { autoPull: true } : {}),
       // Why spread: an absent section must stay absent so an untouched install
       // round-trips to a byte-identical payload.
       ...(section === undefined ? {} : { section }),

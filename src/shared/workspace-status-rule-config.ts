@@ -16,7 +16,9 @@ export const WORKSPACE_STATUS_RULE_CONDITIONS = [
   'draft',
   'changes-requested',
   'merging',
+  'approved',
   'pm-approval',
+  'awaiting-review',
   'review'
 ] as const
 
@@ -84,6 +86,8 @@ export type WorkspaceStatusRuleConfig = {
   newWorkspaceStatus: WorkspaceStatus | null
   /** When `newWorkspaceStatus` was chosen; only workspaces created after it are moved. */
   newWorkspaceStatusSince: number | null
+  /** Where a workspace with no pull request goes once its holding lane releases it. */
+  automationReleaseStatus: WorkspaceStatus | null
   /** `org/team-slug`, or null when PM approval is not in use. */
   pmApprovalTeam: string | null
   /** What to do once a pull request is merged or closed without merging. */
@@ -154,6 +158,7 @@ export function cloneDefaultWorkspaceStatusRuleConfig(): WorkspaceStatusRuleConf
     mergingCheckName: DEFAULT_MERGING_CHECK_NAME,
     newWorkspaceStatus: null,
     newWorkspaceStatusSince: null,
+    automationReleaseStatus: null,
     pmApprovalTeam: null,
     onResolved: 'none',
     onReviewed: 'none',
@@ -321,6 +326,10 @@ export function normalizeWorkspaceStatusRuleConfig(value: unknown): WorkspaceSta
       MAX_CHECK_NAME_LENGTH
     ),
     ...sanitizeNewWorkspaceStatus(raw.newWorkspaceStatus, raw.newWorkspaceStatusSince),
+    automationReleaseStatus:
+      typeof raw.automationReleaseStatus === 'string' && raw.automationReleaseStatus.trim()
+        ? raw.automationReleaseStatus.trim()
+        : null,
     pmApprovalTeam,
     onResolved: readResolution(raw.onResolved),
     onReviewed: readResolution(raw.onReviewed),

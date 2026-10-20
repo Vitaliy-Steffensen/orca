@@ -23,6 +23,8 @@ export type ReviewHeadSyncCandidate = {
   isLocal: boolean
   repo: GitHubRepositoryIdentity
   prNumber: number
+  /** The lane it sits in keeps its checkout at the pull request's head, whoever wrote it. */
+  isAutoPullLane?: boolean
 }
 
 export type ReviewHeadSync = SyncReviewHeadRequest & { worktreeId: string }
@@ -46,10 +48,13 @@ export function planReviewHeadSyncs(
       (entry) => entry.number === candidate.prNumber && sameRepo(entry.repo, candidate.repo)
     )
     const isSomeoneElses = pr?.author ? pr.author.toLowerCase() !== viewer : false
+    // Why either: the lane flag is the configured rule, and the author test is what installs
+    // with no flagged lane have always synced on. Neither is allowed to narrow the other.
+    const wantsSync = candidate.isAutoPullLane === true || isSomeoneElses
     if (
       !pr ||
       !candidate.isLocal ||
-      !isSomeoneElses ||
+      !wantsSync ||
       pr.state !== 'OPEN' ||
       !pr.headRefOid ||
       pr.headRefOid === candidate.localHead ||

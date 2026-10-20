@@ -67,6 +67,19 @@ function isApprovedByPmAndEveryone(
   )
 }
 
+// Why no team and no named check: "everyone I asked has approved and GitHub can merge it" is the
+// whole of ready-to-merge. The check-name and PM-team conditions above stay for configs that set them.
+function isApprovedByEveryone(pr: ReviewSnapshotPullRequest): boolean {
+  if (pendingUserReviewerLogins(pr).length > 0 || pr.mergeable === 'CONFLICTING') {
+    return false
+  }
+  const author = pr.author?.toLowerCase()
+  const verdicts = (pr.latestOpinionatedReviews ?? pr.latestReviews).filter(
+    (review) => review.login.toLowerCase() !== author
+  )
+  return verdicts.length > 0 && verdicts.every((review) => review.state === 'APPROVED')
+}
+
 export function resolveWorkspaceStatusRuleCondition(
   pr: ReviewSnapshotPullRequest,
   config: Pick<WorkspaceStatusRuleConfig, 'mergingCheckName'> &
@@ -107,8 +120,16 @@ export function resolveWorkspaceStatusRuleCondition(
   ) {
     return 'merging'
   }
+  // Why gated on being mapped, like `conflicts`: these two conditions sit in front of `review`, so an
+  // install that never asked for them would lose every move `review` used to make.
+  if (config.statusByCondition?.approved && isApprovedByEveryone(pr)) {
+    return 'approved'
+  }
   if (awaitsPmApproval(pr, pmTeamLogins)) {
     return 'pm-approval'
+  }
+  if (config.statusByCondition?.['awaiting-review'] && pendingUserReviewerLogins(pr).length > 0) {
+    return 'awaiting-review'
   }
   return 'review'
 }

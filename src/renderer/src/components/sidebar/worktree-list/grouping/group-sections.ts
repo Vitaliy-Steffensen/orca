@@ -105,6 +105,14 @@ export function appendOrderedGroups(
                 key,
                 label: definition?.label ?? workspaceStatus,
                 count: group.items.length + folderPairs.length,
+                ...(definition?.autoFilled === true || definition?.autoPull === true
+                  ? {
+                      statusAutomation: {
+                        ...(definition.autoFilled === true ? { autoFilled: true } : {}),
+                        ...(definition.autoPull === true ? { autoPull: true } : {})
+                      }
+                    }
+                  : {}),
                 tone: meta.tone,
                 icon: meta.icon,
                 hostWorktreeCounts: getLaneHostWorktreeCounts(

@@ -31,6 +31,8 @@ export type WorkspaceStatusRuleTarget = {
   headOid: string
   /** Unsent review comments live in metadata, not the tree, so git would not refuse the delete. */
   hasPendingReviewComments: boolean
+  /** The workspace sits in a holding lane with its run still going; no rule may touch it. */
+  isAutomationHeld?: boolean
 }
 
 export type WorkspaceStatusRulePlan = {
@@ -103,6 +105,11 @@ export function buildWorkspaceStatusRulePlan(args: {
   for (const target of targets) {
     const pr = byKey.get(snapshotKey(target.repo, target.prNumber))
     if (!pr) {
+      continue
+    }
+    // Why before resolving anything: a holding lane owns its card for the whole run, and a pull
+    // request opened mid-run must not move it, nor delete it when that pull request merges.
+    if (target.isAutomationHeld === true) {
       continue
     }
     const { condition, status } = resolveWorkspaceStatusRule(

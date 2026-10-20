@@ -26,6 +26,8 @@ import { runReviewEnteredCommands } from './run-review-entered-commands'
 import { planNewWorkspaceStatusUpdates } from '../../../../shared/workspace-new-status-plan'
 import { loadPendingReviewDrafts } from '../pending-review/pending-review-draft-store'
 import { runWorkspaceAgentRuleTick } from './run-workspace-agent-rule-tick'
+import { collectAutomationHoldScope } from './collect-automation-hold-targets'
+import { planAutomationReleases } from '../../../../shared/workspace-automation-release-plan'
 
 const slugCache = new Map<string, GitHubRepositoryIdentity>()
 
@@ -80,11 +82,31 @@ export async function runWorkspaceStatusRuleTick(): Promise<PullRequestSyncTickS
   // empty and let a workspace with unsent comments be deleted.
   await loadPendingReviewDrafts()
   const scope = collectWorkspaceStatusRuleScope(state, config.repoIds)
+  const holds = collectAutomationHoldScope({
+    state,
+    repoIds: config.repoIds,
+    workspaceStatuses: state.workspaceStatuses,
+    pullRequestWorktreeIds: new Set(scope.targets.map((target) => target.worktreeId)),
+    now: Date.now()
+  })
+  for (const target of scope.targets) {
+    target.isAutomationHeld = holds.heldWorktreeIds.has(target.worktreeId)
+  }
+  const releases = planAutomationReleases(holds.releaseTargets, config.automationReleaseStatus)
+  await Promise.all(
+    releases.map((release) =>
+      state.updateWorktreeMeta(
+        release.worktreeId,
+        { workspaceStatus: release.status },
+        { executionHostId: release.executionHostId }
+      )
+    )
+  )
   // Why before the repoPath guard: agent rules need no GitHub call, and a project with no
   // local checkout for `gh` to run in still has workspaces whose agents move lanes.
   await runWorkspaceAgentRuleTick(new Set(scope.targets.map((target) => target.worktreeId)))
   if (!scope.repoPath) {
-    return { ...empty, statusUpdates: newStatusUpdates.length }
+    return { ...empty, statusUpdates: newStatusUpdates.length + releases.length }
   }
   const snapshot = await window.api.reviewStatusRules.snapshot({
     repoPath: scope.repoPath,
@@ -107,7 +129,7 @@ export async function runWorkspaceStatusRuleTick(): Promise<PullRequestSyncTickS
   await runReviewEnteredCommands(plan, scope.targets, config)
   const headSyncs = await syncReviewWorkspaceHeads(scope.targets, snapshot)
   return {
-    statusUpdates: newStatusUpdates.length + applied.statusUpdates,
+    statusUpdates: newStatusUpdates.length + releases.length + applied.statusUpdates,
     creations: applied.creations,
     removals: applied.removals,
     archives: applied.archives,

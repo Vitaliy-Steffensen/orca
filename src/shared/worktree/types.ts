@@ -100,6 +100,14 @@ export type WorkspaceStatusDefinition = {
   sectionIcon?: string
   /** Color for that outer band. Shared by every lane in the section. */
   sectionColor?: string
+  /** A rule can move work here, so the lane says so and an arrival is never read as a manual move. */
+  autoFilled?: boolean
+  /** Automation owns the lane: it cannot be picked by hand or dropped on. */
+  locked?: boolean
+  /** Work here is held until its agents are done, so no rule can move it out mid-run. */
+  holdsAutomation?: boolean
+  /** Workspaces here are kept at their pull request's latest head. */
+  autoPull?: boolean
 }
 
 export type Worktree = {

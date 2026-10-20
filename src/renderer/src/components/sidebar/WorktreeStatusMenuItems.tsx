@@ -1,6 +1,7 @@
 import {
   DropdownMenuRadioGroup,
   DropdownMenuRadioItem,
+  DropdownMenuSeparator,
   DropdownMenuSub,
   DropdownMenuSubContent,
   DropdownMenuSubTrigger
@@ -9,7 +10,35 @@ import { Kanban } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { translate } from '@/i18n/i18n'
 import { getWorkspaceStatusVisualMeta } from './workspace-status'
+import {
+  getLockedWorkspaceStatuses,
+  getManualWorkspaceStatuses
+} from '../../../../shared/workspace-status-automation'
+import { WorkspaceStatusAutomationBadge } from './WorkspaceStatusAutomationBadge'
 import type { WorkspaceStatusDefinition } from '../../../../shared/worktree/types'
+
+function StatusRow(props: {
+  status: WorkspaceStatusDefinition
+  disabled: boolean
+  onSelect: (status: string) => void
+}) {
+  const meta = getWorkspaceStatusVisualMeta(props.status)
+  return (
+    <DropdownMenuRadioItem
+      value={props.status.id}
+      disabled={props.disabled}
+      onSelect={() => {
+        if (!props.disabled) {
+          props.onSelect(props.status.id)
+        }
+      }}
+    >
+      <meta.icon className={cn('size-3.5', meta.tone)} />
+      <span className="flex-1 truncate">{props.status.label}</span>
+      <WorkspaceStatusAutomationBadge status={props.status} />
+    </DropdownMenuRadioItem>
+  )
+}
 
 export function WorktreeStatusMenuItems(props: {
   contextWorkspaceStatus: string
@@ -28,19 +57,27 @@ export function WorktreeStatusMenuItems(props: {
       </DropdownMenuSubTrigger>
       <DropdownMenuSubContent className="w-44">
         <DropdownMenuRadioGroup value={props.contextWorkspaceStatus}>
-          {props.workspaceStatuses.map((status) => {
-            const meta = getWorkspaceStatusVisualMeta(status)
-            return (
-              <DropdownMenuRadioItem
-                key={status.id}
-                value={status.id}
-                onSelect={() => props.onAssignWorkspaceStatus(status.id)}
-              >
-                <meta.icon className={cn('size-3.5', meta.tone)} />
-                {status.label}
-              </DropdownMenuRadioItem>
-            )
-          })}
+          {getManualWorkspaceStatuses(props.workspaceStatuses).map((status) => (
+            <StatusRow
+              key={status.id}
+              status={status}
+              disabled={false}
+              onSelect={props.onAssignWorkspaceStatus}
+            />
+          ))}
+          {/* Why shown but never selectable: the user still has to see where a card is,
+              and automation is the only thing allowed to put one in these lanes. */}
+          {getLockedWorkspaceStatuses(props.workspaceStatuses).length > 0 ? (
+            <DropdownMenuSeparator />
+          ) : null}
+          {getLockedWorkspaceStatuses(props.workspaceStatuses).map((status) => (
+            <StatusRow
+              key={status.id}
+              status={status}
+              disabled
+              onSelect={props.onAssignWorkspaceStatus}
+            />
+          ))}
         </DropdownMenuRadioGroup>
       </DropdownMenuSubContent>
     </DropdownMenuSub>
