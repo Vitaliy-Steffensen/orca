@@ -32,7 +32,7 @@ export const SidebarHeaderOverflowMenu = React.memo(function SidebarHeaderOverfl
   const openModal = useAppStore((s) => s.openModal)
   const setSidebarBody = useAppStore((s) => s.setSidebarBody)
   const { activeFilterCount } = useWorkspaceOptionsFilterBadge()
-  const moreLabel = translate('sidebar.header.more', 'More')
+  const moreLabel = translate('dashboard.sidebar.more', 'More')
   const activityLabel = translate(
     agentsViewActive ? 'dashboard.sidebar.closeActivity' : 'dashboard.sidebar.openActivity',
     agentsViewActive ? 'Turn off activity view' : 'View activity'

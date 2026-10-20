@@ -60,6 +60,7 @@ Adding a feature here? See the rule at the top of [`CLAUDE.md`](./CLAUDE.md).
   the Changes list; it unticks itself and shows a dot when that file actually changes.
 - Group workspace status lanes into collapsible sidebar sections, each header counting what it holds.
 - Give a sidebar status section its own icon and color, and count the workspaces in each nested lane.
+- Sidebar clutter moves into two "More" menus: activity, workspace options and Add project in the header, reveal active workspace, the board, settings and help at the bottom.
 
 ## Inherited from `frbarbre/orca`
 

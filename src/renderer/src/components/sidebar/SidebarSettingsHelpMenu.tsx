@@ -122,7 +122,7 @@ export function SidebarSettingsHelpMenu({
   const updateCheckModifiersRef = React.useRef(NO_UPDATE_CHECK_MODIFIERS)
   const mountedRef = useMountedRef()
   const updateCheckHint = getUpdateCheckHint()
-  const moreLabel = translate('sidebar.toolbar.more', 'More')
+  const moreLabel = translate('dashboard.sidebar.more', 'More')
 
   const showMilestones =
     setupProgress.ready && setupProgress.coreDoneCount < setupProgress.coreTotal

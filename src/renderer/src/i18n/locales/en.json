@@ -19831,6 +19831,7 @@
       "label": "Agents",
       "dashboardLabel": "Agent Dashboard",
       "openActivity": "View activity",
+      "more": "More",
       "closeActivity": "Turn off activity view",
       "projects": "Projects",
       "workspaces": "Workspaces"
