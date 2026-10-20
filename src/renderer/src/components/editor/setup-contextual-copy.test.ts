@@ -65,6 +65,7 @@ describe('setupContextualCopy', () => {
     vi.stubGlobal('document', {
       createElement: () => ({
         className: '',
+        dataset: {},
         offsetHeight: 28,
         style: { display: '' },
         textContent: ''
@@ -123,6 +124,7 @@ describe('setupContextualCopy', () => {
     vi.stubGlobal('document', {
       createElement: () => ({
         className: '',
+        dataset: {},
         offsetHeight: 28,
         style: { display: '' },
         textContent: ''
@@ -211,6 +213,7 @@ describe('setupContextualCopy', () => {
     vi.stubGlobal('document', {
       createElement: () => ({
         className: '',
+        dataset: {},
         offsetHeight: 28,
         style: { display: '' },
         textContent: ''
@@ -275,6 +278,7 @@ describe('setupContextualCopy', () => {
 function stubToolbarGlobals(): { node: { style: { display: string } } } {
   const node = {
     className: '',
+    dataset: {},
     offsetHeight: 28,
     style: { display: '' },
     textContent: '',

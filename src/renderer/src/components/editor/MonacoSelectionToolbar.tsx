@@ -23,7 +23,7 @@ export function MonacoSelectionToolbar({
       onMouseDown={(event) => event.preventDefault()}
     >
       {onAsk ? (
-        <Button type="button" variant="ghost" size="xs" onClick={onAsk}>
+        <Button type="button" variant="ghost" size="xs" data-orca-selection-ask="" onClick={onAsk}>
           <MessageCircleQuestion />
           {translate('components.editor.selectionToolbar.ask', 'Ask')}
         </Button>

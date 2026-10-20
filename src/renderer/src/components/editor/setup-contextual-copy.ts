@@ -41,6 +41,7 @@ export function setupContextualCopy({
   let toolbarRoot: SelectionToolbarRoot | null = null
   let renderedToolbarKey: string | null = null
   const toolbarNode = document.createElement('div')
+  toolbarNode.dataset.orcaSelectionToolbar = ''
   toolbarNode.className =
     'rounded-md border border-border/90 bg-background p-0.5 shadow-[0_6px_18px_rgba(15,23,42,0.18)] backdrop-blur whitespace-nowrap'
   toolbarNode.style.display = 'none'
