@@ -28,7 +28,8 @@ export function RightSidebarPanelContent({
     <div ref={rootRef} className="flex min-h-0 flex-1 flex-col overflow-hidden">
       <Suspense fallback={null}>
         {effectiveTab === 'explorer' && <FileExplorer />}
-        {effectiveTab === 'source-control' && <SourceControl />}
+        {effectiveTab === 'source-control' && <SourceControl mode="local" />}
+        {effectiveTab === 'pull-request' && <SourceControl mode="pull-request" />}
         {effectiveTab === 'checks' && <ChecksPanel />}
         {/* Why: SSH port forwarding still depends on the raw ports.detect data,
             which the workspace-scoped status bar popover intentionally does not

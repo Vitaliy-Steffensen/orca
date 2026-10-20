@@ -76,7 +76,9 @@ export async function initializeMainProcessI18nAndMenu(): Promise<void> {
     },
     onOpenCompanionWindow: () => {
       if (state.runtimeRpc) {
-        createOrFocusCompanionWindow(store, state.runtimeRpc)
+        createOrFocusCompanionWindow(store, state.runtimeRpc, () =>
+          state.keybindings?.getOverrides()
+        )
       }
     },
     onToggleLeftSidebar: () => state.mainWindow?.webContents.send('ui:toggleLeftSidebar'),

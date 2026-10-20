@@ -1,6 +1,7 @@
 import type { AgentSessionAttachmentClipboardTarget } from '../../../../shared/agent-session-attachments'
 import { saveClipboardImageAsWebAgentSessionAttachment } from './web-agent-session-attachment-upload'
 import { createWebExplorerRootSync } from './web-explorer-root-sync'
+import { COMPANION_OPEN_QUICK_OPEN_EVENT } from '../../../../shared/companion-window-shortcuts'
 import type { PreloadApi } from '../../../../preload/api-types'
 import { assertClipboardTextWithinLimitWithYield } from '../../../../shared/clipboard-text'
 import type { ReadClipboardTextOptions } from '../../../../shared/clipboard-text'
@@ -216,7 +217,10 @@ export function createWebUiApi(): NonNullable<Partial<PreloadApi>['ui']> {
     onToggleWorktreePalette: () => noopUnsubscribe,
     onToggleFloatingTerminal: () => noopUnsubscribe,
     onTerminalShortcutCaptured: () => noopUnsubscribe,
-    onOpenQuickOpen: () => noopUnsubscribe,
+    onOpenQuickOpen: (callback) => {
+      window.addEventListener(COMPANION_OPEN_QUICK_OPEN_EVENT, callback)
+      return () => window.removeEventListener(COMPANION_OPEN_QUICK_OPEN_EVENT, callback)
+    },
     onToggleQuickCommandsMenu: () => noopUnsubscribe,
     onOpenTasks: () => noopUnsubscribe,
     onOpenNewWorkspace: () => noopUnsubscribe,

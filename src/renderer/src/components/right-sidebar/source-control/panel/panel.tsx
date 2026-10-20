@@ -1,9 +1,10 @@
 import { translate } from '@/i18n/i18n'
 import { SourceControlPanelReady } from './panel-ready'
+import type { SourceControlPanelMode } from './panel-props'
 import { useSourceControlPanelModel } from './use-panel-model'
 
 /** Resolves the panel model and guards the two states that have no source control to show. */
-export function SourceControlPanel() {
+export function SourceControlPanel({ mode }: { mode: SourceControlPanelMode }) {
   const model = useSourceControlPanelModel()
   const { activeRepo, activeWorktree, isFolder, worktreePath } = model
 
@@ -33,6 +34,7 @@ export function SourceControlPanel() {
       activeRepo={activeRepo}
       activeWorktree={activeWorktree}
       currentWorktreeId={activeWorktree.id}
+      mode={mode}
       model={model}
       worktreePath={worktreePath}
     />

@@ -3,6 +3,7 @@ import { OrcaRuntimeWithListManagedWorktrees } from './orca-runtime-list-managed
 import type { RuntimeNavigationTarget } from '../../shared/runtime-navigation'
 import {
   navigationTargetsClients,
+  navigationTargetsCompanion,
   navigationTargetsHost,
   resolveRuntimeNavigationTarget
 } from '../../shared/runtime-navigation'
@@ -70,6 +71,7 @@ export class OrcaRuntimeWithActivateManagedWorktree extends OrcaRuntimeWithListM
     const navigation = resolveRuntimeNavigationTarget({ ...opts, defaultTarget: 'host' })
     const targetsHost = navigationTargetsHost(navigation)
     const targetsClients = navigationTargetsClients(navigation)
+    const targetsCompanion = navigationTargetsCompanion(navigation)
 
     if (!targetsHost && this.store?.getWorktreeMeta(worktree.id)?.isUnread) {
       // Why: mobile/web session activation intentionally bypasses renderer
@@ -80,13 +82,13 @@ export class OrcaRuntimeWithActivateManagedWorktree extends OrcaRuntimeWithListM
 
     let sleepingAgentWake: 'requested' | 'unsupported-headless' | 'not-applicable' =
       'not-applicable'
-    if (targetsHost || targetsClients) {
+    if (targetsHost || targetsClients || targetsCompanion) {
       // Why: inactive worktree terminal panes are renderer-owned and may not have
       // live PTYs until the desktop activates the worktree and mounts them.
       if (targetsHost) {
         this.notifyHostActivateWorktree(repo.id, worktree.id)
       }
-      if (targetsClients) {
+      if (targetsClients || targetsCompanion) {
         this.notifyClientsActivateWorktree(
           repo.id,
           worktree.id,

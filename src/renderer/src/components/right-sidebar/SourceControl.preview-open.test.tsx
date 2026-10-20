@@ -249,11 +249,11 @@ afterEach(() => {
   container.remove()
 })
 
-function renderSourceControl(): void {
+function renderSourceControl(mode: 'local' | 'pull-request' = 'local'): void {
   act(() => {
     root.render(
       <TooltipProvider>
-        <SourceControl />
+        <SourceControl mode={mode} />
       </TooltipProvider>
     )
   })
@@ -508,7 +508,7 @@ describe('SourceControl preview row opens', () => {
       gitBranchChangesByWorktree: { [mocks.activeWorktree.id]: [branchEntry()] },
       gitBranchCompareSummaryByWorktree: { [mocks.activeWorktree.id]: branchSummary() }
     })
-    renderSourceControl()
+    renderSourceControl('pull-request')
 
     clickBranchRow()
 
