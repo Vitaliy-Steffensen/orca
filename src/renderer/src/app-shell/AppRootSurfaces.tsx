@@ -83,6 +83,7 @@ const FloatingTerminalPanel = lazy(() =>
     default: module.FloatingTerminalPanel
   }))
 )
+const SelectionAskPopover = lazy(() => import('../components/editor/SelectionAskPopover'))
 // Why: lazy so the WebP asset + overlay module aren't fetched unless the experimental flag is on.
 const PetOverlay = lazy(() => import('../components/pet/PetOverlay'))
 // Why: lazy so onboarding's step modules + assets aren't fetched for users past first-launch.
@@ -146,6 +147,7 @@ export function AppRootSurfaces(props: {
   const updateStatus = useAppStore((s) => s.updateStatus)
   const activeContextualTourId = useAppStore((s) => s.activeContextualTourId)
   const hasSshCredentialRequest = useAppStore((s) => s.sshCredentialQueue.length > 0)
+  const hasSelectionAskRequest = useAppStore((s) => s.selectionAskRequest !== null)
 
   const shouldMountSetupGuideTelemetryObserver = persistedUIReady
   const shouldMountUpdateCard = shouldMountUpdateCardForStatus(updateStatus)
@@ -369,6 +371,13 @@ export function AppRootSurfaces(props: {
         <Suspense fallback={null}>
           <OverlayBoundary boundaryId="overlay.dictation" resetKey={activeView}>
             <DictationController />
+          </OverlayBoundary>
+        </Suspense>
+      ) : null}
+      {hasSelectionAskRequest ? (
+        <Suspense fallback={null}>
+          <OverlayBoundary boundaryId="overlay.selection-ask">
+            <SelectionAskPopover />
           </OverlayBoundary>
         </Suspense>
       ) : null}
