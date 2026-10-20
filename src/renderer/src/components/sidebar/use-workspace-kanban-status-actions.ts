@@ -4,6 +4,8 @@ import { getWorkspaceStatus } from './workspace-status'
 import { makeWorkspaceStatusId } from '../../../../shared/workspace-statuses'
 import {
   assignWorkspaceStatusSection,
+  moveWorkspaceStatusWithinSection,
+  renameWorkspaceStatusSection,
   sanitizeWorkspaceStatusSection,
   updateWorkspaceStatusSectionAppearance
 } from '../../../../shared/workspace-status-sections'
@@ -88,29 +90,42 @@ export function useWorkspaceKanbanStatusActions(args: {
     },
     [args]
   )
-  const handleMoveStatus = useCallback(
-    (statusId: string, direction: -1 | 1) => {
-      const index = args.workspaceStatuses.findIndex((status) => status.id === statusId)
-      const nextIndex = index + direction
-      if (index === -1 || nextIndex < 0 || nextIndex >= args.workspaceStatuses.length) {
-        return
-      }
-      const next = [...args.workspaceStatuses]
-      const [moved] = next.splice(index, 1)
-      next.splice(nextIndex, 0, moved)
-      args.setWorkspaceStatuses(next)
+  const handleRenameSection = useCallback(
+    (section: string, nextName: string) => {
+      args.setWorkspaceStatuses(
+        renameWorkspaceStatusSection(
+          args.workspaceStatuses,
+          section,
+          sanitizeWorkspaceStatusSection(nextName)
+        )
+      )
       recordInteraction()
     },
     [args]
   )
-  const handleAddStatus = useCallback(() => {
-    const label = `Status ${args.workspaceStatuses.length + 1}`
-    args.setWorkspaceStatuses([
-      ...args.workspaceStatuses,
-      { id: makeWorkspaceStatusId(label, args.workspaceStatuses), label }
-    ])
-    recordInteraction()
-  }, [args])
+  const handleMoveStatus = useCallback(
+    (statusId: string, direction: -1 | 1) => {
+      args.setWorkspaceStatuses(
+        moveWorkspaceStatusWithinSection(args.workspaceStatuses, statusId, direction)
+      )
+      recordInteraction()
+    },
+    [args]
+  )
+  const handleAddStatus = useCallback(
+    (section?: string) => {
+      const label = `Status ${args.workspaceStatuses.length + 1}`
+      const created = { id: makeWorkspaceStatusId(label, args.workspaceStatuses), label }
+      const withCreated = [...args.workspaceStatuses, created]
+      args.setWorkspaceStatuses(
+        section === undefined
+          ? withCreated
+          : assignWorkspaceStatusSection(withCreated, created.id, section)
+      )
+      recordInteraction()
+    },
+    [args]
+  )
   const handleRemoveStatus = useCallback(
     (statusId: string) => {
       if (args.workspaceStatuses.length <= 1) {
@@ -143,6 +158,7 @@ export function useWorkspaceKanbanStatusActions(args: {
     handleChangeStatusSection,
     handleChangeSectionColor,
     handleChangeSectionIcon,
+    handleRenameSection,
     handleMoveStatus,
     handleAddStatus,
     handleRemoveStatus

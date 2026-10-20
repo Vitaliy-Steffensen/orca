@@ -28,11 +28,11 @@ let container: HTMLDivElement | null = null
 function renderMenu({
   workspaceStatuses = statuses,
   onSyncTaskStatusFromWorkspaceBoardChange = vi.fn<(enabled: boolean) => void>(),
-  onAddStatus = vi.fn<() => void>()
+  onAddStatus = vi.fn<(section?: string) => void>()
 }: {
   workspaceStatuses?: WorkspaceStatusDefinition[]
   onSyncTaskStatusFromWorkspaceBoardChange?: (enabled: boolean) => void
-  onAddStatus?: () => void
+  onAddStatus?: (section?: string) => void
 } = {}): void {
   container = document.createElement('div')
   document.body.appendChild(container)
@@ -49,6 +49,7 @@ function renderMenu({
         onChangeStatusSection={vi.fn()}
         onChangeSectionColor={vi.fn()}
         onChangeSectionIcon={vi.fn()}
+        onRenameSection={vi.fn()}
         onMoveStatus={vi.fn()}
         onRemoveStatus={vi.fn()}
         onAddStatus={onAddStatus}

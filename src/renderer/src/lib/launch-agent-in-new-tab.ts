@@ -79,6 +79,8 @@ export type LaunchAgentInNewTabArgs = LaunchAgentInNewTabRequest & {
   ) => boolean | void
   /** Opens instead of this agent's terminal when the host declines its structured chat. */
   onStructuredHostDeclined?: () => StructuredLaunchTerminal
+  /** Options picked before the chat existed, such as the model. Merged over the saved seed. */
+  seedOverlay?: Readonly<Record<string, string>>
 }
 
 /** `host-published`: the surface opens once its host answers, a structured chat's included. */
@@ -178,7 +180,8 @@ function launchAgentInNewTabInternal(args: LaunchAgentInNewTabArgs): LaunchAgent
     promptDelivery: routePromptDelivery,
     tuiCustomization: { cwd: initialCwd },
     onPromptDelivered,
-    ...(args.promptKeptByCaller ? { promptKeptByCaller: true as const } : {})
+    ...(args.promptKeptByCaller ? { promptKeptByCaller: true as const } : {}),
+    ...(args.seedOverlay ? { seedOverlay: args.seedOverlay } : {})
   })
   if ('awaited' in route) {
     return launchOnceHostAnswered(route, args, startupPlan, launchAgentInNewTabInternal)

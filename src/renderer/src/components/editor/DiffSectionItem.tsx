@@ -22,6 +22,7 @@ import { submitDiffSectionComment } from './diff-section-comment-submit'
 import type { DiffSectionItemProps } from './diff-section-item-props'
 import { useDiffSectionModelLifecycle } from './use-diff-section-model-lifecycle'
 import { trackDiffEditorFile } from '@/lib/editor-model-files'
+import { useContextualCopySetup } from './useContextualCopySetup'
 
 export function DiffSectionItem({
   section,
@@ -32,6 +33,7 @@ export function DiffSectionItem({
   settings,
   sectionHeight,
   worktreeId,
+  askTarget,
   loadSection,
   loadDeferredSection,
   retrySection,
@@ -82,6 +84,10 @@ export function DiffSectionItem({
     settings?.terminalFontSize ?? 13,
     editorFontZoomLevel
   )
+
+  const { setupCopy, toastNode } = useContextualCopySetup()
+  const copyPropsRef = useRef({ relativePath: section.path, language })
+  copyPropsRef.current = { relativePath: section.path, language }
 
   const [modifiedEditor, setModifiedEditor] = useState<monacoEditor.ICodeEditor | null>(null)
   const diffEditorRef = useRef<monacoEditor.IStandaloneDiffEditor | null>(null)
@@ -174,7 +180,7 @@ export function DiffSectionItem({
     setSectionHeights
   })
 
-  const handleMount: DiffOnMount = (editor, _monaco) => {
+  const handleMount: DiffOnMount = (editor, monaco) => {
     diffEditorRef.current = editor
     if (worktreeId) {
       trackDiffEditorFile(editor, { worktreeId, relativePath: section.path })
@@ -182,6 +188,14 @@ export function DiffSectionItem({
     lineNumberOptionsSubRef.current?.dispose()
     lineNumberOptionsSubRef.current = applyDiffEditorLineNumberOptions(editor, sideBySide)
     const modified = editor.getModifiedEditor()
+    setupCopy(
+      editor.getOriginalEditor(),
+      monaco,
+      `${modelPathBase}:original`,
+      copyPropsRef,
+      askTarget
+    )
+    setupCopy(modified, monaco, `${modelPathBase}:modified`, copyPropsRef, askTarget)
 
     // Why: measuring before Monaco computes hidden unchanged regions records
     // full-file height, making virtualized combined diffs jump as rows remount.
@@ -301,6 +315,7 @@ export function DiffSectionItem({
 
   return (
     <div ref={setSectionRootNode} className="border-b border-border">
+      {toastNode}
       <DiffSectionHeader
         path={section.path}
         dirty={section.dirty}

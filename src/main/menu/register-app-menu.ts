@@ -47,6 +47,7 @@ type RegisterAppMenuOptions = {
   // app.name is now pinned to a stable value for Keychain-key stability.
   appMenuLabel?: string
   onQuit?: () => void
+  onOpenCompanionWindow?: () => void
 }
 
 function buildAndApplyMenu(options: RegisterAppMenuOptions): void {
@@ -304,7 +305,16 @@ function buildAndApplyMenu(options: RegisterAppMenuOptions): void {
     ]
   }
 
-  const windowMenu = createAppWindowMenu(translateMain('menu.window', 'Window'), isMac)
+  const windowMenu = createAppWindowMenu(
+    translateMain('menu.window', 'Window'),
+    isMac,
+    options.onOpenCompanionWindow
+      ? {
+          label: translateMain('menu.newCompanionWindow', 'New Companion Window'),
+          onOpen: options.onOpenCompanionWindow
+        }
+      : undefined
+  )
 
   const helpMenu: Electron.MenuItemConstructorOptions = {
     label: translateMain('menu.help', 'Help'),

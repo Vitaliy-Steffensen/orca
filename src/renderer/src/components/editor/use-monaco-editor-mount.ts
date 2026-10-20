@@ -122,7 +122,7 @@ export function useMonacoEditorMount(params: MonacoEditorMountParams): OnMount {
         endProgrammaticContentSync(modelKey)
       }
 
-      setupCopy(editorInstance, monaco, filePath, propsRef)
+      setupCopy(editorInstance, monaco, filePath, propsRef, worktreeId ? { worktreeId } : null)
       unregisterFileSearchSelectionRef.current?.()
       unregisterFileSearchSelectionRef.current = registerFileSearchSelectedTextProvider(() => {
         if (!editorInstance.hasTextFocus()) {

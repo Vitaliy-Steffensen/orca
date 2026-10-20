@@ -7,6 +7,29 @@ type FormatCopiedSelectionArgs = {
   selectedText: string
 }
 
+export type SelectionContextBlockArgs = {
+  relativePath: string
+  language: string
+  startLine: number
+  endLine: number
+  selectedText: string
+}
+
+/** The `File:` / `Lines:` / fenced-code payload, for copy and for the Ask prompt alike. */
+export function formatSelectionContextBlock({
+  relativePath,
+  language,
+  startLine,
+  endLine,
+  selectedText
+}: SelectionContextBlockArgs): string {
+  const codeFenceLanguage = getCodeFenceLanguage(language)
+  const codeBlock = selectedText.endsWith('\n') ? selectedText : `${selectedText}\n`
+  const lineLabel = startLine === endLine ? `Line: ${startLine}` : `Lines: ${startLine}-${endLine}`
+
+  return `File: ${relativePath}\n${lineLabel}\n\n\`\`\`${codeFenceLanguage}\n${codeBlock}\`\`\``
+}
+
 export function formatCopiedSelectionWithContext({
   relativePath,
   language,
@@ -18,11 +41,13 @@ export function formatCopiedSelectionWithContext({
   }
   const { startLine, endLine } = getContextualCopyLineRange(selection)
 
-  const codeFenceLanguage = getCodeFenceLanguage(language)
-  const codeBlock = selectedText.endsWith('\n') ? selectedText : `${selectedText}\n`
-  const lineLabel = startLine === endLine ? `Line: ${startLine}` : `Lines: ${startLine}-${endLine}`
-
-  return `File: ${relativePath}\n${lineLabel}\n\n\`\`\`${codeFenceLanguage}\n${codeBlock}\`\`\``
+  return formatSelectionContextBlock({
+    relativePath,
+    language,
+    startLine,
+    endLine,
+    selectedText
+  })
 }
 
 export function canCopySelectionWithContext(selection: IRange): boolean {

@@ -144,6 +144,7 @@ export const launchSourceSchema = z.enum([
   'source_control_recovery',
   'terminal_context_menu',
   'explain_commit',
+  'editor_selection_ask',
   // Launches the host performs for a caller outside the desktop app.
   'cli',
   'mobile',
