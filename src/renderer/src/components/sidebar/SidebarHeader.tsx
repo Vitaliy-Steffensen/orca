@@ -3,10 +3,10 @@ import { useTranslation } from 'react-i18next'
 import { useAppStore } from '@/store'
 import { translate } from '@/i18n/i18n'
 import { SidebarHeaderActions } from './sidebar-header-actions'
+import { SidebarHeaderOverflowMenu } from './sidebar-header-overflow-menu'
 import { Button } from '@/components/ui/button'
 import { Popover, PopoverAnchor, PopoverArrow, PopoverContent } from '@/components/ui/popover'
-import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
-import { Sparkles, Bell } from 'lucide-react'
+import { Sparkles } from 'lucide-react'
 
 type SidebarHeaderProps = {
   onWorkspaceBoardMenuOpenChange: (open: boolean) => void
@@ -21,7 +21,6 @@ const SidebarHeader = React.memo(function SidebarHeader({
   useTranslation()
   const sidebarBody = useAppStore((s) => s.sidebarBody ?? 'workspaces')
   const groupBy = useAppStore((s) => s.groupBy)
-  const setSidebarBody = useAppStore((s) => s.setSidebarBody)
   const updateSettings = useAppStore((s) => s.updateSettings)
   const agentsViewActive = sidebarBody === 'agents'
   const agentsSidebarIntroShown = useAppStore((s) => s.settings?.agentsSidebarIntroShown === true)
@@ -39,11 +38,6 @@ const SidebarHeader = React.memo(function SidebarHeader({
     groupBy === 'repo'
       ? translate('dashboard.sidebar.projects', 'Projects')
       : translate('dashboard.sidebar.workspaces', 'Workspaces')
-  const activityLabel = translate(
-    agentsViewActive ? 'dashboard.sidebar.closeActivity' : 'dashboard.sidebar.openActivity',
-    agentsViewActive ? 'Turn off activity view' : 'View activity'
-  )
-
   return (
     <div className="mt-2 flex h-8 min-w-0 items-center justify-between gap-1.5 px-2">
       <div className="flex min-w-0 items-center gap-1">
@@ -65,27 +59,14 @@ const SidebarHeader = React.memo(function SidebarHeader({
             }
           }}
         >
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <span className="inline-flex shrink-0">
-                <PopoverAnchor asChild>
-                  <Button
-                    type="button"
-                    variant={agentsViewActive ? 'secondary' : 'ghost'}
-                    size="icon-xs"
-                    aria-label={activityLabel}
-                    aria-pressed={agentsViewActive}
-                    onClick={() => setSidebarBody?.(agentsViewActive ? 'workspaces' : 'agents')}
-                  >
-                    <Bell className="size-3.5" strokeWidth={2.25} />
-                  </Button>
-                </PopoverAnchor>
-              </span>
-            </TooltipTrigger>
-            <TooltipContent side="bottom" sideOffset={6}>
-              {activityLabel}
-            </TooltipContent>
-          </Tooltip>
+          <PopoverAnchor asChild>
+            <span className="inline-flex shrink-0">
+              <SidebarHeaderOverflowMenu
+                agentsViewActive={agentsViewActive}
+                onMenuOpenChange={onWorkspaceBoardMenuOpenChange}
+              />
+            </span>
+          </PopoverAnchor>
           <PopoverContent
             side="bottom"
             align="center"
@@ -120,10 +101,7 @@ const SidebarHeader = React.memo(function SidebarHeader({
         {agentsViewActive ? (
           <div ref={activityOptionsTarget} className="flex items-center" />
         ) : null}
-        <SidebarHeaderActions
-          onWorkspaceBoardMenuOpenChange={onWorkspaceBoardMenuOpenChange}
-          agentsViewActive={agentsViewActive}
-        />
+        <SidebarHeaderActions />
       </div>
     </div>
   )
