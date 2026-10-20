@@ -27,11 +27,11 @@ vi.mock('sonner', () => ({ toast: { info: vi.fn(), error: vi.fn() } }))
 const actions = { openDiffNotesSendMenuForActiveWorktree: () => false }
 
 describe('takeSourceControlShortcut', () => {
-  it('toggles the unstaged-only Changes filter for the active workspace', () => {
+  it('opens Local changes without touching the Changes filter', () => {
     const match = (id: string): boolean => id === 'sourceControl.toggleUnstagedOnly'
+    store.rightSidebarTab = 'checks'
     expect(takeSourceControlShortcut(match, true, actions)).toBe('sourceControl.toggleUnstagedOnly')
-    expect(getChangesFilter('wt-shortcut')).toEqual({ kind: 'unstaged' })
-    takeSourceControlShortcut(match, true, actions)
+    expect(store.setRightSidebarTab).toHaveBeenCalledWith('source-control')
     expect(getChangesFilter('wt-shortcut')).toBeNull()
   })
 
@@ -125,7 +125,8 @@ describe('takeSourceControlShortcut', () => {
   describe('focus review summary', () => {
     const match = (id: string): boolean => id === 'sourceControl.focusReviewSummary'
 
-    it('asks the open Source Control panel to focus its review summary', () => {
+    it('asks the open Pull request panel to focus its review summary', () => {
+      store.rightSidebarTab = 'pull-request'
       const unregister = registerReviewSummary('wt-shortcut')
       expect(takeSourceControlShortcut(match, true, actions)).toBe(
         'sourceControl.focusReviewSummary'
@@ -134,11 +135,11 @@ describe('takeSourceControlShortcut', () => {
       unregister()
     })
 
-    it('leaves the chord alone when the Source Control panel is not showing', () => {
+    it('leaves the chord alone when the Pull request panel is not showing', () => {
       const unregister = registerReviewSummary('wt-shortcut')
       store.rightSidebarTab = 'checks'
       expect(takeSourceControlShortcut(match, true, actions)).toBeNull()
-      store.rightSidebarTab = 'source-control'
+      store.rightSidebarTab = 'pull-request'
       store.rightSidebarOpen = false
       expect(takeSourceControlShortcut(match, true, actions)).toBeNull()
       store.rightSidebarOpen = true

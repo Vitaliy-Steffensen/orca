@@ -137,7 +137,8 @@ export function useSourceControlWorktreeContext() {
       : getLocalProjectExecutionRuntimeContext(useAppStore.getState(), activeWorktreeId)
   })
   // Why: the sidebar stays mounted when closed, so gate polling on tab AND open or branchCompare/PR fetch would run with no visible consumer.
-  const isBranchVisible = rightSidebarTab === 'source-control' && rightSidebarOpen
+  const isBranchVisible =
+    (rightSidebarTab === 'source-control' || rightSidebarTab === 'pull-request') && rightSidebarOpen
   const hasUncommittedEntries = entries.length > 0
 
   return {

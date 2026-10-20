@@ -15,7 +15,7 @@ import type { SourceControlPanelReadyProps } from './panel-props'
 
 /** The Changes section: status, commit affordances and the file sections. */
 export function SourceControlPanelContent(props: SourceControlPanelReadyProps) {
-  const { activeWorktree, currentWorktreeId, model, worktreePath } = props
+  const { activeWorktree, currentWorktreeId, mode, model, worktreePath } = props
   const {
     settings,
     allChangeEntries,
@@ -76,40 +76,45 @@ export function SourceControlPanelContent(props: SourceControlPanelReadyProps) {
 
   return (
     <>
-      <SourceControlContentStatus
-        unresolvedConflictCount={unresolvedConflictReviewEntries.length}
-        conflictOperation={conflictOperation}
-        sourceControlAiActionsVisible={sourceControlAiActionsVisible}
-        isAbortingOperation={isAbortingOperation}
-        onAbortOperation={handleAbortOperationForConflict}
-        onResolveWithAi={() => void handleResolveConflictsWithAI()}
-        onReviewConflicts={() => {
-          openConflictReview(
-            currentWorktreeId,
-            worktreePath,
-            unresolvedConflictReviewEntries,
-            'live-summary'
-          )
-        }}
-        repositoryHuge={repositoryHuge}
-        worktreeId={currentWorktreeId}
-        onRetryStatus={refreshActiveGitStatus}
-        onStageAllChanges={handleStageWorktreeChanges}
-        isExecutingBulk={isExecutingBulk}
-        showGenericEmptyState={showGenericEmptyState}
-        normalizedFilter={normalizedFilter}
-        branchBaseRef={branchSummary?.baseRef ?? null}
-        filterTooLarge={fileFilterState.tooLarge}
-        hasFilteredUncommittedEntries={hasFilteredUncommittedEntries}
-        hasFilteredBranchEntries={hasFilteredBranchEntries}
-        filterQuery={filterQuery}
-        isCategoryFilterActive={isCategoryFilterActive}
-      />
+      {mode === 'local' && (
+        <>
+          <SourceControlContentStatus
+            unresolvedConflictCount={unresolvedConflictReviewEntries.length}
+            conflictOperation={conflictOperation}
+            sourceControlAiActionsVisible={sourceControlAiActionsVisible}
+            isAbortingOperation={isAbortingOperation}
+            onAbortOperation={handleAbortOperationForConflict}
+            onResolveWithAi={() => void handleResolveConflictsWithAI()}
+            onReviewConflicts={() => {
+              openConflictReview(
+                currentWorktreeId,
+                worktreePath,
+                unresolvedConflictReviewEntries,
+                'live-summary'
+              )
+            }}
+            repositoryHuge={repositoryHuge}
+            worktreeId={currentWorktreeId}
+            onRetryStatus={refreshActiveGitStatus}
+            onStageAllChanges={handleStageWorktreeChanges}
+            isExecutingBulk={isExecutingBulk}
+            showGenericEmptyState={showGenericEmptyState}
+            normalizedFilter={normalizedFilter}
+            branchBaseRef={branchSummary?.baseRef ?? null}
+            filterTooLarge={fileFilterState.tooLarge}
+            hasFilteredUncommittedEntries={hasFilteredUncommittedEntries}
+            hasFilteredBranchEntries={hasFilteredBranchEntries}
+            filterQuery={filterQuery}
+            isCategoryFilterActive={isCategoryFilterActive}
+          />
 
-      <SourceControlForkPushNotice pushTarget={activeWorktree.pushTarget ?? null} />
+          <SourceControlForkPushNotice pushTarget={activeWorktree.pushTarget ?? null} />
+        </>
+      )}
 
       {/* Why also when empty under a filter: the filters live in this header, so they must stay reachable. */}
       {!changesHidden &&
+        (mode === 'pull-request' ? !changesFilter : Boolean(changesFilter)) &&
         (allChangeEntries.length > 0 || isCategoryFilterActive || changesFilter) && (
           <SourceControlAllChangesSection
             baseRef={

@@ -1,12 +1,7 @@
 import { toast } from 'sonner'
 import { translate } from '@/i18n/i18n'
 import { openLatestAgentTurn } from '@/lib/agent-turn-open'
-import {
-  clearChangesFilter,
-  getChangesFilter,
-  toggleUncommittedOnly,
-  toggleUnstagedOnly
-} from '@/lib/changes-filter'
+import { clearChangesFilter, getChangesFilter, toggleUncommittedOnly } from '@/lib/changes-filter'
 import { showInChanges } from '@/lib/show-in-changes'
 import { sendQueuedPRCommentsForActiveWorktree } from '@/components/right-sidebar/queued-pr-comments-send'
 import {
@@ -29,7 +24,7 @@ function focusReviewSummaryInOpenPanel(): boolean {
   if (
     !activeWorktreeId ||
     !rightSidebarOpen ||
-    rightSidebarTab !== 'source-control' ||
+    rightSidebarTab !== 'pull-request' ||
     !hasReviewSummary(activeWorktreeId)
   ) {
     return false
@@ -101,8 +96,7 @@ export function takeSourceControlShortcut(
     revealSourceControl(canRevealRightSidebar)
     return 'sourceControl.toggleUncommittedOnly'
   }
-  if (matchShortcut('sourceControl.toggleUnstagedOnly') && activeWorktreeId) {
-    toggleUnstagedOnly(activeWorktreeId)
+  if (matchShortcut('sourceControl.toggleUnstagedOnly')) {
     revealSourceControl(canRevealRightSidebar)
     return 'sourceControl.toggleUnstagedOnly'
   }
