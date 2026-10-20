@@ -4,18 +4,19 @@ import { SwitchIndicator } from '@/components/ui/switch'
 import { cn } from '@/lib/utils'
 
 /**
- * Switch row shared by the two workspace-filter surfaces (the sidebar filter
- * dropdown and the workspace options menu). Extracted so the two copies cannot
- * drift as rows are added.
+ * Switch row shared by menus that toggle options in place (the sidebar filter
+ * dropdown, the workspace options menu, the auto-merge menu). Extracted so the
+ * copies cannot drift as rows are added.
  */
-export function FilterToggleRow({
+export function MenuSwitchRow({
   icon,
   label,
   ariaLabel,
   checked,
   onChange,
   shortcutLabel,
-  indented = false
+  indented = false,
+  disabled = false
 }: {
   icon: React.ReactNode
   label: string
@@ -26,6 +27,7 @@ export function FilterToggleRow({
   shortcutLabel?: string
   /** Renders the row as a sub-option of the row above it. */
   indented?: boolean
+  disabled?: boolean
 }) {
   return (
     <button
@@ -33,11 +35,12 @@ export function FilterToggleRow({
       role="switch"
       aria-checked={checked}
       aria-label={ariaLabel}
+      disabled={disabled}
       onClick={() => onChange(!checked)}
       className={cn(
         // Why pl-* and not px-2 + pl-6: Tailwind v4 emits px as padding-inline,
         // which outranks a physical pl-6 override and flattens the indent.
-        'flex w-full items-center justify-between gap-2 rounded-[5px] py-1.5 pr-2 text-[12px] font-medium hover:bg-muted focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring',
+        'flex w-full items-center justify-between gap-2 rounded-[5px] py-1.5 pr-2 text-[12px] font-medium hover:bg-muted disabled:pointer-events-none disabled:opacity-50 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring',
         indented ? 'pl-7' : 'pl-2'
       )}
     >

@@ -28,7 +28,7 @@ import {
 } from '@/components/ui/dropdown-menu'
 import { Tooltip, TooltipTrigger, TooltipContent } from '@/components/ui/tooltip'
 import RepoBadgeLabel from '@/components/repo/RepoBadgeLabel'
-import { FilterToggleRow } from './FilterToggleRow'
+import { MenuSwitchRow } from '@/components/menu-switch-row'
 import { useShortcutLabel } from '@/hooks/useShortcutLabel'
 import { searchRepos } from '@/lib/repo-search'
 import { DEFAULT_SHOW_SLEEPING_WORKSPACES } from '../../../../shared/constants'
@@ -228,7 +228,7 @@ const SidebarFilter = React.memo(function SidebarFilter({
         className="w-72"
         data-workspace-board-preserve-open={preserveWorkspaceBoardOpen ? '' : undefined}
       >
-        <FilterToggleRow
+        <MenuSwitchRow
           icon={<Moon className="size-3.5" />}
           label={translate('auto.components.sidebar.SidebarFilter.638a2d221d', 'Hide sleeping')}
           checked={!showSleepingWorkspaces}
@@ -238,7 +238,7 @@ const SidebarFilter = React.memo(function SidebarFilter({
         {/* Why gated: the exemption only has an effect while sleeping workspaces
             are being swept, so it stays hidden until its parent row is on. */}
         {!showSleepingWorkspaces && (
-          <FilterToggleRow
+          <MenuSwitchRow
             indented
             icon={<GitBranch className="size-3.5" />}
             label={translate(
@@ -253,7 +253,7 @@ const SidebarFilter = React.memo(function SidebarFilter({
             onChange={setAlwaysShowDefaultBranchWorkspace}
           />
         )}
-        <FilterToggleRow
+        <MenuSwitchRow
           icon={<GitBranch className="size-3.5" />}
           label={translate(
             'auto.components.sidebar.SidebarFilter.e5cb32a898',
@@ -262,7 +262,7 @@ const SidebarFilter = React.memo(function SidebarFilter({
           checked={hideDefaultBranchWorkspace}
           onChange={setHideDefaultBranchWorkspace}
         />
-        <FilterToggleRow
+        <MenuSwitchRow
           icon={<CalendarClock className="size-3.5" />}
           label={translate(
             'auto.components.sidebar.SidebarFilter.automationCreated',
@@ -271,13 +271,13 @@ const SidebarFilter = React.memo(function SidebarFilter({
           checked={hideAutomationGeneratedWorkspaces}
           onChange={setHideAutomationGeneratedWorkspaces}
         />
-        <FilterToggleRow
+        <MenuSwitchRow
           icon={<SquareTerminal className="size-3.5" />}
           label={translate('auto.components.sidebar.SidebarFilter.cliCreated', 'Hide CLI-created')}
           checked={hideCliCreatedWorkspaces}
           onChange={setHideCliCreatedWorkspaces}
         />
-        <FilterToggleRow
+        <MenuSwitchRow
           icon={<GitCommitHorizontal className="size-3.5" />}
           label={translate(
             'auto.components.sidebar.SidebarFilter.detachedHead',
@@ -286,7 +286,7 @@ const SidebarFilter = React.memo(function SidebarFilter({
           checked={hideDetachedHeadWorkspaces}
           onChange={setHideDetachedHeadWorkspaces}
         />
-        <FilterToggleRow
+        <MenuSwitchRow
           icon={<FolderClock className="size-3.5" />}
           label={translate(
             'auto.components.sidebar.SidebarFilter.temporaryCheckouts',

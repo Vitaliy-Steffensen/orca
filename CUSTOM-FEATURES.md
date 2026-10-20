@@ -12,6 +12,7 @@ Adding a feature here? See the rule at the top of [`CLAUDE.md`](./CLAUDE.md).
 - Every file tree marks each file with how many notes, agent notes, unanswered review threads and unsent review comments it carries.
 - Pull request sync is an automation: it runs on a schedule even when the window is hidden, and each check shows up in the run history.
 - A Monday weekly recap template writes what landed on the default branch into the run's workspace and its history.
+- A right-sidebar Auto-merge menu turns on GitHub auto-merge plus agents that resolve conflicts and fix or rerun flaky CI, per workspace.
 - A Wednesday template posts a Linear project status update for the projects you lead.
 - A new tab is a new chat: Claude and Cursor are not chosen up front, and the model menu lists both.
 - Run on a workspace card starts that project's dev commands together, shows booting then running, and can open the app and sign in.
