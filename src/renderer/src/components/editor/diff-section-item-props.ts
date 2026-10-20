@@ -17,6 +17,8 @@ export type DiffSectionItemProps = {
   } | null
   sectionHeight: number | undefined
   worktreeId?: string
+  /** Where "Ask" launches its chat. Null on surfaces whose `worktreeId` names no real workspace. */
+  askTarget?: { worktreeId: string } | null
   loadSection: (index: number) => void
   loadDeferredSection?: (index: number) => void
   retrySection: (index: number) => void

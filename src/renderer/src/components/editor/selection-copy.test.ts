@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest'
 import {
   canCopySelectionWithContext,
   formatCopiedSelectionWithContext,
+  formatSelectionContextBlock,
   getContextualCopyLineRange
 } from './selection-copy'
 
@@ -108,5 +109,36 @@ describe('formatCopiedSelectionWithContext', () => {
         selectedText: 'line.startsWith'
       })
     ).toBeNull()
+  })
+})
+
+describe('formatSelectionContextBlock', () => {
+  it('labels a single line as a line, not a range', () => {
+    expect(
+      formatSelectionContextBlock({
+        relativePath: 'src/main/git/status.ts',
+        language: 'typescript',
+        startLine: 44,
+        endLine: 44,
+        selectedText: 'line.startsWith'
+      })
+    ).toBe(
+      ['File: src/main/git/status.ts', 'Line: 44', '', '```ts', 'line.startsWith', '```'].join('\n')
+    )
+  })
+
+  it('takes the inclusive end line a column-1 selection resolves to', () => {
+    const selection = { startLineNumber: 44, startColumn: 1, endLineNumber: 48, endColumn: 1 }
+    const { startLine, endLine } = getContextualCopyLineRange(selection)
+
+    expect(
+      formatSelectionContextBlock({
+        relativePath: 'a.txt',
+        language: 'plaintext',
+        startLine,
+        endLine,
+        selectedText: 'line 44\n'
+      })
+    ).toBe(['File: a.txt', 'Lines: 44-47', '', '```', 'line 44', '```'].join('\n'))
   })
 })

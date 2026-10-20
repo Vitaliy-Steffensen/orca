@@ -181,6 +181,10 @@ export function createUiSurfaceActions(set: UISliceSet, _get: UISliceGet): Parti
     clearPendingRevealSidebarRow: () => set({ pendingRevealSidebarRow: null }),
     scrollToDiffCommentId: null,
     setScrollToDiffCommentId: (id) => set({ scrollToDiffCommentId: id }),
+    selectionAskRequest: null,
+    openSelectionAsk: (request) => set({ selectionAskRequest: request }),
+    closeSelectionAsk: () =>
+      set((state) => (state.selectionAskRequest ? { selectionAskRequest: null } : state)),
     floatingWorkspacePath: null,
     setFloatingWorkspacePath: (path) =>
       set((state) =>

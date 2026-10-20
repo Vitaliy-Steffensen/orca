@@ -13,6 +13,7 @@ Adding a feature here? See the rule at the top of [`CLAUDE.md`](./CLAUDE.md).
 - Pull request sync is an automation: it runs on a schedule even when the window is hidden, and each check shows up in the run history.
 - A Monday weekly recap template writes what landed on the default branch into the run's workspace and its history.
 - A Wednesday template posts a Linear project status update for the projects you lead.
+- Window > New Companion Window opens a second Orca window for another screen, paired to this app with its own active workspace and tabs.
 - A new tab is a new chat: Claude and Cursor are not chosen up front, and the model menu lists both.
 - Run on a workspace card starts that project's dev commands together, shows booting then running, and can open the app and sign in.
 - Run brings OrbStack up first when the stack needs containers, puts every service in one split terminal, and the card says whether it is spinning up or running and ready.
@@ -133,4 +134,5 @@ Taken whole with every mirror; the fork lineage's work on top of upstream.
 61. The workspace header action buttons always show their label next to the icon, at any panel width.
 62. The sidebar header "…" menu toggles the main workspace out of the list and back in one click.
 63. Board settings groups statuses under their sections, so you can rename, add to, and move statuses between sections in place. (§63)
-64. The right sidebar shows a coloured state label: merge conflicts, CI failed, changes requested, waiting for CI, awaiting review, draft PR, local only, ready to merge.
+64. Select code in any editor or diff and click Ask on the floating toolbar to get a short answer in a new chat.
+65. The right sidebar shows a coloured state label: merge conflicts, CI failed, changes requested, waiting for CI, awaiting review, draft PR, local only, ready to merge.

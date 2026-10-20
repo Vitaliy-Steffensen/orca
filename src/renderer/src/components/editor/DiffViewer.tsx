@@ -256,8 +256,9 @@ export default function DiffViewer({
       })
       diffEditor.onDidDispose(preserveDiffViewStateAcrossModelSwaps(diffEditor).dispose)
 
-      setupCopy(originalEditor, monaco, filePath, propsRef)
-      setupCopy(modifiedEditor, monaco, filePath, propsRef)
+      const askTarget = worktreeId ? { worktreeId } : null
+      setupCopy(originalEditor, monaco, filePath, propsRef, askTarget)
+      setupCopy(modifiedEditor, monaco, filePath, propsRef, askTarget)
       setModifiedEditor(modifiedEditor)
 
       // Why: restore full diff view state (not just scrollTop) so cursor/selection stay consistent across both panes.
