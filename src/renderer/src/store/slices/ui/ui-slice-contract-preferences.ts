@@ -22,6 +22,7 @@ import type { ChangelogData, UpdateStatus } from '../../../../../shared/update-s
 import type { StatusBarUsageMode } from '../../../../../shared/status-bar-usage-mode'
 import type { PersistedUIWriteBaseline } from '../persisted-ui-write-baseline'
 import type { UISliceCore } from './ui-slice-contract-core'
+import type { SelectionAskRequest } from '../../../components/editor/selection-ask-request'
 
 export type UISlicePreferences = {
   /** Which list the sidebar body shows. Navigator-only; does not change the active view. */
@@ -161,6 +162,10 @@ export type UISliceSurfaces = {
   // Why: cleared by the diff decorator after it reveals the line, so the same id can be requested again without a stale value.
   scrollToDiffCommentId: string | null
   setScrollToDiffCommentId: (id: string | null) => void
+  /** The code selection the user clicked Ask on. One app-level popover serves every Monaco surface. */
+  selectionAskRequest: SelectionAskRequest | null
+  openSelectionAsk: (request: SelectionAskRequest) => void
+  closeSelectionAsk: () => void
   /** The floating workspace's directory, resolved from its setting the same way the runtime resolves a floating session's cwd. Null until resolved. */
   floatingWorkspacePath: string | null
   setFloatingWorkspacePath: (path: string | null) => void

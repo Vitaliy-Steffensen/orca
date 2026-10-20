@@ -114,6 +114,7 @@ export function CombinedDiffSectionList({
                   settings={settings}
                   sectionHeight={sectionHeights[virtualItem.index]}
                   worktreeId={file.worktreeId}
+                  askTarget={file.worktreeId ? { worktreeId: file.worktreeId } : null}
                   loadSection={loadSection}
                   loadDeferredSection={loadDeferredSection}
                   retrySection={retrySection}

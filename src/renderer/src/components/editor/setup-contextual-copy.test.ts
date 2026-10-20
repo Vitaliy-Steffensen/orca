@@ -31,8 +31,26 @@ vi.mock('@/lib/primary-selection', () => ({
 
 vi.mock('./editor-shortcuts', () => ({ editorShortcutMatches: () => true }))
 
+type ToolbarRender = {
+  onAsk: (() => void) | null
+  onCopy: (() => void) | null
+  copied: boolean
+}
+
+const toolbarRenders = vi.hoisted<ToolbarRender[]>(() => [])
+
+vi.mock('./selection-toolbar-root', () => ({
+  createSelectionToolbarRoot: () => ({
+    render: (props: ToolbarRender) => {
+      toolbarRenders.push(props)
+    },
+    dispose: () => {}
+  })
+}))
+
 describe('setupContextualCopy', () => {
   afterEach(() => {
+    toolbarRenders.length = 0
     vi.unstubAllGlobals()
   })
 
@@ -251,5 +269,147 @@ describe('setupContextualCopy', () => {
     expect(copyToastTimeoutRef.current).toBeNull()
     expect(setCopyToast).toHaveBeenCalledWith(null)
     expect(editorDomNode.removeEventListener).toHaveBeenCalledTimes(3)
+  })
+})
+
+function stubToolbarGlobals(): { node: { style: { display: string } } } {
+  const node = {
+    className: '',
+    offsetHeight: 28,
+    style: { display: '' },
+    textContent: '',
+    getBoundingClientRect: () => ({ top: 10, left: 20, width: 80, height: 24 })
+  }
+  vi.stubGlobal('window', {
+    clearInterval: vi.fn(),
+    clearTimeout: vi.fn(),
+    setInterval: vi.fn(() => 1),
+    setTimeout: vi.fn(() => 2)
+  })
+  vi.stubGlobal('document', { createElement: () => node })
+  return { node }
+}
+
+function stubEditorWithSelection(selection: {
+  startLineNumber: number
+  startColumn: number
+  endLineNumber: number
+  endColumn: number
+}): editor.IStandaloneCodeEditor {
+  // oxlint-disable-next-line typescript/consistent-type-assertions -- SAFETY: The stub implements every method the toolbar path invokes.
+  return {
+    addContentWidget: vi.fn(),
+    getContainerDomNode: () => ({
+      addEventListener: vi.fn(),
+      removeEventListener: vi.fn(),
+      getBoundingClientRect: () => ({ left: 0, top: 0, width: 500 })
+    }),
+    getLayoutInfo: () => ({ height: 500 }),
+    getModel: () => ({
+      getLineMaxColumn: () => 40,
+      getValueInRange: () => 'selected'
+    }),
+    getScrolledVisiblePosition: () => ({ top: 60, left: 8, height: 16 }),
+    getSelection: () => ({
+      ...selection,
+      isEmpty: () => false,
+      getStartPosition: () => ({
+        lineNumber: selection.startLineNumber,
+        column: selection.startColumn
+      }),
+      getEndPosition: () => ({ lineNumber: selection.endLineNumber, column: selection.endColumn })
+    }),
+    hasTextFocus: () => false,
+    layoutContentWidget: vi.fn(),
+    onDidBlurEditorText: () => ({ dispose: vi.fn() }),
+    onDidChangeCursorSelection: () => ({ dispose: vi.fn() }),
+    onDidDispose: () => ({ dispose: vi.fn() }),
+    onDidFocusEditorText: () => ({ dispose: vi.fn() }),
+    onDidScrollChange: () => ({ dispose: vi.fn() }),
+    removeContentWidget: vi.fn()
+  } as unknown as editor.IStandaloneCodeEditor
+}
+
+describe('selection toolbar', () => {
+  afterEach(() => {
+    toolbarRenders.length = 0
+    vi.unstubAllGlobals()
+  })
+
+  it('offers Ask on a one-line selection, where contextual copy stays unavailable', () => {
+    const { node } = stubToolbarGlobals()
+
+    setupContextualCopy({
+      editorInstance: stubEditorWithSelection({
+        startLineNumber: 44,
+        startColumn: 4,
+        endLineNumber: 44,
+        endColumn: 15
+      }),
+      filePath: 'src/example.ts',
+      setCopyToast: vi.fn(),
+      propsRef: { current: { language: 'typescript', relativePath: 'src/example.ts' } },
+      copyToastTimeoutRef: { current: null },
+      askTarget: { worktreeId: 'repo::/tmp/wt' },
+      onAsk: vi.fn()
+    })
+
+    expect(node.style.display).toBe('block')
+    expect(toolbarRenders.at(-1)?.onAsk).not.toBeNull()
+    expect(toolbarRenders.at(-1)?.onCopy).toBeNull()
+  })
+
+  it('renders no Ask button when the surface names no workspace', () => {
+    stubToolbarGlobals()
+
+    setupContextualCopy({
+      editorInstance: stubEditorWithSelection({
+        startLineNumber: 10,
+        startColumn: 1,
+        endLineNumber: 12,
+        endColumn: 5
+      }),
+      filePath: 'src/example.ts',
+      setCopyToast: vi.fn(),
+      propsRef: { current: { language: 'typescript', relativePath: 'src/example.ts' } },
+      copyToastTimeoutRef: { current: null },
+      askTarget: null,
+      onAsk: vi.fn()
+    })
+
+    expect(toolbarRenders.at(-1)?.onAsk).toBeNull()
+    expect(toolbarRenders.at(-1)?.onCopy).not.toBeNull()
+  })
+
+  it('reports the selection, its line range and the toolbar rect when Ask is clicked', () => {
+    stubToolbarGlobals()
+    const onAsk = vi.fn()
+
+    setupContextualCopy({
+      editorInstance: stubEditorWithSelection({
+        startLineNumber: 140,
+        startColumn: 1,
+        endLineNumber: 159,
+        endColumn: 1
+      }),
+      filePath: 'src/example.ts',
+      setCopyToast: vi.fn(),
+      propsRef: { current: { language: 'typescript', relativePath: 'src/example.ts' } },
+      copyToastTimeoutRef: { current: null },
+      askTarget: { worktreeId: 'repo::/tmp/wt' },
+      onAsk
+    })
+
+    toolbarRenders.at(-1)?.onAsk?.()
+
+    expect(onAsk).toHaveBeenCalledWith({
+      worktreeId: 'repo::/tmp/wt',
+      relativePath: 'src/example.ts',
+      language: 'typescript',
+      startLine: 140,
+      endLine: 158,
+      selectedText: 'selected',
+      anchorRect: { top: 10, left: 20, width: 80, height: 24 }
+    })
   })
 })

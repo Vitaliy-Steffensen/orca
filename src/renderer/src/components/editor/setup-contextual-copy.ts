@@ -1,6 +1,5 @@
 import type { editor } from 'monaco-editor'
 import { formatShortcutLabel } from '@/hooks/useShortcutLabel'
-import { monaco } from '@/lib/monaco-setup'
 import { useAppStore } from '@/store'
 import { editorShortcutMatches } from './editor-shortcuts'
 import {
@@ -8,18 +7,19 @@ import {
   formatCopiedSelectionWithContext,
   getContextualCopyLineRange
 } from './selection-copy'
-import {
-  PRIMARY_SELECTION_MAX_LENGTH,
-  isPrimarySelectionEnabled,
-  setPrimarySelectionText
-} from '@/lib/primary-selection'
+import type { SelectionAskRequest } from './selection-ask-request'
+import { createSelectionToolbarRoot, type SelectionToolbarRoot } from './selection-toolbar-root'
+import { computeSelectionToolbarPosition } from './selection-toolbar-widget-position'
+import { createPrimarySelectionSync } from './editor-primary-selection-sync'
 
 export function setupContextualCopy({
   editorInstance,
   filePath,
   setCopyToast,
   propsRef,
-  copyToastTimeoutRef
+  copyToastTimeoutRef,
+  askTarget,
+  onAsk
 }: {
   editorInstance: editor.IStandaloneCodeEditor
   filePath: string
@@ -30,30 +30,28 @@ export function setupContextualCopy({
     onSave?: (content: string) => void
   }>
   copyToastTimeoutRef: React.MutableRefObject<number | null>
+  /** Null on surfaces with no workspace to launch a chat in, such as a PR's diff. */
+  askTarget?: { worktreeId: string } | null
+  onAsk?: (request: SelectionAskRequest) => void
 }): void {
-  let copyHintInterval: number | null = null
-  let primarySelectionTimer: number | null = null
-  let copyHintWidgetPosition: editor.IContentWidgetPosition | null = null
+  let toolbarInterval: number | null = null
+  const primarySelection = createPrimarySelectionSync(editorInstance)
+  let toolbarWidgetPosition: editor.IContentWidgetPosition | null = null
   let lastCopiedSelectionKey: string | null = null
-  const copyHintNode = document.createElement('div')
-  copyHintNode.className =
-    'pointer-events-none rounded-md border border-border/90 bg-background px-2.5 py-1 text-xs font-medium text-foreground shadow-[0_6px_18px_rgba(15,23,42,0.18)] backdrop-blur whitespace-nowrap'
-  const updateCopyHintLabel = (): void => {
-    copyHintNode.textContent = `Copy context ${formatShortcutLabel(
-      'editor.copyContext',
-      useAppStore.getState().keybindings
-    )}`
-  }
-  updateCopyHintLabel()
-  copyHintNode.style.display = 'none'
-  const copyHintWidget: editor.IContentWidget = {
+  let toolbarRoot: SelectionToolbarRoot | null = null
+  let renderedToolbarKey: string | null = null
+  const toolbarNode = document.createElement('div')
+  toolbarNode.className =
+    'rounded-md border border-border/90 bg-background p-0.5 shadow-[0_6px_18px_rgba(15,23,42,0.18)] backdrop-blur whitespace-nowrap'
+  toolbarNode.style.display = 'none'
+  const toolbarWidget: editor.IContentWidget = {
     allowEditorOverflow: true,
     suppressMouseDown: true,
-    getId: () => `orca.copy-context-hint.${filePath}`,
-    getDomNode: () => copyHintNode,
-    getPosition: () => copyHintWidgetPosition
+    getId: () => `orca.selection-toolbar.${filePath}`,
+    getDomNode: () => toolbarNode,
+    getPosition: () => toolbarWidgetPosition
   }
-  editorInstance.addContentWidget(copyHintWidget)
+  editorInstance.addContentWidget(toolbarWidget)
 
   const showCopyToast = (): void => {
     const selection = editorInstance.getSelection()
@@ -89,103 +87,107 @@ export function setupContextualCopy({
     ].join(':')
   }
 
-  const updateCopyHint = (): void => {
-    updateCopyHintLabel()
-    const model = editorInstance.getModel()
-    const selection = editorInstance.getSelection()
-    // Why: hint ticks need selection bounds; extracting the selected text scales with file size.
-    if (!model || !selection || selection.isEmpty() || !canCopySelectionWithContext(selection)) {
-      copyHintNode.style.display = 'none'
-      copyHintWidgetPosition = null
-      editorInstance.layoutContentWidget(copyHintWidget)
-      return
-    }
-
-    if (lastCopiedSelectionKey !== null && lastCopiedSelectionKey === getSelectionKey()) {
-      copyHintNode.style.display = 'none'
-      copyHintWidgetPosition = null
-      editorInstance.layoutContentWidget(copyHintWidget)
-      return
-    }
-
-    const { startLine, endLine } = getContextualCopyLineRange(selection)
-    const startVisiblePosition = editorInstance.getScrolledVisiblePosition(
-      selection.getStartPosition()
-    )
-    const endColumn =
-      selection.endLineNumber === endLine ? selection.endColumn : model.getLineMaxColumn(endLine)
-    const endVisiblePosition = editorInstance.getScrolledVisiblePosition({
-      lineNumber: endLine,
-      column: endColumn
-    })
-
-    if (!startVisiblePosition || !endVisiblePosition) {
-      copyHintNode.style.display = 'none'
-      copyHintWidgetPosition = null
-      editorInstance.layoutContentWidget(copyHintWidget)
-      return
-    }
-
-    const hintHeight = copyHintNode.offsetHeight || 28
-    const verticalGap = 8
-    const viewportHeight = editorInstance.getLayoutInfo().height
-    const selectionTop = startVisiblePosition.top
-    const selectionBottom = endVisiblePosition.top + endVisiblePosition.height
-    const spaceAbove = selectionTop
-    const spaceBelow = viewportHeight - selectionBottom
-    const placeAbove = spaceAbove >= hintHeight + verticalGap || spaceAbove >= spaceBelow
-    const anchorLineNumber = placeAbove ? startLine : endLine
-    const anchorColumn = placeAbove
-      ? model.getLineMaxColumn(startLine)
-      : selection.endLineNumber !== endLine
-        ? model.getLineMaxColumn(endLine)
-        : selection.endColumn
-
-    copyHintWidgetPosition = {
-      position: { lineNumber: anchorLineNumber, column: anchorColumn },
-      secondaryPosition: {
-        lineNumber: anchorLineNumber,
-        column: Math.max(1, anchorColumn - 1)
-      },
-      preference: [
-        placeAbove
-          ? monaco.editor.ContentWidgetPositionPreference.ABOVE
-          : monaco.editor.ContentWidgetPositionPreference.BELOW
-      ]
-    }
-    copyHintNode.style.display = 'block'
-    editorInstance.layoutContentWidget(copyHintWidget)
+  const hideToolbar = (): void => {
+    toolbarNode.style.display = 'none'
+    toolbarWidgetPosition = null
+    editorInstance.layoutContentWidget(toolbarWidget)
   }
 
-  const isCopyHintVisible = (): boolean => copyHintNode.style.display === 'block'
-
-  const startCopyHintPolling = (): void => {
-    if (copyHintInterval !== null) {
+  const askAboutSelection = (): void => {
+    const model = editorInstance.getModel()
+    const selection = editorInstance.getSelection()
+    if (!model || !selection || selection.isEmpty() || !askTarget || !onAsk) {
       return
     }
-    copyHintInterval = window.setInterval(() => {
-      updateCopyHint()
-      if (!isCopyHintVisible()) {
-        stopCopyHintPolling()
+    const { startLine, endLine } = getContextualCopyLineRange(selection)
+    const rect = toolbarNode.getBoundingClientRect()
+    onAsk({
+      worktreeId: askTarget.worktreeId,
+      relativePath: propsRef.current.relativePath,
+      language: propsRef.current.language,
+      startLine,
+      endLine,
+      selectedText: model.getValueInRange(selection),
+      anchorRect: { top: rect.top, left: rect.left, width: rect.width, height: rect.height }
+    })
+  }
+
+  const renderToolbar = (canCopy: boolean, copied: boolean): void => {
+    const copyShortcutLabel = formatShortcutLabel(
+      'editor.copyContext',
+      useAppStore.getState().keybindings
+    )
+    const key = [Boolean(askTarget && onAsk), canCopy, copied, copyShortcutLabel].join('|')
+    if (key === renderedToolbarKey) {
+      return
+    }
+    renderedToolbarKey = key
+    toolbarRoot ??= createSelectionToolbarRoot(toolbarNode)
+    toolbarRoot.render({
+      onAsk: askTarget && onAsk ? askAboutSelection : null,
+      onCopy: canCopy ? () => void copySelectionWithContext() : null,
+      copyShortcutLabel,
+      copied
+    })
+  }
+
+  const updateToolbar = (): void => {
+    const model = editorInstance.getModel()
+    const selection = editorInstance.getSelection()
+    // Why: toolbar ticks need selection bounds; extracting the selected text scales with file size.
+    if (!model || !selection || selection.isEmpty()) {
+      hideToolbar()
+      return
+    }
+
+    renderToolbar(
+      canCopySelectionWithContext(selection),
+      lastCopiedSelectionKey !== null && lastCopiedSelectionKey === getSelectionKey()
+    )
+    const position = computeSelectionToolbarPosition({
+      editorInstance,
+      model,
+      selection,
+      toolbarHeight: toolbarNode.offsetHeight || 28
+    })
+    if (!position) {
+      hideToolbar()
+      return
+    }
+    toolbarWidgetPosition = position
+    toolbarNode.style.display = 'block'
+    editorInstance.layoutContentWidget(toolbarWidget)
+  }
+
+  const isToolbarVisible = (): boolean => toolbarNode.style.display === 'block'
+
+  const startToolbarPolling = (): void => {
+    if (toolbarInterval !== null) {
+      return
+    }
+    toolbarInterval = window.setInterval(() => {
+      updateToolbar()
+      if (!isToolbarVisible()) {
+        stopToolbarPolling()
       }
     }, 150)
   }
 
-  const stopCopyHintPolling = (): void => {
-    if (copyHintInterval !== null) {
-      window.clearInterval(copyHintInterval)
-      copyHintInterval = null
+  const stopToolbarPolling = (): void => {
+    if (toolbarInterval !== null) {
+      window.clearInterval(toolbarInterval)
+      toolbarInterval = null
     }
   }
 
-  const refreshCopyHintAndPolling = (): void => {
-    updateCopyHint()
-    if (editorInstance.hasTextFocus() && isCopyHintVisible()) {
+  const refreshToolbarAndPolling = (): void => {
+    updateToolbar()
+    if (editorInstance.hasTextFocus() && isToolbarVisible()) {
       // Why: the interval only tracks a visible content widget. Keeping it
       // alive while the focused editor has no selection burns idle CPU.
-      startCopyHintPolling()
+      startToolbarPolling()
     } else {
-      stopCopyHintPolling()
+      stopToolbarPolling()
     }
   }
 
@@ -204,48 +206,6 @@ export function setupContextualCopy({
     })
   }
 
-  const updatePrimarySelectionBuffer = (): void => {
-    const model = editorInstance.getModel()
-    const selections = editorInstance.getSelections()
-    if (!isPrimarySelectionEnabled() || !model || !selections?.length) {
-      return
-    }
-
-    const sortedSelections = selections.slice().sort((a, b) => {
-      if (a.startLineNumber !== b.startLineNumber) {
-        return a.startLineNumber - b.startLineNumber
-      }
-      return a.startColumn - b.startColumn
-    })
-
-    let totalLength = 0
-    for (const selection of sortedSelections) {
-      if (selection.isEmpty()) {
-        return
-      }
-      totalLength += model.getValueLengthInRange(selection)
-      if (totalLength > PRIMARY_SELECTION_MAX_LENGTH) {
-        return
-      }
-    }
-
-    setPrimarySelectionText(
-      sortedSelections.map((selection) => model.getValueInRange(selection)).join(model.getEOL())
-    )
-  }
-
-  const schedulePrimarySelectionBufferUpdate = (): void => {
-    if (primarySelectionTimer !== null) {
-      window.clearTimeout(primarySelectionTimer)
-    }
-    // Why: Monaco emits intermediate selection changes during drag; match the
-    // editor selection clipboard debounce so we don't churn the clipboard.
-    primarySelectionTimer = window.setTimeout(() => {
-      primarySelectionTimer = null
-      updatePrimarySelectionBuffer()
-    }, 100)
-  }
-
   const copySelectionWithContext = async (): Promise<boolean> => {
     const copiedText = getContextualCopyText()
     if (!copiedText) {
@@ -256,37 +216,32 @@ export function setupContextualCopy({
     // contextual payload at copy time so file and line metadata survives
     // once the snippet leaves Orca and is pasted into a terminal.
     await window.api.ui.writeClipboardText(copiedText)
-    // Why: once the user has copied this exact selection, surfacing the
-    // affordance again during the confirmation toast reads like duplicate
-    // UI. We keep it suppressed until the selection actually changes.
+    // Why: the toolbar stays up — Ask is wanted most right after a copy — but the
+    // Copy button reads as spent until the selection actually changes.
     lastCopiedSelectionKey = getSelectionKey()
-    copyHintNode.style.display = 'none'
-    copyHintWidgetPosition = null
-    editorInstance.layoutContentWidget(copyHintWidget)
+    updateToolbar()
     showCopyToast()
     return true
   }
 
   const selectionListener = editorInstance.onDidChangeCursorSelection((event) => {
     if (event.source !== 'restoreState') {
-      schedulePrimarySelectionBufferUpdate()
+      primarySelection.schedule()
     }
     if (getSelectionKey() !== lastCopiedSelectionKey) {
       lastCopiedSelectionKey = null
     }
-    refreshCopyHintAndPolling()
+    refreshToolbarAndPolling()
   })
   const scrollListener = editorInstance.onDidScrollChange(() => {
-    refreshCopyHintAndPolling()
+    refreshToolbarAndPolling()
   })
   const focusListener = editorInstance.onDidFocusEditorText(() => {
-    refreshCopyHintAndPolling()
+    refreshToolbarAndPolling()
   })
   const blurListener = editorInstance.onDidBlurEditorText(() => {
-    stopCopyHintPolling()
-    copyHintNode.style.display = 'none'
-    copyHintWidgetPosition = null
-    editorInstance.layoutContentWidget(copyHintWidget)
+    stopToolbarPolling()
+    hideToolbar()
   })
 
   const editorDomNode = editorInstance.getContainerDomNode()
@@ -303,8 +258,8 @@ export function setupContextualCopy({
     void copySelectionWithContext()
   }
   editorDomNode.addEventListener('keydown', handleKeyDown, true)
-  editorDomNode.addEventListener('mouseup', refreshCopyHintAndPolling, true)
-  editorDomNode.addEventListener('keyup', refreshCopyHintAndPolling, true)
+  editorDomNode.addEventListener('mouseup', refreshToolbarAndPolling, true)
+  editorDomNode.addEventListener('keyup', refreshToolbarAndPolling, true)
   editorInstance.onDidDispose(() => {
     // Why: Monaco owns these emitters, but disposing explicitly keeps this
     // feature's lifecycle symmetrical with the DOM listener cleanup below.
@@ -319,19 +274,18 @@ export function setupContextualCopy({
       copyToastTimeoutRef.current = null
       setCopyToast(null)
     }
-    if (primarySelectionTimer !== null) {
-      window.clearTimeout(primarySelectionTimer)
-      primarySelectionTimer = null
-    }
+    primarySelection.cancel()
     editorDomNode.removeEventListener('keydown', handleKeyDown, true)
-    editorDomNode.removeEventListener('mouseup', refreshCopyHintAndPolling, true)
-    editorDomNode.removeEventListener('keyup', refreshCopyHintAndPolling, true)
-    stopCopyHintPolling()
-    editorInstance.removeContentWidget(copyHintWidget)
+    editorDomNode.removeEventListener('mouseup', refreshToolbarAndPolling, true)
+    editorDomNode.removeEventListener('keyup', refreshToolbarAndPolling, true)
+    stopToolbarPolling()
+    editorInstance.removeContentWidget(toolbarWidget)
+    toolbarRoot?.dispose()
+    toolbarRoot = null
   })
   if (editorInstance.hasTextFocus()) {
-    refreshCopyHintAndPolling()
+    refreshToolbarAndPolling()
   } else {
-    updateCopyHint()
+    updateToolbar()
   }
 }
