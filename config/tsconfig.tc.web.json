@@ -21,6 +21,7 @@
     "../src/packages/process-host/src/__fixtures__/**/*",
     "../src/main/gitlab/mappers.ts",
     "../src/main/ipc/deferred-emoji-shortcode-dataset.ts",
+    "../src/main/ipc/repos/repo-ipc-arg-schemas.ts",
     "../src/main/ipc/worktree-branch-name.ts",
     "../src/main/ipc/worktree-logic.ts",
     "../src/main/ipc/worktree-display-name.ts",

@@ -7,6 +7,7 @@ import {
   Keyboard,
   Loader2,
   MessageSquareText,
+  MoreHorizontal,
   RefreshCw,
   RotateCw,
   School,
@@ -23,6 +24,9 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuSeparator,
+  DropdownMenuSub,
+  DropdownMenuSubContent,
+  DropdownMenuSubTrigger,
   DropdownMenuTrigger
 } from '@/components/ui/dropdown-menu'
 import { useMountedRef } from '@/hooks/useMountedRef'
@@ -97,7 +101,11 @@ function ExternalMenuItem({
   )
 }
 
-export function SidebarSettingsHelpMenu(): React.JSX.Element {
+export function SidebarSettingsHelpMenu({
+  overflowItems
+}: {
+  overflowItems?: React.ReactNode
+}): React.JSX.Element {
   const openModal = useAppStore((s) => s.openModal)
   const openSettingsPage = useAppStore((s) => s.openSettingsPage)
   const openSettingsTarget = useAppStore((s) => s.openSettingsTarget)
@@ -114,6 +122,7 @@ export function SidebarSettingsHelpMenu(): React.JSX.Element {
   const updateCheckModifiersRef = React.useRef(NO_UPDATE_CHECK_MODIFIERS)
   const mountedRef = useMountedRef()
   const updateCheckHint = getUpdateCheckHint()
+  const moreLabel = translate('dashboard.sidebar.more', 'More')
 
   const showMilestones =
     setupProgress.ready && setupProgress.coreDoneCount < setupProgress.coreTotal
@@ -230,127 +239,138 @@ export function SidebarSettingsHelpMenu(): React.JSX.Element {
                   variant="ghost"
                   size="icon-xs"
                   type="button"
-                  aria-label={translate(
-                    'auto.components.sidebar.SidebarSettingsHelpMenu.2991a0106c',
-                    'Help'
-                  )}
+                  aria-label={moreLabel}
                   className="text-muted-foreground"
                 >
-                  <CircleHelp className="size-3.5" />
+                  <MoreHorizontal className="size-3.5" />
                 </Button>
               </DropdownMenuTrigger>
             </TooltipTrigger>
             <TooltipContent side="top" sideOffset={4}>
-              {translate('auto.components.sidebar.SidebarSettingsHelpMenu.2991a0106c', 'Help')}
+              {moreLabel}
             </TooltipContent>
           </Tooltip>
           <DropdownMenuContent side="top" align="start" sideOffset={8} className="w-52">
-            <DropdownMenuItem onSelect={openShortcutsSettings}>
-              <Keyboard className="size-3.5" />
-              {translate(
-                'auto.components.sidebar.SidebarSettingsHelpMenu.e565171a7c',
-                'Keyboard Shortcuts'
-              )}
-            </DropdownMenuItem>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem onSelect={handleOpenFeedback}>
-              <MessageSquareText className="size-3.5" />
-              {translate(
-                'auto.components.sidebar.SidebarSettingsHelpMenu.4cf5b868d7',
-                'Send Feedback'
-              )}
-            </DropdownMenuItem>
-            {showMilestones ? (
-              <DropdownMenuItem onSelect={openMilestones}>
-                <img
-                  src={logo}
-                  alt=""
-                  aria-hidden="true"
-                  className="size-3.5 object-contain invert opacity-55 dark:invert-0"
+            {overflowItems}
+            <DropdownMenuSub>
+              <DropdownMenuSubTrigger>
+                <CircleHelp className="size-3.5" />
+                {translate('auto.components.sidebar.SidebarSettingsHelpMenu.2991a0106c', 'Help')}
+              </DropdownMenuSubTrigger>
+              <DropdownMenuSubContent className="w-52">
+                <DropdownMenuItem onSelect={openShortcutsSettings}>
+                  <Keyboard className="size-3.5" />
+                  {translate(
+                    'auto.components.sidebar.SidebarSettingsHelpMenu.e565171a7c',
+                    'Keyboard Shortcuts'
+                  )}
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem onSelect={handleOpenFeedback}>
+                  <MessageSquareText className="size-3.5" />
+                  {translate(
+                    'auto.components.sidebar.SidebarSettingsHelpMenu.4cf5b868d7',
+                    'Send Feedback'
+                  )}
+                </DropdownMenuItem>
+                {showMilestones ? (
+                  <DropdownMenuItem onSelect={openMilestones}>
+                    <img
+                      src={logo}
+                      alt=""
+                      aria-hidden="true"
+                      className="size-3.5 object-contain invert opacity-55 dark:invert-0"
+                    />
+                    {translate(
+                      'auto.components.sidebar.SidebarSettingsHelpMenu.f8a2c91d4e',
+                      'Milestones'
+                    )}
+                    <SetupGuideProgressRing
+                      done={setupProgress.coreDoneCount}
+                      total={setupProgress.coreTotal}
+                      sizeClassName="size-4"
+                      className="ml-auto"
+                    />
+                  </DropdownMenuItem>
+                ) : null}
+                <DropdownMenuItem
+                  className="whitespace-nowrap"
+                  onClick={handleShowOnboarding}
+                  onSelect={handleShowOnboarding}
+                >
+                  <School className="size-3.5" />
+                  {translate(
+                    'auto.components.sidebar.SidebarSettingsHelpMenu.b7e4d2a19c',
+                    'Onboarding'
+                  )}
+                </DropdownMenuItem>
+                <ExternalMenuItem
+                  label={translate(
+                    'auto.components.sidebar.SidebarSettingsHelpMenu.cdc87f897e',
+                    'Docs'
+                  )}
+                  url={DOCS_URL}
+                  icon={<BookOpen className="size-3.5" />}
                 />
-                {translate(
-                  'auto.components.sidebar.SidebarSettingsHelpMenu.f8a2c91d4e',
-                  'Milestones'
-                )}
-                <SetupGuideProgressRing
-                  done={setupProgress.coreDoneCount}
-                  total={setupProgress.coreTotal}
-                  sizeClassName="size-4"
-                  className="ml-auto"
+                <ExternalMenuItem
+                  label={translate(
+                    'auto.components.sidebar.SidebarSettingsHelpMenu.5f83d86d92',
+                    'Changelog'
+                  )}
+                  url={CHANGELOG_URL}
+                  icon={<ScrollText className="size-3.5" />}
                 />
-              </DropdownMenuItem>
-            ) : null}
-            <DropdownMenuItem
-              className="whitespace-nowrap"
-              onClick={handleShowOnboarding}
-              onSelect={handleShowOnboarding}
-            >
-              <School className="size-3.5" />
-              {translate(
-                'auto.components.sidebar.SidebarSettingsHelpMenu.b7e4d2a19c',
-                'Onboarding'
-              )}
-            </DropdownMenuItem>
-            <ExternalMenuItem
-              label={translate(
-                'auto.components.sidebar.SidebarSettingsHelpMenu.cdc87f897e',
-                'Docs'
-              )}
-              url={DOCS_URL}
-              icon={<BookOpen className="size-3.5" />}
-            />
-            <ExternalMenuItem
-              label={translate(
-                'auto.components.sidebar.SidebarSettingsHelpMenu.5f83d86d92',
-                'Changelog'
-              )}
-              url={CHANGELOG_URL}
-              icon={<ScrollText className="size-3.5" />}
-            />
-            <DropdownMenuSeparator />
-            <ExternalMenuItem
-              label={translate(
-                'auto.components.sidebar.SidebarSettingsHelpMenu.5687ab246a',
-                'GitHub'
-              )}
-              url={GITHUB_URL}
-              icon={<Github className="size-3.5" />}
-            />
-            <DropdownMenuItem onSelect={() => openExternalUrl(DISCORD_URL)}>
-              <DiscordIcon />
-              {translate('auto.components.sidebar.SidebarSettingsHelpMenu.eb9884e55b', 'Discord')}
-              <ExternalLink className="ml-auto size-3 text-muted-foreground" />
-            </DropdownMenuItem>
-            <DropdownMenuItem onSelect={() => openExternalUrl(X_URL)}>
-              <XIcon />
-              {translate('auto.components.sidebar.SidebarSettingsHelpMenu.c4f8e1b72a', 'X')}
-              <ExternalLink className="ml-auto size-3 text-muted-foreground" />
-            </DropdownMenuItem>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem
-              disabled={updateStatus.state === 'checking' || updateStatus.state === 'downloading'}
-              onPointerDown={handleCheckForUpdatesPointerDown}
-              onSelect={handleCheckForUpdates}
-              title={updateCheckHint}
-            >
-              {updateStatus.state === 'checking' ? (
-                <Loader2 className="size-3.5 animate-spin" />
-              ) : (
-                <RefreshCw className="size-3.5" />
-              )}
-              {translate(
-                'auto.components.sidebar.SidebarSettingsHelpMenu.29c56f30ee',
-                'Check for Updates'
-              )}
-            </DropdownMenuItem>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem onSelect={handleRestartOrca} disabled={isRestartingOrca}>
-              <RotateCw className="size-3.5" />
-              {translate(
-                'auto.components.sidebar.SidebarSettingsHelpMenu.ad3d3ed7f1',
-                'Restart Orca'
-              )}
-            </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <ExternalMenuItem
+                  label={translate(
+                    'auto.components.sidebar.SidebarSettingsHelpMenu.5687ab246a',
+                    'GitHub'
+                  )}
+                  url={GITHUB_URL}
+                  icon={<Github className="size-3.5" />}
+                />
+                <DropdownMenuItem onSelect={() => openExternalUrl(DISCORD_URL)}>
+                  <DiscordIcon />
+                  {translate(
+                    'auto.components.sidebar.SidebarSettingsHelpMenu.eb9884e55b',
+                    'Discord'
+                  )}
+                  <ExternalLink className="ml-auto size-3 text-muted-foreground" />
+                </DropdownMenuItem>
+                <DropdownMenuItem onSelect={() => openExternalUrl(X_URL)}>
+                  <XIcon />
+                  {translate('auto.components.sidebar.SidebarSettingsHelpMenu.c4f8e1b72a', 'X')}
+                  <ExternalLink className="ml-auto size-3 text-muted-foreground" />
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem
+                  disabled={
+                    updateStatus.state === 'checking' || updateStatus.state === 'downloading'
+                  }
+                  onPointerDown={handleCheckForUpdatesPointerDown}
+                  onSelect={handleCheckForUpdates}
+                  title={updateCheckHint}
+                >
+                  {updateStatus.state === 'checking' ? (
+                    <Loader2 className="size-3.5 animate-spin" />
+                  ) : (
+                    <RefreshCw className="size-3.5" />
+                  )}
+                  {translate(
+                    'auto.components.sidebar.SidebarSettingsHelpMenu.29c56f30ee',
+                    'Check for Updates'
+                  )}
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem onSelect={handleRestartOrca} disabled={isRestartingOrca}>
+                  <RotateCw className="size-3.5" />
+                  {translate(
+                    'auto.components.sidebar.SidebarSettingsHelpMenu.ad3d3ed7f1',
+                    'Restart Orca'
+                  )}
+                </DropdownMenuItem>
+              </DropdownMenuSubContent>
+            </DropdownMenuSub>
           </DropdownMenuContent>
         </DropdownMenu>
       </div>

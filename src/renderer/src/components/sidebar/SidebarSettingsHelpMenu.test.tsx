@@ -95,6 +95,9 @@ vi.mock('@/components/ui/dropdown-menu', () => ({
     </button>
   ),
   DropdownMenuSeparator: () => <hr />,
+  DropdownMenuSub: ({ children }: { children: ReactNode }) => <>{children}</>,
+  DropdownMenuSubContent: ({ children }: { children: ReactNode }) => <>{children}</>,
+  DropdownMenuSubTrigger: ({ children }: { children: ReactNode }) => <>{children}</>,
   DropdownMenuTrigger: ({ children }: { children: ReactNode }) => <>{children}</>
 }))
 
@@ -191,9 +194,17 @@ describe('SidebarSettingsHelpMenu', () => {
     document.body.replaceChildren()
   })
 
-  it('renders the help button with correct aria-label', () => {
+  it('renders the overflow button with correct aria-label', () => {
     const html = renderToStaticMarkup(<SidebarSettingsHelpMenu />)
-    expect(html).toContain('Help')
+    expect(html).toContain('aria-label="More"')
+  })
+
+  it('nests the help items under a Help submenu and renders overflow items first', () => {
+    const html = renderToStaticMarkup(
+      <SidebarSettingsHelpMenu overflowItems={<span>Overflow item</span>} />
+    )
+    expect(html.indexOf('Overflow item')).toBeLessThan(html.indexOf('Help'))
+    expect(html.indexOf('Help')).toBeLessThan(html.indexOf('Keyboard Shortcuts'))
   })
 
   it('renders the settings button with correct aria-label', () => {
@@ -201,7 +212,7 @@ describe('SidebarSettingsHelpMenu', () => {
     expect(html).toContain('aria-label="Settings"')
   })
 
-  it('renders the settings button before the help button', () => {
+  it('renders the settings button before the overflow button', () => {
     const html = renderToStaticMarkup(<SidebarSettingsHelpMenu />)
     const settingsIndex = html.indexOf('lucide-settings')
     const helpIndex = html.indexOf('lucide-circle-question-mark')

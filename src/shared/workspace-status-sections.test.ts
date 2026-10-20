@@ -7,6 +7,8 @@ import {
   getWorkspaceStatusSectionGroupKey,
   getWorkspaceStatusSectionOrder,
   hasWorkspaceStatusSections,
+  moveWorkspaceStatusWithinSection,
+  renameWorkspaceStatusSection,
   orderWorkspaceStatusesByAttention,
   sanitizeWorkspaceStatusSection,
   updateWorkspaceStatusSectionAppearance
@@ -219,5 +221,51 @@ describe('section appearance', () => {
         icon: 'flag'
       })
     ).toEqual([{ ...needsMe, sectionIcon: 'flag' }, { ...review, sectionIcon: 'flag' }, autonomous])
+  })
+})
+
+describe('renameWorkspaceStatusSection', () => {
+  const lanes = [
+    { id: 'a', label: 'A', section: 'Needs me', sectionIcon: 'bell', sectionColor: 'amber' },
+    { id: 'b', label: 'B', section: 'Needs me', sectionIcon: 'bell', sectionColor: 'amber' },
+    { id: 'c', label: 'C', section: 'Auto', sectionColor: 'blue' },
+    { id: 'd', label: 'D' }
+  ]
+
+  it('renames every lane and keeps the section look', () => {
+    const next = renameWorkspaceStatusSection(lanes, 'Needs me', 'Mine')
+    expect(next.filter((lane) => lane.section === 'Mine')).toHaveLength(2)
+    expect(next[0]?.sectionColor).toBe('amber')
+  })
+
+  it('merges into an existing section and adopts its look', () => {
+    const next = renameWorkspaceStatusSection(lanes, 'Needs me', 'Auto')
+    expect(next.filter((lane) => lane.section === 'Auto')).toHaveLength(3)
+    expect(next[0]?.sectionColor).toBe('blue')
+  })
+
+  it('dissolves the section when the name is empty', () => {
+    const next = renameWorkspaceStatusSection(lanes, 'Needs me', undefined)
+    expect(next[0]?.section).toBeUndefined()
+  })
+})
+
+describe('moveWorkspaceStatusWithinSection', () => {
+  const lanes = [
+    { id: 'a', label: 'A', section: 'X' },
+    { id: 'b', label: 'B', section: 'Y' },
+    { id: 'c', label: 'C', section: 'X' }
+  ]
+
+  it('swaps with the nearest lane in the same section', () => {
+    expect(moveWorkspaceStatusWithinSection(lanes, 'a', 1).map((lane) => lane.id)).toEqual([
+      'c',
+      'b',
+      'a'
+    ])
+  })
+
+  it('does nothing at the edge of a section', () => {
+    expect(moveWorkspaceStatusWithinSection(lanes, 'a', -1)).toEqual(lanes)
   })
 })

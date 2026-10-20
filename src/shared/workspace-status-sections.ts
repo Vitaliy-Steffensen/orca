@@ -142,6 +142,61 @@ export function updateWorkspaceStatusSectionAppearance(
   })
 }
 
+/** Rename a section on every lane; a name that already exists merges into it, an empty one dissolves it. */
+export function renameWorkspaceStatusSection(
+  statuses: readonly WorkspaceStatusDefinition[],
+  from: string,
+  to: string | undefined
+): WorkspaceStatusDefinition[] {
+  if (to === from) {
+    return [...statuses]
+  }
+  const target = to === undefined ? undefined : getWorkspaceStatusSectionAppearance(to, statuses)
+  const own = getWorkspaceStatusSectionAppearance(from, statuses)
+  const hasTarget = to !== undefined && statuses.some((status) => status.section === to)
+  return statuses.map((status) => {
+    if (status.section !== from) {
+      return status
+    }
+    if (to === undefined) {
+      return laneWithoutSection(status)
+    }
+    const appearance = hasTarget ? target : own
+    return withSectionAppearance(status, to, {
+      sectionIcon: appearance?.icon,
+      sectionColor: appearance?.color
+    })
+  })
+}
+
+/** Swap a lane with its nearest neighbour inside the same section (or among sectionless lanes). */
+export function moveWorkspaceStatusWithinSection(
+  statuses: readonly WorkspaceStatusDefinition[],
+  statusId: string,
+  direction: -1 | 1
+): WorkspaceStatusDefinition[] {
+  const index = statuses.findIndex((status) => status.id === statusId)
+  if (index === -1) {
+    return [...statuses]
+  }
+  const section = statuses[index]!.section
+  let neighbour = index + direction
+  while (
+    neighbour >= 0 &&
+    neighbour < statuses.length &&
+    statuses[neighbour]!.section !== section
+  ) {
+    neighbour += direction
+  }
+  if (neighbour < 0 || neighbour >= statuses.length) {
+    return [...statuses]
+  }
+  const next = [...statuses]
+  next[index] = statuses[neighbour]!
+  next[neighbour] = statuses[index]!
+  return next
+}
+
 const UNRANKED_LANE_ATTENTION = Number.MAX_SAFE_INTEGER
 /** A section the workflow does not name sits above Autonomous, which is always last. */
 const CUSTOM_SECTION_ATTENTION_RANK = 3
