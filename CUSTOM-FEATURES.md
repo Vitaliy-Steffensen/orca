@@ -126,3 +126,4 @@ Taken whole with every mirror; the fork lineage's work on top of upstream.
 55. The Changes header totals the added and removed lines of the files it lists. (§55)
 56. A review summary shows the verdict it was submitted with. (§56)
 57. `orca file open --line/--column` opens a file with the cursor on that spot. (§57)
+58. Workspace setup scripts run silently in the background while a chat opens; a Setup tab and toast appear only if the script fails.

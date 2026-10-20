@@ -1,6 +1,7 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { useAppStore } from '@/store'
 import { executeWorktreeCreation } from './worktree-creation-flow-execute'
+import { launchSilentSetup } from './worktree-silent-setup-launch'
 import { launchStructuredWorktreeSession } from './worktree-creation-structured-session'
 import {
   makeCreatedAgentWorktree,
@@ -18,6 +19,10 @@ vi.mock('./worktree-creation-structured-session', () => ({
     primaryTabId: args.primaryTabId
   }))
 }))
+vi.mock('./worktree-silent-setup-launch', () => ({
+  canRunSetupSilently: () => true,
+  launchSilentSetup: vi.fn()
+}))
 vi.mock('./worktree-creation-completion', () => ({ completeWorktreeCreation: vi.fn() }))
 
 const initialState = useAppStore.getState()
@@ -29,8 +34,9 @@ afterEach(() => {
 
 describe('native chat creation completed in the background', () => {
   it.each(['claude', 'codex'] as const)(
-    'runs setup once without an idle shell or focus change for %s',
+    'runs setup once in the background with no tab or focus change for %s',
     async (agent) => {
+      vi.mocked(launchSilentSetup).mockClear()
       const worktree = makeCreatedAgentWorktree()
       seedEmptyActivatableWorktree(worktree)
       const request: WorktreeCreationRequest = {
@@ -67,12 +73,9 @@ describe('native chat creation completed in the background', () => {
       await executeWorktreeCreation('creation-1', request)
 
       const state = useAppStore.getState()
-      const tabs = state.tabsByWorktree[worktree.id]
-      expect(tabs).toHaveLength(1)
-      expect(tabs[0].customTitle).toBe('Setup')
-      expect(state.pendingStartupByTabId[tabs[0].id]).toMatchObject({
-        command: 'bash /tmp/setup-runner.sh'
-      })
+      expect(state.tabsByWorktree[worktree.id] ?? []).toHaveLength(0)
+      expect(launchSilentSetup).toHaveBeenCalledTimes(1)
+      expect(launchSilentSetup).toHaveBeenCalledWith(worktree.id, setup, expect.any(Function))
       expect(state.activeView).toBe('tasks')
       expect(state.activeWorktreeId).toBe('previous-worktree')
       expect(state.activeTabId).toBe('previous-tab')
