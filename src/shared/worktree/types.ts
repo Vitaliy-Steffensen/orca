@@ -12,6 +12,7 @@ import type { PendingReviewComment } from '../github/pending-review-comment'
 import type { WorkspaceStatusManualOverride } from '../workspace-status-manual-override'
 import type { WorkspaceAutonomy } from '../workspace-autonomy'
 import type { WorkspaceIntent } from '../workspace-intent'
+import type { WorkspaceAutoMergePolicy } from '../workspace-auto-merge-policy'
 
 export type WorkspaceAttachmentOrigin = {
   kind: 'observed'
@@ -189,6 +190,8 @@ export type Worktree = {
    *  `supervised` — go through `resolveWorkspaceAutonomy`, never the raw field. */
   workspaceAutonomy?: WorkspaceAutonomy
   workspaceIntent?: WorkspaceIntent
+  /** Orca's own landing policy for this workspace's PR. Absent reads as off — go through `resolveAutoMergePolicy`. */
+  autoMerge?: WorkspaceAutoMergePolicy
   diffComments?: DiffComment[]
   agentNotes?: DiffComment[]
   /** Review comments queued locally, not yet submitted to the provider. */

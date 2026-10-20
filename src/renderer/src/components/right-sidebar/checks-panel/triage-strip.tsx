@@ -19,10 +19,6 @@ export function PRTriageStrip({
   pr,
   reviewKind = 'PR',
   checks,
-  isResolvingConflictsWithAI,
-  onResolveConflictsWithAI,
-  resolveConflictsDisabled,
-  resolveConflictsDisabledReason,
   isFixingChecksWithAI,
   onFixChecksWithAI,
   fixChecksDisabled,
@@ -32,10 +28,6 @@ export function PRTriageStrip({
   pr?: ConflictReview
   reviewKind?: 'PR' | 'MR'
   checks: PRCheckDetail[]
-  isResolvingConflictsWithAI: boolean
-  onResolveConflictsWithAI: () => void
-  resolveConflictsDisabled?: boolean
-  resolveConflictsDisabledReason?: string
   isFixingChecksWithAI: boolean
   onFixChecksWithAI: () => void
   fixChecksDisabled?: boolean
@@ -50,15 +42,7 @@ export function PRTriageStrip({
   const pendingCount = summary.pending
 
   if (resolvedReview?.mergeable === 'CONFLICTING') {
-    return (
-      <ConflictTriageStrip
-        reviewKind={reviewKind}
-        isResolvingConflictsWithAI={isResolvingConflictsWithAI}
-        onResolveConflictsWithAI={onResolveConflictsWithAI}
-        resolveConflictsDisabled={resolveConflictsDisabled}
-        resolveConflictsDisabledReason={resolveConflictsDisabledReason}
-      />
-    )
+    return <ConflictTriageStrip reviewKind={reviewKind} />
   }
 
   if (failingCount > 0) {
@@ -182,17 +166,9 @@ export function PRTriageStrip({
 }
 
 export function ConflictTriageStrip({
-  reviewKind,
-  isResolvingConflictsWithAI,
-  onResolveConflictsWithAI,
-  resolveConflictsDisabled,
-  resolveConflictsDisabledReason
+  reviewKind
 }: {
   reviewKind: 'PR' | 'MR'
-  isResolvingConflictsWithAI: boolean
-  onResolveConflictsWithAI: () => void
-  resolveConflictsDisabled?: boolean
-  resolveConflictsDisabledReason?: string
 }): React.JSX.Element {
   return (
     <div className="border-b border-border px-3 py-2">
@@ -213,21 +189,6 @@ export function ConflictTriageStrip({
             )}
           </div>
         </div>
-        <Button
-          type="button"
-          variant="default"
-          size="xs"
-          disabled={isResolvingConflictsWithAI || resolveConflictsDisabled}
-          title={resolveConflictsDisabled ? resolveConflictsDisabledReason : undefined}
-          onClick={onResolveConflictsWithAI}
-        >
-          {isResolvingConflictsWithAI ? (
-            <RefreshCw className="size-3 animate-spin" />
-          ) : (
-            <Sparkles className="size-3" />
-          )}
-          {translate('auto.components.right.sidebar.checks.panel.content.0c96cd25e5', 'Resolve')}
-        </Button>
       </div>
     </div>
   )

@@ -3,6 +3,7 @@ import { useAppStore } from '@/store'
 import { cn } from '@/lib/utils'
 import { TabBarQuickCommandsButton } from '@/components/tab-bar/TabBarQuickCommandsButton'
 import { resolveCmdJActiveGroupId } from '@/components/cmd-j/quick-action-context'
+import { AutoMergeMenuButton } from './auto-merge/AutoMergeMenuButton'
 import { FrontendDevServerButton } from './FrontendDevServerButton'
 import { PreviewDeploymentButton } from './PreviewDeploymentButton'
 import { WorkspaceActionButtons } from './workspace-actions/WorkspaceActionButtons'
@@ -35,6 +36,7 @@ export function RightSidebarActionsRow({
       <WorkspaceActionButtons />
       <FrontendDevServerButton />
       <PreviewDeploymentButton />
+      <AutoMergeMenuButton />
       {trailing}
     </div>
   )

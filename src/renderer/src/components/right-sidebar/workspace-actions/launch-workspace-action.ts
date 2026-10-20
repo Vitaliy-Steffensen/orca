@@ -21,20 +21,22 @@ import {
   resolveWorkspaceActionPromptTemplate,
   type WorkspaceActionPromptId
 } from '../../../../../shared/workspace-action-prompts'
+import type { WorkspaceActionKind } from '../../../../../shared/workspace-action'
 import {
   selectWorkspaceActionContext,
   type WorkspaceActionContext
 } from './workspace-action-context'
 
-export type WorkspaceActionLaunch = 'primary' | 'primary-draft' | 'review' | 're-review'
-
 const PROMPT_BY_ACTION: Record<
-  Exclude<NonNullable<WorkspaceActionContext['action']>, 'resolve-conflicts'>,
+  Exclude<WorkspaceActionKind, 'resolve-conflicts'>,
   WorkspaceActionPromptId
 > = {
   'commit-and-push': 'commitAndPush',
   'ready-for-review': 'readyForReview',
-  'create-pull-request': 'createPullRequest'
+  'create-pull-request': 'createPullRequest',
+  'create-draft-pull-request': 'createPullRequest',
+  review: 'reviewPullRequest',
+  're-review': 'reReviewPullRequest'
 }
 
 function buildConflictPrompt(context: WorkspaceActionContext): string {
@@ -105,55 +107,45 @@ function buildTemplatePrompt(
   )
 }
 
-function actionTitle(kind: WorkspaceActionLaunch, context: WorkspaceActionContext): string {
-  if (kind === 'primary-draft') {
-    return translate('auto.components.workspaceActions.createDraftPrTab', 'Create draft PR')
-  }
-  if (kind === 'review') {
-    return translate('auto.components.workspaceActions.reviewTab', 'Review #{{number}}', {
-      number: context.pr?.number ?? ''
-    })
-  }
-  if (kind === 're-review') {
-    return translate('auto.components.workspaceActions.reReviewTab', 'Re-review #{{number}}', {
-      number: context.pr?.number ?? ''
-    })
-  }
-  switch (context.action) {
+function actionTitle(kind: WorkspaceActionKind, context: WorkspaceActionContext): string {
+  switch (kind) {
+    case 'review':
+      return translate('auto.components.workspaceActions.reviewTab', 'Review #{{number}}', {
+        number: context.pr?.number ?? ''
+      })
+    case 're-review':
+      return translate('auto.components.workspaceActions.reReviewTab', 'Re-review #{{number}}', {
+        number: context.pr?.number ?? ''
+      })
     case 'commit-and-push':
       return translate('auto.components.workspaceActions.commitTab', 'Commit & push')
     case 'resolve-conflicts':
       return translate('auto.components.workspaceActions.conflictsTab', 'Resolve conflicts')
     case 'ready-for-review':
       return translate('auto.components.workspaceActions.readyTab', 'Ready for review')
+    case 'create-draft-pull-request':
+      return translate('auto.components.workspaceActions.createDraftPrTab', 'Create draft PR')
     case 'create-pull-request':
-    case null:
       return translate('auto.components.workspaceActions.createPrTab', 'Create PR')
   }
 }
 
-export async function launchWorkspaceAction(kind: WorkspaceActionLaunch): Promise<void> {
+export async function launchWorkspaceAction(kind: WorkspaceActionKind): Promise<void> {
   const state = useAppStore.getState()
   const context = selectWorkspaceActionContext(state)
-  if (kind === 'primary-draft' && context?.action !== 'create-pull-request') {
-    return
-  }
-  if (!context || (kind.startsWith('primary') ? !context.action : !context.pr)) {
+  // Why re-check: the menu is rendered from a snapshot, and a status tick between opening it and
+  // clicking can retract the action under the pointer.
+  if (!context?.actions.includes(kind)) {
     return
   }
   const prompt =
-    kind === 'review'
-      ? buildTemplatePrompt(context, 'reviewPullRequest')
-      : kind === 're-review'
-        ? buildTemplatePrompt(context, 'reReviewPullRequest')
-        : kind === 'primary-draft'
-          ? buildTemplatePrompt(context, 'createPullRequest', true)
-          : context.action === 'resolve-conflicts'
-            ? buildConflictPrompt(context)
-            : buildTemplatePrompt(
-                context,
-                PROMPT_BY_ACTION[context.action ?? 'create-pull-request']
-              )
+    kind === 'resolve-conflicts'
+      ? buildConflictPrompt(context)
+      : buildTemplatePrompt(
+          context,
+          PROMPT_BY_ACTION[kind],
+          kind === 'create-draft-pull-request' ? true : undefined
+        )
   try {
     const launched = await launchAgentBackgroundSession({
       agent: state.workspaceStatusRules.reviewInbox.agent,

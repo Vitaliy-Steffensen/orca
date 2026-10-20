@@ -1,10 +1,13 @@
 import type { PRState } from './github/pull-request-types'
 
 export type WorkspaceActionKind =
-  | 'commit-and-push'
   | 'resolve-conflicts'
-  | 'ready-for-review'
   | 'create-pull-request'
+  | 'create-draft-pull-request'
+  | 'commit-and-push'
+  | 'ready-for-review'
+  | 'review'
+  | 're-review'
 
 export type WorkspaceActionInput = {
   hasUncommittedChanges: boolean
@@ -15,28 +18,34 @@ export type WorkspaceActionInput = {
   pullRequest: { state: PRState; conflicting: boolean } | null
   // Why: an unanswered lookup is not "no pull request", and must not offer Create PR.
   pullRequestKnown: boolean
+  hasDiffFromBase: boolean
+  // Why: an unloaded line total is not "no diff" either, and must not retract Review.
+  branchDiffKnown: boolean
 }
 
 // Why this order: a merge stopped on conflicts cannot be committed, so it outranks everything. A
 // branch with no pull request goes straight to Create PR, whose prompt commits and pushes the work
 // too. Otherwise unfinished local work comes first, then what blocks the pull request, then its
-// next step.
-export function resolveWorkspaceAction(input: WorkspaceActionInput): WorkspaceActionKind | null {
-  if (input.hasLocalConflicts) {
-    return 'resolve-conflicts'
-  }
+// next step, and reading the pull request comes last because it is never the thing holding it up.
+export function resolveWorkspaceActions(input: WorkspaceActionInput): WorkspaceActionKind[] {
   const pr = input.pullRequest
-  if (!pr && input.pullRequestKnown && !input.isDefaultBranch) {
-    return 'create-pull-request'
+  const prOpen = pr !== null && (pr.state === 'open' || pr.state === 'draft')
+  const canCreatePr = pr === null && input.pullRequestKnown && !input.isDefaultBranch
+  const actions: WorkspaceActionKind[] = []
+  if (input.hasLocalConflicts || (prOpen && pr.conflicting)) {
+    actions.push('resolve-conflicts')
+  }
+  if (canCreatePr) {
+    actions.push('create-pull-request', 'create-draft-pull-request')
   }
   if (input.hasUncommittedChanges || (input.hasUpstream && input.unpushedCommits > 0)) {
-    return 'commit-and-push'
+    actions.push('commit-and-push')
   }
-  if (pr && (pr.state === 'open' || pr.state === 'draft')) {
-    if (pr.conflicting) {
-      return 'resolve-conflicts'
-    }
-    return pr.state === 'draft' ? 'ready-for-review' : null
+  if (prOpen && pr.state === 'draft') {
+    actions.push('ready-for-review')
   }
-  return null
+  if (prOpen && (input.hasDiffFromBase || !input.branchDiffKnown)) {
+    actions.push('review', 're-review')
+  }
+  return actions
 }

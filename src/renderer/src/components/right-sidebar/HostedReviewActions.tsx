@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo } from 'react'
+import React, { useCallback, useMemo, useState } from 'react'
 import { LoaderCircle, GitMerge, ChevronDown, GitPullRequestClosed } from 'lucide-react'
 import { useAppStore } from '@/store'
 import { cn } from '@/lib/utils'
@@ -17,6 +17,7 @@ import type { Repo } from '../../../../shared/repo-types'
 import type { Worktree } from '../../../../shared/worktree/types'
 import { resolveGitHubPRMergeMethods } from '../../../../shared/github/pull-request-merge-methods'
 import { runWorktreeDelete } from '../sidebar/delete-worktree-flow'
+import { runArchiveWorktree } from '../sidebar/archive-worktree-flow'
 import { getDeleteStateForWorktreeHost } from '../sidebar/worktree-delete-state-host-match'
 import { presentGitLabMRMergeState } from './gitlab-mr-merge-state'
 import {
@@ -151,6 +152,12 @@ export default function HostedReviewActions({
   const directMergeDisabled =
     merging || isUpdatingReviewState || !mergePresentation.directMergeAvailable
   const menuDisabled = merging || isUpdatingReviewState
+
+  const [isArchivingWorktree, setIsArchivingWorktree] = useState(false)
+  const handleArchiveWorktree = useCallback(() => {
+    setIsArchivingWorktree(true)
+    void runArchiveWorktree(worktree.id).finally(() => setIsArchivingWorktree(false))
+  }, [worktree.id])
 
   const handleDeleteWorktree = useCallback(() => {
     // Why: route every UI delete entry point through the shared funnel so
@@ -325,7 +332,10 @@ export default function HostedReviewActions({
   if (review.state === 'merged') {
     return (
       <MergedReviewActions
+        isArchived={worktree.isArchived}
+        isArchivingWorktree={isArchivingWorktree}
         isDeletingWorktree={isDeletingWorktree}
+        onArchiveWorktree={handleArchiveWorktree}
         onDeleteWorktree={handleDeleteWorktree}
       />
     )

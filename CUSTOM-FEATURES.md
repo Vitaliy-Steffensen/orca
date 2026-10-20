@@ -13,6 +13,7 @@ Adding a feature here? See the rule at the top of [`CLAUDE.md`](./CLAUDE.md).
 - Every file tree marks each file with how many notes, agent notes, unanswered review threads and unsent review comments it carries.
 - Pull request sync is an automation: it runs on a schedule even when the window is hidden, and each check shows up in the run history.
 - A Monday weekly recap template writes what landed on the default branch into the run's workspace and its history.
+- A right-sidebar Auto-merge menu turns on GitHub auto-merge plus agents that resolve conflicts and fix or rerun flaky CI, per workspace.
 - A Wednesday template posts a Linear project status update for the projects you lead.
 - Window > New Companion Window opens a second Orca window for another screen, paired to this app with its own tabs.
 - A new tab is a new chat: Claude and Cursor are not chosen up front, and the model menu lists both.
@@ -138,3 +139,6 @@ Taken whole with every mirror; the fork lineage's work on top of upstream.
 64. Select code in any editor or diff and click Ask on the floating toolbar to get a short answer in a new chat.
 65. The companion window follows the main window's active workspace, and picking a workspace in it switches the main window too.
 66. ⌘P / Ctrl+P opens Go to File in the companion window too.
+67. The right sidebar's top action bar shows a coloured state label on the left: merge conflicts, CI failed, changes requested, waiting for CI, awaiting review, draft PR, local only, ready to merge.
+68. A merged pull request offers Archive Workspace next to Delete Workspace, until the workspace is archived.
+69. One header button offers only the actions this branch can take right now — resolve, open a PR, commit, review — with the rest behind its chevron.

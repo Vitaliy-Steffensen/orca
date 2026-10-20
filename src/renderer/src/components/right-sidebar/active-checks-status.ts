@@ -1,6 +1,13 @@
 import type { AppState } from '../../store/types'
 import { getRepoMapFromState, getWorktreeMapFromState } from '../../store/selectors'
-import type { CheckStatus } from '../../../../shared/github/pull-request-types'
+import type {
+  CheckStatus,
+  PRInfo,
+  PRMergeableState,
+  PRReviewDecision
+} from '../../../../shared/github/pull-request-types'
+import type { HostedReviewInfo, HostedReviewState } from '../../../../shared/hosted-review'
+import { isFolderRepo } from '../../../../shared/repo-kind'
 import { getGitHubPRCacheKey } from '../../store/slices/github-cache-key'
 import { getHostedReviewCacheKey } from '../../store/slices/hosted-review-cache-identity'
 import { isGitHubPRSuppressed } from '../../../../shared/worktree/github-pr-suppression'
@@ -67,7 +74,42 @@ export function getActiveChecksStatus(state: ActiveChecksStatusState): CheckStat
   return status
 }
 
-function computeActiveChecksStatus(state: ActiveChecksStatusState): CheckStatus | null {
+export type ActiveReviewSnapshot = {
+  state: HostedReviewState
+  checks: CheckStatus
+  mergeable: PRMergeableState
+  reviewDecision: PRReviewDecision | null
+  mergeStateStatus: string | null
+}
+
+export type ActiveReviewResolution = {
+  worktreeId: string
+  isFolderWorkspace: boolean
+  review: ActiveReviewSnapshot | null
+  hasLinkedReview: boolean
+}
+
+function fromGitHubPR(pr: PRInfo): ActiveReviewSnapshot {
+  return {
+    state: pr.state,
+    checks: pr.checksStatus,
+    mergeable: pr.mergeable,
+    reviewDecision: pr.reviewDecision ?? null,
+    mergeStateStatus: pr.mergeStateStatus ?? null
+  }
+}
+
+function fromHostedReview(review: HostedReviewInfo): ActiveReviewSnapshot {
+  return {
+    state: review.state,
+    checks: review.status,
+    mergeable: review.mergeable,
+    reviewDecision: review.reviewDecision ?? null,
+    mergeStateStatus: review.mergeStateStatus ?? null
+  }
+}
+
+export function resolveActiveReview(state: ActiveChecksStatusState): ActiveReviewResolution | null {
   const activeWorktree = state.activeWorktreeId
     ? (getWorktreeMapFromState(state).get(state.activeWorktreeId) ?? null)
     : null
@@ -79,10 +121,14 @@ function computeActiveChecksStatus(state: ActiveChecksStatusState): CheckStatus 
   if (!activeRepo) {
     return null
   }
+  const base = {
+    worktreeId: activeWorktree.id,
+    isFolderWorkspace: isFolderRepo(activeRepo)
+  }
 
   const branch = branchDisplayName(activeWorktree.branch)
   if (!branch) {
-    return null
+    return { ...base, review: null, hasLinkedReview: false }
   }
 
   // Why: PR refreshes are written under repo-id scoped keys so repo path
@@ -107,7 +153,7 @@ function computeActiveChecksStatus(state: ActiveChecksStatusState): CheckStatus 
   )
   const hostedReview = state.hostedReviewCache?.[hostedReviewCacheKey]?.data ?? null
   if (hostedReview && hostedReview.provider !== 'github') {
-    return hostedReview.status
+    return { ...base, review: fromHostedReview(hostedReview), hasLinkedReview: true }
   }
   if (
     (activeWorktree.linkedGitLabMR ?? null) !== null ||
@@ -115,14 +161,20 @@ function computeActiveChecksStatus(state: ActiveChecksStatusState): CheckStatus 
     (activeWorktree.linkedAzureDevOpsPR ?? null) !== null ||
     (activeWorktree.linkedGiteaPR ?? null) !== null
   ) {
-    return null
+    return { ...base, review: null, hasLinkedReview: true }
   }
   const branchPR = state.prCache[prCacheKey]?.data ?? null
   if (branchPR && !isGitHubPRSuppressed(activeWorktree, branchPR.number)) {
-    return branchPR.checksStatus
+    return { ...base, review: fromGitHubPR(branchPR), hasLinkedReview: false }
   }
-  return hostedReview?.provider === 'github' &&
+  const review =
+    hostedReview?.provider === 'github' &&
     !isGitHubPRSuppressed(activeWorktree, hostedReview.number)
-    ? hostedReview.status
-    : null
+      ? fromHostedReview(hostedReview)
+      : null
+  return { ...base, review, hasLinkedReview: false }
+}
+
+function computeActiveChecksStatus(state: ActiveChecksStatusState): CheckStatus | null {
+  return resolveActiveReview(state)?.review?.checks ?? null
 }
