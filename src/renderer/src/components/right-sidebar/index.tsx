@@ -128,9 +128,7 @@ function RightSidebarInner(): React.JSX.Element {
     </Tooltip>
   ) : null
 
-  const actionsRow = rightSidebarOpen ? (
-    <RightSidebarActionsRow trailing={panelToggle} />
-  ) : null
+  const actionsRow = rightSidebarOpen ? <RightSidebarActionsRow trailing={panelToggle} /> : null
 
   return (
     <div

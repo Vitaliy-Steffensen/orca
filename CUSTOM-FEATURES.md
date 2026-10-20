@@ -132,3 +132,4 @@ Taken whole with every mirror; the fork lineage's work on top of upstream.
 60. Tasks and Automations moved out of the sidebar nav into the bottom "…" menu.
 61. The workspace header action buttons always show their label next to the icon, at any panel width.
 62. The sidebar header "…" menu toggles the main workspace out of the list and back in one click.
+63. Board settings groups statuses under their sections, so you can rename, add to, and move statuses between sections in place. (§63)
