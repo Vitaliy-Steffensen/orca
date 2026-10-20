@@ -1,4 +1,8 @@
 import { app, BrowserWindow, nativeTheme, type Event } from 'electron'
+import type { KeybindingOverrides } from '../../shared/keybindings'
+import { normalizeTerminalShortcutPolicy } from '../../shared/keybindings'
+import { COMPANION_OPEN_QUICK_OPEN_EVENT } from '../../shared/companion-window-shortcuts'
+import { resolveWindowShortcutAction } from '../../shared/window-shortcut-policy'
 import type { Store } from '../persistence'
 import type { OrcaRuntimeRpcServer } from '../runtime/runtime-rpc'
 import { isBackgroundLaunch, showWindowWithoutStealingFocus } from './foreground-activation-policy'
@@ -70,7 +74,8 @@ async function loadCompanionClient(
 
 export function createOrFocusCompanionWindow(
   store: Store | null,
-  rpcServer: OrcaRuntimeRpcServer
+  rpcServer: OrcaRuntimeRpcServer,
+  getKeybindings?: () => KeybindingOverrides | undefined
 ): BrowserWindow {
   if (companionWindow && !companionWindow.isDestroyed()) {
     if (companionWindow.isMinimized()) {
@@ -113,6 +118,25 @@ export function createOrFocusCompanionWindow(
   )
   window.webContents.session.setPermissionCheckHandler(() => false)
   companionWindow = window
+
+  // Why: the web client has no desktop shortcut routing, so Go to File is resolved here against the user's keybindings.
+  window.webContents.on('before-input-event', (event, input) => {
+    if (input.type !== 'keyDown' || input.isAutoRepeat) {
+      return
+    }
+    const action = resolveWindowShortcutAction(input, process.platform, getKeybindings?.(), {
+      context: 'app',
+      terminalShortcutPolicy: normalizeTerminalShortcutPolicy(
+        store?.getSettings().terminalShortcutPolicy
+      )
+    })
+    if (action?.type === 'openQuickOpen') {
+      event.preventDefault()
+      void window.webContents.executeJavaScript(
+        `window.dispatchEvent(new CustomEvent(${JSON.stringify(COMPANION_OPEN_QUICK_OPEN_EVENT)}))`
+      )
+    }
+  })
 
   window.once('ready-to-show', () => showWindowWithoutStealingFocus(window))
 

@@ -136,3 +136,4 @@ Taken whole with every mirror; the fork lineage's work on top of upstream.
 63. Board settings groups statuses under their sections, so you can rename, add to, and move statuses between sections in place. (§63)
 64. Select code in any editor or diff and click Ask on the floating toolbar to get a short answer in a new chat.
 65. The companion window follows the main window's active workspace, and picking a workspace in it switches the main window too.
+66. ⌘P / Ctrl+P opens Go to File in the companion window too.
