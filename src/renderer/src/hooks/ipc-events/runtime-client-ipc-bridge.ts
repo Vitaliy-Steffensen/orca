@@ -15,7 +15,11 @@ import { getEnvironmentSshStateGeneration } from '@/store/slices/runtime-environ
 import { getRuntimeEnvironmentConnectionGeneration } from '@/store/slices/runtime-status'
 import { getRepoExecutionHostId } from '../../../../shared/execution-host'
 import type { RuntimeClientEvent } from '../../../../shared/runtime-client-events'
-import { navigationTargetsClients } from '../../../../shared/runtime-navigation'
+import {
+  navigationTargetsClients,
+  navigationTargetsCompanion
+} from '../../../../shared/runtime-navigation'
+import { isCompanionWindowClient } from '../../web/companion-window-client'
 import { useAppStore } from '../../store'
 import { invalidateRemoteWorktreeLineage } from '../../store/slices/worktrees/metadata/worktree-lineage-readiness'
 import { adoptFromEndpoint, type OwnedWorktreeEvent } from '../../store/adopt-from-endpoint'
@@ -152,7 +156,13 @@ export function registerRuntimeClientIpcBridge(
       return
     }
     // Older hosts broadcast local/CLI activation without an address; that is not this viewer's intent.
-    if (!event.navigation || !navigationTargetsClients(event.navigation)) {
+    if (
+      !event.navigation ||
+      !(
+        navigationTargetsClients(event.navigation) ||
+        (navigationTargetsCompanion(event.navigation) && isCompanionWindowClient())
+      )
+    ) {
       return
     }
     const runtimeGeneration = getRuntimeEnvironmentConnectionGeneration(environmentId)

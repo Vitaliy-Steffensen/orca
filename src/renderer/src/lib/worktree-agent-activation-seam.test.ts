@@ -204,7 +204,9 @@ describe('worktree agent activation seam', () => {
     await waitForWorktreeAgentActivationGateForTests(worktree.id)
 
     expect(useAppStore.getState().tabsByWorktree[worktree.id] ?? []).toHaveLength(0)
-    expect(runtimeCall).not.toHaveBeenCalled()
+    expect(
+      runtimeCall.mock.calls.filter(([args]) => args.params?.navigation !== 'companion')
+    ).toEqual([])
     expect(listSessions).not.toHaveBeenCalled()
   })
 
