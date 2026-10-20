@@ -127,7 +127,8 @@ Taken whole with every mirror; the fork lineage's work on top of upstream.
 55. The Changes header totals the added and removed lines of the files it lists. (§55)
 56. A review summary shows the verdict it was submitted with. (§56)
 57. `orca file open --line/--column` opens a file with the cursor on that spot. (§57)
-58. The sidebar header and bottom bar tuck their secondary actions (activity, workspace options, add project, reveal workspace, board, help) under "…" menus. (§58)
-59. Tasks and Automations moved out of the sidebar nav into the bottom "…" menu. (§59)
-60. The workspace header action buttons always show their label next to the icon, at any panel width. (§60)
-61. The sidebar header "…" menu toggles the main workspace out of the list and back in one click. (§61)
+58. Workspace setup scripts run silently in the background while a chat opens; a Setup tab and toast appear only if the script fails.
+59. The sidebar header and bottom bar tuck their secondary actions (activity, workspace options, add project, reveal workspace, board, help) under "…" menus.
+60. Tasks and Automations moved out of the sidebar nav into the bottom "…" menu.
+61. The workspace header action buttons always show their label next to the icon, at any panel width.
+62. The sidebar header "…" menu toggles the main workspace out of the list and back in one click.
