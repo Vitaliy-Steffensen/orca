@@ -7,6 +7,7 @@ import { ContextMenu, ContextMenuTrigger } from '@/components/ui/context-menu'
 import { ActivityBarButton, TopActivityOverflowMenu } from './activity-bar-buttons'
 import type { ActivityBarItem } from './activity-bar-buttons'
 import { ActivityBarPositionMenu } from './activity-bar-position-menu'
+import { GitStateBadge } from './GitStateBadge'
 import {
   RIGHT_SIDEBAR_HEADER_NO_DRAG_CLASS_NAME,
   RIGHT_SIDEBAR_TOP_ACTIVITY_STRIP_CLASS_NAME
@@ -44,6 +45,7 @@ export function RightSidebarTopActivityBar({
       <TooltipProvider delayDuration={400}>
         {/* ── Row 1: actions. Shares the titlebar, so the empty left half stays draggable. ── */}
         <div className="flex h-[36px] min-h-[36px] items-center overflow-hidden border-b border-border right-sidebar-header-inset right-sidebar-header-drag">
+          <GitStateBadge className="pl-2" />
           <div className="ml-auto flex shrink-0 items-center pr-1">{actionsRow}</div>
         </div>
         {/* ── Row 2: view tabs, with the whole panel width to themselves. ── */}

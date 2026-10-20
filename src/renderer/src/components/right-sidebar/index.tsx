@@ -23,7 +23,7 @@ import { useRightSidebarActivityItems } from './use-right-sidebar-activity-items
 import { useRightSidebarTabRouting } from './use-right-sidebar-tab-routing'
 import { useWindowWidth } from './use-window-width'
 import { RightSidebarActionsRow } from './right-sidebar-actions-row'
-import { GitStateBanner } from './GitStateBanner'
+import { GitStateBadge } from './GitStateBadge'
 
 const ACTIVITY_BAR_SIDE_WIDTH = 40
 
@@ -171,18 +171,17 @@ function RightSidebarInner(): React.JSX.Element {
              (138-40=98px) as padding-right so the close button clears the
              minimize button without the full 138px gap. */
           <div className="flex items-center justify-between h-[36px] min-h-[36px] px-3 border-b border-border right-sidebar-header-side-inset right-sidebar-header-drag">
-            <span className="text-[11px] font-semibold uppercase tracking-wider text-foreground">
-              {visibleItems.find((item) => item.id === effectiveTab)?.title ?? ''}
-            </span>
             <TooltipProvider delayDuration={400}>
+              <div className="flex min-w-0 items-center gap-2">
+                <span className="text-[11px] font-semibold uppercase tracking-wider text-foreground">
+                  {visibleItems.find((item) => item.id === effectiveTab)?.title ?? ''}
+                </span>
+                <GitStateBadge />
+              </div>
               <div className="flex items-center">{actionsRow}</div>
             </TooltipProvider>
           </div>
         )}
-
-        <TooltipProvider delayDuration={400}>
-          <GitStateBanner />
-        </TooltipProvider>
 
         {panelContent}
 
