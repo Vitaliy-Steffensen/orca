@@ -171,7 +171,8 @@ const CREATE_NAVIGATION_OUTCOMES = {
   caller: { shared: 'page-old', caller: 'page-new', bystander: 'page-alt' },
   host: { shared: 'page-new', caller: 'page-new', bystander: 'page-alt' },
   clients: { shared: 'page-old', caller: 'page-new', bystander: 'page-new' },
-  all: { shared: 'page-new', caller: 'page-new', bystander: 'page-new' }
+  all: { shared: 'page-new', caller: 'page-new', bystander: 'page-new' },
+  companion: { shared: 'page-old', caller: 'page-new', bystander: 'page-alt' }
 } satisfies Record<RuntimeNavigationTarget, { shared: string; caller: string; bystander: string }>
 
 function createBrowserTab(

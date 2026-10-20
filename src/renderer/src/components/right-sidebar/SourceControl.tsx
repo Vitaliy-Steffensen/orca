@@ -1,5 +1,6 @@
 import React from 'react'
 import { SourceControlPanel } from './source-control/panel/panel'
+import type { SourceControlPanelMode } from './source-control/panel/panel-props'
 
 export { HostedReviewHeaderLink } from './source-control/review/hosted-review-header-chrome'
 
@@ -54,8 +55,12 @@ export {
   hasConfiguredSourceControlTextGenerationDefaults
 } from './source-control/ai/text-generation-defaults'
 
-function SourceControlInner(): React.JSX.Element {
-  return <SourceControlPanel />
+function SourceControlInner({
+  mode = 'local'
+}: {
+  mode?: SourceControlPanelMode
+}): React.JSX.Element {
+  return <SourceControlPanel mode={mode} />
 }
 const SourceControl = React.memo(SourceControlInner)
 export default SourceControl

@@ -1,5 +1,6 @@
 import type { RuntimeRpcResponse } from '../../../shared/runtime-rpc-envelope'
 import { useAppStore } from '../store'
+import { isCompanionWindowClient } from '../web/companion-window-client'
 import { unwrapRuntimeRpcResult } from './runtime-rpc-result'
 import { toRuntimeWorktreeSelector } from './runtime-worktree-selector'
 import {
@@ -33,7 +34,7 @@ export async function activateWebRuntimeSessionWorktree(args: {
         worktree: toRuntimeWorktreeSelector(args.worktreeId),
         // Why: notifyClients:false keeps navigation local when this client reaches an older host.
         notifyClients: false,
-        navigation: 'caller'
+        navigation: isCompanionWindowClient() ? 'host' : 'caller'
       },
       timeoutMs: 15_000
     })
