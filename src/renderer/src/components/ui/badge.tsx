@@ -28,6 +28,8 @@ const badgeVariants = cva(
           'h-4 rounded border-destructive/30 bg-destructive/10 px-1.5 text-[10px] leading-none text-destructive',
         cardChipWarn:
           'h-4 rounded border-status-warning-border bg-status-warning-background px-1.5 text-[10px] leading-none text-status-warning',
+        cardChipSuccess:
+          'h-4 rounded border-status-success-border bg-status-success-background px-1.5 text-[10px] leading-none text-status-success',
         cardChipQuiet:
           'h-4 rounded border-border bg-transparent px-1.5 text-[10px] leading-none text-muted-foreground',
         /** The workspace card's PR / issue / checks metadata row. Quiet by default so the

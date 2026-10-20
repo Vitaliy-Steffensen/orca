@@ -135,3 +135,5 @@ Taken whole with every mirror; the fork lineage's work on top of upstream.
 62. The sidebar header "…" menu toggles the main workspace out of the list and back in one click.
 63. Board settings groups statuses under their sections, so you can rename, add to, and move statuses between sections in place. (§63)
 64. Select code in any editor or diff and click Ask on the floating toolbar to get a short answer in a new chat.
+65. The right sidebar's top action bar shows a coloured state label on the left: merge conflicts, CI failed, changes requested, waiting for CI, awaiting review, draft PR, local only, ready to merge.
+66. A merged pull request offers Archive Workspace next to Delete Workspace, until the workspace is archived.

@@ -1,4 +1,5 @@
 import {
+  Archive,
   ChevronDown,
   CircleDot,
   GitMerge,
@@ -156,34 +157,69 @@ export function ClosedReviewActions({
 }
 
 export function MergedReviewActions({
+  isArchived,
+  isArchivingWorktree,
   isDeletingWorktree,
+  onArchiveWorktree,
   onDeleteWorktree
 }: {
+  isArchived: boolean
+  isArchivingWorktree: boolean
   isDeletingWorktree: boolean
+  onArchiveWorktree: () => void
   onDeleteWorktree: () => void
 }): React.JSX.Element {
+  const busy = isArchivingWorktree || isDeletingWorktree
   return (
-    <Button
-      type="button"
-      variant="outline"
-      size="xs"
-      // Why: outline matches the sibling Reopen control; destructive text signals danger
-      // without a solid red fill dominating the PR summary panel.
-      className="cursor-pointer border-destructive/30 text-[11px] text-destructive hover:bg-destructive/10 hover:text-destructive focus-visible:ring-destructive/20 disabled:cursor-not-allowed disabled:opacity-50"
-      onClick={onDeleteWorktree}
-      disabled={isDeletingWorktree}
-    >
-      {isDeletingWorktree ? (
-        <LoaderCircle className="size-3.5 animate-spin" />
-      ) : (
-        <Trash2 className="size-3.5" />
-      )}
-      {isDeletingWorktree
-        ? translate('auto.components.right.sidebar.HostedReviewActions.eefd50457e', 'Deleting...')
-        : translate(
-            'auto.components.right.sidebar.HostedReviewActions.e4aca40024',
-            'Delete Workspace'
+    <div className="flex flex-wrap items-center gap-1.5">
+      {/* Why: once the PR is merged the workspace has nothing left to do, so archiving — the
+          reversible way to clear it — leads, and deleting stays as the destructive sibling. */}
+      {!isArchived && (
+        <Button
+          type="button"
+          size="xs"
+          className="cursor-pointer"
+          onClick={onArchiveWorktree}
+          disabled={busy}
+        >
+          {isArchivingWorktree ? (
+            <LoaderCircle className="size-3.5 animate-spin" />
+          ) : (
+            <Archive className="size-3.5" />
           )}
-    </Button>
+          {isArchivingWorktree
+            ? translate(
+                'auto.components.right.sidebar.HostedReviewActions.archiving',
+                'Archiving...'
+              )
+            : translate(
+                'auto.components.right.sidebar.HostedReviewActions.archiveWorkspace',
+                'Archive Workspace'
+              )}
+        </Button>
+      )}
+      <Button
+        type="button"
+        variant="outline"
+        size="xs"
+        // Why: outline matches the sibling Reopen control; destructive text signals danger
+        // without a solid red fill dominating the PR summary panel.
+        className="cursor-pointer border-destructive/30 text-[11px] text-destructive hover:bg-destructive/10 hover:text-destructive focus-visible:ring-destructive/20 disabled:cursor-not-allowed disabled:opacity-50"
+        onClick={onDeleteWorktree}
+        disabled={busy}
+      >
+        {isDeletingWorktree ? (
+          <LoaderCircle className="size-3.5 animate-spin" />
+        ) : (
+          <Trash2 className="size-3.5" />
+        )}
+        {isDeletingWorktree
+          ? translate('auto.components.right.sidebar.HostedReviewActions.eefd50457e', 'Deleting...')
+          : translate(
+              'auto.components.right.sidebar.HostedReviewActions.e4aca40024',
+              'Delete Workspace'
+            )}
+      </Button>
+    </div>
   )
 }
