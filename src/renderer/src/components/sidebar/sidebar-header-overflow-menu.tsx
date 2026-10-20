@@ -91,7 +91,7 @@ export const SidebarHeaderOverflowMenu = React.memo(function SidebarHeaderOverfl
                 'Workspace options'
               )}
             </DropdownMenuSubTrigger>
-            <DropdownMenuSubContent className="w-72 pb-2" data-workspace-board-preserve-open="">
+            <DropdownMenuSubContent className="w-72" data-workspace-board-preserve-open="">
               <WorkspaceOptionsMenuItems preserveWorkspaceBoardOpen />
             </DropdownMenuSubContent>
           </DropdownMenuSub>
