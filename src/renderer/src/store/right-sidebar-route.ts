@@ -51,6 +51,7 @@ export function normalizeRightSidebarRoute(
     tab === 'pr-checks' ||
     tab === 'source-control' ||
     tab === 'checks' ||
+    tab === 'review-plan' ||
     tab === 'ports'
   ) {
     return {

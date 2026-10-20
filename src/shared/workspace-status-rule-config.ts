@@ -61,6 +61,18 @@ function readResolution(value: unknown): WorkspaceStatusRuleResolution {
   return value === 'delete' || value === 'archive' ? value : 'none'
 }
 
+/** The agent and model one top bar action runs on, so it can differ from the workspace's own chat. */
+export type WorkspaceActionAgent = {
+  agent: TuiAgent
+  model?: string
+  effort?: string
+}
+
+export const DEFAULT_REVIEW_PIPELINE_AGENT: WorkspaceActionAgent = {
+  agent: 'grok',
+  model: 'grok-4.7'
+}
+
 export type WorkspaceStatusRuleReviewInbox = {
   enabled: boolean
   agent: TuiAgent
@@ -98,6 +110,8 @@ export type WorkspaceStatusRuleConfig = {
   reviewEnteredCommand: string
   /** The top bar's action buttons; an empty or missing entry uses the built-in prompt. */
   actionPrompts: Partial<Record<WorkspaceActionPromptId, string>>
+  /** Per-action agent override; an action without an entry runs on the review agent. */
+  actionAgents: Partial<Record<WorkspaceActionPromptId, WorkspaceActionAgent>>
   reviewInbox: WorkspaceStatusRuleReviewInbox
   /** `owner/repo#number` keys already acted on, so a create never repeats. */
   handledPullRequests: string[]
@@ -161,6 +175,7 @@ export function cloneDefaultWorkspaceStatusRuleConfig(): WorkspaceStatusRuleConf
     conflictPromptTemplate: '',
     reviewEnteredCommand: '',
     actionPrompts: {},
+    actionAgents: { reviewPipeline: { ...DEFAULT_REVIEW_PIPELINE_AGENT } },
     reviewInbox: {
       enabled: false,
       agent: 'claude',
@@ -284,6 +299,37 @@ function sanitizeActionPrompts(value: unknown): Partial<Record<WorkspaceActionPr
   return prompts
 }
 
+const MAX_ACTION_AGENT_FIELD_LENGTH = 200
+
+function sanitizeActionAgents(
+  value: unknown
+): Partial<Record<WorkspaceActionPromptId, WorkspaceActionAgent>> {
+  const raw = asRecord(value)
+  const agents: Partial<Record<WorkspaceActionPromptId, WorkspaceActionAgent>> = {
+    reviewPipeline: { ...DEFAULT_REVIEW_PIPELINE_AGENT }
+  }
+  for (const id of WORKSPACE_ACTION_PROMPT_IDS) {
+    const entry = asRecord(raw?.[id])
+    if (!entry || !isTuiAgent(entry.agent)) {
+      continue
+    }
+    const model =
+      typeof entry.model === 'string' && entry.model.trim()
+        ? entry.model.trim().slice(0, MAX_ACTION_AGENT_FIELD_LENGTH)
+        : undefined
+    const effort =
+      typeof entry.effort === 'string' && entry.effort.trim()
+        ? entry.effort.trim().slice(0, MAX_ACTION_AGENT_FIELD_LENGTH)
+        : undefined
+    agents[id] = {
+      agent: entry.agent,
+      ...(model ? { model } : {}),
+      ...(effort ? { effort } : {})
+    }
+  }
+  return agents
+}
+
 function sanitizeHandledPullRequests(value: unknown): string[] {
   if (!Array.isArray(value)) {
     return []
@@ -334,6 +380,7 @@ export function normalizeWorkspaceStatusRuleConfig(value: unknown): WorkspaceSta
         ? raw.reviewEnteredCommand.trim().slice(0, MAX_COMMAND_LENGTH)
         : '',
     actionPrompts: sanitizeActionPrompts(raw.actionPrompts),
+    actionAgents: sanitizeActionAgents(raw.actionAgents),
     reviewInbox: sanitizeReviewInbox(raw.reviewInbox),
     handledPullRequests:
       raw.ledgerVersion === SEED_LEDGER_VERSION

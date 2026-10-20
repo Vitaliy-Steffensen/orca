@@ -104,3 +104,8 @@ export function renderWorkspaceActionPrompt(
     .replace(/\n{3,}/g, '\n\n')
     .trim()
 }
+
+export const REVIEW_REGROUP_PROMPT = `Group the work on branch {{branch}} in {{worktreePath}} against {{baseRef}} for review, and stop there.
+
+- Use the orca-review skill, the rate-and-group phase only: rate every changed file and cluster the files into numbered groups, then write .orca/review-plan.json in this worktree.
+- Do not review the code, do not stage any comments, and do not change any code.`

@@ -13109,7 +13109,14 @@
           "skillDescription": "Installs the review pipeline into every agent you picked, so the same review runs whichever one you launch. It uses the repository's own review rules when it has any.",
           "promptTitle": "Review prompt",
           "promptDescription": "What the agent is asked when a review starts. Supports {{branch}}, {{baseRef}}, {{worktreePath}}, {{prNumber}}, {{prUrl}} and {{prTitle}}. Clear the box to go back to the built-in prompt.",
-          "promptLabel": "Prompt"
+          "promptLabel": "Prompt",
+          "modelTitle": "Review model",
+          "modelDescription": "The agent and model the Review button runs on. It does not change the agent you chat with.",
+          "agentLabel": "Agent",
+          "modelLabel": "Model",
+          "modelDefault": "Agent default",
+          "effortLabel": "Effort",
+          "effortDefault": "Model default"
         },
         "reviewPipeline": {
           "search": {
@@ -14050,6 +14057,7 @@
             "ef182dcb12": "search",
             "fc3095d2ed": "explorer",
             "aiVaultSessionHistory": "Agents",
+            "reviewPlan": "Review plan",
             "folderWorkspaces": "Attached worktrees",
             "parentPrChecks": "PR Checks"
           },
@@ -17448,6 +17456,13 @@
               "name": "Monday weekly recap",
               "prompt": "Write a short recap of what landed on the default branch since the previous Monday. Use git log on the default branch for that window, and the pull requests merged in it. Cover behaviour changes, new commands and flags, and how the codebase is worked. Skip refactors, dependency bumps, and mirror merges. Write the recap to a dated file under .context/ in this workspace (for example .context/weekly-recap-YYYY-MM-DD.md) and print the same text, so it is saved in the automation run history."
             },
+            "reviewPipeline": {
+              "category": "Review",
+              "label": "Branch review",
+              "description": "Every weekday, reviews the checked-out branch with the review pipeline on Grok 4.7 and stages the findings on the diff. Pick the workspace to review.",
+              "name": "Branch review",
+              "prompt": "Review the work on the checked-out branch against its base branch. Use the orca-review skill: it rates and groups the changed files, runs every review skill you have whose area the diff touches, screenshots the UI when the frontend diff earns it, and stages the findings. Read every changed file, not only the diff hunks. Only report a finding you can tie to the input or state that makes it go wrong. Do not change any code."
+            },
             "linearStatus": {
               "category": "Linear",
               "label": "Wednesday Linear status",
@@ -18494,6 +18509,12 @@
           "sinceReview": "Since last review",
           "rebasedAway": "Reviewed before a rebase",
           "targetBranch": "{{branch}} · target branch",
+          "acceptAll": "Accept {{count}}",
+          "dropAll": "Drop {{count}}",
+          "discardProposalsTitle": "Drop all proposed comments?",
+          "discardProposalsDescription": "{{count}} proposed comments will be removed. Comments you already accepted stay. This cannot be undone.",
+          "discardProposalsCancel": "Cancel",
+          "discardProposalsAction": "Drop all",
           "onlyComment": "Only comment",
           "requestChanges": "Request changes",
           "approve": "Approve",
@@ -18518,6 +18539,17 @@
           "rerequestTip": "Re-request review"
         }
       },
+      "reviewPlan": {
+        "notCovered": "Not in the review plan ({{count}})",
+        "loading": "Looking for a review plan…",
+        "invalid": "The review plan file could not be read. Run the review again to rewrite it.",
+        "empty": "No review plan yet. Run a review to group and rate the changed files.",
+        "runReview": "Run review",
+        "threshold": "Files needing review ≥",
+        "all": "All",
+        "stale": "Grouped for {{commit}}, not the current head.",
+        "regroup": "Regroup"
+      },
       "workspaceActions": {
         "commitAndPush": "Commit & push",
         "resolveConflicts": "Resolve conflicts",
@@ -18525,6 +18557,7 @@
         "createPr": "Create PR",
         "review": "Review",
         "reviewTab": "Review {{branch}}",
+        "regroupTab": "Group {{branch}}",
         "commitTab": "Commit & push",
         "conflictsTab": "Resolve conflicts",
         "readyTab": "Ready for review",

@@ -74,7 +74,8 @@ export async function launchAgentBackgroundSession(
       : { ...store.settings, terminalWindowsShell: undefined },
     platform: launchPlatform,
     isRemote,
-    extraAgentArgs: args.extraAgentArgs
+    extraAgentArgs: args.extraAgentArgs,
+    sessionOptions: args.sessionOptions
   })
   const trimmedPrompt = prompt?.trim() ?? ''
   const hasPrompt = trimmedPrompt.length > 0

@@ -12,6 +12,7 @@ import { translate } from '@/i18n/i18n'
 import { useAppStore } from '../../store'
 import { AgentSkillSetupPanel } from './AgentSkillSetupPanel'
 import { buildSkillCommandForRuntime } from './CliSkillRuntimeSetup'
+import { ReviewPipelineAgentPicker } from './ReviewPipelineAgentPicker'
 import { OrchestrationSkillAgentCoverage } from './OrchestrationSkillAgentCoverage'
 import { SearchableSetting } from './SearchableSetting'
 import { getReviewPipelinePaneSearchEntries } from './review-pipeline-search'
@@ -87,6 +88,8 @@ export function ReviewPipelinePane(): React.JSX.Element {
           activeSkillRuntime.canUseLocalSkillFreshness ? ORCA_REVIEW_SKILL_NAME : undefined
         }
       />
+
+      <ReviewPipelineAgentPicker />
 
       <section className="divide-y divide-border">
         <div className="py-3">

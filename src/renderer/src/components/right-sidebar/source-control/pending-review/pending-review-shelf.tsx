@@ -7,6 +7,7 @@ import { cn } from '@/lib/utils'
 import {
   acceptedPendingReviewComments,
   canSubmitReviewVerdict,
+  proposedPendingReviewComments,
   type ReviewVerdict
 } from '../../../../../../shared/github/pending-review-comment'
 import type { PendingReviewQueue } from '@/components/pending-review/use-pending-review-queue'
@@ -18,6 +19,7 @@ import { usePendingReviewSummary } from '@/components/pending-review/pending-rev
 import { useReviewSummaryFocus } from '@/components/pending-review/review-summary-focus'
 import { ReviewMarkdownComposer } from '@/components/github/ReviewMarkdownComposer'
 import { PendingReviewDiffBaseSelect } from './pending-review-diff-base-select'
+import { DiscardProposalsConfirmDialog } from './discard-proposals-confirm-dialog'
 
 const VERDICTS: {
   id: ReviewVerdict
@@ -69,6 +71,7 @@ export function SourceControlPendingReviewShelf({
   const [body, setBody] = usePendingReviewSummary(worktreeId)
   const [uploading, setUploading] = useState(false)
   const [submitting, setSubmitting] = useState<ReviewVerdict | null>(null)
+  const [confirmingDiscard, setConfirmingDiscard] = useState(false)
   const composerRef = useRef<HTMLDivElement | null>(null)
   useReviewSummaryFocus({
     worktreeId: submitter.prNumber === null ? null : worktreeId,
@@ -110,6 +113,7 @@ export function SourceControlPendingReviewShelf({
   // An agent's proposal is not yet part of this review, so it counts for neither the
   // standing banner nor whether there is anything to send.
   const acceptedCount = acceptedPendingReviewComments(queue.comments).length
+  const proposalCount = proposedPendingReviewComments(queue.comments).length
 
   // Why the queue wins over the verdict on record: unsent comments are the newer state,
   // and saying "you approved" while drafts sit unsent would be wrong about right now.
@@ -222,6 +226,24 @@ export function SourceControlPendingReviewShelf({
             className="[&_.github-markdown-composer]:border-0 [&_.github-markdown-composer]:bg-transparent [&_.github-markdown-composer]:shadow-none"
           />
           <div className="flex flex-wrap items-center justify-end gap-0.5 px-1.5 pb-1.5">
+            {proposalCount > 0 ? (
+              <div className="mr-auto flex items-center gap-0.5">
+                <Button size="xs" variant="ghost" onClick={queue.acceptAll}>
+                  {translate(
+                    'auto.components.sourceControl.pendingReview.acceptAll',
+                    'Accept {{count}}',
+                    { count: proposalCount }
+                  )}
+                </Button>
+                <Button size="xs" variant="ghost" onClick={() => setConfirmingDiscard(true)}>
+                  {translate(
+                    'auto.components.sourceControl.pendingReview.dropAll',
+                    'Drop {{count}}',
+                    { count: proposalCount }
+                  )}
+                </Button>
+              </div>
+            ) : null}
             {verdicts.map((verdict) => (
               <Button
                 key={verdict.id}
@@ -247,6 +269,12 @@ export function SourceControlPendingReviewShelf({
           </div>
         </div>
       </div>
+      <DiscardProposalsConfirmDialog
+        open={confirmingDiscard}
+        count={proposalCount}
+        onOpenChange={setConfirmingDiscard}
+        onConfirm={queue.discardProposals}
+      />
     </div>
   )
 }

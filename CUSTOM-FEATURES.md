@@ -138,3 +138,7 @@ Taken whole with every mirror; the fork lineage's work on top of upstream.
 64. Select code in any editor or diff and click Ask on the floating toolbar to get a short answer in a new chat.
 
 - The workspace Review button runs your review pipeline on the current branch, with or without a pull request.
+- Settings → Review picks the agent, model and effort the Review button runs on, defaulting to Grok 4.7.
+- The pending review section can accept or drop every agent-proposed comment at once.
+- A "Branch review" automation template runs the review pipeline on Grok 4.7 on a schedule.
+- A Review plan tab in the right sidebar groups and rates the changed files from the last review, with a rating filter and a stale-grouping warning.

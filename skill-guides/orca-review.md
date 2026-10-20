@@ -72,6 +72,8 @@ reading. Write the result to `.orca/review-plan.json` in the worktree:
 }
 ```
 
+If you were asked only to group the changes, stop once the file is written: do not review, stage or change anything.
+
 Pinning `commit` is what lets a reader see the grouping has gone stale. Keep `.orca/` out of
 the repository by appending it to `.git/info/exclude`, never to the tracked `.gitignore` —
 that file belongs to the project, not to this run.

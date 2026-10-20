@@ -31,7 +31,11 @@ vi.mock('@/store', () => ({
           instructionsByOperation: { pullRequest: 'Titles use feat(scope):' }
         }
       },
-      workspaceStatusRules: { actionPrompts: {}, reviewInbox: { agent: 'claude' } },
+      workspaceStatusRules: {
+        actionPrompts: {},
+        actionAgents: { reviewPipeline: { agent: 'grok', model: 'grok-4.7', effort: 'high' } },
+        reviewInbox: { agent: 'claude' }
+      },
       gitConflictOperationByWorktree: {},
       setActiveTab: mocks.setActiveTab,
       setActiveTabType: mocks.setActiveTabType
@@ -100,6 +104,18 @@ describe('launchWorkspaceAction', () => {
     expect(call.title).toBe('Review feature/scale')
     expect(call.prompt).toContain('orca-review skill')
     expect(call.prompt).toContain('review-fe')
+    expect(call.agent).toBe('grok')
+    expect(call.sessionOptions).toEqual({ model: 'grok-4.7', effort: 'high' })
+  })
+
+  it('regroups the branch without reviewing it', async () => {
+    setContext({ action: null, canReviewBranch: true, branch: 'feature/scale' })
+    await launchWorkspaceAction('regroup')
+    const call = mocks.launch.mock.calls[0]?.[0]
+    expect(call.title).toBe('Group feature/scale')
+    expect(call.agent).toBe('grok')
+    expect(call.prompt).toContain('.orca/review-plan.json')
+    expect(call.prompt).not.toMatch(/\{\{\w+\}\}/)
   })
 
   it('re-reviews the current pull request against the review already left on it', async () => {
@@ -116,6 +132,8 @@ describe('launchWorkspaceAction', () => {
     await launchWorkspaceAction('re-review')
     const call = mocks.launch.mock.calls[0]?.[0]
     expect(call.title).toBe('Re-review #3145')
+    expect(call.agent).toBe('claude')
+    expect(call.sessionOptions).toBeUndefined()
     expect(call.prompt).toContain('Re-review pull request #3145 — "Scale"')
     expect(call.prompt).toContain('orca review comment add')
     expect(call.prompt).not.toMatch(/\{\{\w+\}\}/)

@@ -7,6 +7,7 @@ import { useRightSidebarFindKeys } from './file-find/use-right-sidebar-find-keys
 const FileExplorer = lazy(() => import('./FileExplorer'))
 const SourceControl = lazy(() => import('./SourceControl'))
 const ChecksPanel = lazy(() => import('./ChecksPanel'))
+const ReviewPlanPanel = lazy(() => import('./review-plan/ReviewPlanPanel'))
 const PortsPanel = lazy(() => import('./PortsPanel'))
 const AiVaultPanel = lazy(() => import('./AiVaultPanel'))
 const FolderWorkspaceWorktreesPanel = lazy(() => import('./FolderWorkspaceWorktreesPanel'))
@@ -30,6 +31,7 @@ export function RightSidebarPanelContent({
         {effectiveTab === 'explorer' && <FileExplorer />}
         {effectiveTab === 'source-control' && <SourceControl />}
         {effectiveTab === 'checks' && <ChecksPanel />}
+        {effectiveTab === 'review-plan' && <ReviewPlanPanel />}
         {/* Why: SSH port forwarding still depends on the raw ports.detect data,
             which the workspace-scoped status bar popover intentionally does not
             expose. Keep this panel reachable only for SSH worktrees. */}

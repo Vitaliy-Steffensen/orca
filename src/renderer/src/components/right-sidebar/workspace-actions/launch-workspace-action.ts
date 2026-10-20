@@ -17,6 +17,7 @@ import {
   resolveSourceControlAiPrCreationDefaults
 } from '../../../../../shared/source-control-ai'
 import {
+  REVIEW_REGROUP_PROMPT,
   renderWorkspaceActionPrompt,
   resolveWorkspaceActionPromptTemplate,
   type WorkspaceActionPromptId
@@ -26,7 +27,7 @@ import {
   type WorkspaceActionContext
 } from './workspace-action-context'
 
-export type WorkspaceActionLaunch = 'primary' | 'primary-draft' | 'review' | 're-review'
+export type WorkspaceActionLaunch = 'primary' | 'primary-draft' | 'review' | 're-review' | 'regroup'
 
 const PROMPT_BY_ACTION: Record<
   Exclude<NonNullable<WorkspaceActionContext['action']>, 'resolve-conflicts'>,
@@ -68,7 +69,9 @@ function buildTemplatePrompt(
   id: WorkspaceActionPromptId,
   // Why an override: the Create PR split button lets you pick draft per pull request, which has to
   // win over the repo's configured default rather than silently agree with it.
-  draftOverride?: boolean
+  draftOverride?: boolean,
+  // Why a literal: the regroup prompt is a fixed internal step, not one of the user's editable prompts.
+  templateOverride?: string
 ): string {
   const state = useAppStore.getState()
   const settings = state.settings
@@ -85,7 +88,8 @@ function buildTemplatePrompt(
   const baseRef =
     context.pr?.baseRefName ?? context.worktree.baseRef?.replace(/^origin\//, '') ?? 'main'
   return renderWorkspaceActionPrompt(
-    resolveWorkspaceActionPromptTemplate(state.workspaceStatusRules.actionPrompts, id),
+    templateOverride ??
+      resolveWorkspaceActionPromptTemplate(state.workspaceStatusRules.actionPrompts, id),
     {
       branch: context.branch,
       baseRef,
@@ -108,6 +112,11 @@ function buildTemplatePrompt(
 function actionTitle(kind: WorkspaceActionLaunch, context: WorkspaceActionContext): string {
   if (kind === 'primary-draft') {
     return translate('auto.components.workspaceActions.createDraftPrTab', 'Create draft PR')
+  }
+  if (kind === 'regroup') {
+    return translate('auto.components.workspaceActions.regroupTab', 'Group {{branch}}', {
+      branch: context.branch
+    })
   }
   if (kind === 'review') {
     return translate('auto.components.workspaceActions.reviewTab', 'Review {{branch}}', {
@@ -142,7 +151,7 @@ export async function launchWorkspaceAction(kind: WorkspaceActionLaunch): Promis
     return
   }
   if (
-    kind === 'review'
+    kind === 'review' || kind === 'regroup'
       ? !context.canReviewBranch
       : kind.startsWith('primary')
         ? !context.action
@@ -151,21 +160,35 @@ export async function launchWorkspaceAction(kind: WorkspaceActionLaunch): Promis
     return
   }
   const prompt =
-    kind === 'review'
-      ? buildTemplatePrompt(context, 'reviewPipeline')
-      : kind === 're-review'
-        ? buildTemplatePrompt(context, 'reReviewPullRequest')
-        : kind === 'primary-draft'
-          ? buildTemplatePrompt(context, 'createPullRequest', true)
-          : context.action === 'resolve-conflicts'
-            ? buildConflictPrompt(context)
-            : buildTemplatePrompt(
-                context,
-                PROMPT_BY_ACTION[context.action ?? 'create-pull-request']
-              )
+    kind === 'regroup'
+      ? buildTemplatePrompt(context, 'reviewPipeline', undefined, REVIEW_REGROUP_PROMPT)
+      : kind === 'review'
+        ? buildTemplatePrompt(context, 'reviewPipeline')
+        : kind === 're-review'
+          ? buildTemplatePrompt(context, 'reReviewPullRequest')
+          : kind === 'primary-draft'
+            ? buildTemplatePrompt(context, 'createPullRequest', true)
+            : context.action === 'resolve-conflicts'
+              ? buildConflictPrompt(context)
+              : buildTemplatePrompt(
+                  context,
+                  PROMPT_BY_ACTION[context.action ?? 'create-pull-request']
+                )
+  const actionAgent =
+    kind === 'review' || kind === 'regroup'
+      ? state.workspaceStatusRules.actionAgents.reviewPipeline
+      : null
   try {
     const launched = await launchAgentBackgroundSession({
-      agent: state.workspaceStatusRules.reviewInbox.agent,
+      agent: actionAgent?.agent ?? state.workspaceStatusRules.reviewInbox.agent,
+      ...(actionAgent?.model
+        ? {
+            sessionOptions: {
+              model: actionAgent.model,
+              ...(actionAgent.effort ? { effort: actionAgent.effort } : {})
+            }
+          }
+        : {}),
       worktreeId: context.worktree.id,
       prompt,
       launchSource: 'unknown',
