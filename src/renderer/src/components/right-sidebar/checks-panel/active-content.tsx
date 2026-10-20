@@ -75,14 +75,12 @@ export function ChecksPanelActiveContent({
     handleOpenStackPR,
     handleRefresh,
     handleResolveCommentsWithAI,
-    handleResolveConflictsWithAI,
     handleSaveTitle,
     handleStartEdit,
     handleTitleKeyDown,
     handleUnlinkReview,
     isFixingChecksWithAI,
     isRefreshing,
-    isResolvingConflictsWithAI,
     linkedGitLabMR,
     pendingCommentResolutionRef,
     pr,
@@ -131,10 +129,6 @@ export function ChecksPanelActiveContent({
               review={activeConflictReview ?? activeReview}
               reviewKind={reviewShortLabel}
               checks={checks}
-              isResolvingConflictsWithAI={isResolvingConflictsWithAI}
-              onResolveConflictsWithAI={() => void handleResolveConflictsWithAI()}
-              resolveConflictsDisabled={Boolean(aiActionDisabledReason)}
-              resolveConflictsDisabledReason={aiActionDisabledReason}
               isFixingChecksWithAI={isFixingChecksWithAI}
               onFixChecksWithAI={() => void handleFixChecksWithAI()}
               fixChecksDisabled={Boolean(aiActionDisabledReason)}
@@ -143,7 +137,7 @@ export function ChecksPanelActiveContent({
           )}
           {activeConflictReview && (
             <>
-              {/* Why: the triage strip owns the single Resolve action; the file list and fallback notice are informational. */}
+              {/* Why: the header's workspace action owns Resolve; everything here is informational. */}
               <ConflictingFilesSection pr={activeConflictReview} />
               <MergeConflictNotice
                 pr={activeConflictReview}
@@ -341,15 +335,6 @@ export function ChecksPanelActiveContent({
         onLaunched={() => {
           // Why: prompt delivery succeeded — the only point at which host replies/resolves may run.
           consumeClaimedCommentResolutionAfterDeliveryRef.current()
-          if (agentComposerState?.actionId === 'resolveConflicts') {
-            toast.success(
-              translate(
-                'auto.components.right.sidebar.ChecksPanel.a0181a8d76',
-                'Started an AI agent for the conflicts.'
-              )
-            )
-            return
-          }
           if (agentComposerState?.actionId === 'resolveComments') {
             // Why: resolve/reply toast is emitted by resolveSelectedThreadsAfterLaunch.
             return

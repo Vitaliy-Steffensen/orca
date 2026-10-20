@@ -111,7 +111,6 @@ export function useChecksPanelControllerState() {
   const [createPrError, setCreatePrError] = useState<string | null>(null)
   const [isPublishingBranch, setIsPublishingBranch] = useState(false)
   const [isSyncingBranch, setIsSyncingBranch] = useState(false)
-  const isResolvingConflictsWithAI = false
   const [isFixingChecksWithAI, setIsFixingChecksWithAI] = useState(false)
   const [agentComposerState, setAgentComposerState] = useState<ChecksAgentComposerState | null>(
     null
@@ -354,7 +353,6 @@ export function useChecksPanelControllerState() {
     setIsPublishingBranch,
     isSyncingBranch,
     setIsSyncingBranch,
-    isResolvingConflictsWithAI,
     isFixingChecksWithAI,
     setIsFixingChecksWithAI,
     agentComposerState,

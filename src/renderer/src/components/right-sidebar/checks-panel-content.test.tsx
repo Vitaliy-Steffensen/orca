@@ -111,35 +111,28 @@ describe('MergeConflictNotice', () => {
     expect(markup).not.toContain('lucide-sparkles')
   })
 
-  it('renders the single conflict AI action in the triage strip', () => {
+  it('leaves the conflict strip explanatory, since the header owns the Resolve action', () => {
     const markup = renderToStaticMarkup(
       React.createElement(PRTriageStrip, {
         pr: makePR(),
         checks: [],
-        isResolvingConflictsWithAI: false,
-        onResolveConflictsWithAI: () => {},
         isFixingChecksWithAI: false,
         onFixChecksWithAI: () => {}
       })
     )
 
-    expect(markup).toContain('Resolve')
-    expect(markup).toContain('lucide-sparkles')
-    expect(markup).not.toContain('Resolve with AI')
+    expect(markup).toContain('Conflicts block this PR')
+    expect(markup).not.toContain('<button')
+    expect(markup).not.toContain('lucide-sparkles')
   })
 
-  it('renders a conflict resolve action for merge requests without PR data', () => {
+  it('names the merge request in the conflict strip without PR data', () => {
     const markup = renderToStaticMarkup(
-      React.createElement(ConflictTriageStrip, {
-        reviewKind: 'MR',
-        isResolvingConflictsWithAI: false,
-        onResolveConflictsWithAI: () => {}
-      })
+      React.createElement(ConflictTriageStrip, { reviewKind: 'MR' })
     )
 
     expect(markup).toContain('Conflicts block this MR')
-    expect(markup).toContain('Resolve')
-    expect(markup).toContain('lucide-sparkles')
+    expect(markup).not.toContain('<button')
   })
 
   it('renders the CI fix action for failing non-conflict checks', () => {
@@ -147,8 +140,6 @@ describe('MergeConflictNotice', () => {
       React.createElement(PRTriageStrip, {
         review: makePR({ mergeable: 'MERGEABLE' }),
         checks: [{ name: 'verify', status: 'completed', conclusion: 'failure', url: null }],
-        isResolvingConflictsWithAI: false,
-        onResolveConflictsWithAI: () => {},
         isFixingChecksWithAI: false,
         onFixChecksWithAI: () => {}
       })
@@ -245,8 +236,6 @@ describe('PRTriageStrip check counts', () => {
       React.createElement(PRTriageStrip, {
         pr: makePR({ mergeable: 'MERGEABLE' }),
         checks,
-        isResolvingConflictsWithAI: false,
-        onResolveConflictsWithAI: () => {},
         isFixingChecksWithAI: false,
         onFixChecksWithAI: () => {}
       })

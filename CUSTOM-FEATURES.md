@@ -138,3 +138,4 @@ Taken whole with every mirror; the fork lineage's work on top of upstream.
 64. Select code in any editor or diff and click Ask on the floating toolbar to get a short answer in a new chat.
 65. The right sidebar's top action bar shows a coloured state label on the left: merge conflicts, CI failed, changes requested, waiting for CI, awaiting review, draft PR, local only, ready to merge.
 66. A merged pull request offers Archive Workspace next to Delete Workspace, until the workspace is archived.
+67. One header button offers only the actions this branch can take right now — resolve, open a PR, commit, review — with the rest behind its chevron.

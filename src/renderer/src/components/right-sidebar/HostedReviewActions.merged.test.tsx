@@ -27,6 +27,7 @@ vi.mock('@/components/ui/dropdown-menu', () => ({
   DropdownMenuSeparator: () => <hr />
 }))
 
+// oxlint-disable-next-line typescript/consistent-type-assertions -- SAFETY: the merged-state actions read only the repo id and path.
 const repo = { id: 'repo-1', path: '/repo' } as Repo
 
 function renderMerged(isArchived: boolean): string {
@@ -40,6 +41,7 @@ function renderMerged(isArchived: boolean): string {
         mergeable: 'UNKNOWN'
       }}
       repo={repo}
+      // oxlint-disable-next-line typescript/consistent-type-assertions -- SAFETY: the merged-state actions read only the worktree id and isArchived.
       worktree={{ id: 'worktree-1', isArchived } as Worktree}
       onRefreshReview={vi.fn().mockResolvedValue(undefined)}
     />
