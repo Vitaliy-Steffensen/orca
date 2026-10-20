@@ -23,6 +23,7 @@ import { useRightSidebarActivityItems } from './use-right-sidebar-activity-items
 import { useRightSidebarTabRouting } from './use-right-sidebar-tab-routing'
 import { useWindowWidth } from './use-window-width'
 import { RightSidebarActionsRow } from './right-sidebar-actions-row'
+import { GitStateBanner } from './GitStateBanner'
 
 const ACTIVITY_BAR_SIDE_WIDTH = 40
 
@@ -178,6 +179,10 @@ function RightSidebarInner(): React.JSX.Element {
             </TooltipProvider>
           </div>
         )}
+
+        <TooltipProvider delayDuration={400}>
+          <GitStateBanner />
+        </TooltipProvider>
 
         {panelContent}
 
