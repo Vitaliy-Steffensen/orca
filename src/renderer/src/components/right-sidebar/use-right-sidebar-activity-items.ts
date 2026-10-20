@@ -1,5 +1,5 @@
 import { useMemo } from 'react'
-import { Plug, Files, GitBranch, ListChecks, Workflow } from 'lucide-react'
+import { Plug, Files, GitBranch, GitPullRequest, ListChecks, Workflow } from 'lucide-react'
 import { useAppStore } from '@/store'
 import { useRepoById } from '@/store/selectors'
 import { isFolderRepo } from '../../../../shared/repo-kind'
@@ -104,14 +104,21 @@ export function useRightSidebarActivityItems({
       {
         id: 'source-control',
         icon: GitBranch,
-        title: translate('auto.components.right.sidebar.index.0314901467', 'Source Control'),
+        title: translate('auto.components.right.sidebar.index.localChanges', 'Local changes'),
         shortcut: sourceControlShortcut === 'Unassigned' ? '' : sourceControlShortcut,
+        gitOnly: true
+      },
+      {
+        id: 'pull-request',
+        icon: GitPullRequest,
+        title: translate('auto.components.right.sidebar.index.pullRequest', 'Pull request'),
+        shortcut: '',
         gitOnly: true
       },
       {
         id: 'checks',
         icon: ListChecks,
-        title: translate('auto.components.right.sidebar.index.83a10e3c44', 'Checks'),
+        title: translate('auto.components.right.sidebar.index.83a10e3c44', 'CI'),
         shortcut: checksShortcut === 'Unassigned' ? '' : checksShortcut,
         gitOnly: true
       },

@@ -33,7 +33,9 @@ export function rightSidebarShowsPullRequestData(
   if (
     !canShowRightSidebarForView(state.activeView) ||
     !state.rightSidebarOpen ||
-    (state.rightSidebarTab !== 'checks' && state.rightSidebarTab !== 'source-control')
+    (state.rightSidebarTab !== 'checks' &&
+      state.rightSidebarTab !== 'source-control' &&
+      state.rightSidebarTab !== 'pull-request')
   ) {
     return false
   }

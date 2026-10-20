@@ -26,7 +26,8 @@ import {
 
 /** The panel chrome: toolbar, review and agent-notes shelves, the file surface, bulk bar and dialogs. */
 export function SourceControlPanelReady(props: SourceControlPanelReadyProps) {
-  const { model, worktreePath } = props
+  const { mode, model, worktreePath } = props
+  const isPullRequestMode = mode === 'pull-request'
   const pendingReviewQueue = usePendingReviewQueue(props.model.activeWorktreeId ?? null)
   const submitReviewVerdict = useSubmitReviewVerdict(
     props.model.activeWorktreeId ?? null,
@@ -90,7 +91,7 @@ export function SourceControlPanelReady(props: SourceControlPanelReadyProps) {
   // Fork: your own notes live in the diff viewer only; agent notes keep a section here.
   const shelves: StackedSection[] = []
   // Why not gated on drafts: a verdict stands on its own — an approve needs no comments.
-  if (submitReviewVerdict.prNumber !== null) {
+  if (isPullRequestMode && submitReviewVerdict.prNumber !== null) {
     shelves.push({
       id: 'pending-review',
       node: (
@@ -104,7 +105,7 @@ export function SourceControlPanelReady(props: SourceControlPanelReadyProps) {
       )
     })
   }
-  if (pendingReviewQueue.comments.length > 0) {
+  if (isPullRequestMode && pendingReviewQueue.comments.length > 0) {
     shelves.push({
       id: 'pending-comments',
       node: (
@@ -116,14 +117,14 @@ export function SourceControlPanelReady(props: SourceControlPanelReadyProps) {
       )
     })
   }
-  if (activeWorktreeId && worktreePath && agentNoteCount > 0) {
+  if (!isPullRequestMode && activeWorktreeId && worktreePath && agentNoteCount > 0) {
     shelves.push({
       id: 'agent-notes',
       node: <AgentNotesShelf worktreeId={activeWorktreeId} onOpenNote={handleOpenComment} />
     })
   }
   const stagedSections = displaySections.filter((section) => section.id === 'staged')
-  if (stagedSections.length > 0) {
+  if (!isPullRequestMode && stagedSections.length > 0) {
     shelves.push({
       id: 'staged',
       node: <SourceControlWorkingTreeShelf props={props} sectionIds={['staged']} />
@@ -132,13 +133,19 @@ export function SourceControlPanelReady(props: SourceControlPanelReadyProps) {
   const unstagedSections = displaySections.filter(
     (section) => section.id === 'conflicts' || section.id === 'unstaged'
   )
-  if (unstagedSections.length > 0) {
+  if (!isPullRequestMode && unstagedSections.length > 0) {
     shelves.push({
       id: 'unstaged',
       node: <SourceControlWorkingTreeShelf props={props} sectionIds={['conflicts', 'unstaged']} />
     })
   }
-  if (activeWorktreeId && worktreePath && !activeConnectionId && agentTurns.length > 0) {
+  if (
+    !isPullRequestMode &&
+    activeWorktreeId &&
+    worktreePath &&
+    !activeConnectionId &&
+    agentTurns.length > 0
+  ) {
     shelves.push({
       id: 'agent-turns',
       node: (
@@ -190,7 +197,7 @@ export function SourceControlPanelReady(props: SourceControlPanelReadyProps) {
           onFilterExpandedChange={setFilterExpanded}
           // Fork: PRs are opened by the agent or the CLI, so the header offers no Create PR.
           visibleCreatePrHeaderAction={null}
-          hostedReview={hostedReview}
+          hostedReview={isPullRequestMode ? hostedReview : null}
           isCreatePrIntentInFlight={isCreatePrIntentInFlight}
           isCreatingPr={isCreatingPr || prGenerating}
           onCreatePrHeaderClick={handleCreatePrHeaderClick}
@@ -205,7 +212,7 @@ export function SourceControlPanelReady(props: SourceControlPanelReadyProps) {
           onChangeBaseRef={() => setBaseRefDialogOpen(true)}
           onRefreshBranchCompare={() => void refreshBranchCompare()}
           branchCompareRefreshDisabled={!branchSummary || branchSummary.status === 'loading'}
-          branchSummary={branchSummary}
+          branchSummary={isPullRequestMode ? branchSummary : null}
           branchLineTotal={branchLineTotal}
           compareBaseRef={compareBaseRef}
           headDisplay={gitIdentityDisplay}
@@ -241,13 +248,13 @@ export function SourceControlPanelReady(props: SourceControlPanelReadyProps) {
             onHide={hideSection}
             scrollRef={setFileListScrollElement}
             scrollStyle={{ paddingBottom: selectedKeys.size > 0 ? 50 : undefined }}
-            footer={<SourceControlCommitsSection model={model} />}
+            footer={isPullRequestMode ? null : <SourceControlCommitsSection model={model} />}
           >
             <SourceControlPanelContent {...props} />
           </SourceControlStackedSections>
         )}
 
-        {selectedKeys.size > 0 && (
+        {!isPullRequestMode && selectedKeys.size > 0 && (
           <BulkActionBar
             selectedCount={selectedKeys.size}
             stageableCount={bulkStagePaths.length}
