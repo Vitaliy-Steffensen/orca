@@ -27,7 +27,8 @@ export async function spawnBackgroundTerminalPane(args: {
   connectionId: string | null
   tabId: string
   leafId: string
-  placement: TerminalPanePlacement
+  /** Omitted for a pane that never becomes a tab, so main records no tab for it. */
+  placement?: TerminalPanePlacement
   command?: string
   env?: Record<string, string>
 }): Promise<SpawnedBackgroundPane> {
@@ -41,7 +42,7 @@ export async function spawnBackgroundTerminalPane(args: {
     worktreeId: args.worktree.id,
     tabId: args.tabId,
     leafId: args.leafId,
-    placement: args.placement
+    ...(args.placement ? { placement: args.placement } : {})
   })
   return {
     ptyId: result.id,

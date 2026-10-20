@@ -23,10 +23,8 @@ function ActiveWorkspaceQuickCommands(): React.JSX.Element | null {
  * is only places to look. Keeping them apart is why neither needs an overflow menu.
  */
 export function RightSidebarActionsRow({
-  showLabels,
   trailing
 }: {
-  showLabels: boolean
   trailing: React.ReactNode
 }): React.JSX.Element {
   return (
@@ -34,7 +32,7 @@ export function RightSidebarActionsRow({
       className={cn('flex shrink-0 items-center gap-0.5', RIGHT_SIDEBAR_HEADER_NO_DRAG_CLASS_NAME)}
     >
       <ActiveWorkspaceQuickCommands />
-      <WorkspaceActionButtons showLabels={showLabels} />
+      <WorkspaceActionButtons />
       <FrontendDevServerButton />
       <PreviewDeploymentButton />
       {trailing}

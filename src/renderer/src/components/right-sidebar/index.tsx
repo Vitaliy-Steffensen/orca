@@ -5,7 +5,7 @@ import { cn } from '@/lib/utils'
 import { useSidebarResize } from '@/hooks/useSidebarResize'
 import { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider } from '@/components/ui/tooltip'
 import { ContextMenu, ContextMenuTrigger } from '@/components/ui/context-menu'
-import { getTopActivityBarLayout, showsHeaderActionLabels } from './activity-bar-overflow'
+import { getTopActivityBarLayout } from './activity-bar-overflow'
 import { ActivityBarButton } from './activity-bar-buttons'
 import { getActiveChecksStatus } from './active-checks-status'
 import { useShortcutLabel } from '@/hooks/useShortcutLabel'
@@ -128,12 +128,7 @@ function RightSidebarInner(): React.JSX.Element {
     </Tooltip>
   ) : null
 
-  const actionsRow = rightSidebarOpen ? (
-    <RightSidebarActionsRow
-      showLabels={showsHeaderActionLabels(renderedRightSidebarWidth)}
-      trailing={panelToggle}
-    />
-  ) : null
+  const actionsRow = rightSidebarOpen ? <RightSidebarActionsRow trailing={panelToggle} /> : null
 
   return (
     <div

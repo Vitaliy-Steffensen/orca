@@ -21,6 +21,7 @@ import {
   queueSetupAndIssueCommands,
   type IssueCommandLaunch
 } from '@/lib/worktree-setup-issue-command-queue'
+import { canRunSetupSilently, launchSilentSetup } from '@/lib/worktree-silent-setup-launch'
 import { applyDefaultTerminalTabs } from '@/lib/worktree-default-terminal-tabs'
 import { openDefaultAgentChatInEmptyWorkspace } from '@/lib/empty-workspace-default-agent-chat'
 import { isEmptyWorkspaceDefaultSurfacePending } from '@/lib/empty-workspace-default-surface-claims'
@@ -156,15 +157,21 @@ export function ensureWorktreeHasInitialTerminal(
     !defaultTabs?.tabs.length &&
     opts?.createNewTerminalForStartup !== true
   ) {
-    queueSetupAndIssueCommands(
-      store,
-      worktreeId,
-      null,
-      setup,
-      undefined,
-      wrappedSetupCommandStr,
-      opts
-    )
+    const queueVisibleSetup = (): void =>
+      queueSetupAndIssueCommands(
+        store,
+        worktreeId,
+        null,
+        setup,
+        undefined,
+        wrappedSetupCommandStr,
+        opts
+      )
+    if (setup && !wrappedSetupCommandStr && canRunSetupSilently(setup)) {
+      launchSilentSetup(worktreeId, setup, queueVisibleSetup)
+    } else {
+      queueVisibleSetup()
+    }
     return null
   }
   // Why: only startup hydration honours the closed-last-tab tombstone. Every explicit
