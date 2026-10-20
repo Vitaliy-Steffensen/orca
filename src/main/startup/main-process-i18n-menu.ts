@@ -5,6 +5,7 @@ import {
   rebuildAppMenu,
   getNextDefaultOnAppearanceSettingValue
 } from '../menu/register-app-menu'
+import { createOrFocusCompanionWindow } from '../window/companion-window'
 import { zoomDashboardPopoutIfFocused } from '../window/dashboard-popout-window'
 import { toggleSourceControlSectionHidden } from '../../shared/source-control-sections'
 import { buildPanelSectionsSubmenus } from '../menu/source-control-sections-menu'
@@ -71,6 +72,11 @@ export async function initializeMainProcessI18nAndMenu(): Promise<void> {
     onZoomReset: () => {
       if (!zoomDashboardPopoutIfFocused('reset')) {
         state.mainWindow?.webContents.send('terminal:zoom', 'reset')
+      }
+    },
+    onOpenCompanionWindow: () => {
+      if (state.runtimeRpc) {
+        createOrFocusCompanionWindow(store, state.runtimeRpc)
       }
     },
     onToggleLeftSidebar: () => state.mainWindow?.webContents.send('ui:toggleLeftSidebar'),
