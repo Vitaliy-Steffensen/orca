@@ -3,6 +3,7 @@ import type { Store } from '../persistence'
 import type { OrcaRuntimeRpcServer } from '../runtime/runtime-rpc'
 import { isBackgroundLaunch, showWindowWithoutStealingFocus } from './foreground-activation-policy'
 import { installPrivilegedWindowNavigationPolicy } from './privileged-window-navigation'
+import { COMPANION_USER_AGENT_TOKEN } from '../../shared/companion-window-user-agent'
 import { rectHasVisibleAreaOnAnyDisplay } from './window-bounds-validation'
 
 const MIN_WIDTH = 640
@@ -103,6 +104,10 @@ export function createOrFocusCompanionWindow(
     }
   })
   installPrivilegedWindowNavigationPolicy(window.webContents)
+  // Why: only this window may steer and follow the desktop's workspace; other paired browsers and phones must not.
+  window.webContents.setUserAgent(
+    `${window.webContents.getUserAgent()} ${COMPANION_USER_AGENT_TOKEN}`
+  )
   window.webContents.session.setPermissionRequestHandler((_webContents, _permission, callback) =>
     callback(false)
   )
