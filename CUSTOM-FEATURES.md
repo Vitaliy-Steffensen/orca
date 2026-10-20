@@ -128,3 +128,5 @@ Taken whole with every mirror; the fork lineage's work on top of upstream.
 56. A review summary shows the verdict it was submitted with. (§56)
 57. `orca file open --line/--column` opens a file with the cursor on that spot. (§57)
 58. The sidebar header and bottom bar tuck their secondary actions (activity, workspace options, add project, reveal workspace, board, help) under "…" menus. (§58)
+59. Tasks and Automations moved out of the sidebar nav into the bottom "…" menu. (§59)
+60. The workspace header action buttons always show their label next to the icon, at any panel width. (§60)

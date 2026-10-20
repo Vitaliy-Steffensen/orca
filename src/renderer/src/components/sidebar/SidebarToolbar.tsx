@@ -1,7 +1,8 @@
 import React from 'react'
-import { Check, Crosshair, Kanban } from 'lucide-react'
+import { CalendarClock, Check, Crosshair, Kanban, List } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { DropdownMenuItem, DropdownMenuSeparator } from '@/components/ui/dropdown-menu'
+import { useAppStore } from '@/store'
 import { requestScrollToCurrentWorkspaceReveal } from '@/lib/scroll-to-current-workspace-status'
 import { SidebarSettingsHelpMenu } from './SidebarSettingsHelpMenu'
 import { translate } from '@/i18n/i18n'
@@ -22,6 +23,8 @@ const SidebarToolbar = React.memo(function SidebarToolbar({
   // toolbar keeps whatever language was active at boot — English, since the persisted locale
   // is applied asynchronously after the lazy catalog loads.
   useTranslation()
+  const openTaskPage = useAppStore((s) => s.openTaskPage)
+  const openAutomationsPage = useAppStore((s) => s.openAutomationsPage)
 
   return (
     <div className="mt-auto shrink-0">
@@ -48,6 +51,14 @@ const SidebarToolbar = React.memo(function SidebarToolbar({
                     'Workspace board'
                   )}
                   {workspaceBoardOpen ? <Check className="ml-auto size-3.5" /> : null}
+                </DropdownMenuItem>
+                <DropdownMenuItem onSelect={() => openTaskPage()}>
+                  <List className="size-3.5" />
+                  {translate('auto.components.sidebar.SidebarNav.fee535205b', 'Tasks')}
+                </DropdownMenuItem>
+                <DropdownMenuItem onSelect={openAutomationsPage}>
+                  <CalendarClock className="size-3.5" />
+                  {translate('auto.components.sidebar.SidebarNav.f323383e9a', 'Automations')}
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
               </>
