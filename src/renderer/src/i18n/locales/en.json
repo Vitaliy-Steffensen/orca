@@ -18565,10 +18565,9 @@
         "launchFailed": "Could not start the agent: {{reason}}",
         "reReview": "Re-review",
         "reReviewTab": "Re-review #{{number}}",
-        "moreReviewActions": "More review actions",
         "createDraftPr": "Create draft PR",
-        "morePrActions": "More pull request actions",
-        "createDraftPrTab": "Create draft PR"
+        "createDraftPrTab": "Create draft PR",
+        "moreWorkspaceActions": "More workspace actions"
       },
       "workspaceStatusRules": {
         "kept": "Kept {{name}}: {{reason}}",

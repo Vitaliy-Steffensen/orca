@@ -3,22 +3,16 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { cleanup, render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
+import type { WorkspaceActionKind } from '../../../../../shared/workspace-action'
 
-type ActionContextStub = {
-  action: string | null
-  pr: { state: string } | null
-  canReviewBranch: boolean
-}
+type ActionContextStub = { actions: WorkspaceActionKind[]; canReviewBranch: boolean }
 
 const mocks = vi.hoisted(() => {
-  const state: ActionContextStub = {
-    action: 'create-pull-request',
-    pr: { state: 'open' },
-    canReviewBranch: true
-  }
+  const state: ActionContextStub = { actions: [], canReviewBranch: false }
   return { state, launch: vi.fn() }
 })
 
+vi.mock('zustand/react/shallow', () => ({ useShallow: (fn: unknown) => fn }))
 vi.mock('@/store', () => ({
   useAppStore: (selector: (state: ActionContextStub) => unknown) => selector(mocks.state)
 }))
@@ -30,56 +24,70 @@ vi.mock('@/i18n/i18n', () => ({ translate: (_key: string, fallback: string) => f
 
 import { WorkspaceActionButtons } from './WorkspaceActionButtons'
 
+function renderWith(actions: WorkspaceActionKind[], canReviewBranch = false): void {
+  mocks.state.actions = actions
+  mocks.state.canReviewBranch = canReviewBranch
+  mocks.launch.mockReset().mockResolvedValue(undefined)
+  render(<WorkspaceActionButtons />)
+}
+
 describe('WorkspaceActionButtons', () => {
   // Why explicit: this config has no global testing-library cleanup, so a left-over
   // render would answer the next test's queries.
   afterEach(cleanup)
 
-  it('keeps Re-review one click deep behind the Review button while a pull request is open', async () => {
-    mocks.launch.mockReset().mockResolvedValue(undefined)
-    render(<WorkspaceActionButtons />)
+  it('puts the first action on the face and the rest one click deep', async () => {
+    renderWith(['commit-and-push', 'review', 're-review'])
 
-    expect(screen.getByRole('button', { name: 'Review' })).toBeTruthy()
-    await userEvent.click(screen.getByRole('button', { name: 'More review actions' }))
+    expect(screen.getByRole('button', { name: 'Commit & push' })).toBeTruthy()
+    await userEvent.click(screen.getByRole('button', { name: 'More workspace actions' }))
+    expect(await screen.findByRole('menuitem', { name: 'Review' })).toBeTruthy()
     await userEvent.click(await screen.findByRole('menuitem', { name: 'Re-review' }))
     expect(mocks.launch).toHaveBeenCalledWith('re-review')
   })
 
-  it('offers Create draft PR from the Create PR chevron', async () => {
-    mocks.launch.mockReset().mockResolvedValue(undefined)
-    render(<WorkspaceActionButtons />)
+  it('launches the primary action from the main segment', async () => {
+    renderWith(['resolve-conflicts', 'review', 're-review'])
 
-    expect(screen.getByRole('button', { name: 'Create PR' })).toBeTruthy()
-    await userEvent.click(screen.getByRole('button', { name: 'More pull request actions' }))
-    await userEvent.click(await screen.findByRole('menuitem', { name: 'Create draft PR' }))
-    expect(mocks.launch).toHaveBeenCalledWith('primary-draft')
+    await userEvent.click(screen.getByRole('button', { name: 'Resolve conflicts' }))
+    expect(mocks.launch).toHaveBeenCalledWith('resolve-conflicts')
   })
 
-  it('offers no chevron on a primary action that has no second form', () => {
-    mocks.state.action = 'commit-and-push'
-    render(<WorkspaceActionButtons />)
+  it('offers no chevron when only one action applies', () => {
+    renderWith(['ready-for-review'])
 
-    expect(screen.getByRole('button', { name: 'Commit & push' })).toBeTruthy()
-    expect(screen.queryByRole('button', { name: 'More pull request actions' })).toBeNull()
+    expect(screen.getByRole('button', { name: 'Ready for review' })).toBeTruthy()
+    expect(screen.queryByRole('button', { name: 'More workspace actions' })).toBeNull()
   })
 
   it('runs the review pipeline from the Review button without a pull request', async () => {
-    mocks.launch.mockReset().mockResolvedValue(undefined)
-    mocks.state.pr = null
-    render(<WorkspaceActionButtons />)
+    renderWith([], true)
 
     await userEvent.click(screen.getByRole('button', { name: 'Review' }))
     expect(mocks.launch).toHaveBeenCalledWith('review')
-    expect(screen.queryByRole('button', { name: 'More review actions' })).toBeNull()
+    expect(screen.queryByRole('button', { name: 'More workspace actions' })).toBeNull()
   })
 
-  it('hides the whole review control when there is nothing to review', () => {
-    mocks.state.action = 'create-pull-request'
-    mocks.state.pr = null
-    mocks.state.canReviewBranch = false
-    render(<WorkspaceActionButtons />)
+  it('keeps the branch review behind the step the branch is actually waiting on', async () => {
+    renderWith(['commit-and-push'], true)
 
-    expect(screen.queryByRole('button', { name: 'Review' })).toBeNull()
-    expect(screen.queryByRole('button', { name: 'More review actions' })).toBeNull()
+    expect(screen.getByRole('button', { name: 'Commit & push' })).toBeTruthy()
+    await userEvent.click(screen.getByRole('button', { name: 'More workspace actions' }))
+    expect(await screen.findByRole('menuitem', { name: 'Review' })).toBeTruthy()
+  })
+
+  it('renders nothing when the branch has no action to take', () => {
+    renderWith([])
+
+    expect(screen.queryByRole('button')).toBeNull()
+  })
+
+  it('shows no review entries when the resolver left them out', async () => {
+    renderWith(['create-pull-request', 'create-draft-pull-request'])
+
+    await userEvent.click(screen.getByRole('button', { name: 'More workspace actions' }))
+    expect(await screen.findByRole('menuitem', { name: 'Create draft PR' })).toBeTruthy()
+    expect(screen.queryByRole('menuitem', { name: 'Review' })).toBeNull()
+    expect(screen.queryByRole('menuitem', { name: 'Re-review' })).toBeNull()
   })
 })

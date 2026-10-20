@@ -1,10 +1,9 @@
 import { forgeOwnerHostIdForWorkspace } from '@/runtime/forge-credential-target'
 import { useCallback } from 'react'
 import { toast } from 'sonner'
-import { buildResolvePullRequestConflictsPrompt } from '../SourceControl'
 import { buildPRCommentsResolutionPrompt } from '../../pr-comments-resolution-prompt'
 import { parseGitHubIssueOrPRLink } from '../../../../../shared/github/links'
-import { clearPendingPRCommentAiAck, setPendingPRCommentAiAck } from '../pr-comments-ai-launch-ack'
+import { setPendingPRCommentAiAck } from '../pr-comments-ai-launch-ack'
 import type { PendingPRCommentAiAckGithubTarget } from '../pr-comments-ai-launch-ack'
 import type { PRCommentGroup } from '../../../../../shared/pr-comment-groups'
 import { translate } from '@/i18n/i18n'
@@ -15,10 +14,7 @@ import type { ChecksPanelCommentResolutionState } from './use-checks-panel-comme
 import type { ChecksPanelReviewState } from './use-checks-panel-review-state'
 import type { ChecksPanelComposerState } from './use-checks-panel-composer-state'
 
-type ChecksPanelAiQueueInput = Pick<
-  ChecksPanelContextState,
-  'activeConflictReview' | 'activeReview' | 'pr' | 'prNumber'
-> &
+type ChecksPanelAiQueueInput = Pick<ChecksPanelContextState, 'activeReview' | 'pr' | 'prNumber'> &
   Pick<
     ChecksPanelControllerState,
     | 'activeWorktree'
@@ -37,7 +33,6 @@ type ChecksPanelAiQueueInput = Pick<
 
 export function useChecksPanelAiQueue(model: ChecksPanelAiQueueInput) {
   const {
-    activeConflictReview,
     activeReview,
     activeWorktree,
     activeWorktreeId,
@@ -54,47 +49,6 @@ export function useChecksPanelAiQueue(model: ChecksPanelAiQueueInput) {
     sourceControlAiActionsVisible,
     stateRequestKey
   } = model
-  // Why: hosted-review conflicts come from the host mergeability check (no local MERGE_HEAD), so the prompt reproduces the merge locally.
-  const handleResolveConflictsWithAI = useCallback(async (): Promise<void> => {
-    if (!sourceControlAiActionsVisible || !activeWorktreeId || !activeConflictReview) {
-      return
-    }
-    const conflictFiles = activeConflictReview.conflictSummary?.files ?? []
-    // Why: swapping the composer to another action never fires onOpenChange, so a queued
-    // comment-resolution ack would survive and post fixing replies on this launch instead.
-    pendingCommentResolutionRef.current = null
-    claimedCommentResolutionRef.current = null
-    commentResolutionLaunchAcceptedRef.current = false
-    clearPendingPRCommentAiAck()
-    setAgentComposerState({
-      actionId: 'resolveConflicts',
-      title: translate(
-        'auto.components.right.sidebar.ChecksPanel.4ede779461',
-        'Resolve Review Conflicts With AI'
-      ),
-      description: translate(
-        'auto.components.right.sidebar.ChecksPanel.abf59262fb',
-        'Review and edit the full command input before starting an agent.'
-      ),
-      prompt: buildResolvePullRequestConflictsPrompt({
-        reviewKind: activeConflictReview.provider === 'gitlab' ? 'MR' : 'PR',
-        baseRef: activeConflictReview.conflictSummary?.baseRef,
-        entries: conflictFiles.map((path) => ({ path })),
-        worktreePath: activeWorktreePath ?? null
-      }),
-      launchSource: 'conflict_resolution'
-    })
-  }, [
-    activeConflictReview,
-    activeWorktreeId,
-    activeWorktreePath,
-    sourceControlAiActionsVisible,
-    commentResolutionLaunchAcceptedRef,
-    pendingCommentResolutionRef,
-    setAgentComposerState,
-    claimedCommentResolutionRef
-  ])
-
   const handleResolveCommentsWithAI = useCallback(
     (selectedGroups: PRCommentGroup[]): void => {
       if (
@@ -232,7 +186,7 @@ export function useChecksPanelAiQueue(model: ChecksPanelAiQueueInput) {
       commentResolutionLaunchAcceptedRef
     ]
   )
-  return { handleResolveConflictsWithAI, handleResolveCommentsWithAI }
+  return { handleResolveCommentsWithAI }
 }
 
 export type ChecksPanelAiQueueState = ReturnType<typeof useChecksPanelAiQueue>

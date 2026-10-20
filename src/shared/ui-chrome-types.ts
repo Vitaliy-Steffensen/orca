@@ -110,6 +110,7 @@ export type RightSidebarTab =
   | 'workspaces'
   | 'pr-checks'
   | 'source-control'
+  | 'pull-request'
   | 'checks'
   | 'review-plan'
   | 'ports'

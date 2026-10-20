@@ -206,7 +206,7 @@ function renderSourceControl(): void {
   act(() => {
     root.render(
       <TooltipProvider>
-        <SourceControl />
+        <SourceControl mode="pull-request" />
       </TooltipProvider>
     )
   })

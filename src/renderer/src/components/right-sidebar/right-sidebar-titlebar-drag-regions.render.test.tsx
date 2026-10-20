@@ -248,8 +248,8 @@ describe('rendered right sidebar titlebar drag regions', () => {
     expect(activityStrip).toContain('data-context-menu-trigger="true"')
 
     expectNoDrag(buttonOpeningTag(markup, 'Explorer'))
-    expectNoDrag(buttonOpeningTag(markup, 'Source Control'))
-    expectNoDrag(buttonOpeningTag(markup, 'Checks'))
+    expectNoDrag(buttonOpeningTag(markup, 'Local changes'))
+    expectNoDrag(buttonOpeningTag(markup, 'CI'))
     expect(buttonOpeningTag(markup, 'Toggle right sidebar')).toContain('sidebar-toggle')
   })
 
@@ -296,8 +296,8 @@ describe('rendered right sidebar titlebar drag regions', () => {
     expect(sideStrip).toContain('data-context-menu-trigger="true"')
 
     expectNoDrag(buttonOpeningTag(markup, 'Explorer'))
-    expectNoDrag(buttonOpeningTag(markup, 'Source Control'))
-    expectNoDrag(buttonOpeningTag(markup, 'Checks'))
+    expectNoDrag(buttonOpeningTag(markup, 'Local changes'))
+    expectNoDrag(buttonOpeningTag(markup, 'CI'))
     expect(buttonOpeningTag(markup, 'Toggle right sidebar')).toContain('sidebar-toggle')
   })
 

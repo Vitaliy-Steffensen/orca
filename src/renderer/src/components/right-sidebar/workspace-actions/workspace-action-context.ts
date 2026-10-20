@@ -7,7 +7,7 @@ import type { GitStatusEntry } from '../../../../../shared/git-status-types'
 import type { Repo } from '../../../../../shared/repo-types'
 import type { Worktree } from '../../../../../shared/worktree/types'
 import {
-  resolveWorkspaceAction,
+  resolveWorkspaceActions,
   type WorkspaceActionKind
 } from '../../../../../shared/workspace-action'
 
@@ -17,7 +17,7 @@ export type WorkspaceActionContext = {
   branch: string
   pr: PRInfo | null
   unresolvedConflicts: GitStatusEntry[]
-  action: WorkspaceActionKind | null
+  actions: WorkspaceActionKind[]
   canReviewBranch: boolean
 }
 
@@ -52,14 +52,20 @@ export function selectWorkspaceActionContext(state: AppState): WorkspaceActionCo
   )
   const upstream = state.remoteStatusesByWorktree[worktree.id]
   const isDefaultBranch = worktree.isMainWorktree || branch === 'main' || branch === 'master'
-  const action = resolveWorkspaceAction({
+  // Why `in`: a missing key is a line total that has not loaded, which is not the same as a
+  // branch that genuinely matches its base.
+  const branchDiffKnown = worktree.id in state.gitBranchLineTotalByWorktree
+  const branchLineTotal = state.gitBranchLineTotalByWorktree[worktree.id] ?? null
+  const actions = resolveWorkspaceActions({
     hasUncommittedChanges: entries.length > unresolvedConflicts.length,
     hasUpstream: upstream?.hasUpstream === true,
     unpushedCommits: upstream?.hasUpstream ? upstream.ahead : 0,
     hasLocalConflicts: unresolvedConflicts.length > 0,
     isDefaultBranch,
     pullRequest: pr ? { state: pr.state, conflicting: pr.mergeable === 'CONFLICTING' } : null,
-    pullRequestKnown: entry !== undefined && !entry.error
+    pullRequestKnown: entry !== undefined && !entry.error,
+    hasDiffFromBase: (branchLineTotal?.added ?? 0) + (branchLineTotal?.removed ?? 0) > 0,
+    branchDiffKnown
   })
   return {
     worktree,
@@ -67,7 +73,7 @@ export function selectWorkspaceActionContext(state: AppState): WorkspaceActionCo
     branch,
     pr,
     unresolvedConflicts,
-    action,
+    actions,
     canReviewBranch: entries.length > 0 || !isDefaultBranch
   }
 }

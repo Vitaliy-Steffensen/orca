@@ -3,6 +3,7 @@ import { translate } from '@/i18n/i18n'
 import { useAppStore } from '@/store'
 import type { PendingSidebarWorktreeReveal } from '@/store/slices/ui'
 import { activateWebRuntimeSessionWorktree } from '@/runtime/web-runtime-worktree-activation'
+import { announceActiveWorktreeToCompanion } from '@/runtime/companion-worktree-follow'
 import { isWebRuntimeSessionActive } from '@/runtime/web-runtime-session-environment'
 import { registerWorktreeActivation } from '@/lib/worktree-activation-nav-registration'
 import { workspaceHasSleepingAgentSessions } from '@/lib/worktree-agent-activation-gate'
@@ -227,12 +228,17 @@ export function activateAndRevealWorktree(
   state.setActiveWorktree(worktreeId, opts?.executionHostId)
   const postActivationState = useAppStore.getState()
   const ownerRuntimeEnvironmentId = getRuntimeEnvironmentIdForWorktree(postActivationState, wt.id)
-  if (opts?.notifyHostRuntime !== false && isWebRuntimeSessionActive(ownerRuntimeEnvironmentId)) {
-    // Why: paired web clients own only local selection, so the desktop host publishes session surfaces without treating it as a nav command.
-    void activateWebRuntimeSessionWorktree({
-      worktreeId,
-      environmentId: ownerRuntimeEnvironmentId
-    })
+  if (opts?.notifyHostRuntime !== false) {
+    if (isWebRuntimeSessionActive(ownerRuntimeEnvironmentId)) {
+      // Why: paired web clients own only local selection, so the desktop host publishes session surfaces without treating it as a nav command.
+      void activateWebRuntimeSessionWorktree({
+        worktreeId,
+        environmentId: ownerRuntimeEnvironmentId
+      })
+    } else {
+      // Why: a companion window follows this window's workspace; host-stream activations skip this to avoid an echo loop.
+      announceActiveWorktreeToCompanion(worktreeId)
+    }
   }
 
   // Why: focus recency for Cmd+J ordering, distinct from recordWorktreeVisit/lastActivityAt; stamp before any later async step could throw. See docs/cmd-j-empty-query-ordering.md.

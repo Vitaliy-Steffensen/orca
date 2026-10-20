@@ -15,7 +15,7 @@ import {
 import type { ChecksPanelReview } from './checks-panel-review'
 import type { ChecksPanelHostedReviewModifierDestination } from './checks-panel-hosted-review-click-routing'
 import { translate } from '@/i18n/i18n'
-import { PullRequestIcon, prStateColor } from './checks-panel/check-presentation'
+import { PullRequestIcon } from './checks-panel/check-presentation'
 import { useChecksPanelControllerState } from './checks-panel/use-checks-panel-controller-state'
 import { useChecksPanelContextState } from './checks-panel/use-checks-panel-context-state'
 import { useChecksPanelReviewState } from './checks-panel/use-checks-panel-review-state'
@@ -91,14 +91,6 @@ export function ChecksPanelReviewHeader({
       >
         {reviewNumberLabel}
       </button>
-      <span
-        className={cn(
-          'text-[9px] font-semibold uppercase tracking-wider px-1.5 py-0.5 rounded border',
-          prStateColor(review.state)
-        )}
-      >
-        {review.state}
-      </span>
       <div className="flex-1" />
       <button
         className="cursor-pointer rounded p-1 text-muted-foreground transition-colors hover:bg-accent hover:text-foreground disabled:cursor-default disabled:opacity-50"

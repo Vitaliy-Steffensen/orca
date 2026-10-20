@@ -11,7 +11,7 @@ import {
 } from 'lucide-react'
 import { useAppStore } from '@/store'
 import { translate } from '@/i18n/i18n'
-import { FilterToggleRow } from './FilterToggleRow'
+import { MenuSwitchRow } from '@/components/menu-switch-row'
 
 const SidebarWorkspaceFilterSection = React.memo(function SidebarWorkspaceFilterSection() {
   const showSleepingWorkspaces = useAppStore((s) => s.showSleepingWorkspaces)
@@ -52,7 +52,7 @@ const SidebarWorkspaceFilterSection = React.memo(function SidebarWorkspaceFilter
           {translate('auto.components.sidebar.SidebarWorkspaceFilterSection.82594419ba', 'Filters')}
         </span>
       </div>
-      <FilterToggleRow
+      <MenuSwitchRow
         icon={<Moon className="size-3.5" />}
         label={translate(
           'auto.components.sidebar.SidebarWorkspaceFilterSection.ed1611b65b',
@@ -64,7 +64,7 @@ const SidebarWorkspaceFilterSection = React.memo(function SidebarWorkspaceFilter
       {/* Why gated: the exemption only has an effect while sleeping workspaces
           are being swept, so it stays hidden until its parent row is on. */}
       {!showSleepingWorkspaces && (
-        <FilterToggleRow
+        <MenuSwitchRow
           indented
           icon={<GitBranch className="size-3.5" />}
           label={translate(
@@ -79,7 +79,7 @@ const SidebarWorkspaceFilterSection = React.memo(function SidebarWorkspaceFilter
           onChange={setAlwaysShowDefaultBranchWorkspace}
         />
       )}
-      <FilterToggleRow
+      <MenuSwitchRow
         icon={<GitBranch className="size-3.5" />}
         label={translate(
           'auto.components.sidebar.SidebarWorkspaceFilterSection.c3fa13dc2e',
@@ -88,7 +88,7 @@ const SidebarWorkspaceFilterSection = React.memo(function SidebarWorkspaceFilter
         checked={hideDefaultBranchWorkspace}
         onChange={setHideDefaultBranchWorkspace}
       />
-      <FilterToggleRow
+      <MenuSwitchRow
         icon={<CalendarClock className="size-3.5" />}
         label={translate(
           'auto.components.sidebar.SidebarWorkspaceFilterSection.automationCreated',
@@ -97,7 +97,7 @@ const SidebarWorkspaceFilterSection = React.memo(function SidebarWorkspaceFilter
         checked={hideAutomationGeneratedWorkspaces}
         onChange={setHideAutomationGeneratedWorkspaces}
       />
-      <FilterToggleRow
+      <MenuSwitchRow
         icon={<SquareTerminal className="size-3.5" />}
         label={translate(
           'auto.components.sidebar.SidebarWorkspaceFilterSection.cliCreated',
@@ -107,7 +107,7 @@ const SidebarWorkspaceFilterSection = React.memo(function SidebarWorkspaceFilter
         onChange={setHideCliCreatedWorkspaces}
       />
       {showOtherClientFilter && (
-        <FilterToggleRow
+        <MenuSwitchRow
           icon={<MonitorSmartphone className="size-3.5" />}
           label={translate(
             'auto.components.sidebar.SidebarWorkspaceFilterSection.otherClients',
@@ -121,7 +121,7 @@ const SidebarWorkspaceFilterSection = React.memo(function SidebarWorkspaceFilter
           onChange={setHideWorkspacesFromOtherDevices}
         />
       )}
-      <FilterToggleRow
+      <MenuSwitchRow
         icon={<GitCommitHorizontal className="size-3.5" />}
         label={translate(
           'auto.components.sidebar.SidebarWorkspaceFilterSection.detachedHead',
@@ -130,7 +130,7 @@ const SidebarWorkspaceFilterSection = React.memo(function SidebarWorkspaceFilter
         checked={hideDetachedHeadWorkspaces}
         onChange={setHideDetachedHeadWorkspaces}
       />
-      <FilterToggleRow
+      <MenuSwitchRow
         icon={<FolderClock className="size-3.5" />}
         label={translate(
           'auto.components.sidebar.SidebarWorkspaceFilterSection.temporaryCheckouts',
@@ -141,7 +141,7 @@ const SidebarWorkspaceFilterSection = React.memo(function SidebarWorkspaceFilter
       />
       {/* Why not counted as an active filter: it widens the list rather than
           narrowing it, so Clear Filters has nothing to undo here. */}
-      <FilterToggleRow
+      <MenuSwitchRow
         icon={<Archive className="size-3.5" />}
         label={translate(
           'auto.components.sidebar.SidebarWorkspaceFilterSection.showArchived',

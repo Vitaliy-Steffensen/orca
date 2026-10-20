@@ -1,4 +1,4 @@
-export const RUNTIME_NAVIGATION_TARGETS = ['caller', 'host', 'clients', 'all'] as const
+export const RUNTIME_NAVIGATION_TARGETS = ['caller', 'host', 'clients', 'all', 'companion'] as const
 
 export type RuntimeNavigationTarget = (typeof RUNTIME_NAVIGATION_TARGETS)[number]
 
@@ -24,4 +24,8 @@ export function navigationTargetsHost(target: RuntimeNavigationTarget): boolean 
 
 export function navigationTargetsClients(target: RuntimeNavigationTarget): boolean {
   return target === 'clients' || target === 'all'
+}
+
+export function navigationTargetsCompanion(target: RuntimeNavigationTarget): boolean {
+  return target === 'companion'
 }

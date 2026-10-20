@@ -110,6 +110,7 @@ export function mergeWorktree(
       : {}),
     workspaceAutonomy: resolveWorkspaceAutonomy(meta?.workspaceAutonomy),
     workspaceIntent: resolveWorkspaceIntent(meta?.workspaceIntent),
+    ...(meta?.autoMerge !== undefined ? { autoMerge: meta.autoMerge } : {}),
     // Why: diff comments and queued review comments are persisted on WorktreeMeta and
     // forwarded verbatim so the renderer store mirrors on-disk state. A field left out here
     // is written on every change and then silently dropped on the next start.

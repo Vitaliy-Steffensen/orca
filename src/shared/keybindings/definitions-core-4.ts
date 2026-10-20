@@ -177,11 +177,11 @@ export const KEYBINDING_DEFINITION_CORE_4: readonly KeybindingDefinition[] = [
   },
   {
     id: 'sourceControl.toggleUnstagedOnly',
-    title: 'Show Only Unstaged Changes',
+    title: 'Open Local Changes',
     group: 'Global',
     scope: 'global',
     conflictGroup: 'editor',
-    searchKeywords: ['shortcut', 'source control', 'changes', 'unstaged', 'filter', 'working'],
+    searchKeywords: ['shortcut', 'source control', 'changes', 'unstaged', 'local', 'working'],
     // Why macOS only: Ctrl+U discards the line in a terminal on Windows and Linux.
     defaultBindings: { darwin: ['Mod+U'], linux: [], win32: [] }
   },

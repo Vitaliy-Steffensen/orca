@@ -22,6 +22,7 @@ import {
 } from '../../../../shared/github/viewer-review-request'
 import { readViewerReviewStanding } from '../../../../shared/workspace-status-rules'
 import { launchConflictAgents } from './launch-conflict-agents'
+import { runAutoMergeTick } from './run-auto-merge-tick'
 import { runReviewEnteredCommands } from './run-review-entered-commands'
 import { planNewWorkspaceStatusUpdates } from '../../../../shared/workspace-new-status-plan'
 import { loadPendingReviewDrafts } from '../pending-review/pending-review-draft-store'
@@ -57,6 +58,10 @@ export async function runWorkspaceStatusRuleTick(): Promise<PullRequestSyncTickS
   if (isDevBuildWithoutOptIn()) {
     return empty
   }
+  // Why before the repoIds guard: auto-merge is per workspace and needs no board rules.
+  await runAutoMergeTick().catch((error: unknown) => {
+    console.warn('[auto-merge] tick failed:', error)
+  })
   const state = useAppStore.getState()
   const config = state.workspaceStatusRules
   if (config.repoIds.length === 0) {
