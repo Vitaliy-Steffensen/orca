@@ -63,7 +63,6 @@ type MenuEntry = { kind: WorkspaceActionLaunch; label: string; icon: React.JSX.E
 function SplitActionButton({
   label,
   icon,
-  showLabel,
   disabled,
   primaryKind,
   menuLabel,
@@ -73,39 +72,26 @@ function SplitActionButton({
 }: {
   label: string
   icon: React.JSX.Element
-  showLabel: boolean
   disabled: boolean
   primaryKind: WorkspaceActionLaunch
   menuLabel: string
   menuEntries: readonly MenuEntry[]
   onRun: (kind: WorkspaceActionLaunch) => void
 } & React.ComponentProps<'div'>): React.JSX.Element {
-  const verb = (
-    <button
-      type="button"
-      className={cn(SPLIT_BUTTON_SEGMENT_CLASS, SPLIT_BUTTON_MAIN_SEGMENT_CLASS)}
-      aria-label={label}
-      disabled={disabled}
-      onClick={() => onRun(primaryKind)}
-    >
-      {icon}
-      {showLabel ? <span className="text-[12px] font-medium">{label}</span> : null}
-    </button>
-  )
   return (
     <TooltipProvider delayDuration={400}>
       <div className={SPLIT_BUTTON_SURFACE_CLASS} {...surfaceProps}>
-        {/* Why no tooltip with the label visible: it would only repeat what the button says. */}
-        {showLabel ? (
-          verb
-        ) : (
-          <Tooltip>
-            <TooltipTrigger asChild>{verb}</TooltipTrigger>
-            <TooltipContent side="bottom" sideOffset={6}>
-              {label}
-            </TooltipContent>
-          </Tooltip>
-        )}
+        {/* Why no tooltip: the label is always visible, so it would only repeat the button. */}
+        <button
+          type="button"
+          className={cn(SPLIT_BUTTON_SEGMENT_CLASS, SPLIT_BUTTON_MAIN_SEGMENT_CLASS)}
+          aria-label={label}
+          disabled={disabled}
+          onClick={() => onRun(primaryKind)}
+        >
+          {icon}
+          <span className="text-[12px] font-medium">{label}</span>
+        </button>
         {menuEntries.length > 0 ? (
           <DropdownMenu modal={false}>
             <Tooltip>
@@ -140,11 +126,7 @@ function SplitActionButton({
   )
 }
 
-export function WorkspaceActionButtons({
-  showLabels = true
-}: {
-  showLabels?: boolean
-}): React.JSX.Element | null {
+export function WorkspaceActionButtons(): React.JSX.Element | null {
   const action = useAppStore((state) => selectWorkspaceActionContext(state)?.action ?? null)
   const canReview = useAppStore((state) => {
     const pr = selectWorkspaceActionContext(state)?.pr
@@ -177,7 +159,6 @@ export function WorkspaceActionButtons({
         <SplitActionButton
           label={translate('auto.components.workspaceActions.review', 'Review')}
           icon={<ScanEye className="size-3.5" />}
-          showLabel={showLabels}
           disabled={busy !== null}
           menuLabel={translate(
             'auto.components.workspaceActions.moreReviewActions',
@@ -198,7 +179,6 @@ export function WorkspaceActionButtons({
         <SplitActionButton
           label={primary.label}
           icon={primary.icon}
-          showLabel={showLabels}
           disabled={busy !== null}
           menuLabel={translate(
             'auto.components.workspaceActions.morePrActions',

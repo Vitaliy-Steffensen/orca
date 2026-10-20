@@ -47,8 +47,26 @@ vi.mock('@/components/dashboard/useAgentBucketCounts', () => ({
   useAgentBucketCounts: () => ({ attention: 0, working: 0, done: 0, idle: 0 })
 }))
 
-vi.mock('./SidebarWorkspaceOptionsMenu', () => ({
-  default: () => <button aria-label="Workspace options" type="button" />
+vi.mock('@/components/ui/dropdown-menu', () => ({
+  DropdownMenu: ({ children }: { children: React.ReactNode }) => <>{children}</>,
+  DropdownMenuTrigger: ({ children }: { children: React.ReactNode }) => <>{children}</>,
+  DropdownMenuContent: ({ children }: { children: React.ReactNode }) => <>{children}</>,
+  DropdownMenuSub: ({ children }: { children: React.ReactNode }) => <>{children}</>,
+  DropdownMenuSubContent: ({ children }: { children: React.ReactNode }) => <>{children}</>,
+  DropdownMenuSubTrigger: ({ children }: { children: React.ReactNode }) => (
+    <span data-testid="options-submenu-trigger">{children}</span>
+  ),
+  DropdownMenuItem: ({
+    children,
+    onSelect
+  }: {
+    children: React.ReactNode
+    onSelect?: () => void
+  }) => (
+    <button type="button" data-testid="menu-item" onClick={() => onSelect?.()}>
+      {children}
+    </button>
+  )
 }))
 
 vi.mock('./workspace-options-menu-items', () => ({
@@ -99,6 +117,16 @@ function headerButton(label: string): HTMLButtonElement {
     throw new Error(`Header button not rendered: ${label}`)
   }
   return button
+}
+
+function menuItem(label: string): HTMLButtonElement {
+  const item = [...container.querySelectorAll<HTMLButtonElement>('[data-testid="menu-item"]')].find(
+    (node) => node.textContent?.includes(label)
+  )
+  if (!item) {
+    throw new Error(`Menu item not rendered: ${label}`)
+  }
+  return item
 }
 
 function createButton(): HTMLButtonElement {
@@ -159,17 +187,17 @@ describe('SidebarHeader', () => {
     expect(mocks.openWorkspaceCreationComposerWithTourHandoff).toHaveBeenCalledTimes(1)
   })
 
-  it('reaches Add project and New workspace in one click each, with no menu', async () => {
+  it('reaches Add project from the More menu and New workspace in one click', async () => {
     act(() => {
       root.render(<SidebarHeader onWorkspaceBoardMenuOpenChange={vi.fn()} />)
     })
 
     expect(headerButton('New workspace')).toBeTruthy()
-    expect(headerButton('Add project')).toBeTruthy()
-    expect(container.querySelector('[data-slot="dropdown-menu-trigger"]')).toBeNull()
+    expect(headerButton('More')).toBeTruthy()
+    expect(container.querySelector('[aria-label="Add project"]')).toBeNull()
 
     await act(async () => {
-      headerButton('Add project').click()
+      menuItem('Add project').click()
     })
 
     expect(mockState.openModal).toHaveBeenCalledWith('add-repo')
@@ -183,8 +211,8 @@ describe('SidebarHeader', () => {
 
     const labels = [...container.querySelectorAll<HTMLElement>('[aria-label]')]
       .map((node) => node.getAttribute('aria-label'))
-      .filter((label): label is string => label === 'Add project' || label === 'New workspace')
-    expect(labels).toEqual(['Add project', 'New workspace'])
+      .filter((label): label is string => label === 'More' || label === 'New workspace')
+    expect(labels).toEqual(['More', 'New workspace'])
   })
 
   it('advertises the workspace shortcut on the create tooltip, and omits it when unassigned', () => {
@@ -200,18 +228,13 @@ describe('SidebarHeader', () => {
     expect(container.textContent).not.toContain('⌘N')
   })
 
-  it('opens agent activity from the bell button', () => {
+  it('opens agent activity from the More menu', () => {
     act(() => {
       root.render(<SidebarHeader onWorkspaceBoardMenuOpenChange={vi.fn()} />)
     })
 
-    const activityButton = container.querySelector<HTMLButtonElement>(
-      '[aria-label="View activity"]'
-    )
-    expect(activityButton).toBeTruthy()
-
     act(() => {
-      activityButton?.click()
+      menuItem('View activity').click()
     })
 
     expect(mockState.setSidebarBody).toHaveBeenCalledWith('agents')
@@ -234,19 +257,14 @@ describe('SidebarHeader', () => {
     expect(container.querySelector('[data-intro-open]')).toBeNull()
   })
 
-  it('turns off agent activity from the active bell button', () => {
+  it('turns off agent activity from the More menu when active', () => {
     mockState.sidebarBody = 'agents'
     act(() => {
       root.render(<SidebarHeader onWorkspaceBoardMenuOpenChange={vi.fn()} />)
     })
 
-    const activityButton = container.querySelector<HTMLButtonElement>(
-      '[aria-label="Turn off activity view"]'
-    )
-    expect(activityButton?.getAttribute('aria-pressed')).toBe('true')
-
     act(() => {
-      activityButton?.click()
+      menuItem('Turn off activity view').click()
     })
 
     expect(mockState.setSidebarBody).toHaveBeenCalledWith('workspaces')
@@ -270,19 +288,24 @@ describe('SidebarHeader', () => {
     )
   })
 
-  it('swaps only the options slot in the agents view so no header button shifts', () => {
+  it('drops only the workspace options submenu in the agents view', () => {
+    act(() => {
+      root.render(<SidebarHeader onWorkspaceBoardMenuOpenChange={vi.fn()} />)
+    })
+    expect(container.querySelector('[data-testid="options-submenu-trigger"]')).toBeTruthy()
+
     mockState.sidebarBody = 'agents'
     act(() => {
       root.render(<SidebarHeader onWorkspaceBoardMenuOpenChange={vi.fn()} />)
     })
 
-    expect(container.querySelector('[aria-label="Turn off activity view"]')).toBeTruthy()
+    expect(container.querySelector('[data-testid="options-submenu-trigger"]')).toBeNull()
+    expect(menuItem('Turn off activity view')).toBeTruthy()
+    expect(menuItem('Add project')).toBeTruthy()
     expect(container.querySelector('[aria-label="New workspace"]')).toBeTruthy()
-    expect(container.querySelector('[aria-label="Workspace options"]')).toBeNull()
-    expect(container.querySelector('[aria-label="Add project"]')).toBeTruthy()
   })
 
-  it('keeps the activity bell and actions on one row at the default sidebar width', () => {
+  it('keeps the More menu and create button on one row', async () => {
     act(() => {
       root.render(<SidebarHeader onWorkspaceBoardMenuOpenChange={vi.fn()} />)
     })
@@ -291,22 +314,8 @@ describe('SidebarHeader', () => {
     const headerClasses = new Set(headerRow?.className.split(/\s+/) ?? [])
     expect(headerClasses.has('flex-wrap')).toBe(false)
     expect(headerClasses.has('h-8')).toBe(true)
-    expect(container.querySelector('[aria-label="View activity"]')).toBeTruthy()
-    expect(container.querySelector('[aria-label="Add project"]')).toBeTruthy()
+    expect(container.querySelector('[aria-label="More"]')).toBeTruthy()
     expect(container.querySelector('[aria-label="New workspace"]')).toBeTruthy()
-  })
-
-  it('keeps the same actions on one row at compact width', async () => {
-    mockState.sidebarWidth = 220
-    act(() => {
-      root.render(<SidebarHeader onWorkspaceBoardMenuOpenChange={vi.fn()} />)
-    })
-
-    expect(container.querySelector('[aria-label="Add project"]')).toBeTruthy()
-    expect(container.querySelector('[aria-label="View activity"]')).toBeTruthy()
-    expect(container.querySelector('[aria-label="New workspace"]')).toBeTruthy()
-    expect(container.querySelector('[aria-label="Workspace options"]')).toBeTruthy()
-    expect(container.querySelector('[aria-label="More workspace actions"]')).toBeNull()
 
     await act(async () => {
       createButton().click()
