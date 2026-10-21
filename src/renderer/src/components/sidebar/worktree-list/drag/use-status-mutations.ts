@@ -16,6 +16,7 @@ import {
 } from '../../worktree-manual-order'
 import { buildWorkspaceKanbanSidebarDropUpdates } from '../../workspace-kanban-sidebar-drop'
 import { stampManualWorkspaceStatusOverride } from '../../../../../../shared/workspace-status-manual-override'
+import { isLockedWorkspaceStatus } from '../../../../../../shared/workspace-status-automation'
 import type { SortBy } from '../../smart-sort'
 import { switchSortToManualAfterDrop } from '../../manual-sort-switch-toast'
 import type { WorktreeStatusDropAtIndexArgs } from './drop-commit-context'
@@ -33,10 +34,21 @@ export function useWorktreeStatusMutations(args: {
   const updateWorktreesMeta = useAppStore((s) => s.updateWorktreesMeta)
   const setWorktreesPinnedAndReveal = useAppStore((s) => s.setWorktreesPinnedAndReveal)
 
+  // Why every entry point checks: a locked lane is automation's to fill, and a drop is just
+  // another way of asking for a lane the picker already refuses.
+  const isLocked = useCallback(
+    (status: WorkspaceStatus) => isLockedWorkspaceStatus(workspaceStatuses, status),
+    [workspaceStatuses]
+  )
+
   const moveWorktreeToStatus = useCallback(
     (worktreeId: string, status: WorkspaceStatus) => {
       const current = worktreeMap.get(worktreeId)
-      if (!current || getWorkspaceStatus(current, workspaceStatuses) === status) {
+      if (
+        isLocked(status) ||
+        !current ||
+        getWorkspaceStatus(current, workspaceStatuses) === status
+      ) {
         return
       }
       void updateWorktreeMeta(
@@ -45,11 +57,14 @@ export function useWorktreeStatusMutations(args: {
         { executionHostId: current.hostId ?? 'local' }
       )
     },
-    [updateWorktreeMeta, worktreeMap, workspaceStatuses]
+    [isLocked, updateWorktreeMeta, worktreeMap, workspaceStatuses]
   )
 
   const moveWorktreesToStatus = useCallback(
     (worktreeIds: readonly string[], status: WorkspaceStatus) => {
+      if (isLocked(status)) {
+        return
+      }
       const updates: WorktreeMetaBatchUpdate[] = []
       for (const worktreeId of worktreeIds) {
         const current = worktreeMap.get(worktreeId)
@@ -66,11 +81,14 @@ export function useWorktreeStatusMutations(args: {
         void updateWorktreesMeta(updates)
       }
     },
-    [updateWorktreesMeta, worktreeMap, workspaceStatuses]
+    [isLocked, updateWorktreesMeta, worktreeMap, workspaceStatuses]
   )
 
   const moveWorktreesToStatusAtIndex = useCallback(
     (dropArgs: WorktreeStatusDropAtIndexArgs) => {
+      if (isLocked(dropArgs.status)) {
+        return
+      }
       const order = buildManualOrderUpdatesForGroupDrop({
         groups: dropArgs.groups,
         targetGroupKey: getWorkspaceStatusGroupKey(dropArgs.status),
@@ -116,7 +134,7 @@ export function useWorktreeStatusMutations(args: {
       }
       void updateWorktreesMeta([...updates.values()])
     },
-    [manualOrderCatalog, updateWorktreesMeta, worktreeMap, workspaceStatuses]
+    [isLocked, manualOrderCatalog, updateWorktreesMeta, worktreeMap, workspaceStatuses]
   )
 
   const pinWorktree = useCallback(
@@ -162,6 +180,9 @@ export function useWorktreeStatusMutations(args: {
 
   const shouldShowWorkspaceBoardDropIndicator = useCallback(
     (worktreeIds: readonly string[], status: WorkspaceStatus) => {
+      if (isLocked(status)) {
+        return false
+      }
       const sourceGroupKeys = worktreeIds.flatMap((worktreeId) => {
         const worktree = worktreeMap.get(worktreeId)
         return worktree ? [getWorkspaceStatus(worktree, workspaceStatuses)] : []
@@ -172,11 +193,14 @@ export function useWorktreeStatusMutations(args: {
         targetGroupKey: status
       })
     },
-    [sortBy, worktreeMap, workspaceStatuses]
+    [isLocked, sortBy, worktreeMap, workspaceStatuses]
   )
 
   const dropWorktreesOnWorkspaceBoard = useCallback(
     (dropArgs: WorktreeStatusDropAtIndexArgs) => {
+      if (isLocked(dropArgs.status)) {
+        return
+      }
       const result = buildWorkspaceKanbanSidebarDropUpdates({
         ...dropArgs,
         worktreeById: worktreeMap,
@@ -196,7 +220,7 @@ export function useWorktreeStatusMutations(args: {
       useAppStore.getState().recordFeatureInteraction('workspace-board-actions')
       void updateWorktreesMeta(result.updates)
     },
-    [manualOrderCatalog, sortBy, updateWorktreesMeta, worktreeMap, workspaceStatuses]
+    [isLocked, manualOrderCatalog, sortBy, updateWorktreesMeta, worktreeMap, workspaceStatuses]
   )
 
   return {

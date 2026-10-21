@@ -31,7 +31,7 @@ function toObservation(entry: AgentStatusEntry): WorkspaceAgentObservation {
   }
 }
 
-function collectAgentsByWorktreeId(
+export function collectAgentsByWorktreeId(
   state: AppState,
   now: number
 ): Map<string, WorkspaceAgentObservation[]> {

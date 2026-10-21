@@ -148,3 +148,5 @@ Taken whole with every mirror; the fork lineage's work on top of upstream.
 72. The pending review section can accept or drop every agent-proposed comment at once.
 73. A "Branch review" automation template runs the review pipeline on Grok 4.7 on a schedule.
 74. A Review plan tab in the right sidebar groups and rates the changed files from the last review, with a rating filter and a stale-grouping warning.
+75. When you have reviewed a pull request before, the Review section has a Full PR / Since review N switch for the diff.
+76. Board lanes can be marked automation-owned, held while agents run, and auto-pulled; new "Approved" and "Waiting for review" pull request rules can fill them.

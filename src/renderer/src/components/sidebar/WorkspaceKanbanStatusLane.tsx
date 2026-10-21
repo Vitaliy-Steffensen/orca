@@ -11,6 +11,7 @@ import {
   WORKSPACE_BOARD_COLUMN_WIDTH_MIN
 } from '../../../../shared/workspace-statuses'
 import { cn } from '@/lib/utils'
+import { WorkspaceStatusAutomationBadge } from './WorkspaceStatusAutomationBadge'
 import { Button } from '@/components/ui/button'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
 import WorkspaceKanbanLaneCardList from './WorkspaceKanbanLaneCardList'
@@ -165,6 +166,7 @@ function WorkspaceKanbanStatusLane({
           <div className="min-w-0 truncate text-[12px] font-semibold text-foreground">
             {status.label}
           </div>
+          <WorkspaceStatusAutomationBadge status={status} className="shrink-0" />
           <div className="shrink-0 rounded-full bg-muted px-1.5 py-0.5 text-[9px] font-medium leading-none text-muted-foreground">
             {isFiltered ? `${items.length} / ${laneTotalCount}` : items.length}
           </div>

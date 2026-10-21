@@ -8,6 +8,7 @@ import { cn } from '@/lib/utils'
 import { translate } from '@/i18n/i18n'
 import type { WorkspaceStatusDefinition } from '../../../../shared/worktree/types'
 import WorkspaceStatusAppearancePopover from './WorkspaceStatusAppearancePopover'
+import { WorkspaceStatusAutomationBadge } from './WorkspaceStatusAutomationBadge'
 
 type WorkspaceStatusLaneRowProps = {
   status: WorkspaceStatusDefinition
@@ -80,6 +81,7 @@ export default function WorkspaceStatusLaneRow({
         onChangeColor={onChangeColor}
         onChangeIcon={onChangeIcon}
       />
+      <WorkspaceStatusAutomationBadge status={status} className="shrink-0" />
       <ImeInput
         defaultValue={status.label}
         onBlur={(event) => onRename(event.target.value)}

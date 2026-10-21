@@ -558,3 +558,48 @@ describe('closing a workspace once you have reviewed', () => {
     expect(plan.creations.map((entry) => entry.sinceReviewCommit)).toStrictEqual([undefined])
   })
 })
+
+describe('automation hold', () => {
+  const held = { ...enabled, onResolved: 'delete' as const }
+
+  it('leaves a held workspace where it is, whatever its pull request says', () => {
+    const plan = buildWorkspaceStatusRulePlan({
+      targets: [makeTarget({ isAutomationHeld: true, currentStatus: 'automation' })],
+      snapshot: makeSnapshot({ linkedPullRequests: [makePR({ isDraft: true })] }),
+      config: held,
+      existingBranches: new Set()
+    })
+
+    expect(plan.statusUpdates).toEqual([])
+  })
+
+  it('does not delete a held workspace when its pull request merges mid-run', () => {
+    const plan = buildWorkspaceStatusRulePlan({
+      targets: [makeTarget({ isAutomationHeld: true, currentStatus: 'automation' })],
+      snapshot: makeSnapshot({ linkedPullRequests: [makePR({ state: 'MERGED' })] }),
+      config: held,
+      existingBranches: new Set()
+    })
+
+    expect(plan.removals).toEqual([])
+    expect(plan.archives).toEqual([])
+  })
+
+  it('moves the same workspace once the hold is released', () => {
+    const plan = buildWorkspaceStatusRulePlan({
+      targets: [makeTarget({ isAutomationHeld: false, currentStatus: 'automation' })],
+      snapshot: makeSnapshot({ linkedPullRequests: [makePR({ isDraft: true })] }),
+      config: held,
+      existingBranches: new Set()
+    })
+
+    expect(plan.statusUpdates).toEqual([
+      {
+        worktreeId: 'repo::/w/one',
+        executionHostId: 'local',
+        status: 'draft-col',
+        condition: 'draft'
+      }
+    ])
+  })
+})

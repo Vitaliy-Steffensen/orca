@@ -2,7 +2,11 @@ import type React from 'react'
 import type { FolderWorkspace } from '../../../../../../shared/folder-workspace-types'
 import type { ProjectGroup } from '../../../../../../shared/project-group-types'
 import type { Repo } from '../../../../../../shared/repo-types'
-import type { DetectedWorktree, Worktree } from '../../../../../../shared/worktree/types'
+import type {
+  DetectedWorktree,
+  WorkspaceStatusDefinition,
+  Worktree
+} from '../../../../../../shared/worktree/types'
 import type { ExecutionHostId } from '../../../../../../shared/execution-host'
 
 export type WorktreeGroupBy = 'none' | 'workspace-status' | 'repo' | 'pr-status'
@@ -33,6 +37,8 @@ export type GroupHeaderRow = {
   hostWorktreeCounts?: ReadonlyMap<ExecutionHostId, number>
   hostWorktreeIds?: ReadonlyMap<ExecutionHostId, readonly string[]>
   worktreeIds?: readonly string[]
+  /** Set on a workspace-status header whose lane a rule fills or keeps synced. */
+  statusAutomation?: Pick<WorkspaceStatusDefinition, 'autoFilled' | 'autoPull'>
 }
 
 export type WorktreeRow = {

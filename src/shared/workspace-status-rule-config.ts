@@ -1,77 +1,48 @@
-import { isTuiAgent } from './tui-agent-config'
-import { REVIEW_STAGED_COMMENT_INSTRUCTION } from './agent-note-prompt'
-import type { TuiAgent } from './tui-agent'
 import type { WorkspaceStatus } from './worktree/types'
+import type { TuiAgent } from './tui-agent'
+import type { WorkspaceActionPromptId } from './workspace-action-prompts'
 import {
-  WORKSPACE_ACTION_PROMPT_IDS,
-  type WorkspaceActionPromptId
-} from './workspace-action-prompts'
+  DEFAULT_AGENT_RULE_DWELL_MS,
+  DEFAULT_REVIEW_PIPELINE_AGENT,
+  type ReviewAgentView,
+  type WorkspaceActionAgent,
+  type WorkspaceAgentRuleCondition,
+  type WorkspaceStatusRuleCondition,
+  type WorkspaceStatusRuleResolution
+} from './workspace-status-rule-conditions'
+import {
+  DEFAULT_REVIEW_INBOX,
+  MAX_ACTION_PROMPT_LENGTH,
+  SEED_LEDGER_VERSION,
+  asRecord,
+  readResolution,
+  sanitizeActionAgents,
+  sanitizeActionPrompts,
+  sanitizeAgentRuleDwellMs,
+  sanitizeHandledPullRequests,
+  sanitizeNewWorkspaceStatus,
+  sanitizeReviewInbox,
+  sanitizeStatusByAgentCondition,
+  sanitizeStatusByCondition,
+  sanitizeString
+} from './workspace-status-rule-sanitize'
 
-/** Evaluation order. The first condition a pull request satisfies wins. */
-export const WORKSPACE_STATUS_RULE_CONDITIONS = [
-  'merged',
-  'closed',
-  'reviewing',
-  'conflicts',
-  'draft',
-  'changes-requested',
-  'merging',
-  'pm-approval',
-  'review'
-] as const
-
-export type WorkspaceStatusRuleCondition = (typeof WORKSPACE_STATUS_RULE_CONDITIONS)[number]
-
-/** Evaluation order for the agent-state rules. The first condition a workspace's own
- *  main agents satisfy wins. Kept disjoint so the order only decides reporting, never
- *  which of two simultaneously true conditions is lost. */
-export const WORKSPACE_AGENT_RULE_CONDITIONS = [
-  'agent-blocked',
-  'agent-asked',
-  'agent-failed',
-  'agent-idle-done',
-  'agent-working'
-] as const
-
-export type WorkspaceAgentRuleCondition = (typeof WORKSPACE_AGENT_RULE_CONDITIONS)[number]
-
-/** Default dwell: an agent state must hold this long before it moves a card. The activity
- *  dot may flicker between states within one turn; a lane that flickers is unreadable. */
-export const DEFAULT_AGENT_RULE_DWELL_MS = 15_000
-
-const MIN_AGENT_RULE_DWELL_MS = 0
-const MAX_AGENT_RULE_DWELL_MS = 10 * 60_000
-
-/** How the review agent's tab opens; 'default' follows the app's own default view. */
-export type ReviewAgentView = 'chat' | 'terminal' | 'claude-web' | 'default'
-
-export const REVIEW_AGENT_VIEWS: readonly ReviewAgentView[] = [
-  'chat',
-  'terminal',
-  'claude-web',
-  'default'
-]
-
-/** 'archive' shuts the workspace down and hides it; 'delete' removes the checkout. */
-export type WorkspaceStatusRuleResolution = 'delete' | 'archive' | 'none'
-
-function readResolution(value: unknown): WorkspaceStatusRuleResolution {
-  // Why the explicit fallback: a config written by a newer build can name a
-  // resolution this one has never heard of, and doing nothing is the safe read.
-  return value === 'delete' || value === 'archive' ? value : 'none'
-}
-
-/** The agent and model one top bar action runs on, so it can differ from the workspace's own chat. */
-export type WorkspaceActionAgent = {
-  agent: TuiAgent
-  model?: string
-  effort?: string
-}
-
-export const DEFAULT_REVIEW_PIPELINE_AGENT: WorkspaceActionAgent = {
-  agent: 'grok',
-  model: 'grok-4.7'
-}
+export {
+  DEFAULT_AGENT_RULE_DWELL_MS,
+  DEFAULT_REVIEW_PIPELINE_AGENT,
+  REVIEW_AGENT_VIEWS,
+  WORKSPACE_AGENT_RULE_CONDITIONS,
+  WORKSPACE_STATUS_RULE_CONDITIONS,
+  type ReviewAgentView,
+  type WorkspaceActionAgent,
+  type WorkspaceAgentRuleCondition,
+  type WorkspaceStatusRuleCondition,
+  type WorkspaceStatusRuleResolution
+} from './workspace-status-rule-conditions'
+export {
+  DEFAULT_REREVIEW_PROMPT_TEMPLATE,
+  DEFAULT_REVIEW_PROMPT_TEMPLATE
+} from './workspace-review-prompt-templates'
 
 export type WorkspaceStatusRuleReviewInbox = {
   enabled: boolean
@@ -96,6 +67,10 @@ export type WorkspaceStatusRuleConfig = {
   newWorkspaceStatus: WorkspaceStatus | null
   /** When `newWorkspaceStatus` was chosen; only workspaces created after it are moved. */
   newWorkspaceStatusSince: number | null
+  /** Lane a workspace Orca launches an agent into, so the run is visible in one place while it lasts. */
+  automationStartStatus: WorkspaceStatus | null
+  /** Where a workspace with no pull request goes once its holding lane releases it. */
+  automationReleaseStatus: WorkspaceStatus | null
   /** `org/team-slug`, or null when PM approval is not in use. */
   pmApprovalTeam: string | null
   /** What to do once a pull request is merged or closed without merging. */
@@ -121,39 +96,6 @@ export type WorkspaceStatusRuleConfig = {
 
 export const DEFAULT_MERGING_CHECK_NAME = 'Reviews satisfied'
 
-export const DEFAULT_REVIEW_PROMPT_TEMPLATE = `You are reviewing pull request #{{prNumber}} — "{{title}}" by {{author}} ({{url}}).
-The branch {{branch}} is checked out and the diff is pointed at {{baseRef}}.
-
-If you have the review-pr skill, use it: it picks the passes this diff needs, checks the UI in the browser when one changed, and handles the staging below. Otherwise follow the rest of this prompt.
-
-What UI changes should I check for?
-
-Analyse the changes, and point out the most important bits of the PR and what could be
-potential weak points. Analyse the architecture decisions; are they aligned with the codebase?
-
-${REVIEW_STAGED_COMMENT_INSTRUCTION}`
-
-export const DEFAULT_REREVIEW_PROMPT_TEMPLATE = `You reviewed pull request #{{prNumber}} — "{{title}}" by {{author}} ({{url}}) before, and {{author}} has asked you to look again.
-The branch {{branch}} is checked out and the diff is pointed at {{sinceCommit}}, the commit you last reviewed, so it shows only what has changed since.
-
-If you have the re-review skill, use it. Otherwise follow the rest of this prompt.
-
-Find the changes I asked for in my own review comments on this pull request, and for each one say how {{author}} answered it: done as asked, done differently, or not addressed. Quote the relevant part of the new code.
-
-Then flag anything new that arrived with these commits and was not part of what I asked for.
-
-${REVIEW_STAGED_COMMENT_INSTRUCTION}`
-
-function asRecord(value: unknown): Record<string, unknown> | null {
-  return value && typeof value === 'object' && !Array.isArray(value) ? { ...value } : null
-}
-
-/** 1 drops ledgers written by the removed seeding step, which recorded reviews
- *  as handled without ever cloning them. Re-cloning something that does have a
- *  workspace is already prevented by the linked-PR and branch checks. */
-const SEED_LEDGER_VERSION = 1
-
-const MAX_HANDLED_PULL_REQUESTS = 500
 const MAX_CHECK_NAME_LENGTH = 120
 const MAX_TEAM_LENGTH = 120
 const MAX_COMMAND_LENGTH = 1000
@@ -168,6 +110,8 @@ export function cloneDefaultWorkspaceStatusRuleConfig(): WorkspaceStatusRuleConf
     mergingCheckName: DEFAULT_MERGING_CHECK_NAME,
     newWorkspaceStatus: null,
     newWorkspaceStatusSince: null,
+    automationStartStatus: null,
+    automationReleaseStatus: null,
     pmApprovalTeam: null,
     onResolved: 'none',
     onReviewed: 'none',
@@ -176,13 +120,7 @@ export function cloneDefaultWorkspaceStatusRuleConfig(): WorkspaceStatusRuleConf
     reviewEnteredCommand: '',
     actionPrompts: {},
     actionAgents: { reviewPipeline: { ...DEFAULT_REVIEW_PIPELINE_AGENT } },
-    reviewInbox: {
-      enabled: false,
-      agent: 'claude',
-      view: 'chat',
-      promptTemplate: DEFAULT_REVIEW_PROMPT_TEMPLATE,
-      rereviewPromptTemplate: DEFAULT_REREVIEW_PROMPT_TEMPLATE
-    },
+    reviewInbox: { ...DEFAULT_REVIEW_INBOX },
     handledPullRequests: [],
     ledgerVersion: SEED_LEDGER_VERSION
   }
@@ -200,143 +138,6 @@ export function makeHandledPullRequestKey(
 /** Whether a ledger entry belongs to this pull request, whichever review it was keyed on. */
 export function isHandledKeyForPullRequest(entry: string, pullRequestKey: string): boolean {
   return entry === pullRequestKey || entry.startsWith(`${pullRequestKey}@`)
-}
-
-function sanitizeString(value: unknown, fallback: string, maxLength: number): string {
-  if (typeof value !== 'string') {
-    return fallback
-  }
-  const trimmed = value.trim()
-  return trimmed ? trimmed.slice(0, maxLength) : fallback
-}
-
-function sanitizeStatusByCondition(
-  value: unknown
-): Partial<Record<WorkspaceStatusRuleCondition, WorkspaceStatus>> {
-  const raw = asRecord(value)
-  if (!raw) {
-    return {}
-  }
-  const mapped: Partial<Record<WorkspaceStatusRuleCondition, WorkspaceStatus>> = {}
-  for (const condition of WORKSPACE_STATUS_RULE_CONDITIONS) {
-    const status = raw[condition]
-    if (typeof status === 'string' && status.trim()) {
-      mapped[condition] = status.trim()
-    }
-  }
-  return mapped
-}
-
-function sanitizeStatusByAgentCondition(
-  value: unknown
-): Partial<Record<WorkspaceAgentRuleCondition, WorkspaceStatus>> {
-  const raw = asRecord(value)
-  if (!raw) {
-    return {}
-  }
-  const mapped: Partial<Record<WorkspaceAgentRuleCondition, WorkspaceStatus>> = {}
-  for (const condition of WORKSPACE_AGENT_RULE_CONDITIONS) {
-    const status = raw[condition]
-    if (typeof status === 'string' && status.trim()) {
-      mapped[condition] = status.trim()
-    }
-  }
-  return mapped
-}
-
-function sanitizeAgentRuleDwellMs(value: unknown): number {
-  if (typeof value !== 'number' || !Number.isFinite(value)) {
-    return DEFAULT_AGENT_RULE_DWELL_MS
-  }
-  return Math.min(Math.max(Math.round(value), MIN_AGENT_RULE_DWELL_MS), MAX_AGENT_RULE_DWELL_MS)
-}
-
-function sanitizeNewWorkspaceStatus(
-  status: unknown,
-  since: unknown
-): Pick<WorkspaceStatusRuleConfig, 'newWorkspaceStatus' | 'newWorkspaceStatusSince'> {
-  if (typeof status !== 'string' || !status.trim()) {
-    return { newWorkspaceStatus: null, newWorkspaceStatusSince: null }
-  }
-  return {
-    newWorkspaceStatus: status.trim(),
-    newWorkspaceStatusSince: typeof since === 'number' && Number.isFinite(since) ? since : null
-  }
-}
-
-function sanitizeReviewInbox(value: unknown): WorkspaceStatusRuleReviewInbox {
-  const defaults = cloneDefaultWorkspaceStatusRuleConfig().reviewInbox
-  const raw = asRecord(value)
-  if (!raw) {
-    return defaults
-  }
-  return {
-    enabled: raw.enabled === true,
-    agent: isTuiAgent(raw.agent) ? raw.agent : defaults.agent,
-    view: REVIEW_AGENT_VIEWS.find((view) => view === raw.view) ?? defaults.view,
-    promptTemplate:
-      typeof raw.promptTemplate === 'string' && raw.promptTemplate.trim()
-        ? raw.promptTemplate
-        : defaults.promptTemplate,
-    rereviewPromptTemplate:
-      typeof raw.rereviewPromptTemplate === 'string' && raw.rereviewPromptTemplate.trim()
-        ? raw.rereviewPromptTemplate
-        : defaults.rereviewPromptTemplate
-  }
-}
-
-const MAX_ACTION_PROMPT_LENGTH = 8000
-
-function sanitizeActionPrompts(value: unknown): Partial<Record<WorkspaceActionPromptId, string>> {
-  const raw = asRecord(value)
-  const prompts: Partial<Record<WorkspaceActionPromptId, string>> = {}
-  for (const id of WORKSPACE_ACTION_PROMPT_IDS) {
-    const prompt = raw?.[id]
-    if (typeof prompt === 'string' && prompt.trim()) {
-      prompts[id] = prompt.slice(0, MAX_ACTION_PROMPT_LENGTH)
-    }
-  }
-  return prompts
-}
-
-const MAX_ACTION_AGENT_FIELD_LENGTH = 200
-
-function sanitizeActionAgents(
-  value: unknown
-): Partial<Record<WorkspaceActionPromptId, WorkspaceActionAgent>> {
-  const raw = asRecord(value)
-  const agents: Partial<Record<WorkspaceActionPromptId, WorkspaceActionAgent>> = {
-    reviewPipeline: { ...DEFAULT_REVIEW_PIPELINE_AGENT }
-  }
-  for (const id of WORKSPACE_ACTION_PROMPT_IDS) {
-    const entry = asRecord(raw?.[id])
-    if (!entry || !isTuiAgent(entry.agent)) {
-      continue
-    }
-    const model =
-      typeof entry.model === 'string' && entry.model.trim()
-        ? entry.model.trim().slice(0, MAX_ACTION_AGENT_FIELD_LENGTH)
-        : undefined
-    const effort =
-      typeof entry.effort === 'string' && entry.effort.trim()
-        ? entry.effort.trim().slice(0, MAX_ACTION_AGENT_FIELD_LENGTH)
-        : undefined
-    agents[id] = {
-      agent: entry.agent,
-      ...(model ? { model } : {}),
-      ...(effort ? { effort } : {})
-    }
-  }
-  return agents
-}
-
-function sanitizeHandledPullRequests(value: unknown): string[] {
-  if (!Array.isArray(value)) {
-    return []
-  }
-  const keys = value.filter((entry): entry is string => typeof entry === 'string' && !!entry.trim())
-  // Why: newest keys matter most, so an overlong ledger drops its oldest entries.
-  return [...new Set(keys)].slice(-MAX_HANDLED_PULL_REQUESTS)
 }
 
 export function normalizeWorkspaceStatusRuleConfig(value: unknown): WorkspaceStatusRuleConfig {
@@ -367,6 +168,14 @@ export function normalizeWorkspaceStatusRuleConfig(value: unknown): WorkspaceSta
       MAX_CHECK_NAME_LENGTH
     ),
     ...sanitizeNewWorkspaceStatus(raw.newWorkspaceStatus, raw.newWorkspaceStatusSince),
+    automationStartStatus:
+      typeof raw.automationStartStatus === 'string' && raw.automationStartStatus.trim()
+        ? raw.automationStartStatus.trim()
+        : null,
+    automationReleaseStatus:
+      typeof raw.automationReleaseStatus === 'string' && raw.automationReleaseStatus.trim()
+        ? raw.automationReleaseStatus.trim()
+        : null,
     pmApprovalTeam,
     onResolved: readResolution(raw.onResolved),
     onReviewed: readResolution(raw.onReviewed),
