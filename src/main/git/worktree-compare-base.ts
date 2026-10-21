@@ -31,7 +31,17 @@ export async function resolveWorktreeCompareBase(
     return effectiveBase
   }
   const defaultBaseRef = await getBaseRefDefault(repoPath, options)
-  return defaultBaseRef && !denotesBranchItself(defaultBaseRef, branch, longestFirstRemoteNames)
-    ? defaultBaseRef
-    : effectiveBase
+  if (!defaultBaseRef || denotesBranchItself(defaultBaseRef, branch, longestFirstRemoteNames)) {
+    return effectiveBase
+  }
+  return qualifyRemoteRef(defaultBaseRef, longestFirstRemoteNames)
+}
+
+/** The default-base probe answers in short form (`origin/main`); every other base
+ *  recorded on a worktree is fully qualified, so match that. */
+function qualifyRemoteRef(ref: string, remoteNames: readonly string[]): string {
+  if (ref.startsWith('refs/')) {
+    return ref
+  }
+  return remoteNames.some((remote) => ref.startsWith(`${remote}/`)) ? `refs/remotes/${ref}` : ref
 }

@@ -50,6 +50,20 @@ describe('resolveWorktreeCompareBase', () => {
     ).resolves.toBe('refs/remotes/origin/feature/x')
   })
 
+  it('qualifies the short ref the default-base probe answers with', async () => {
+    getBaseRefDefaultMock.mockResolvedValue('origin/main')
+    await expect(
+      resolveWorktreeCompareBase('/repo', 'feature/x', 'refs/remotes/origin/feature/x')
+    ).resolves.toBe('refs/remotes/origin/main')
+  })
+
+  it('leaves a bare local default base ref alone', async () => {
+    getBaseRefDefaultMock.mockResolvedValue('main')
+    await expect(
+      resolveWorktreeCompareBase('/repo', 'feature/x', 'refs/remotes/origin/feature/x')
+    ).resolves.toBe('main')
+  })
+
   it('keeps the original base when no default base ref is available', async () => {
     getBaseRefDefaultMock.mockResolvedValue(null)
     await expect(
