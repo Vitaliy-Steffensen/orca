@@ -2,6 +2,7 @@ import { toast } from 'sonner'
 import { useAppStore } from '@/store'
 import { launchAgentBackgroundSession } from '@/lib/launch-agent-background-session'
 import { focusTerminalTabSurface } from '@/lib/focus-terminal-tab-surface'
+import { applyReviewAgentView } from '@/components/workspace-status-rules/apply-review-agent-view'
 import { translate } from '@/i18n/i18n'
 import { appendValidationHostInstruction } from '../../../../../shared/agent-validation-host-instruction'
 import {
@@ -157,6 +158,7 @@ export async function launchWorkspaceAction(kind: WorkspaceActionLaunch): Promis
   // clicking can retract the action under the pointer. Review and regroup run on the branch, so
   // they answer to the branch rather than to the list of next steps.
   const reviewsBranch = kind === 'review' || kind === 'regroup'
+  const isReview = reviewsBranch || kind === 're-review'
   if (reviewsBranch ? !context.canReviewBranch : !context.actions.includes(kind)) {
     return
   }
@@ -189,6 +191,11 @@ export async function launchWorkspaceAction(kind: WorkspaceActionLaunch): Promis
     })
     if (launched) {
       const store = useAppStore.getState()
+      // Why here too: a review launched from the header is the same job as one the review inbox
+      // starts, so it opens in the same view — the Chat UI unless the setting says otherwise.
+      if (isReview) {
+        applyReviewAgentView(launched, store.workspaceStatusRules.reviewInbox.view)
+      }
       store.setActiveTab(launched.tabId)
       store.setActiveTabType('terminal', context.worktree.id)
       focusTerminalTabSurface(launched.tabId)

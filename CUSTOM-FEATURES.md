@@ -165,3 +165,4 @@ Taken whole with every mirror; the fork lineage's work on top of upstream.
 89. Copy, paste and select all work in the companion window, by keyboard and by right-click.
 90. Hover, Cmd+click and Find references work in the companion window and the web client, asking the language servers on the Orca that holds the files.
 91. The Review plan panel no longer has its own Run review button — the Review action in the workspace header is the single way to start a review.
+92. The Review and Re-review actions in the workspace header open the agent in the Chat UI, like reviews the review inbox starts, instead of always dropping you into the raw terminal.

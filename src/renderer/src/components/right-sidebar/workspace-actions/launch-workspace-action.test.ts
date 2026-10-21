@@ -6,7 +6,8 @@ const mocks = vi.hoisted(() => {
     context,
     launch: vi.fn(),
     setActiveTab: vi.fn(),
-    setActiveTabType: vi.fn()
+    setActiveTabType: vi.fn(),
+    applyReviewAgentView: vi.fn()
   }
 })
 
@@ -17,6 +18,9 @@ vi.mock('@/lib/launch-agent-background-session', () => ({
   launchAgentBackgroundSession: mocks.launch
 }))
 vi.mock('@/lib/focus-terminal-tab-surface', () => ({ focusTerminalTabSurface: vi.fn() }))
+vi.mock('@/components/workspace-status-rules/apply-review-agent-view', () => ({
+  applyReviewAgentView: mocks.applyReviewAgentView
+}))
 vi.mock('@/i18n/i18n', () => ({
   translate: (_key: string, fallback: string, values?: Record<string, unknown>) =>
     fallback.replace(/\{\{(\w+)\}\}/g, (_m, name: string) => String(values?.[name] ?? ''))
@@ -34,7 +38,7 @@ vi.mock('@/store', () => ({
       workspaceStatusRules: {
         actionPrompts: {},
         actionAgents: { reviewPipeline: { agent: 'grok', model: 'grok-4.7', effort: 'high' } },
-        reviewInbox: { agent: 'claude' }
+        reviewInbox: { agent: 'claude', view: 'chat' }
       },
       gitConflictOperationByWorktree: {},
       setActiveTab: mocks.setActiveTab,
@@ -63,7 +67,8 @@ function setContext(overrides: Record<string, unknown>): void {
 
 describe('launchWorkspaceAction', () => {
   beforeEach(() => {
-    mocks.launch.mockReset().mockResolvedValue({ tabId: 'tab-1' })
+    mocks.launch.mockReset().mockResolvedValue({ tabId: 'tab-1', paneKey: 'pane-1' })
+    mocks.applyReviewAgentView.mockReset()
   })
 
   it('creates the pull request with the pull request settings and instructions', async () => {
@@ -76,6 +81,7 @@ describe('launchWorkspaceAction', () => {
     expect(call.prompt).toContain('as a draft')
     expect(call.prompt).toContain('Titles use feat(scope):')
     expect(mocks.setActiveTab).toHaveBeenCalledWith('tab-1')
+    expect(mocks.applyReviewAgentView).not.toHaveBeenCalled()
   })
 
   it('resolves pull request conflicts with the Source Control conflict prompt', async () => {
@@ -106,6 +112,10 @@ describe('launchWorkspaceAction', () => {
     expect(call.prompt).toContain('review-fe')
     expect(call.agent).toBe('grok')
     expect(call.sessionOptions).toEqual({ model: 'grok-4.7', effort: 'high' })
+    expect(mocks.applyReviewAgentView).toHaveBeenCalledWith(
+      { tabId: 'tab-1', paneKey: 'pane-1' },
+      'chat'
+    )
   })
 
   it('regroups the branch without reviewing it', async () => {
@@ -145,6 +155,10 @@ describe('launchWorkspaceAction', () => {
     expect(call.prompt).toContain('Re-review pull request #3145 — "Scale"')
     expect(call.prompt).toContain('orca review comment add')
     expect(call.prompt).not.toMatch(/\{\{\w+\}\}/)
+    expect(mocks.applyReviewAgentView).toHaveBeenCalledWith(
+      { tabId: 'tab-1', paneKey: 'pane-1' },
+      'chat'
+    )
   })
 
   it('refuses an action the branch no longer offers', async () => {
