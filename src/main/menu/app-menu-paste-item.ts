@@ -1,4 +1,5 @@
 import { BrowserWindow, Menu, webContents } from 'electron'
+import { ownsNativeEditingCommands } from '../window/companion-window-native-editing'
 
 export function createAppMenuPasteItem({
   label,
@@ -25,6 +26,10 @@ export function createAppMenuPasteItem({
           focusedContents.hostWebContents === focusedWindow.webContents
         ) {
           focusedContents.paste()
+          return
+        }
+        if (ownsNativeEditingCommands(focusedWindow.webContents)) {
+          focusedWindow.webContents.paste()
           return
         }
         focusedWindow.webContents.send('ui:appMenuPaste')

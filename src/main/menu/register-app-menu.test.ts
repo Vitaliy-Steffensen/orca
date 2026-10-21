@@ -270,7 +270,7 @@ describe('registerAppMenu', () => {
     (platform) => {
       vi.spyOn(process, 'platform', 'get').mockReturnValue(platform)
       const send = vi.fn()
-      const hostContents = { send }
+      const hostContents = { send, getUserAgent: () => 'Orca' }
       getFocusedWindowMock.mockReturnValue({ webContents: hostContents })
       getFocusedWebContentsMock.mockReturnValue(hostContents)
       registerAppMenu(buildMenuOptions())
@@ -332,7 +332,9 @@ describe('registerAppMenu', () => {
   it('keeps selection actions native in a focused guest webview', () => {
     const send = vi.fn()
     const guestContents = { copy: vi.fn(), selectAll: vi.fn() }
-    getFocusedWindowMock.mockReturnValue({ webContents: { send } })
+    getFocusedWindowMock.mockReturnValue({
+      webContents: { send, getUserAgent: () => 'Orca' }
+    })
     getFocusedWebContentsMock.mockReturnValue(guestContents)
     registerAppMenu(buildMenuOptions())
 
@@ -354,7 +356,9 @@ describe('registerAppMenu', () => {
     (platform) => {
       vi.spyOn(process, 'platform', 'get').mockReturnValue(platform)
       const send = vi.fn()
-      getFocusedWindowMock.mockReturnValue({ webContents: { send } })
+      getFocusedWindowMock.mockReturnValue({
+        webContents: { send, getUserAgent: () => 'Orca' }
+      })
       registerAppMenu(buildMenuOptions())
 
       const editSubmenu = getSubmenu(getTemplate(), 'Edit')

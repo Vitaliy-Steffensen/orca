@@ -1,4 +1,5 @@
 import { BrowserWindow, Menu, webContents } from 'electron'
+import { ownsNativeEditingCommands } from '../window/companion-window-native-editing'
 
 export type AppMenuSelectionAction = 'copy' | 'select-all'
 
@@ -23,6 +24,14 @@ export function createAppMenuSelectionItem({
             focusedContents.copy()
           } else {
             focusedContents.selectAll()
+          }
+          return
+        }
+        if (ownsNativeEditingCommands(focusedWindow.webContents)) {
+          if (action === 'copy') {
+            focusedWindow.webContents.copy()
+          } else {
+            focusedWindow.webContents.selectAll()
           }
           return
         }

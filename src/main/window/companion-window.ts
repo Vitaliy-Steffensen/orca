@@ -7,6 +7,7 @@ import type { Store } from '../persistence'
 import type { OrcaRuntimeRpcServer } from '../runtime/runtime-rpc'
 import { isBackgroundLaunch, showWindowWithoutStealingFocus } from './foreground-activation-policy'
 import { installPrivilegedWindowNavigationPolicy } from './privileged-window-navigation'
+import { installCompanionEditingContextMenu } from './companion-window-native-editing'
 import { COMPANION_USER_AGENT_TOKEN } from '../../shared/companion-window-user-agent'
 import { rectHasVisibleAreaOnAnyDisplay } from './window-bounds-validation'
 
@@ -113,6 +114,7 @@ export function createOrFocusCompanionWindow(
   window.webContents.setUserAgent(
     `${window.webContents.getUserAgent()} ${COMPANION_USER_AGENT_TOKEN}`
   )
+  installCompanionEditingContextMenu(window)
   window.webContents.session.setPermissionRequestHandler((_webContents, _permission, callback) =>
     callback(false)
   )
