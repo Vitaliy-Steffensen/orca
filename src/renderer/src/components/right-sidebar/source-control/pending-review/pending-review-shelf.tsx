@@ -18,6 +18,7 @@ import { usePendingReviewSummary } from '@/components/pending-review/pending-rev
 import { useReviewSummaryFocus } from '@/components/pending-review/review-summary-focus'
 import { ReviewMarkdownComposer } from '@/components/github/ReviewMarkdownComposer'
 import { PendingReviewDiffBaseSelect } from './pending-review-diff-base-select'
+import { PendingReviewDiffBaseToggle } from './pending-review-diff-base-toggle'
 
 const VERDICTS: {
   id: ReviewVerdict
@@ -152,6 +153,8 @@ export function SourceControlPendingReviewShelf({
               }
             : null
 
+  const latestViewerReview = submitter.viewerReviews.at(-1)
+
   // Fork: one Review section — the reviewers and the verdict form — whose header collapses it,
   // drags it and hides it. Your drafts are the Pending review section beside it.
   const header = (
@@ -174,7 +177,15 @@ export function SourceControlPendingReviewShelf({
         showHeading={false}
       />
       {diffBase.available ? (
-        <div className="px-3 pt-2">
+        <div className="flex flex-col gap-1.5 px-3 pt-2">
+          {latestViewerReview ? (
+            <PendingReviewDiffBaseToggle
+              value={diffBase.value}
+              onChange={diffBase.setValue}
+              latestReviewOrdinal={latestViewerReview.ordinal}
+              sinceReviewDisabled={diffBase.sinceReviewMissing}
+            />
+          ) : null}
           {/* Why here and not in the base-ref dialog: this is a reading choice a reviewer
               makes repeatedly while working through a pull request, not repo configuration. */}
           <PendingReviewDiffBaseSelect
