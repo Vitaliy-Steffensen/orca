@@ -9,6 +9,7 @@ import type { DiffSectionItemProps } from '../../diff-section-item-props'
 import { DiffNotesSendMenu } from '../../DiffNotesSendMenu'
 import { canOpenDiffSectionPreviewToSide } from '../../diff-section-preview'
 import type { DiffSection } from '../../diff-section-types'
+import { useCombinedDiffReviewZones } from '../use-combined-diff-review-zones'
 import type { CombinedDiffScrollThumb } from './use-combined-diff-scrollbar'
 
 export function CombinedDiffSectionList({
@@ -70,6 +71,9 @@ export function CombinedDiffSectionList({
   toggleSection: (index: number) => void
   virtualizer: Virtualizer<HTMLDivElement, Element>
 }): React.JSX.Element {
+  // Why here and not per row: this is the one component between the viewer and the virtualized
+  // rows, so the PR comment scope and its mutation handlers are built once for all of them.
+  const reviewZones = useCombinedDiffReviewZones(file.worktreeId)
   // Why: per-row filter() rescanned all worktree comments per visible row per render — index once, same order preserved.
   const commentCountByFilePath = useMemo(() => {
     const counts = new Map<string, number>()
@@ -118,6 +122,7 @@ export function CombinedDiffSectionList({
                   loadSection={loadSection}
                   loadDeferredSection={loadDeferredSection}
                   retrySection={retrySection}
+                  reviewZones={reviewZones}
                   toggleSection={toggleSection}
                   openSection={openSection}
                   openSectionTitle={

@@ -227,11 +227,17 @@ orca review comment add --file src/api.ts --line 42 --body "This retry loop neve
 orca review comment list --json
 orca review comment rm --id <comment-id> --json
 orca review summary set --body "Two retry paths need backoff." --json
+orca review summary show --json
+orca review asset upload --file .context/review/my-branch/1-empty-state.png --json
 ```
 
 These draft a review of someone else's pull request. Each one is a proposal: it waits in the reviewer's pending-review shelf, marked as agent-drafted, with an Accept and a Reject on its card, and it joins the review only once accepted. There is no CLI for submitting, and nothing reaches the provider until the reviewer does it themselves. The attribution lives only in the shelf: a submitted review carries the reviewer's name and nothing else.
 
 `--file` and the line numbers work exactly as in `notes add`. The queue is kept on the device whose Orca app submits the review, so these commands fail on a headless Orca server (`orca serve`) rather than staging where nobody will look.
+
+`review summary show` prints what is in the summary box now, so a pass can read it before `review summary set` replaces it.
+
+`review asset upload` attaches an image or video to the repository and prints the `https://github.com/user-attachments/assets/...` link. That is the only kind of image link a review body renders — a local path degrades to plain text — so a screenshot goes through this command before it is embedded as `![caption](url)`. The file is read where the command runs, so it works from an SSH or server host. It needs a GitHub remote, a `gh` login and write access to the repository; anywhere else it fails and the screenshots stay in the agent's reply. Unlike the commands above, it does not need a pending-review shelf, so it still works on a headless host.
 
 ## Built-in browser
 

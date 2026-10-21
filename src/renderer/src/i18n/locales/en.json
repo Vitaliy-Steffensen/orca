@@ -20551,7 +20551,8 @@
     "attention": "Needs attention",
     "checks": "Checks",
     "comments": "Comments",
-    "resolved": "Resolved"
+    "resolved": "Resolved",
+    "reviewPlan": "Review plan"
   },
   "queuedComments": {
     "none": "No comments are queued.",

@@ -116,16 +116,16 @@
     {
       "name": "orca-review",
       "sourcePath": "skills/orca-review",
-      "packageDigest": "a031d7a80390e26fb334b45bebeeac963f1d0fbdd761f09c7d7ef05a6e2561f4",
+      "packageDigest": "b32b185685a8be5ee6c1b9296d099bedb568014b6aa933681156a20049c04a8d",
       "files": [
         {
           "path": "SKILL.md",
-          "size": 2571,
+          "size": 2609,
           "executable": false,
           "classification": "text",
-          "exactSha256": "d1119c2ecb8fef2ff68f0347b8b1b68f9aa5c7a87b15bd2f23a10c1707f3bc5a",
-          "textNormalizedSha256": "d1119c2ecb8fef2ff68f0347b8b1b68f9aa5c7a87b15bd2f23a10c1707f3bc5a",
-          "identitySha256": "d1119c2ecb8fef2ff68f0347b8b1b68f9aa5c7a87b15bd2f23a10c1707f3bc5a"
+          "exactSha256": "37e7b3f95a3dca8aa7ef81a38b6f90aa43c181bf4af4456fc41b492a8c03e7bc",
+          "textNormalizedSha256": "37e7b3f95a3dca8aa7ef81a38b6f90aa43c181bf4af4456fc41b492a8c03e7bc",
+          "identitySha256": "37e7b3f95a3dca8aa7ef81a38b6f90aa43c181bf4af4456fc41b492a8c03e7bc"
         }
       ]
     },

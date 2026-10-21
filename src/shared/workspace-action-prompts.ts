@@ -78,10 +78,11 @@ The branch {{branch}} is checked out in {{worktreePath}}; its base is {{baseRef}
 ${REVIEW_STAGED_COMMENT_INSTRUCTION}`,
   reviewPipeline: `Review the work on branch {{branch}} in {{worktreePath}} against {{baseRef}}.
 
-- Use the orca-review skill: it rates and groups the changed files, delegates to whatever review rulebooks this repository ships, screenshots the UI when the frontend diff earns it, and stages the findings. Otherwise follow the rest of this prompt.
+- Use the orca-review skill: it rates and groups the changed files, decides from the diff itself whether the frontend and backend passes apply, fans those passes out to sub-agents in parallel, screenshots the UI when a UI surface changed, and stages the findings. Otherwise follow the rest of this prompt.
 - Read every changed file, not only the diff hunks, and say which ones are worth reading first.
 - Run every review skill you have whose area the diff touches, such as review-fe for frontend changes and review-be for backend changes, in parallel, and treat their rules as the authority on what is a defect.
 - Only report a finding you can tie to the input or state that makes it go wrong, and only when this branch caused it or made it worse.
+- Open the summary with two to four sentences of plain English on what the branch changes and why, with no jargon and no file names, before the verdict and the findings.
 - Do not change any code.
 
 ${REVIEW_STAGED_COMMENT_INSTRUCTION}`

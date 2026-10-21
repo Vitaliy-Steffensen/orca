@@ -24,6 +24,8 @@ export const PR_PANEL_SECTIONS = [
   { id: 'pr-checks', labelKey: 'prPanelSections.checks', label: 'Checks' },
   // Your review comments not yet submitted.
   { id: 'pr-pending-review', labelKey: 'prPanelSections.pendingReview', label: 'Pending review' },
+  // The agent's grouped, rated reading order for this branch.
+  { id: 'pr-review-plan', labelKey: 'prPanelSections.reviewPlan', label: 'Review plan' },
   { id: 'pr-comments', labelKey: 'prPanelSections.comments', label: 'Comments' },
   { id: 'pr-resolved', labelKey: 'prPanelSections.resolved', label: 'Resolved' }
 ] as const

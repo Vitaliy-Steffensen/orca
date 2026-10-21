@@ -19,6 +19,7 @@ import { ChecksList } from './checks-list'
 import { buildCommentSections } from './comment-sections'
 import { PrAttentionSection } from './attention-section'
 import { PendingReviewPanelSection } from '@/components/pending-review/PendingReviewPanelSection'
+import { ReviewPlanPanelSection } from '../review-plan/ReviewPlanPanelSection'
 import { usePendingReviewQueue } from '@/components/pending-review/use-pending-review-queue'
 import { PrPanelSections, type PrPanelSection } from './pr-panel-sections'
 import { usePRCommentQueuePanel } from './use-pr-comment-queue-panel'
@@ -170,6 +171,8 @@ export function ChecksPanelActiveContent({
   if (pendingReviewCount > 0) {
     prSections.push({ id: 'pr-pending-review', node: <PendingReviewPanelSection sectionHeader /> })
   }
+  // Pushed even with no plan: the empty state's Run review button is how the pipeline starts here.
+  prSections.push({ id: 'pr-review-plan', node: <ReviewPlanPanelSection /> })
   prSections.push(...buildCommentSections(model, reviewShortLabel))
   return (
     <div ref={setChecksPanelContentRef} className="flex-1 overflow-auto scrollbar-sleek">

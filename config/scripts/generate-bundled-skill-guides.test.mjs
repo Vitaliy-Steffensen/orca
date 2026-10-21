@@ -35,6 +35,7 @@ const GUIDE_REFERENCES = {
     'worker-contract.md'
   ],
   'orca-cli': ['automations.md', 'browser.md', 'publishing.md'],
+  'orca-review': ['backend.md', 'frontend.md', 'ui-pass.md'],
   'orca-per-workspace-env': [
     'docker-ssh.md',
     'failure-modes.md',

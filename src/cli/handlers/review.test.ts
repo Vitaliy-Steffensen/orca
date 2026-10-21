@@ -1,3 +1,6 @@
+import { mkdtemp, writeFile } from 'node:fs/promises'
+import { tmpdir } from 'node:os'
+import path from 'node:path'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 const callMock = vi.fn()
@@ -89,7 +92,7 @@ describe('orca review CLI handlers', () => {
       agent: 'Claude Code'
     })
     expect(vi.mocked(console.log).mock.calls[0][0]).toBe(
-      'Staged review comment draft-1 on src/App.tsx:40-48 (3 waiting to be submitted).'
+      'Proposed review comment draft-1 on src/App.tsx:40-48 (3 waiting for the user to accept).'
     )
     expect(process.exitCode).toBeUndefined()
   })
@@ -152,7 +155,7 @@ describe('orca review CLI handlers', () => {
     await main(['review', 'comment', 'list'], '/tmp/repo')
 
     expect(vi.mocked(console.log).mock.calls[0][0]).toBe(
-      'Staged review comments (1)\ndraft-1  src/App.tsx:12  [Codex] Missing backoff'
+      'Staged review comments (1)\ndraft-1  accepted  src/App.tsx:12  [Codex] Missing backoff'
     )
   })
 
@@ -178,5 +181,76 @@ describe('orca review CLI handlers', () => {
       body: ''
     })
     expect(vi.mocked(console.log).mock.calls[0][0]).toBe('Cleared the review summary.')
+  })
+
+  it('prints the summary already on the review, so a pass can read before it overwrites', async () => {
+    queueFixtures(
+      callMock,
+      worktreeListFixture([WORKTREE]),
+      okFixture('req_summary_get', { body: 'Half a sentence the user typed.' })
+    )
+
+    await main(['review', 'summary', 'show'], '/tmp/repo')
+
+    expect(callMock).toHaveBeenLastCalledWith('reviewSummary.get', { worktree: SELECTOR })
+    expect(vi.mocked(console.log).mock.calls[0][0]).toBe('Half a sentence the user typed.')
+  })
+
+  it('says so plainly when the summary box is empty', async () => {
+    queueFixtures(
+      callMock,
+      worktreeListFixture([WORKTREE]),
+      okFixture('req_summary_get', { body: '' })
+    )
+
+    await main(['review', 'summary', 'show'], '/tmp/repo')
+
+    expect(vi.mocked(console.log).mock.calls[0][0]).toBe('The review summary is empty.')
+  })
+
+  it('uploads a screenshot as base64 and prints the link to embed', async () => {
+    const file = path.join(await mkdtemp(path.join(tmpdir(), 'orca-review-asset-')), 'shot.png')
+    await writeFile(file, Buffer.from([1, 2, 3, 4]))
+    queueFixtures(
+      callMock,
+      worktreeListFixture([WORKTREE]),
+      okFixture('req_asset', {
+        url: 'https://github.com/user-attachments/assets/0b1b4d3a-1111-2222-3333-444455556666',
+        kind: 'image'
+      })
+    )
+
+    await main(['review', 'asset', 'upload', '--file', file], '/tmp/repo')
+
+    expect(callMock).toHaveBeenLastCalledWith('reviewAsset.upload', {
+      worktree: SELECTOR,
+      name: 'shot.png',
+      contentType: 'image/png',
+      base64: Buffer.from([1, 2, 3, 4]).toString('base64')
+    })
+    expect(vi.mocked(console.log).mock.calls[0][0]).toBe(
+      'https://github.com/user-attachments/assets/0b1b4d3a-1111-2222-3333-444455556666'
+    )
+  })
+
+  it('refuses a file type GitHub does not attach, before any round trip', async () => {
+    queueFixtures(callMock, worktreeListFixture([WORKTREE]))
+
+    await main(['review', 'asset', 'upload', '--file', 'notes.txt'], '/tmp/repo')
+
+    expect(process.exitCode).toBe(1)
+    expect(callMock).not.toHaveBeenCalledWith('reviewAsset.upload', expect.anything())
+  })
+
+  it('refuses a file that is not there', async () => {
+    queueFixtures(callMock, worktreeListFixture([WORKTREE]))
+
+    await main(
+      ['review', 'asset', 'upload', '--file', path.join(tmpdir(), 'orca-missing-shot.png')],
+      '/tmp/repo'
+    )
+
+    expect(process.exitCode).toBe(1)
+    expect(callMock).not.toHaveBeenCalledWith('reviewAsset.upload', expect.anything())
   })
 })

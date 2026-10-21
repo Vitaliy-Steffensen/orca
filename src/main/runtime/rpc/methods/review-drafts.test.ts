@@ -2,12 +2,23 @@ import '../unused-default-rpc-methods.test-fixture'
 import { mkdtemp, readFile } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
-import { afterEach, beforeEach, describe, expect, it } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import type { PendingReviewDraftChange } from '../../../../shared/github/pending-review-comment'
 import { setPendingReviewDraftSurface } from '../../../github/pending-review-draft-surface'
 import type { OrcaRuntimeService } from '../../orca-runtime'
 import { RpcDispatcher } from '../dispatcher'
-import { REVIEW_DRAFT_METHODS } from './review-drafts'
+
+const getOwnerRepoMock = vi.fn()
+const uploadReviewAssetMock = vi.fn()
+
+vi.mock('../../../github/github-owner-repo-selection', () => ({
+  getOwnerRepo: (...args: unknown[]) => getOwnerRepoMock(...args)
+}))
+vi.mock('../../../github/review-asset-upload', () => ({
+  uploadReviewAsset: (...args: unknown[]) => uploadReviewAssetMock(...args)
+}))
+
+const { REVIEW_DRAFT_METHODS } = await import('./review-drafts')
 
 const runtime = {
   getRuntimeId: () => 'test-runtime',
@@ -15,11 +26,12 @@ const runtime = {
     if (selector !== 'id:wt-1') {
       throw new Error('selector_not_found')
     }
-    return { id: 'wt-1' }
-  }
+    return { id: 'wt-1', repoId: 'repo-1' }
+  },
+  listRepos: () => [{ id: 'repo-1', path: '/tmp/repo', connectionId: null }]
 }
 
-// oxlint-disable-next-line typescript/consistent-type-assertions -- SAFETY: the handlers only call the two methods stubbed above.
+// oxlint-disable-next-line typescript/consistent-type-assertions -- SAFETY: the handlers only call the methods stubbed above.
 const runtimeService = runtime as unknown as OrcaRuntimeService
 const dispatcher = new RpcDispatcher({ runtime: runtimeService, methods: REVIEW_DRAFT_METHODS })
 
@@ -41,6 +53,14 @@ async function storedFile(): Promise<{
 beforeEach(async () => {
   file = join(await mkdtemp(join(tmpdir(), 'orca-review-drafts-')), 'pending-review-drafts.json')
   announced = []
+  getOwnerRepoMock.mockReset()
+  getOwnerRepoMock.mockResolvedValue({ owner: 'acme', repo: 'orca' })
+  uploadReviewAssetMock.mockReset()
+  uploadReviewAssetMock.mockResolvedValue({
+    ok: true,
+    url: 'https://github.com/user-attachments/assets/0b1b4d3a-1111-2222-3333-444455556666',
+    kind: 'image'
+  })
   setPendingReviewDraftSurface({
     file: () => file,
     announceChange: (change) => announced.push(change)
@@ -145,6 +165,91 @@ describe('staged review comment RPC methods', () => {
 
     expect(response).toMatchObject({ ok: false })
     expect(JSON.stringify(response)).toContain('orca serve')
+  })
+
+  it('reads back the summary, so a pass can see what it is about to replace', async () => {
+    expect(await call('reviewSummary.get', { worktree: 'id:wt-1' })).toMatchObject({
+      ok: true,
+      result: { body: '' }
+    })
+
+    await call('reviewSummary.set', { worktree: 'id:wt-1', body: 'Half a sentence.' })
+
+    expect(await call('reviewSummary.get', { worktree: 'id:wt-1' })).toMatchObject({
+      ok: true,
+      result: { body: 'Half a sentence.' }
+    })
+  })
+
+  it('uploads an attachment to the repository behind the workspace', async () => {
+    const response = await call('reviewAsset.upload', {
+      worktree: 'id:wt-1',
+      name: 'shot.png',
+      contentType: 'image/png',
+      base64: Buffer.from([1, 2, 3, 4]).toString('base64')
+    })
+
+    expect(getOwnerRepoMock).toHaveBeenCalledWith('/tmp/repo', null)
+    expect(uploadReviewAssetMock).toHaveBeenCalledWith({
+      name: 'shot.png',
+      contentType: 'image/png',
+      bytes: Buffer.from([1, 2, 3, 4]),
+      repo: { owner: 'acme', repo: 'orca' }
+    })
+    expect(response).toMatchObject({
+      ok: true,
+      result: {
+        url: 'https://github.com/user-attachments/assets/0b1b4d3a-1111-2222-3333-444455556666',
+        kind: 'image'
+      }
+    })
+  })
+
+  // Why: an upload needs a token and a repository, not a review shelf, so gating it on the shelf
+  // would refuse on exactly the headless hosts where it still works.
+  it('uploads on a runtime with no reviewer', async () => {
+    setPendingReviewDraftSurface(null)
+
+    expect(
+      await call('reviewAsset.upload', {
+        worktree: 'id:wt-1',
+        name: 'shot.png',
+        contentType: 'image/png',
+        base64: 'AQID'
+      })
+    ).toMatchObject({ ok: true })
+  })
+
+  it('says screenshots stay in chat when the workspace has no GitHub remote', async () => {
+    getOwnerRepoMock.mockResolvedValue(null)
+
+    const response = await call('reviewAsset.upload', {
+      worktree: 'id:wt-1',
+      name: 'shot.png',
+      contentType: 'image/png',
+      base64: 'AQID'
+    })
+
+    expect(response).toMatchObject({ ok: false })
+    expect(JSON.stringify(response)).toContain('no GitHub remote')
+    expect(uploadReviewAssetMock).not.toHaveBeenCalled()
+  })
+
+  it("passes GitHub's own refusal back rather than a generic failure", async () => {
+    uploadReviewAssetMock.mockResolvedValue({
+      ok: false,
+      error: 'GitHub refused the upload: attaching files needs write access to the repository.'
+    })
+
+    const response = await call('reviewAsset.upload', {
+      worktree: 'id:wt-1',
+      name: 'shot.png',
+      contentType: 'image/png',
+      base64: 'AQID'
+    })
+
+    expect(response).toMatchObject({ ok: false })
+    expect(JSON.stringify(response)).toContain('needs write access')
   })
 
   it('rejects a range that ends before it starts', async () => {
