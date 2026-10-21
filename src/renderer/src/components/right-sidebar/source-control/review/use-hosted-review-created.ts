@@ -6,6 +6,9 @@ import {
 } from '@/i18n/hosted-review-localized-copy'
 import { translate } from '@/i18n/i18n'
 import { resolveCreatedHostedReviewLink } from '../../source-control-created-review-link'
+import { resolveCreatedReviewWorkspaceRename } from '../../created-review-workspace-rename'
+import { useAppStore } from '@/store'
+import { selectKnownWorktreeById } from '@/store/selectors'
 import type { SourceControlStoreActions } from '../listing/use-store-actions'
 import type { SourceControlWorktreeContext } from '../listing/use-worktree-context'
 import type { SourceControlStatusRefresh } from '../sync/use-status-refresh'
@@ -72,7 +75,11 @@ export function useSourceControlHostedReviewCreated({
       try {
         const createdLink = resolveCreatedHostedReviewLink(result.provider, result.number)
         if (worktreeId && result.provider !== 'unsupported') {
-          await updateWorktreeMeta(worktreeId, createdLink.worktree)
+          const rename = resolveCreatedReviewWorkspaceRename(
+            selectKnownWorktreeById(useAppStore.getState(), worktreeId),
+            result.title
+          )
+          await updateWorktreeMeta(worktreeId, { ...createdLink.worktree, ...rename })
         }
         const linkedReviewNumbers = {
           linkedGitHubPR,

@@ -1,6 +1,9 @@
 import { useCallback } from 'react'
 import { refreshHostedReviewCard } from '@/store/slices/hosted-review-card-refresh'
 import { resolveCreatedHostedReviewLink } from '../source-control-created-review-link'
+import { resolveCreatedReviewWorkspaceRename } from '../created-review-workspace-rename'
+import { useAppStore } from '@/store'
+import { selectKnownWorktreeById } from '@/store/selectors'
 import type { HostedReviewProvider } from '../../../../../shared/hosted-review'
 import type { ChecksPanelControllerState } from './use-checks-panel-controller-state'
 import type { ChecksPanelContextState } from './use-checks-panel-context-state'
@@ -55,6 +58,8 @@ export function useChecksPanelCreatedReview(model: ChecksPanelCreatedReviewInput
         provider: HostedReviewProvider
         number: number
         url: string
+        /** Set only when this call created the review, so an already-open one never retitles a workspace. */
+        title?: string
       },
       // Why: a create that outlives its panel context still links its worktree, but must not paint into the panel's new context.
       panelShowsReview: boolean
@@ -69,7 +74,11 @@ export function useChecksPanelCreatedReview(model: ChecksPanelCreatedReviewInput
       try {
         const createdLink = resolveCreatedHostedReviewLink(result.provider, result.number)
         if (activeWorktreeId && result.provider !== 'unsupported') {
-          await updateWorktreeMeta(activeWorktreeId, createdLink.worktree)
+          const rename = resolveCreatedReviewWorkspaceRename(
+            selectKnownWorktreeById(useAppStore.getState(), activeWorktreeId),
+            result.title
+          )
+          await updateWorktreeMeta(activeWorktreeId, { ...createdLink.worktree, ...rename })
         }
         const linkedReviewNumbers = {
           linkedGitHubPR: linkedPR,

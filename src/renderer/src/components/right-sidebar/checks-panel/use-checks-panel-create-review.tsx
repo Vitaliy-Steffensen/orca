@@ -169,7 +169,7 @@ export function useChecksPanelCreateReview(model: ChecksPanelCreateReviewInput) 
         if (result.ok) {
           const foreground = createdReviewIsForeground(activeWorktreeId, panelShowsReview)
           await handlePullRequestCreated(
-            { provider: hostedReviewCreateProvider, number: result.number, url: result.url },
+            { provider: hostedReviewCreateProvider, number: result.number, url: result.url, title },
             panelShowsReview
           )
           if (prCreationDefaults.openAfterCreate && foreground) {
@@ -229,7 +229,7 @@ export function useChecksPanelCreateReview(model: ChecksPanelCreateReviewInput) 
           const { number, url } = result.createdReview
           if (number) {
             await handlePullRequestCreated(
-              { provider: hostedReviewCreateProvider, number, url },
+              { provider: hostedReviewCreateProvider, number, url, title },
               panelShowsReview
             )
           }

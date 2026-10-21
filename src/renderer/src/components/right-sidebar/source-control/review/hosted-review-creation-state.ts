@@ -29,6 +29,8 @@ export type CreatedHostedReview = {
   provider: HostedReviewProvider
   number: number
   url: string
+  /** Set only when this call created the review, so an already-open one never retitles a workspace. */
+  title?: string
 }
 
 export type HostedReviewCreatedContext = {

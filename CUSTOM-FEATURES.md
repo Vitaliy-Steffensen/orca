@@ -158,3 +158,4 @@ Taken whole with every mirror; the fork lineage's work on top of upstream.
 82. Sidebar status bands and the lanes inside them can be dragged into any order, show their workspace count only while collapsed, and reveal their automation icons on hover.
 83. Pasting a GitHub or GitLab issue/PR link into the new-workspace box no longer lets Enter create a branch named after the URL; it waits for the link to resolve.
 84. Typing an existing branch name in the new-workspace box offers to open that branch, and a workspace opened on an existing branch diffs against its real base instead of showing nothing.
+85. Creating a pull request from a workspace renames the workspace to the pull request title, unless you named it yourself.
