@@ -40,6 +40,7 @@ const SETTINGS_NAV_TARGETS = [
   'plugins',
   'agents',
   'orchestration',
+  'review-pipeline',
   'artifacts',
   'session-history',
   'share-skills',

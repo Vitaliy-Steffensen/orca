@@ -1,6 +1,8 @@
 import type { Dispatch, MutableRefObject, ReactNode, SetStateAction } from 'react'
 import type { editor as monacoEditor } from 'monaco-editor'
 import type { DecoratedDiffComment } from '../diff-comments/decorated-diff-comment'
+import type { InlinePRCommentZoneHandlers } from '../diff-comments/useInlinePRCommentZones'
+import type { PRCommentGroup } from '../../../../shared/pr-comment-groups'
 import type { DiffSection } from './diff-section-types'
 
 export type DiffSectionItemProps = {
@@ -34,6 +36,16 @@ export type DiffSectionItemProps = {
   addLineCommentLabel?: string
   addLineCommentPlaceholder?: string
   inlineComments?: readonly DecoratedDiffComment[]
+  /**
+   * Staged review findings and PR threads, rendered as Monaco view zones on their own lines.
+   *
+   * Why its presence is the switch: the PR-page viewers pass their own read-only `inlineComments`
+   * and would render each thread twice. Only the surfaces that own the worktree pass this.
+   */
+  reviewZones?: {
+    groups: readonly PRCommentGroup[]
+    handlers: InlinePRCommentZoneHandlers
+  }
   getCommentableLineNumbers?: (section: DiffSection) => readonly number[] | undefined
   setSectionHeights: Dispatch<SetStateAction<Record<number, number>>>
   setSections: Dispatch<SetStateAction<DiffSection[]>>

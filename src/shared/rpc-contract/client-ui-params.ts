@@ -14,6 +14,7 @@ import { ClientUiWorkspaceFilterFields } from './client-ui-workspace-filter-fiel
 import { TaskResumeState } from './task-resume-state-params'
 import { WorkspaceCleanup } from './workspace-cleanup-ui-params'
 import { WorkspaceStatusRules } from './workspace-status-rule-params'
+import { WorkspaceStatusSidebarOrderParam } from './workspace-status-sidebar-order-params'
 import { omitUndefinedValues, tolerateUnknownValues } from './ui-update-value-tolerance-params'
 
 export const NullableString = z.string().nullable()
@@ -48,6 +49,7 @@ export const STATIC_RIGHT_SIDEBAR_TABS = [
   'pull-request',
   'pr-diff',
   'checks',
+  'review-plan',
   'ports'
 ] as const
 
@@ -183,6 +185,7 @@ export const UiUpdateFields = z
     agentActivityDisplayMode: AgentActivityDisplayMode.optional(),
     workspaceStatuses: z.array(WorkspaceStatusDefinition).optional(),
     workspaceStatusRules: WorkspaceStatusRules.optional(),
+    workspaceStatusSidebarOrder: WorkspaceStatusSidebarOrderParam.optional(),
     workspaceBoardOpacity: z.number().finite().optional(),
     workspaceBoardColumnWidth: z.number().finite().optional(),
     syncTaskStatusFromWorkspaceBoard: z.boolean().optional(),

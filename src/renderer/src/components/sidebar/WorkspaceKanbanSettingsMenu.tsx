@@ -18,6 +18,7 @@ import {
 import WorkspaceStatusAppearancePopover from './WorkspaceStatusAppearancePopover'
 import WorkspaceStatusLaneRow from './WorkspaceStatusLaneRow'
 import { translate } from '@/i18n/i18n'
+import { useAppStore } from '@/store'
 
 type WorkspaceKanbanSettingsMenuProps = {
   workspaceStatuses: readonly WorkspaceStatusDefinition[]
@@ -70,11 +71,14 @@ function SectionAppearanceButton({
 
 type StatusGroup = { section?: string; statuses: WorkspaceStatusDefinition[] }
 
-function groupStatuses(statuses: readonly WorkspaceStatusDefinition[]): StatusGroup[] {
+function groupStatuses(
+  statuses: readonly WorkspaceStatusDefinition[],
+  savedSections: readonly string[]
+): StatusGroup[] {
   const loose = statuses.filter((status) => status.section === undefined)
   return [
     ...(loose.length > 0 ? [{ statuses: loose }] : []),
-    ...getWorkspaceStatusSectionOrder(statuses).map((section) => ({
+    ...getWorkspaceStatusSectionOrder(statuses, savedSections).map((section) => ({
       section,
       statuses: statuses.filter((status) => status.section === section)
     }))
@@ -185,8 +189,9 @@ export default function WorkspaceKanbanSettingsMenu({
   onRemoveStatus,
   onAddStatus
 }: WorkspaceKanbanSettingsMenuProps): React.JSX.Element {
-  const groups = groupStatuses(workspaceStatuses)
-  const sectionNames = getWorkspaceStatusSectionOrder(workspaceStatuses)
+  const savedSections = useAppStore((state) => state.workspaceStatusSidebarOrder.sections)
+  const groups = groupStatuses(workspaceStatuses, savedSections)
+  const sectionNames = getWorkspaceStatusSectionOrder(workspaceStatuses, savedSections)
   const newSectionName = nextSectionName(sectionNames)
   return (
     <DropdownMenu modal={false}>

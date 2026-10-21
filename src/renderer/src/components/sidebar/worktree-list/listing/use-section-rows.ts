@@ -144,6 +144,8 @@ export function useSidebarSectionRows(args: SectionRowsArgs) {
     [hostOptions]
   )
 
+  const workspaceStatusSidebarOrder = useAppStore((s) => s.workspaceStatusSidebarOrder)
+
   const hostScopedGroups =
     args.workspaceHostScope !== 'all' || args.visibleWorkspaceHostIds !== null
   // Host sections apply lane collapse after splitting the rows by owner.
@@ -179,7 +181,8 @@ export function useSidebarSectionRows(args: SectionRowsArgs) {
         args.visibleFolderWorkspacesForRows,
         hostLabelById,
         defaultHostId,
-        args.pinnedDisplayPolicy
+        args.pinnedDisplayPolicy,
+        workspaceStatusSidebarOrder
       ),
     [
       args.groupBy,
@@ -202,7 +205,8 @@ export function useSidebarSectionRows(args: SectionRowsArgs) {
       args.newExternalWorktreesInboxByRepo,
       pendingCreations,
       hostLabelById,
-      args.pinnedDisplayPolicy
+      args.pinnedDisplayPolicy,
+      workspaceStatusSidebarOrder
     ]
   )
   const orderedHostOptions = useMemo(

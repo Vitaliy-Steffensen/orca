@@ -17,6 +17,7 @@ import {
   resolveSourceControlAiPrCreationDefaults
 } from '../../../../../shared/source-control-ai'
 import {
+  REVIEW_REGROUP_PROMPT,
   renderWorkspaceActionPrompt,
   resolveWorkspaceActionPromptTemplate,
   type WorkspaceActionPromptId
@@ -27,6 +28,10 @@ import {
   type WorkspaceActionContext
 } from './workspace-action-context'
 
+// Why wider than the action kinds: regrouping a review plan is launched from the Review plan tab,
+// not from the header's list of next steps.
+export type WorkspaceActionLaunch = WorkspaceActionKind | 'regroup'
+
 const PROMPT_BY_ACTION: Record<
   Exclude<WorkspaceActionKind, 'resolve-conflicts'>,
   WorkspaceActionPromptId
@@ -35,7 +40,7 @@ const PROMPT_BY_ACTION: Record<
   'ready-for-review': 'readyForReview',
   'create-pull-request': 'createPullRequest',
   'create-draft-pull-request': 'createPullRequest',
-  review: 'reviewPullRequest',
+  review: 'reviewPipeline',
   're-review': 'reReviewPullRequest'
 }
 
@@ -70,7 +75,9 @@ function buildTemplatePrompt(
   id: WorkspaceActionPromptId,
   // Why an override: the Create PR split button lets you pick draft per pull request, which has to
   // win over the repo's configured default rather than silently agree with it.
-  draftOverride?: boolean
+  draftOverride?: boolean,
+  // Why a literal: the regroup prompt is a fixed internal step, not one of the user's editable prompts.
+  templateOverride?: string
 ): string {
   const state = useAppStore.getState()
   const settings = state.settings
@@ -87,7 +94,8 @@ function buildTemplatePrompt(
   const baseRef =
     context.pr?.baseRefName ?? context.worktree.baseRef?.replace(/^origin\//, '') ?? 'main'
   return renderWorkspaceActionPrompt(
-    resolveWorkspaceActionPromptTemplate(state.workspaceStatusRules.actionPrompts, id),
+    templateOverride ??
+      resolveWorkspaceActionPromptTemplate(state.workspaceStatusRules.actionPrompts, id),
     {
       branch: context.branch,
       baseRef,
@@ -107,11 +115,15 @@ function buildTemplatePrompt(
   )
 }
 
-function actionTitle(kind: WorkspaceActionKind, context: WorkspaceActionContext): string {
+function actionTitle(kind: WorkspaceActionLaunch, context: WorkspaceActionContext): string {
   switch (kind) {
+    case 'regroup':
+      return translate('auto.components.workspaceActions.regroupTab', 'Group {{branch}}', {
+        branch: context.branch
+      })
     case 'review':
-      return translate('auto.components.workspaceActions.reviewTab', 'Review #{{number}}', {
-        number: context.pr?.number ?? ''
+      return translate('auto.components.workspaceActions.reviewTab', 'Review {{branch}}', {
+        branch: context.branch
       })
     case 're-review':
       return translate('auto.components.workspaceActions.reReviewTab', 'Re-review #{{number}}', {
@@ -130,25 +142,41 @@ function actionTitle(kind: WorkspaceActionKind, context: WorkspaceActionContext)
   }
 }
 
-export async function launchWorkspaceAction(kind: WorkspaceActionKind): Promise<void> {
+export async function launchWorkspaceAction(kind: WorkspaceActionLaunch): Promise<void> {
   const state = useAppStore.getState()
   const context = selectWorkspaceActionContext(state)
+  if (!context) {
+    return
+  }
   // Why re-check: the menu is rendered from a snapshot, and a status tick between opening it and
-  // clicking can retract the action under the pointer.
-  if (!context?.actions.includes(kind)) {
+  // clicking can retract the action under the pointer. Review and regroup run on the branch, so
+  // they answer to the branch rather than to the list of next steps.
+  const reviewsBranch = kind === 'review' || kind === 'regroup'
+  if (reviewsBranch ? !context.canReviewBranch : !context.actions.includes(kind)) {
     return
   }
   const prompt =
-    kind === 'resolve-conflicts'
-      ? buildConflictPrompt(context)
-      : buildTemplatePrompt(
-          context,
-          PROMPT_BY_ACTION[kind],
-          kind === 'create-draft-pull-request' ? true : undefined
-        )
+    kind === 'regroup'
+      ? buildTemplatePrompt(context, 'reviewPipeline', undefined, REVIEW_REGROUP_PROMPT)
+      : kind === 'resolve-conflicts'
+        ? buildConflictPrompt(context)
+        : buildTemplatePrompt(
+            context,
+            PROMPT_BY_ACTION[kind],
+            kind === 'create-draft-pull-request' ? true : undefined
+          )
+  const actionAgent = reviewsBranch ? state.workspaceStatusRules.actionAgents.reviewPipeline : null
   try {
     const launched = await launchAgentBackgroundSession({
-      agent: state.workspaceStatusRules.reviewInbox.agent,
+      agent: actionAgent?.agent ?? state.workspaceStatusRules.reviewInbox.agent,
+      ...(actionAgent?.model
+        ? {
+            sessionOptions: {
+              model: actionAgent.model,
+              ...(actionAgent.effort ? { effort: actionAgent.effort } : {})
+            }
+          }
+        : {}),
       worktreeId: context.worktree.id,
       prompt,
       launchSource: 'unknown',

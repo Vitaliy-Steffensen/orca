@@ -11,7 +11,14 @@ export const BROWSER_AND_FORK_HANDLER_GROUPS: readonly HandlerGroup[] = [
   },
   {
     name: 'review',
-    keys: ['review comment add', 'review comment list', 'review comment rm', 'review summary set'],
+    keys: [
+      'review comment add',
+      'review comment list',
+      'review comment rm',
+      'review summary set',
+      'review summary show',
+      'review asset upload'
+    ],
     load: async () => (await import('./handlers/review.js')).REVIEW_HANDLERS
   }
 ]

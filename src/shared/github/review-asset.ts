@@ -23,6 +23,23 @@ export const REVIEW_ASSET_MAX_BYTES: Record<ReviewAssetKind, number> = {
   video: 100 * 1024 * 1024
 }
 
+const CONTENT_TYPE_BY_EXTENSION: Record<string, string> = {
+  png: 'image/png',
+  jpg: 'image/jpeg',
+  jpeg: 'image/jpeg',
+  gif: 'image/gif',
+  webp: 'image/webp',
+  mp4: 'video/mp4',
+  mov: 'video/quicktime',
+  webm: 'video/webm'
+}
+
+/** The attachment type a file name claims, for callers that have a path rather than a picked file. */
+export function reviewAssetContentTypeForName(name: string): string | null {
+  const extension = name.toLowerCase().split('.').pop()
+  return extension ? (CONTENT_TYPE_BY_EXTENSION[extension] ?? null) : null
+}
+
 export function reviewAssetKind(contentType: string): ReviewAssetKind | null {
   const type = contentType.toLowerCase()
   if (IMAGE_TYPES.has(type)) {

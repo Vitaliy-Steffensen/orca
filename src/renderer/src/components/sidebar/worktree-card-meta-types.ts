@@ -37,7 +37,6 @@ export type WorktreeCardJiraIssueDisplay = {
 export type WorktreeCardMetaBadgesProps = {
   referenceItems?: readonly WorkspaceAttachment[]
   referenceDetails?: WorkspaceReferenceDetailsMap
-  linkedItemCount?: number
   issue: WorktreeCardIssueDisplay | null
   linearIssue: WorktreeCardLinearIssueDisplay | null
   jiraIssue?: WorktreeCardJiraIssueDisplay | null

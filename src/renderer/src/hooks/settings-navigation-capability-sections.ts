@@ -9,6 +9,7 @@ import { getMobileSettingsPaneSearchEntries } from '@/components/settings/mobile
 import { getOrcaAccountSettingsSearchEntries } from '@/components/settings/orca-account-settings-search'
 import { OrcaLogoSettingsIcon } from '@/components/settings/orca-logo-settings-icon'
 import { getOrchestrationPaneSearchEntries } from '@/components/settings/orchestration-search'
+import { getReviewPipelinePaneSearchEntries } from '@/components/settings/review-pipeline-search'
 import { getVoicePaneSearchEntries } from '@/components/settings/voice-pane-search'
 import { translate } from '@/i18n/i18n'
 import type { SettingsNavSection } from '@/lib/settings-navigation-types'
@@ -19,6 +20,7 @@ import {
   Mic,
   MousePointerClick,
   Network,
+  ScanEye,
   SlidersHorizontal,
   Smartphone,
   UserCog
@@ -74,6 +76,17 @@ export function buildCapabilitySettingsSections({
       searchEntries: getOrchestrationPaneSearchEntries({
         includeNestedWorkerDepth: !isWebClient
       }),
+      group: 'capabilities'
+    },
+    {
+      id: 'review-pipeline',
+      title: translate('auto.hooks.useSettingsNavigationMetadata.reviewPipelineTitle', 'Review'),
+      description: translate(
+        'auto.hooks.useSettingsNavigationMetadata.reviewPipelineDescription',
+        'The skill and prompt behind an agent review.'
+      ),
+      icon: ScanEye,
+      searchEntries: getReviewPipelinePaneSearchEntries(),
       group: 'capabilities'
     },
     // Why: only surfaced once Linear is connected — a capability that needs a

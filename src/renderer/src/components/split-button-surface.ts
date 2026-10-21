@@ -12,3 +12,6 @@ export const SPLIT_BUTTON_MAIN_SEGMENT_CLASS = 'gap-1.5 rounded-l-md rounded-r-n
 /** The trailing chevron segment that opens the alternatives. */
 export const SPLIT_BUTTON_MENU_SEGMENT_CLASS =
   'justify-center rounded-l-none rounded-r-md border-l border-border/60 px-1'
+
+/** A segment that follows another one inside the same surface, so it needs its own divider. */
+export const SPLIT_BUTTON_FOLLOWING_SEGMENT_CLASS = 'rounded-l-none border-l border-border/60'

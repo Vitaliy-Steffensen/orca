@@ -21,6 +21,7 @@ Adding a feature here? See the rule at the top of [`CLAUDE.md`](./CLAUDE.md).
 - Run brings OrbStack up first when the stack needs containers, puts every service in one split terminal, and the card says whether it is spinning up or running and ready.
 - Pick Ask / Supervised / Autonomous when creating a workspace, each with its own agent, model, and prompt.
 - Calmer chrome: the right sidebar splits into an actions row over a view-tabs row, workspace cards keep colour for agent questions and failures only, and main plus Automations are hidden until you add them back from ⌘J.
+- A Review pane in Settings installs the review pipeline skill into every agent you use and holds the prompt it runs.
 - ⇧⌘W closes every other tab and keeps the one you are in.
 - ⇧⌘H reveals the file you are looking at in whichever list is in front of you — the Source Control
   changes, the Explorer tree, or the combined diff's own file tree — and flashes the row.
@@ -142,5 +143,16 @@ Taken whole with every mirror; the fork lineage's work on top of upstream.
 67. The right sidebar's top action bar shows a coloured state label on the left: merge conflicts, CI failed, changes requested, waiting for CI, awaiting review, draft PR, local only, ready to merge.
 68. A merged pull request offers Archive Workspace next to Delete Workspace, until the workspace is archived.
 69. One header button offers only the actions this branch can take right now — resolve, open a PR, commit, review — with the rest behind its chevron.
-70. When you have reviewed a pull request before, the Review section has a Full PR / Since review N switch for the diff.
-71. Board lanes can be marked automation-owned, held while agents run, and auto-pulled; new "Approved" and "Waiting for review" pull request rules can fill them.
+70. The workspace Review button runs your review pipeline on the current branch, with or without a pull request.
+71. Settings → Review picks the agent, model and effort the Review button runs on, defaulting to Grok 4.7.
+72. The pending review section can accept or drop every agent-proposed comment at once.
+73. A "Branch review" automation template runs the review pipeline on Grok 4.7 on a schedule.
+74. A Review plan tab in the right sidebar groups and rates the changed files from the last review, with a rating filter and a stale-grouping warning.
+75. When you have reviewed a pull request before, the Review section has a Full PR / Since review N switch for the diff.
+76. Board lanes can be marked automation-owned, held while agents run, and auto-pulled; new "Approved" and "Waiting for review" pull request rules can fill them.
+77. A review opens with a plain-English summary of what the branch changes, with screenshots of any UI it touched.
+78. Staged review findings now appear on the code in the all-files diff, with Accept and Discard on the line they belong to.
+79. The Review plan appears as a section in the pull request panel, with collapsible groups.
+80. Workspace cards no longer show a generic chain-link icon for a single linked pull request or task.
+81. Workspace cards hide the repo icon when the sidebar only shows workspaces from a single repo.
+82. Sidebar status bands and the lanes inside them can be dragged into any order, show their workspace count only while collapsed, and reveal their automation icons on hover.

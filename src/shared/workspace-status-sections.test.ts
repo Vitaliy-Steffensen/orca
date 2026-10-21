@@ -14,6 +14,12 @@ import {
   updateWorkspaceStatusSectionAppearance
 } from './workspace-status-sections'
 import {
+  createDefaultWorkspaceStatusSidebarOrder,
+  moveWorkspaceStatusSectionInOrder,
+  normalizeWorkspaceStatusSidebarOrder,
+  reorderWorkspaceStatusLanesInSection
+} from './workspace-status-sidebar-order'
+import {
   cloneDefaultWorkspaceStatuses,
   normalizePersistedWorkspaceStatuses
 } from './workspace-statuses'
@@ -267,5 +273,97 @@ describe('moveWorkspaceStatusWithinSection', () => {
 
   it('does nothing at the edge of a section', () => {
     expect(moveWorkspaceStatusWithinSection(lanes, 'a', -1)).toEqual(lanes)
+  })
+})
+
+describe('user-dragged sidebar order', () => {
+  const LANES = [
+    { id: 'research', label: 'Research', section: 'Ask' },
+    { id: 'review-other', label: 'Review other', section: 'Needs me' },
+    { id: 'my-review', label: 'My review', section: 'Needs me' },
+    { id: 'implementing', label: 'Implementing', section: 'Autonomous' }
+  ]
+
+  it('puts a dragged band above the one attention rank would pick', () => {
+    expect(getWorkspaceStatusSectionOrder(LANES, ['Autonomous'])).toEqual([
+      'Autonomous',
+      'Ask',
+      'Needs me'
+    ])
+  })
+
+  it('ignores a saved name whose section no longer exists', () => {
+    expect(getWorkspaceStatusSectionOrder(LANES, ['Gone', 'Needs me'])).toEqual([
+      'Needs me',
+      'Ask',
+      'Autonomous'
+    ])
+  })
+
+  it('moves a band and leaves the others in rendered order', () => {
+    expect(
+      moveWorkspaceStatusSectionInOrder(
+        ['Ask', 'Needs me', 'Autonomous'],
+        createDefaultWorkspaceStatusSidebarOrder(),
+        'Needs me',
+        0
+      ).sections
+    ).toEqual(['Needs me', 'Ask', 'Autonomous'])
+  })
+
+  it('reorders one band lanes and leaves every other slot alone', () => {
+    const next = reorderWorkspaceStatusLanesInSection(LANES, 'Needs me', [
+      'my-review',
+      'review-other'
+    ])
+    expect(next.map((lane) => lane.id)).toEqual([
+      'research',
+      'my-review',
+      'review-other',
+      'implementing'
+    ])
+  })
+
+  it('keeps a manual band saved order while a sibling band stays ranked', () => {
+    const lanes = [
+      { id: 'candidates', label: 'Candidates', section: 'Needs me' },
+      { id: 'review-other', label: 'Review other', section: 'Needs me' },
+      { id: 'waiting-on-ci', label: 'Waiting on CI', section: 'Autonomous' },
+      { id: 'implementing', label: 'Implementing', section: 'Autonomous' }
+    ]
+    expect(
+      orderWorkspaceStatusesByAttention(lanes, {
+        sections: [],
+        manualLaneSections: ['Needs me']
+      }).map((lane) => lane.id)
+    ).toEqual(['candidates', 'review-other', 'implementing', 'waiting-on-ci'])
+  })
+
+  it('still returns the same array when nothing is saved and nothing moves', () => {
+    const ordered = [
+      { id: 'research', label: 'Research', section: 'Research' },
+      { id: 'flagged', label: 'Flagged', section: 'Needs me' }
+    ]
+    expect(
+      orderWorkspaceStatusesByAttention(ordered, createDefaultWorkspaceStatusSidebarOrder())
+    ).toBe(ordered)
+  })
+})
+
+describe('normalizeWorkspaceStatusSidebarOrder', () => {
+  it('drops blanks, duplicates and non-strings', () => {
+    expect(
+      normalizeWorkspaceStatusSidebarOrder({
+        sections: ['Ask', '  Ask ', '   ', 7, 'Needs  me'],
+        manualLaneSections: ['Needs me']
+      })
+    ).toEqual({ sections: ['Ask', 'Needs me'], manualLaneSections: ['Needs me'] })
+  })
+
+  it('falls back to an empty order for junk', () => {
+    expect(normalizeWorkspaceStatusSidebarOrder(null)).toEqual({
+      sections: [],
+      manualLaneSections: []
+    })
   })
 })

@@ -46,5 +46,32 @@ export const REVIEW_COMMAND_SPECS: CommandSpec[] = [
     examples: [
       "orca review summary set --body 'Looks right overall.\\n\\n- Two retry paths need backoff.\\n- The migration is missing a down step.'"
     ]
+  },
+  {
+    path: ['review', 'summary', 'show'],
+    summary: "Print the summary currently on the user's unsent review",
+    usage: 'orca review summary show [--worktree <selector>] [--json]',
+    allowedFlags: [...GLOBAL_FLAGS, 'worktree'],
+    notes: [
+      'Read this before orca review summary set: whatever is there was typed by the user or written by an earlier pass, and set replaces all of it.',
+      'An empty result means the summary box is empty.'
+    ],
+    examples: ['orca review summary show', 'orca review summary show --json']
+  },
+  {
+    path: ['review', 'asset', 'upload'],
+    summary: 'Attach an image or video to the repository and print the link to embed in a review',
+    usage: 'orca review asset upload --file <path> [--worktree <selector>] [--json]',
+    allowedFlags: [...GLOBAL_FLAGS, 'file', 'worktree'],
+    notes: [
+      'Prints a https://github.com/user-attachments/assets/… URL. That is the only kind of image link a review summary or comment renders — a local path or a file:// URL degrades to plain text, so a screenshot must go through this command before it is embedded.',
+      'Embed it as markdown: `![what it shows](<the printed url>)`.',
+      'PNG, JPEG, GIF and WebP up to 10 MB; MP4, QuickTime and WebM up to 100 MB. The file is read where this command runs, so it works from an SSH or server host too.',
+      'Needs a GitHub remote, a gh login and write access to the repository. On a repository hosted anywhere else this fails and the screenshots stay in your reply; that is not a reason to fail the review.'
+    ],
+    examples: [
+      'orca review asset upload --file .context/review/my-branch/1-empty-state.png',
+      'orca review asset upload --file /tmp/shot.png --json'
+    ]
   }
 ]

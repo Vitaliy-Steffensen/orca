@@ -1,11 +1,18 @@
 import { REVIEW_STAGED_COMMENT_INSTRUCTION } from './agent-note-prompt'
 
-export const WORKSPACE_ACTION_PROMPT_IDS = [
+// Why split: these are the prompts behind the workspace top bar's own buttons, while
+// `reviewPipeline` is configured on its own Settings pane and launched from elsewhere.
+export const TOP_BAR_WORKSPACE_ACTION_PROMPT_IDS = [
   'commitAndPush',
   'createPullRequest',
   'readyForReview',
   'reviewPullRequest',
   'reReviewPullRequest'
+] as const
+
+export const WORKSPACE_ACTION_PROMPT_IDS = [
+  ...TOP_BAR_WORKSPACE_ACTION_PROMPT_IDS,
+  'reviewPipeline'
 ] as const
 
 export type WorkspaceActionPromptId = (typeof WORKSPACE_ACTION_PROMPT_IDS)[number]
@@ -68,6 +75,16 @@ The branch {{branch}} is checked out in {{worktreePath}}; its base is {{baseRef}
 - Then flag anything new that arrived in those commits and was not part of what I asked for.
 - Do not change any code.
 
+${REVIEW_STAGED_COMMENT_INSTRUCTION}`,
+  reviewPipeline: `Review the work on branch {{branch}} in {{worktreePath}} against {{baseRef}}.
+
+- Use the orca-review skill: it rates and groups the changed files, decides from the diff itself whether the frontend and backend passes apply, fans those passes out to sub-agents in parallel, screenshots the UI when a UI surface changed, and stages the findings. Otherwise follow the rest of this prompt.
+- Read every changed file, not only the diff hunks, and say which ones are worth reading first.
+- Run every review skill you have whose area the diff touches, such as review-fe for frontend changes and review-be for backend changes, in parallel, and treat their rules as the authority on what is a defect.
+- Only report a finding you can tie to the input or state that makes it go wrong, and only when this branch caused it or made it worse.
+- Open the summary with two to four sentences of plain English on what the branch changes and why, with no jargon and no file names, before the verdict and the findings.
+- Do not change any code.
+
 ${REVIEW_STAGED_COMMENT_INSTRUCTION}`
 }
 
@@ -88,3 +105,8 @@ export function renderWorkspaceActionPrompt(
     .replace(/\n{3,}/g, '\n\n')
     .trim()
 }
+
+export const REVIEW_REGROUP_PROMPT = `Group the work on branch {{branch}} in {{worktreePath}} against {{baseRef}} for review, and stop there.
+
+- Use the orca-review skill, the rate-and-group phase only: rate every changed file and cluster the files into numbered groups, then write .orca/review-plan.json in this worktree.
+- Do not review the code, do not stage any comments, and do not change any code.`

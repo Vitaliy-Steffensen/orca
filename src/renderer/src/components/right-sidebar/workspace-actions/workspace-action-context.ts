@@ -18,6 +18,7 @@ export type WorkspaceActionContext = {
   pr: PRInfo | null
   unresolvedConflicts: GitStatusEntry[]
   actions: WorkspaceActionKind[]
+  canReviewBranch: boolean
 }
 
 const EMPTY_ENTRIES: GitStatusEntry[] = []
@@ -50,6 +51,7 @@ export function selectWorkspaceActionContext(state: AppState): WorkspaceActionCo
     (entry) => entry.conflictStatus === 'unresolved' && entry.conflictKind
   )
   const upstream = state.remoteStatusesByWorktree[worktree.id]
+  const isDefaultBranch = worktree.isMainWorktree || branch === 'main' || branch === 'master'
   // Why `in`: a missing key is a line total that has not loaded, which is not the same as a
   // branch that genuinely matches its base.
   const branchDiffKnown = worktree.id in state.gitBranchLineTotalByWorktree
@@ -59,11 +61,19 @@ export function selectWorkspaceActionContext(state: AppState): WorkspaceActionCo
     hasUpstream: upstream?.hasUpstream === true,
     unpushedCommits: upstream?.hasUpstream ? upstream.ahead : 0,
     hasLocalConflicts: unresolvedConflicts.length > 0,
-    isDefaultBranch: worktree.isMainWorktree || branch === 'main' || branch === 'master',
+    isDefaultBranch,
     pullRequest: pr ? { state: pr.state, conflicting: pr.mergeable === 'CONFLICTING' } : null,
     pullRequestKnown: entry !== undefined && !entry.error,
     hasDiffFromBase: (branchLineTotal?.added ?? 0) + (branchLineTotal?.removed ?? 0) > 0,
     branchDiffKnown
   })
-  return { worktree, repo, branch, pr, unresolvedConflicts, actions }
+  return {
+    worktree,
+    repo,
+    branch,
+    pr,
+    unresolvedConflicts,
+    actions,
+    canReviewBranch: entries.length > 0 || !isDefaultBranch
+  }
 }

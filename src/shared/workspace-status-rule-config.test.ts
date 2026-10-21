@@ -160,3 +160,31 @@ describe('normalizeWorkspaceStatusRuleConfig', () => {
     expect(config.newWorkspaceStatusSince).toBeNull()
   })
 })
+
+describe('the review pipeline agent', () => {
+  it('defaults to Grok 4.7', () => {
+    expect(cloneDefaultWorkspaceStatusRuleConfig().actionAgents.reviewPipeline).toEqual({
+      agent: 'grok',
+      model: 'grok-4.7'
+    })
+    expect(normalizeWorkspaceStatusRuleConfig({}).actionAgents.reviewPipeline?.agent).toBe('grok')
+  })
+
+  it('keeps a saved agent, model and effort', () => {
+    const config = normalizeWorkspaceStatusRuleConfig({
+      actionAgents: { reviewPipeline: { agent: 'claude', model: ' opus ', effort: 'high' } }
+    })
+    expect(config.actionAgents.reviewPipeline).toEqual({
+      agent: 'claude',
+      model: 'opus',
+      effort: 'high'
+    })
+  })
+
+  it('falls back to the default for an agent this build does not know', () => {
+    const config = normalizeWorkspaceStatusRuleConfig({
+      actionAgents: { reviewPipeline: { agent: 'not-an-agent', model: 'x' } }
+    })
+    expect(config.actionAgents.reviewPipeline).toEqual({ agent: 'grok', model: 'grok-4.7' })
+  })
+})

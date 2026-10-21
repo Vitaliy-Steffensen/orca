@@ -25,6 +25,7 @@ import type {
 } from './ui-chrome-types'
 import type { WorkspaceStatusDefinition } from './worktree/types'
 import type { WorkspaceStatusRuleConfig } from './workspace-status-rule-config'
+import type { WorkspaceStatusSidebarOrder } from './workspace-status-sidebar-order'
 import type { PersistedAutomationHostFilter } from './automation-host-filter'
 
 export type PersistedUIState = {
@@ -109,6 +110,8 @@ export type PersistedUIState = {
   agentActivityDisplayMode?: AgentActivityDisplayMode
   workspaceStatuses?: WorkspaceStatusDefinition[]
   workspaceStatusRules?: WorkspaceStatusRuleConfig
+  /** Sidebar band order the user dragged, plus the bands whose lane order they took over. */
+  workspaceStatusSidebarOrder?: WorkspaceStatusSidebarOrder
   workspaceBoardOpacity?: number
   workspaceBoardColumnWidth?: number
   syncTaskStatusFromWorkspaceBoard?: boolean

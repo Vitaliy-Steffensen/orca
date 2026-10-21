@@ -107,7 +107,8 @@ const PORTABLE_UI_KEYS = [
   'statusBarVisible',
   'usagePercentageDisplay',
   'statusBarUsageMode',
-  'workspaceStatusRules'
+  'workspaceStatusRules',
+  'workspaceStatusSidebarOrder'
 ] as const
 
 function isRecord(value: unknown): value is Record<string, unknown> {

@@ -1,5 +1,13 @@
 import { useMemo } from 'react'
-import { Plug, Files, GitBranch, GitPullRequest, ListChecks, Workflow } from 'lucide-react'
+import {
+  Plug,
+  Files,
+  GitBranch,
+  GitPullRequest,
+  ListChecks,
+  ListTree,
+  Workflow
+} from 'lucide-react'
 import { useAppStore } from '@/store'
 import { useRepoById } from '@/store/selectors'
 import { isFolderRepo } from '../../../../shared/repo-kind'
@@ -120,6 +128,13 @@ export function useRightSidebarActivityItems({
         icon: ListChecks,
         title: translate('auto.components.right.sidebar.index.83a10e3c44', 'CI'),
         shortcut: checksShortcut === 'Unassigned' ? '' : checksShortcut,
+        gitOnly: true
+      },
+      {
+        id: 'review-plan',
+        icon: ListTree,
+        title: translate('auto.components.right.sidebar.index.reviewPlan', 'Review plan'),
+        shortcut: '',
         gitOnly: true
       },
       {

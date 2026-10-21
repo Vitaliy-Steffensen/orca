@@ -6,6 +6,7 @@ import { getWorkspaceStatusSectionGroupKey } from '../../../../../../shared/work
 import { cloneDefaultWorkspaceStatuses } from '../../../../../../shared/workspace-statuses'
 import { repo, repoMap, worktree } from '../../worktree-list-groups-test-fixtures'
 import type { WorkspaceStatusDefinition } from '../../../../../../shared/worktree/types'
+import type { WorkspaceStatusSidebarOrder } from '../../../../../../shared/workspace-status-sidebar-order'
 
 const SECTIONED_STATUSES: WorkspaceStatusDefinition[] = [
   { id: 'scoping', label: 'scoping', section: 'Research' },
@@ -25,6 +26,7 @@ function rowsFor(args: {
   statuses?: WorkspaceStatusDefinition[]
   collapsed?: string[]
   worktrees?: ReturnType<typeof workspace>[]
+  sidebarOrder?: WorkspaceStatusSidebarOrder
 }) {
   return buildRows(
     'workspace-status',
@@ -38,7 +40,23 @@ function rowsFor(args: {
     null,
     new Set(args.collapsed ?? []),
     undefined,
-    args.statuses ?? SECTIONED_STATUSES
+    args.statuses ?? SECTIONED_STATUSES,
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    args.sidebarOrder
   )
 }
 
@@ -235,5 +253,30 @@ describe('reveal keys for a sectioned lane', () => {
         cloneDefaultWorkspaceStatuses()
       )
     ).toEqual(['workspace-status:in-progress'])
+  })
+})
+
+describe('workspace-status sections the user dragged', () => {
+  it('renders bands in the saved order instead of attention order', () => {
+    const rows = rowsFor({
+      sidebarOrder: { sections: ['Needs me'], manualLaneSections: [] }
+    })
+    expect(
+      summarize(rows).filter((entry) => entry.startsWith('header workspace-status-section'))
+    ).toEqual([
+      `header ${NEEDS_ME_KEY}`,
+      `header ${RESEARCH_KEY}`,
+      `header ${getWorkspaceStatusSectionGroupKey('Autonomous')}`
+    ])
+  })
+
+  it('keeps a manual band lanes in the saved order', () => {
+    const rows = rowsFor({
+      sidebarOrder: { sections: [], manualLaneSections: ['Needs me'] }
+    })
+    expect(summarize(rows).filter((entry) => entry.includes(`<${NEEDS_ME_KEY}`))).toEqual([
+      `header workspace-status:my-review <${NEEDS_ME_KEY}`,
+      `header workspace-status:flagged <${NEEDS_ME_KEY}`
+    ])
   })
 })

@@ -703,6 +703,16 @@
           }
         }
       },
+      "pendingReview": {
+        "badgeTitle": "{{count}} review comments waiting to be submitted"
+      },
+      "pr": {
+        "comments": {
+          "UnresolvedThreadBadge": {
+            "title": "{{count}} unresolved review threads"
+          }
+        }
+      },
       "right": {
         "sidebar": {
           "AiVaultPanel": {
@@ -2017,13 +2027,19 @@
           "scopedTo": "{{value0}} visible"
         },
         "SidebarNav": {
-          "9c95e1ce91": "Agents"
+          "0ccba862b8": "Open GitHub tasks",
+          "196c1b5362": "Open GitLab tasks",
+          "9c95e1ce91": "Agents",
+          "c39ab10000": "Open Linear tasks",
+          "e7ad3c540d": "Open Jira tasks"
         },
         "SidebarSettingsHelpMenu": {
           "d396773ef0": "checking"
         },
         "SidebarToolbar": {
           "19e32d0e5f": "Open folder picker to add a project",
+          "87d0064026": "Workspace board moved to the bottom bar",
+          "a30e34eb5c": "Close workspace board",
           "abc62b6328": "Add Project"
         },
         "SidebarWorkspaceOptionsMenu": {
@@ -2038,7 +2054,8 @@
           "c7591b6014": "repo"
         },
         "WorkspaceKanbanSettingsMenu": {
-          "b45b350eb0": "Move {{value0}} left"
+          "2d6b4e8c13": "Section for {{value0}}",
+          "4f1c0a7b91": "Section (optional)"
         },
         "WorkspaceStatusAppearancePopover": {
           "514be2f569": "Set {{value0}} color to {{value1}}"
@@ -3189,8 +3206,10 @@
   "dashboard": {
     "sidebar": {
       "closeActivity": "Turn off activity view",
+      "hideMainWorkspace": "Hide main workspace",
       "label": "Agents",
-      "openActivity": "View activity"
+      "openActivity": "View activity",
+      "showMainWorkspace": "Show main workspace"
     }
   },
   "dashboardPopout": {

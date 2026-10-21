@@ -8,6 +8,7 @@ import { EMPTY_CODEX_RESET_CREDIT_ATTEMPT_LEDGER } from './codex-reset-credit-at
 import { DEFAULT_STATUS_BAR_ITEMS } from './status-bar-defaults'
 import type { VoiceSettings } from './speech-types'
 import { cloneDefaultWorkspaceStatuses } from './workspace-statuses'
+import { createDefaultWorkspaceStatusSidebarOrder } from './workspace-status-sidebar-order'
 import { DEFAULT_WORKTREE_CARD_PROPERTIES } from './worktree/card-properties'
 import { DEFAULT_AGENTS_GROUP_BY, DEFAULT_AGENTS_READ_FILTER } from './agents-view-thread-filters'
 import { DEFAULT_USAGE_PERCENTAGE_DISPLAY } from './usage-percentage-display'
@@ -236,6 +237,7 @@ export function getDefaultUIState(): PersistedUIState {
     _worktreeCardModeDefaulted: true,
     agentActivityDisplayMode: DEFAULT_AGENT_ACTIVITY_DISPLAY_MODE,
     workspaceStatuses: cloneDefaultWorkspaceStatuses(),
+    workspaceStatusSidebarOrder: createDefaultWorkspaceStatusSidebarOrder(),
     workspaceBoardOpacity: 1,
     workspaceBoardColumnWidth: 308,
     syncTaskStatusFromWorkspaceBoard: false,

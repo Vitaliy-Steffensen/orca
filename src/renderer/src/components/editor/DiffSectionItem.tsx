@@ -9,6 +9,8 @@ import { useFileAgentNotes } from '@/lib/agent-notes'
 import { deleteNoteThread } from '@/lib/note-thread-delete'
 import { buildNoteThreads } from '@/lib/agent-note-replies'
 import { useDiffCommentDecorator } from '../diff-comments/useDiffCommentDecorator'
+import { useInlinePRCommentZones } from '../diff-comments/useInlinePRCommentZones'
+import { usePendingReviewForDiff } from '@/components/pending-review/use-pending-review-for-diff'
 import { applyDiffEditorLineNumberOptions } from './diff-editor-line-number-options'
 import { DiffSectionHeader } from './DiffSectionHeader'
 import type { DiffComment } from '../../../../shared/diff-comment-types'
@@ -20,9 +22,20 @@ import { getLiveDiffSectionRenderLimit } from './diff-section-live-render-limit'
 import { useDiffSectionFallbackCleanup } from './useDiffSectionFallbackCleanup'
 import { submitDiffSectionComment } from './diff-section-comment-submit'
 import type { DiffSectionItemProps } from './diff-section-item-props'
+import type { InlinePRCommentZoneHandlers } from '../diff-comments/useInlinePRCommentZones'
+import type { PRCommentGroup } from '../../../../shared/pr-comment-groups'
 import { useDiffSectionModelLifecycle } from './use-diff-section-model-lifecycle'
 import { trackDiffEditorFile } from '@/lib/editor-model-files'
 import { useContextualCopySetup } from './useContextualCopySetup'
+
+const EMPTY_PR_COMMENT_GROUPS: readonly PRCommentGroup[] = []
+const NO_REVIEW_ZONE_HANDLERS: InlinePRCommentZoneHandlers = {
+  onResolve: () => false,
+  onReply: async () => ({ ok: false, error: 'unreachable' }),
+  onEditComment: async () => false,
+  onDeleteComment: () => {},
+  onSetReaction: async () => false
+}
 
 export function DiffSectionItem({
   section,
@@ -46,6 +59,7 @@ export function DiffSectionItem({
   addLineCommentLabel,
   addLineCommentPlaceholder,
   inlineComments,
+  reviewZones,
   getCommentableLineNumbers,
   setSectionHeights,
   setSections,
@@ -136,6 +150,19 @@ export function DiffSectionItem({
     },
     [addDiffComment, onAddLineComment, section, worktreeId]
   )
+
+  // Staged findings and PR threads on the lines they belong to. The hook is a no-op without an
+  // editor, which is how the PR-page viewers opt out without breaking the rules of hooks.
+  const pendingReview = usePendingReviewForDiff(worktreeId ?? null, section.path)
+  useInlinePRCommentZones({
+    editor: reviewZones ? modifiedEditor : null,
+    modelKey: `${modelPathBase}:modified`,
+    groups: reviewZones?.groups ?? EMPTY_PR_COMMENT_GROUPS,
+    relativePath: section.path,
+    worktreeId: worktreeId ?? '',
+    pendingReview,
+    handlers: reviewZones?.handlers ?? NO_REVIEW_ZONE_HANDLERS
+  })
 
   useDiffCommentDecorator({
     editor: hasLineCommentAction ? modifiedEditor : null,

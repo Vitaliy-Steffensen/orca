@@ -133,6 +133,8 @@ export function useAutomationDraftEffects({
         dayOfWeek: template.dayOfWeek ?? current.dayOfWeek,
         customSchedule: '',
         agentId: template.agentId ?? current.agentId,
+        // Why reset: extras are validated per agent, so a previous agent's flags would fail on this one.
+        extraAgentArgs: template.extraAgentArgs ?? '',
         workspaceMode: template.workspaceMode ?? current.workspaceMode,
         missedRunGraceMinutes: template.missedRunGraceMinutes ?? current.missedRunGraceMinutes,
         scheduleWarning: null

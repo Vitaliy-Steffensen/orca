@@ -48,6 +48,20 @@ type BuildArgs = {
   ) => void
 }
 
+function hasMultipleRepos(rows: readonly RenderRow[]): boolean {
+  const repoIds = new Set<string>()
+  for (const row of rows) {
+    const itemRows = row.type === 'lineage-group' ? row.rows : row.type === 'item' ? [row] : []
+    for (const itemRow of itemRows) {
+      repoIds.add(itemRow.worktree.repoId)
+      if (repoIds.size > 1) {
+        return true
+      }
+    }
+  }
+  return false
+}
+
 // Assembles the per-render context the row dispatcher reads. Plain data — everything in it
 // is either a prop, a memoised hook result, or a stable callback.
 export function buildWorktreeVirtualRowContext(args: BuildArgs): WorktreeVirtualRowContext {
@@ -113,6 +127,7 @@ export function buildWorktreeVirtualRowContext(args: BuildArgs): WorktreeVirtual
     item: {
       settings: args.settings,
       groupBy: props.groupBy,
+      hasMultipleRepos: hasMultipleRepos(args.renderRows),
       folderBackedProjectGroupIds: args.folderBackedProjectGroupIds,
       groupKeyByRowKey: session.groupKeyByRowKey,
       groupIndexByRowKey: session.groupIndexByRowKey,

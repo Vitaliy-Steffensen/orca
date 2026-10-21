@@ -14,6 +14,7 @@ describe('PR panel sections', () => {
       ['pr-attention', 'Needs attention'],
       ['pr-checks', 'Checks'],
       ['pr-pending-review', 'Pending review'],
+      ['pr-review-plan', 'Review plan'],
       ['pr-comments', 'Comments'],
       ['pr-resolved', 'Resolved']
     ])
@@ -22,14 +23,37 @@ describe('PR panel sections', () => {
       'pr-attention',
       'pr-checks',
       'pr-pending-review',
+      'pr-review-plan',
       'pr-resolved'
     ])
     expect(moveSourceControlSection(orderPrPanelSections(undefined), 'pr-checks', null)).toEqual([
       'pr-attention',
       'pr-pending-review',
+      'pr-review-plan',
       'pr-comments',
       'pr-resolved',
       'pr-checks'
+    ])
+  })
+
+  // Why: a layout saved before this section existed names every other id, so an order that simply
+  // honoured the saved list would drop Review plan out of the panel for every existing user.
+  it('appends Review plan to an order saved before it existed', () => {
+    expect(
+      orderPrPanelSections([
+        'pr-attention',
+        'pr-checks',
+        'pr-pending-review',
+        'pr-comments',
+        'pr-resolved'
+      ])
+    ).toEqual([
+      'pr-attention',
+      'pr-checks',
+      'pr-pending-review',
+      'pr-comments',
+      'pr-resolved',
+      'pr-review-plan'
     ])
   })
 })

@@ -5,10 +5,10 @@ import { cleanup, render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import type { WorkspaceActionKind } from '../../../../../shared/workspace-action'
 
-type ActionContextStub = { actions: WorkspaceActionKind[] }
+type ActionContextStub = { actions: WorkspaceActionKind[]; canReviewBranch: boolean }
 
 const mocks = vi.hoisted(() => {
-  const state: { actions: WorkspaceActionKind[] } = { actions: [] }
+  const state: ActionContextStub = { actions: [], canReviewBranch: false }
   return { state, launch: vi.fn() }
 })
 
@@ -24,8 +24,9 @@ vi.mock('@/i18n/i18n', () => ({ translate: (_key: string, fallback: string) => f
 
 import { WorkspaceActionButtons } from './WorkspaceActionButtons'
 
-function renderWith(actions: WorkspaceActionKind[]): void {
+function renderWith(actions: WorkspaceActionKind[], canReviewBranch = false): void {
   mocks.state.actions = actions
+  mocks.state.canReviewBranch = canReviewBranch
   mocks.launch.mockReset().mockResolvedValue(undefined)
   render(<WorkspaceActionButtons />)
 }
@@ -57,6 +58,22 @@ describe('WorkspaceActionButtons', () => {
 
     expect(screen.getByRole('button', { name: 'Ready for review' })).toBeTruthy()
     expect(screen.queryByRole('button', { name: 'More workspace actions' })).toBeNull()
+  })
+
+  it('runs the review pipeline from the Review button without a pull request', async () => {
+    renderWith([], true)
+
+    await userEvent.click(screen.getByRole('button', { name: 'Review' }))
+    expect(mocks.launch).toHaveBeenCalledWith('review')
+    expect(screen.queryByRole('button', { name: 'More workspace actions' })).toBeNull()
+  })
+
+  it('keeps the branch review behind the step the branch is actually waiting on', async () => {
+    renderWith(['commit-and-push'], true)
+
+    expect(screen.getByRole('button', { name: 'Commit & push' })).toBeTruthy()
+    await userEvent.click(screen.getByRole('button', { name: 'More workspace actions' }))
+    expect(await screen.findByRole('menuitem', { name: 'Review' })).toBeTruthy()
   })
 
   it('renders nothing when the branch has no action to take', () => {

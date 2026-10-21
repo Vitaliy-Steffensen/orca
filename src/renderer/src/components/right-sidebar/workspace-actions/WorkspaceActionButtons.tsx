@@ -79,10 +79,17 @@ function actionCopy(action: WorkspaceActionKind): { label: string; icon: React.J
  * of control.
  */
 export function WorkspaceActionButtons(): React.JSX.Element | null {
-  const actions = useAppStore(
+  const resolved = useAppStore(
     useShallow((state) => selectWorkspaceActionContext(state)?.actions ?? EMPTY_ACTIONS)
   )
+  const canReviewBranch = useAppStore(
+    (state) => selectWorkspaceActionContext(state)?.canReviewBranch === true
+  )
   const [busy, setBusy] = useState(false)
+  // Why appended: the review pipeline runs on the branch itself, so it is offered with or without
+  // a pull request, and never ahead of the step that is actually holding the branch up.
+  const actions =
+    canReviewBranch && !resolved.includes('review') ? [...resolved, 'review' as const] : resolved
   const [primary, ...rest] = actions
   if (!primary) {
     return null

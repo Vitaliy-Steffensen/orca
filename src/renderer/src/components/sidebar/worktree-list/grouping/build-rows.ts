@@ -47,6 +47,7 @@ import {
   hasWorkspaceStatusSections,
   orderWorkspaceStatusesByAttention
 } from '../../../../../../shared/workspace-status-sections'
+import type { WorkspaceStatusSidebarOrder } from '../../../../../../shared/workspace-status-sidebar-order'
 import { appendStatusSectionGroups } from './status-section-rows'
 import { buildOrderedGroups } from './worktree-grouping'
 
@@ -75,7 +76,8 @@ export function buildRows(
   folderWorkspaces: readonly FolderWorkspace[] = [],
   hostLabelById?: ReadonlyMap<string, string>,
   defaultHostId: ExecutionHostId = LOCAL_EXECUTION_HOST_ID,
-  pinnedDisplayPolicy: PinnedWorktreeDisplayPolicy = getPinnedWorktreeDisplayPolicy(settings)
+  pinnedDisplayPolicy: PinnedWorktreeDisplayPolicy = getPinnedWorktreeDisplayPolicy(settings),
+  workspaceStatusSidebarOrder?: WorkspaceStatusSidebarOrder
 ): Row[] {
   const result: Row[] = []
   const projectIndex = buildProjectGroupingIndex(projectGrouping)
@@ -202,10 +204,11 @@ export function buildRows(
 
   // Why: the saved lane list is the pipeline the board shows left to right.
   // The sidebar answers what to look at first, so Ask stays above Needs me
-  // and Autonomous stays at the bottom even when that list says otherwise.
+  // and Autonomous stays at the bottom even when that list says otherwise —
+  // until the user drags a band or lane, which that order then overrules.
   const sidebarStatuses =
     groupBy === 'workspace-status'
-      ? orderWorkspaceStatusesByAttention(workspaceStatuses)
+      ? orderWorkspaceStatusesByAttention(workspaceStatuses, workspaceStatusSidebarOrder)
       : workspaceStatuses
 
   const orderedGroups = buildOrderedGroups({

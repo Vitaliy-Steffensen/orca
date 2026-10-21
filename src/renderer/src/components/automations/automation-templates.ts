@@ -5,6 +5,7 @@ import type {
 import type { TuiAgent } from '../../../../shared/tui-agent'
 import { translate } from '@/i18n/i18n'
 import { createLocalizedCatalog } from '@/i18n/localized-catalog'
+import { REVIEW_STAGED_COMMENT_INSTRUCTION } from '../../../../shared/agent-note-prompt'
 
 export type AutomationTemplate = {
   id: string
@@ -17,6 +18,7 @@ export type AutomationTemplate = {
   time?: string
   dayOfWeek?: string
   agentId?: TuiAgent
+  extraAgentArgs?: string
   workspaceMode?: AutomationWorkspaceMode
   missedRunGraceMinutes?: string
 }
@@ -46,6 +48,35 @@ export const getAutomationTemplates = createLocalizedCatalog((): AutomationTempl
     ),
     preset: 'weekdays',
     time: '09:00',
+    missedRunGraceMinutes: '720'
+  },
+  {
+    id: 'review-pipeline-weekday',
+    category: translate(
+      'auto.components.automations.automation.templates.reviewPipeline.category',
+      'Review'
+    ),
+    label: translate(
+      'auto.components.automations.automation.templates.reviewPipeline.label',
+      'Branch review'
+    ),
+    description: translate(
+      'auto.components.automations.automation.templates.reviewPipeline.description',
+      'Every weekday, reviews the checked-out branch with the review pipeline on Grok 4.7 and stages the findings on the diff. Pick the workspace to review.'
+    ),
+    name: translate(
+      'auto.components.automations.automation.templates.reviewPipeline.name',
+      'Branch review'
+    ),
+    prompt: `${translate(
+      'auto.components.automations.automation.templates.reviewPipeline.prompt',
+      'Review the work on the checked-out branch against its base branch. Use the orca-review skill: it rates and groups the changed files, runs every review skill you have whose area the diff touches, screenshots the UI when the frontend diff earns it, and stages the findings. Read every changed file, not only the diff hunks. Only report a finding you can tie to the input or state that makes it go wrong. Do not change any code.'
+    )}\n\n${REVIEW_STAGED_COMMENT_INSTRUCTION}`,
+    preset: 'weekdays',
+    time: '09:00',
+    agentId: 'grok',
+    extraAgentArgs: '-m grok-4.7',
+    workspaceMode: 'existing',
     missedRunGraceMinutes: '720'
   },
   {
