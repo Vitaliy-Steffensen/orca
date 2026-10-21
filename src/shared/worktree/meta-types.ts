@@ -17,6 +17,7 @@ import type { WorkspaceStatusManualOverride } from '../workspace-status-manual-o
 import type { PendingReviewComment } from '../github/pending-review-comment'
 import type { WorkspaceAutonomy } from '../workspace-autonomy'
 import type { WorkspaceIntent } from '../workspace-intent'
+import type { WorkspaceAutoMergePolicy } from '../workspace-auto-merge-policy'
 
 // ─── Worktree metadata (persisted user-authored fields only) ─────────
 export type WorktreeMeta = {
@@ -92,6 +93,8 @@ export type WorktreeMeta = {
   /** See {@link Worktree.workspaceAutonomy}. Absent means unset, which reads as supervised. */
   workspaceAutonomy?: WorkspaceAutonomy
   workspaceIntent?: WorkspaceIntent
+  /** See {@link Worktree.autoMerge}. */
+  autoMerge?: WorkspaceAutoMergePolicy
   diffComments?: DiffComment[]
   /** Fork: kept apart from diffComments so the renderer's whole-list note saves never drop them. */
   agentNotes?: DiffComment[]

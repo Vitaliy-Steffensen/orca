@@ -51,7 +51,7 @@ function setContext(overrides: Record<string, unknown>): void {
     branch: 'feature/e-4861',
     pr: null,
     unresolvedConflicts: [],
-    action: 'create-pull-request',
+    actions: ['create-pull-request', 'create-draft-pull-request'],
     ...overrides
   })
 }
@@ -63,7 +63,7 @@ describe('launchWorkspaceAction', () => {
 
   it('creates the pull request with the pull request settings and instructions', async () => {
     setContext({})
-    await launchWorkspaceAction('primary')
+    await launchWorkspaceAction('create-pull-request')
 
     const call = mocks.launch.mock.calls[0]?.[0]
     expect(call).toMatchObject({ agent: 'claude', worktreeId: 'wt', title: 'Create PR' })
@@ -75,16 +75,16 @@ describe('launchWorkspaceAction', () => {
 
   it('resolves pull request conflicts with the Source Control conflict prompt', async () => {
     setContext({
-      action: 'resolve-conflicts',
+      actions: ['resolve-conflicts'],
       pr: { number: 3145, state: 'open', baseRefName: 'main', url: '', title: '' }
     })
-    await launchWorkspaceAction('primary')
+    await launchWorkspaceAction('resolve-conflicts')
     expect(mocks.launch.mock.calls[0]?.[0].prompt).toContain('Resolve the merge conflicts')
   })
 
   it('reviews the current pull request', async () => {
     setContext({
-      action: null,
+      actions: ['review', 're-review'],
       pr: {
         number: 3145,
         state: 'open',
@@ -101,7 +101,7 @@ describe('launchWorkspaceAction', () => {
 
   it('re-reviews the current pull request against the review already left on it', async () => {
     setContext({
-      action: null,
+      actions: ['review', 're-review'],
       pr: {
         number: 3145,
         state: 'open',
@@ -118,11 +118,19 @@ describe('launchWorkspaceAction', () => {
     expect(call.prompt).not.toMatch(/\{\{\w+\}\}/)
   })
 
-  it('does nothing without an action or a pull request to review', async () => {
-    setContext({ action: null })
-    await launchWorkspaceAction('primary')
+  it('refuses an action the branch no longer offers', async () => {
+    setContext({ actions: [] })
+    await launchWorkspaceAction('create-pull-request')
     await launchWorkspaceAction('review')
     await launchWorkspaceAction('re-review')
     expect(mocks.launch).not.toHaveBeenCalled()
+  })
+
+  it('opens a draft pull request from the draft entry', async () => {
+    setContext({})
+    await launchWorkspaceAction('create-draft-pull-request')
+    const call = mocks.launch.mock.calls[0]?.[0]
+    expect(call.title).toBe('Create draft PR')
+    expect(call.prompt).toContain('as a draft')
   })
 })

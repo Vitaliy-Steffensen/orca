@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { resolveWorkspaceAction, type WorkspaceActionInput } from './workspace-action'
+import { resolveWorkspaceActions, type WorkspaceActionInput } from './workspace-action'
 
 const clean: WorkspaceActionInput = {
   hasUncommittedChanges: false,
@@ -8,64 +8,102 @@ const clean: WorkspaceActionInput = {
   hasLocalConflicts: false,
   isDefaultBranch: false,
   pullRequest: null,
-  pullRequestKnown: true
+  pullRequestKnown: true,
+  hasDiffFromBase: true,
+  branchDiffKnown: true
 }
 
-describe('resolveWorkspaceAction', () => {
-  it('offers create PR over commit & push when the branch has no pull request', () => {
-    expect(resolveWorkspaceAction({ ...clean, hasUncommittedChanges: true })).toBe(
-      'create-pull-request'
-    )
-    expect(resolveWorkspaceAction({ ...clean, unpushedCommits: 2 })).toBe('create-pull-request')
+describe('resolveWorkspaceActions', () => {
+  it('leads with create PR over commit & push when the branch has no pull request', () => {
+    expect(resolveWorkspaceActions({ ...clean, hasUncommittedChanges: true })).toEqual([
+      'create-pull-request',
+      'create-draft-pull-request',
+      'commit-and-push'
+    ])
+    expect(resolveWorkspaceActions({ ...clean, unpushedCommits: 2 })).toEqual([
+      'create-pull-request',
+      'create-draft-pull-request',
+      'commit-and-push'
+    ])
   })
 
-  it('offers commit & push until the pull request lookup has answered', () => {
+  it('offers commit & push alone until the pull request lookup has answered', () => {
     const unknown = { ...clean, pullRequestKnown: false }
-    expect(resolveWorkspaceAction({ ...unknown, hasUncommittedChanges: true })).toBe(
+    expect(resolveWorkspaceActions({ ...unknown, hasUncommittedChanges: true })).toEqual([
       'commit-and-push'
-    )
-    expect(resolveWorkspaceAction(unknown)).toBeNull()
+    ])
+    expect(resolveWorkspaceActions(unknown)).toEqual([])
   })
 
-  it('offers commit & push over the pull request steps', () => {
-    const pullRequest = { state: 'draft' as const, conflicting: true }
-    expect(resolveWorkspaceAction({ ...clean, hasUncommittedChanges: true, pullRequest })).toBe(
-      'commit-and-push'
+  it('leads with commit & push over the pull request steps', () => {
+    const pullRequest = { state: 'draft' as const, conflicting: false }
+    expect(resolveWorkspaceActions({ ...clean, hasUncommittedChanges: true, pullRequest })).toEqual(
+      ['commit-and-push', 'ready-for-review', 'review', 're-review']
     )
-    expect(resolveWorkspaceAction({ ...clean, unpushedCommits: 2, pullRequest })).toBe(
-      'commit-and-push'
-    )
+    expect(resolveWorkspaceActions({ ...clean, unpushedCommits: 2, pullRequest })).toEqual([
+      'commit-and-push',
+      'ready-for-review',
+      'review',
+      're-review'
+    ])
   })
 
-  it('offers conflicts next, then ready for review, then create PR', () => {
+  it('leads with conflicts, then ready for review, then review', () => {
     expect(
-      resolveWorkspaceAction({ ...clean, pullRequest: { state: 'draft', conflicting: true } })
-    ).toBe('resolve-conflicts')
+      resolveWorkspaceActions({ ...clean, pullRequest: { state: 'draft', conflicting: true } })
+    ).toEqual(['resolve-conflicts', 'ready-for-review', 'review', 're-review'])
     expect(
-      resolveWorkspaceAction({ ...clean, pullRequest: { state: 'draft', conflicting: false } })
-    ).toBe('ready-for-review')
-    expect(resolveWorkspaceAction(clean)).toBe('create-pull-request')
+      resolveWorkspaceActions({ ...clean, pullRequest: { state: 'draft', conflicting: false } })
+    ).toEqual(['ready-for-review', 'review', 're-review'])
+    expect(resolveWorkspaceActions(clean)).toEqual([
+      'create-pull-request',
+      'create-draft-pull-request'
+    ])
   })
 
   it('puts a merge stopped on conflicts first, since it cannot be committed', () => {
     expect(
-      resolveWorkspaceAction({ ...clean, hasLocalConflicts: true, hasUncommittedChanges: true })
+      resolveWorkspaceActions({ ...clean, hasLocalConflicts: true, hasUncommittedChanges: true })[0]
     ).toBe('resolve-conflicts')
   })
 
-  it('offers nothing for an open, clean pull request, a merged one, or the default branch', () => {
+  it('offers review on an open, clean pull request and nothing on a merged one', () => {
     expect(
-      resolveWorkspaceAction({ ...clean, pullRequest: { state: 'open', conflicting: false } })
-    ).toBeNull()
+      resolveWorkspaceActions({ ...clean, pullRequest: { state: 'open', conflicting: false } })
+    ).toEqual(['review', 're-review'])
     expect(
-      resolveWorkspaceAction({ ...clean, pullRequest: { state: 'merged', conflicting: false } })
-    ).toBeNull()
-    expect(resolveWorkspaceAction({ ...clean, isDefaultBranch: true })).toBeNull()
+      resolveWorkspaceActions({ ...clean, pullRequest: { state: 'merged', conflicting: false } })
+    ).toEqual([])
+    expect(resolveWorkspaceActions({ ...clean, isDefaultBranch: true })).toEqual([])
+  })
+
+  it('drops review when the branch has no diff from its base', () => {
+    const pullRequest = { state: 'open' as const, conflicting: false }
+    expect(resolveWorkspaceActions({ ...clean, pullRequest, hasDiffFromBase: false })).toEqual([])
+    expect(
+      resolveWorkspaceActions({
+        ...clean,
+        pullRequest: { state: 'draft', conflicting: false },
+        hasDiffFromBase: false
+      })
+    ).toEqual(['ready-for-review'])
+  })
+
+  it('keeps review while the line total is still loading', () => {
+    expect(
+      resolveWorkspaceActions({
+        ...clean,
+        pullRequest: { state: 'open', conflicting: false },
+        hasDiffFromBase: false,
+        branchDiffKnown: false
+      })
+    ).toEqual(['review', 're-review'])
   })
 
   it('does not count commits as unpushed when the branch has no upstream yet', () => {
-    expect(resolveWorkspaceAction({ ...clean, hasUpstream: false, unpushedCommits: 3 })).toBe(
-      'create-pull-request'
-    )
+    expect(resolveWorkspaceActions({ ...clean, hasUpstream: false, unpushedCommits: 3 })).toEqual([
+      'create-pull-request',
+      'create-draft-pull-request'
+    ])
   })
 })

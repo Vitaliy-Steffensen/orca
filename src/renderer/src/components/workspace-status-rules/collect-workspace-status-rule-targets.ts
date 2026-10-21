@@ -2,7 +2,8 @@ import type { AppState } from '@/store/types'
 import { getGitHubPRCacheKey } from '@/store/slices/github-cache-key'
 import { getIndexedAllWorktrees, getIndexedRepoMap } from '@/store/worktree-repo-index'
 import { resolveWorktreeBranchLabel } from '@/lib/worktree-default-display-name'
-import type { GitHubRepositoryIdentity } from '../../../../shared/github/pull-request-types'
+import type { Repo } from '../../../../shared/repo-types'
+import type { GitHubRepositoryIdentity, PRInfo } from '../../../../shared/github/pull-request-types'
 import type { WorkspaceStatusRuleTarget } from '../../../../shared/workspace-status-rule-plan'
 import type { NewWorkspaceStatusTarget } from '../../../../shared/workspace-new-status-plan'
 import { getPendingReviewDrafts } from '../pending-review/pending-review-draft-store'
@@ -41,6 +42,24 @@ export function collectNewWorkspaceStatusTargets(
   )
 }
 
+export function readCachedWorktreePR(
+  state: AppState,
+  repo: Repo,
+  branch: string
+): PRInfo | null | undefined {
+  return state.prCache[
+    getGitHubPRCacheKey(
+      repo.path,
+      repo.id,
+      branch,
+      state.settings,
+      repo.connectionId,
+      repo.executionHostId,
+      true
+    )
+  ]?.data
+}
+
 export function collectWorkspaceStatusRuleScope(
   state: AppState,
   repoIds: readonly string[]
@@ -72,18 +91,7 @@ export function collectWorkspaceStatusRuleScope(
     if (!repo) {
       continue
     }
-    const pr =
-      state.prCache[
-        getGitHubPRCacheKey(
-          repo.path,
-          repo.id,
-          branch,
-          state.settings,
-          repo.connectionId,
-          repo.executionHostId,
-          true
-        )
-      ]?.data
+    const pr = readCachedWorktreePR(state, repo, branch)
     if (!pr?.prRepo) {
       continue
     }

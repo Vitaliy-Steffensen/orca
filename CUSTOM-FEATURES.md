@@ -13,8 +13,9 @@ Adding a feature here? See the rule at the top of [`CLAUDE.md`](./CLAUDE.md).
 - Every file tree marks each file with how many notes, agent notes, unanswered review threads and unsent review comments it carries.
 - Pull request sync is an automation: it runs on a schedule even when the window is hidden, and each check shows up in the run history.
 - A Monday weekly recap template writes what landed on the default branch into the run's workspace and its history.
+- A right-sidebar Auto-merge menu turns on GitHub auto-merge plus agents that resolve conflicts and fix or rerun flaky CI, per workspace.
 - A Wednesday template posts a Linear project status update for the projects you lead.
-- Window > New Companion Window opens a second Orca window for another screen, paired to this app with its own active workspace and tabs.
+- Window > New Companion Window opens a second Orca window for another screen, paired to this app with its own tabs.
 - A new tab is a new chat: Claude and Cursor are not chosen up front, and the model menu lists both.
 - Run on a workspace card starts that project's dev commands together, shows booting then running, and can open the app and sign in.
 - Run brings OrbStack up first when the stack needs containers, puts every service in one split terminal, and the card says whether it is spinning up or running and ready.
@@ -136,4 +137,9 @@ Taken whole with every mirror; the fork lineage's work on top of upstream.
 62. The sidebar header "…" menu toggles the main workspace out of the list and back in one click.
 63. Board settings groups statuses under their sections, so you can rename, add to, and move statuses between sections in place. (§63)
 64. Select code in any editor or diff and click Ask on the floating toolbar to get a short answer in a new chat.
-65. Board lanes can be marked automation-owned, held while agents run, and auto-pulled; new "Approved" and "Waiting for review" pull request rules can fill them.
+65. The companion window follows the main window's active workspace, and picking a workspace in it switches the main window too.
+66. ⌘P / Ctrl+P opens Go to File in the companion window too.
+67. The right sidebar's top action bar shows a coloured state label on the left: merge conflicts, CI failed, changes requested, waiting for CI, awaiting review, draft PR, local only, ready to merge.
+68. A merged pull request offers Archive Workspace next to Delete Workspace, until the workspace is archived.
+69. One header button offers only the actions this branch can take right now — resolve, open a PR, commit, review — with the rest behind its chevron.
+70. Board lanes can be marked automation-owned, held while agents run, and auto-pulled; new "Approved" and "Waiting for review" pull request rules can fill them.

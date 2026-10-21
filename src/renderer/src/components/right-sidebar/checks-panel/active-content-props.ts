@@ -32,7 +32,6 @@ export type ChecksPanelActiveContentModel = Pick<
   | 'editingTitle'
   | 'isFixingChecksWithAI'
   | 'isRefreshing'
-  | 'isResolvingConflictsWithAI'
   | 'pendingCommentResolutionRef'
   | 'repo'
   | 'saveLaunchActionDefault'
@@ -93,6 +92,6 @@ export type ChecksPanelActiveContentModel = Pick<
     | 'handleUnlinkReview'
   > &
   Pick<ChecksPanelRefreshState, 'handleRefresh'> &
-  Pick<ChecksPanelAiQueueState, 'handleResolveCommentsWithAI' | 'handleResolveConflictsWithAI'> &
+  Pick<ChecksPanelAiQueueState, 'handleResolveCommentsWithAI'> &
   Pick<ChecksPanelReviewState, 'sourceControlAiActionsVisible'> &
   Pick<ChecksPanelComposerState, 'stateRequestKey'>
