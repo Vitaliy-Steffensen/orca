@@ -166,3 +166,5 @@ Taken whole with every mirror; the fork lineage's work on top of upstream.
 90. Hover, Cmd+click and Find references work in the companion window and the web client, asking the language servers on the Orca that holds the files.
 91. The Review plan panel no longer has its own Run review button — the Review action in the workspace header is the single way to start a review.
 92. The Review and Re-review actions in the workspace header open the agent in the Chat UI, like reviews the review inbox starts, instead of always dropping you into the raw terminal.
+93. Settings → Pull request rules now lets you pick the column automation runs wait in, so a review Orca starts parks there for the whole run and moves on by itself — to "You are the reviewer" once the review is done, or to the column you chose for runs with no pull request.
+94. An agent's review proposals now show on the diff lines they were written against, with their Accept and Reject buttons, instead of leaving a blank gap in the file.
