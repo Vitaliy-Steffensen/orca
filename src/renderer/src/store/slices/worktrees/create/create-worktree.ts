@@ -226,9 +226,13 @@ export function createCreateWorktree(
               name: options?.nameWasGenerated
                 ? getGeneratedWorktreeCreateRetryCandidate(name, attempt)
                 : getClientWorktreeCreateCandidate(name, attempt),
-              // Why: older runtimes reject exact PR branch overrides on collision, so retry both branch and worktree names.
+              // Why: older runtimes reject exact PR branch overrides on collision, so retry both branch
+              // and worktree names — except when the user asked to open this exact branch, where a
+              // suffixed branch is never what they wanted.
               branchNameOverride: branchNameOverride
-                ? getClientWorktreeCreateCandidate(branchNameOverride, attempt)
+                ? options?.reuseExistingBranch
+                  ? branchNameOverride
+                  : getClientWorktreeCreateCandidate(branchNameOverride, attempt)
                 : undefined,
               parentWorkspace: parent.parentWorkspace,
               manualOrder

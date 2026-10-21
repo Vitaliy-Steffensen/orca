@@ -93,6 +93,8 @@ export type WorktreeCreationRequest = {
   linkedLinearIssueWorkspaceId?: string | null
   linkedLinearIssueOrganizationUrlKey?: string | null
   branchNameOverride?: string
+  /** The user asked to open `branchNameOverride` as it stands rather than branch off it. */
+  reuseExistingBranch?: boolean
   /** Parent picked in the composer's Advanced drawer. Sidebar nesting only, no git effect. */
   parentWorktreeId?: string
   workspaceStatus?: WorkspaceStatus

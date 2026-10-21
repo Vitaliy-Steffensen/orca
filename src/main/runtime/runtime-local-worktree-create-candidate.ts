@@ -105,7 +105,9 @@ export async function resolveRuntimeLocalWorktreeCreateCandidate(args: {
     branchName = await resolveCreateBranchName(
       args.repo.path,
       selectedExistingLocalBranchName ??
-        getBranchNameOverrideCandidate(args.request.branchNameOverride, suffix),
+        (args.request.reuseExistingBranch === true
+          ? args.request.branchNameOverride
+          : getBranchNameOverrideCandidate(args.request.branchNameOverride, suffix)),
       effectiveSanitizedName,
       args.settings,
       args.username,
@@ -116,7 +118,8 @@ export async function resolveRuntimeLocalWorktreeCreateCandidate(args: {
         args.repo.path,
         branchName,
         args.baseBranch,
-        args.localWorktreeGitOptions
+        args.localWorktreeGitOptions,
+        args.request.reuseExistingBranch === true
       )
       return checkoutExistingBranch
     }
@@ -170,6 +173,12 @@ export async function resolveRuntimeLocalWorktreeCreateCandidate(args: {
         }
       }
       if (branchConflictKind) {
+        // Why: the user asked for this exact branch; a suffixed one is never the answer.
+        if (args.request.reuseExistingBranch === true) {
+          throw new WorktreeCreateCollisionError(
+            `Branch "${branchName}" could not be opened: it already exists ${branchConflictKind === 'local' ? 'in another workspace' : 'on a remote'}.`
+          )
+        }
         continue
       }
     }

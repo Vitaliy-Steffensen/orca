@@ -98,6 +98,7 @@ export async function executeWorktreeCreation(
           executionHostId:
             preparedRequest.workspaceRunContext?.hostId ?? preparedRequest.executionHostId,
           ...(preparedRequest.nameWasGenerated ? { nameWasGenerated: true } : {}),
+          ...(preparedRequest.reuseExistingBranch ? { reuseExistingBranch: true } : {}),
           ...(preparedRequest.displayNameKind
             ? { displayNameKind: preparedRequest.displayNameKind }
             : {}),

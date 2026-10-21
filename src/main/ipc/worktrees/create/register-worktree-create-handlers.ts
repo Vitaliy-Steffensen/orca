@@ -62,7 +62,7 @@ export function registerWorktreeCreateHandlers(context: WorktreeIpcContext): voi
           source: args.telemetrySource,
           entryPoint: 'app',
           repoPath: repo.path,
-          fromExistingBranch: typeof args.baseBranch === 'string' && args.baseBranch.length > 0,
+          fromExistingBranch: args.reuseExistingBranch === true,
           isFolder: isFolderRepo(repo)
         })
         try {

@@ -263,7 +263,7 @@ describe('resolveComposerReuseOverride', () => {
 })
 
 describe('resolveComposerBranchReuse', () => {
-  it('reuses a qualified local selector but does not reuse a qualified remote selector', () => {
+  it('reuses a qualified selector whether it names the local branch or its remote', () => {
     expect(
       resolveComposerBranchReuse({
         refName: 'refs/heads/feature/加',
@@ -279,7 +279,7 @@ describe('resolveComposerBranchReuse', () => {
         selectionProducedOverride: true,
         branchCheckedOutElsewhere: false
       })
-    ).toEqual({ reuseEligibleBranch: null, defaultReuse: false })
+    ).toEqual({ reuseEligibleBranch: 'feature/加', defaultReuse: true })
     expect(
       resolveComposerReuseOverride({
         refName: 'refs/heads/feature/加',
@@ -300,7 +300,7 @@ describe('resolveComposerBranchReuse', () => {
     ).toEqual({ reuseEligibleBranch: 'feature-x', defaultReuse: true })
   })
 
-  it('does not offer reuse for a remote-only ref (ref carries an origin/ prefix)', () => {
+  it('offers reuse for a remote-only ref, since picking origin/x means working on x', () => {
     expect(
       resolveComposerBranchReuse({
         refName: 'origin/feature/something',
@@ -308,7 +308,7 @@ describe('resolveComposerBranchReuse', () => {
         selectionProducedOverride: true,
         branchCheckedOutElsewhere: false
       })
-    ).toEqual({ reuseEligibleBranch: null, defaultReuse: false })
+    ).toEqual({ reuseEligibleBranch: 'feature/something', defaultReuse: true })
   })
 
   it('does not offer reuse when the branch is already checked out in another worktree', () => {

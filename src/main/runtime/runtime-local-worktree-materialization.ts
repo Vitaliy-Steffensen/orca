@@ -24,6 +24,7 @@ import type { RemoteTrackingBase } from './runtime-remote-fetch-controller'
 import type { RuntimeStore } from './runtime-store-contract'
 import { attributedSparsePresetId } from '../ipc/sparse-preset-attribution'
 import type { WorktreeCreateTimingRecorder } from '../worktree-create-timing'
+import { resolveWorktreeCompareBase } from '../git/worktree-compare-base'
 
 export async function materializeRuntimeLocalWorktree<T>(args: {
   request: RuntimeManagedWorktreeCreateArgs
@@ -68,7 +69,14 @@ export async function materializeRuntimeLocalWorktree<T>(args: {
   } = args
   const worktreeId = `${repo.id}::${created.path}`
   const now = Date.now()
-  const metadataBaseRef = request.compareBaseRef ?? remoteTrackingBase?.ref ?? baseBranch
+  // Why: opening an existing branch starts from that branch's own ref; recording it here
+  // would make Source Control diff the workspace against itself.
+  const metadataBaseRef = await resolveWorktreeCompareBase(
+    repo.path,
+    branchName,
+    request.compareBaseRef ?? remoteTrackingBase?.ref ?? baseBranch,
+    localWorktreeGitOptions
+  )
   const displayNameMeta = resolveWorktreeCreateDisplayNameMeta(
     requestedDisplayName,
     branchName,

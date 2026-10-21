@@ -13,6 +13,7 @@ export type QuickSubmitPreparationInput = Pick<
   | 'note'
   | 'prepareQuickSubmitSource'
   | 'repoId'
+  | 'reuseSelectedBranch'
   | 'resolvedSetupDecision'
   | 'selectedRepo'
   | 'selectedRepoExecutionHostId'

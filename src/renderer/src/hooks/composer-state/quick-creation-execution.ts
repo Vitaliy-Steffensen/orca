@@ -117,6 +117,7 @@ export function useQuickCreationExecution(input: QuickCreationExecutionInput) {
         linkedLinearIssueWorkspaceId,
         linkedLinearIssueOrganizationUrlKey,
         effectiveBranchNameOverride,
+        effectiveReuseExistingBranch,
         submitBaseBranch,
         createDisplayName,
         pendingFirstAgentMessageRename,
@@ -228,6 +229,7 @@ export function useQuickCreationExecution(input: QuickCreationExecutionInput) {
         linkedLinearIssueWorkspaceId,
         linkedLinearIssueOrganizationUrlKey,
         branchNameOverride: effectiveBranchNameOverride,
+        reuseExistingBranch: effectiveReuseExistingBranch,
         parentWorktreeId,
         workspaceStatus: resolvedInitialWorkspaceStatus,
         ...(workspaceMode

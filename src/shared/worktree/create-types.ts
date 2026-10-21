@@ -110,6 +110,10 @@ export type CreateWorktreeArgs = {
    *  name. Used when creating from an existing branch whose local branch name
    *  legitimately contains `/` while the worktree directory must not. */
   branchNameOverride?: string
+  /** The user asked to open `branchNameOverride` as it stands, not to branch off
+   *  it. Checks the branch out even when it has diverged from the start point, and
+   *  reports a collision instead of silently creating a suffixed branch. */
+  reuseExistingBranch?: boolean
   setupDecision?: SetupDecision
   sparseCheckout?: CreateSparseCheckoutRequest
   linkedIssue?: number

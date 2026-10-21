@@ -23,6 +23,7 @@ export type RuntimeManagedWorktreeCreateArgs = {
   baseBranch?: string
   compareBaseRef?: string
   branchNameOverride?: string
+  reuseExistingBranch?: boolean
   linkedIssue?: number | null
   linkedPR?: number | null
   linkedLinearIssue?: string

@@ -35,6 +35,7 @@ export type QuickCreationRequestInput = {
   linkedLinearIssueWorkspaceId: string | undefined
   linkedLinearIssueOrganizationUrlKey: string | undefined
   branchNameOverride: string | undefined
+  reuseExistingBranch?: boolean
   parentWorktreeId: string | null
   workspaceStatus: WorktreeCreationRequest['workspaceStatus']
   workspaceAutonomy?: WorktreeCreationRequest['workspaceAutonomy']
@@ -98,6 +99,7 @@ export function buildQuickCreationRequest(
       ? { linkedLinearIssueOrganizationUrlKey: input.linkedLinearIssueOrganizationUrlKey }
       : {}),
     ...(input.branchNameOverride ? { branchNameOverride: input.branchNameOverride } : {}),
+    ...(input.branchNameOverride && input.reuseExistingBranch ? { reuseExistingBranch: true } : {}),
     ...(input.parentWorktreeId ? { parentWorktreeId: input.parentWorktreeId } : {}),
     ...(input.workspaceAutonomy ? { workspaceAutonomy: input.workspaceAutonomy } : {}),
     ...(input.workspaceIntent ? { workspaceIntent: input.workspaceIntent } : {}),

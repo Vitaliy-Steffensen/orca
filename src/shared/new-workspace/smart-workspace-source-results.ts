@@ -96,6 +96,15 @@ export function isBlockingTaskUrlResolution({
   return isQueryStale || (sourceIntent === 'github' ? githubLoading : gitlabLoading)
 }
 
+function toBranchSourceRow(branch: BaseRefSearchResult): SmartWorkspaceSourceRow {
+  return {
+    kind: 'branch',
+    value: `branch-${branch.refName}`,
+    refName: branch.refName,
+    localBranchName: branch.localBranchName
+  }
+}
+
 function toJiraSourceRow(issue: JiraIssue): SmartWorkspaceSourceRow {
   return { kind: 'jira', value: `jira-${issue.siteId ?? ''}-${issue.key}`, issue }
 }
@@ -288,6 +297,17 @@ export function buildSmartWorkspaceSourceRows({
   }
   const trimmed = value.trim()
   const nextRows: SmartWorkspaceSourceRow[] = []
+  const exactBranchMatch = trimmed
+    ? (branches.find(
+        (branch) => branch.refName === trimmed || branch.localBranchName === trimmed
+      ) ?? null)
+    : null
+  const leadWithExactBranch = exactBranchMatch !== null && mode === 'smart'
+  if (leadWithExactBranch) {
+    // Why: typing a branch name verbatim is a request to open it. Letting `use-name` lead
+    // turned it into a workspace name, and a sanitized, prefixed new branch off the default base.
+    nextRows.push(toBranchSourceRow(exactBranchMatch))
+  }
   if (trimmed && mode === 'smart') {
     // Why: stable cmdk value — embedding the query remounted the row every keystroke.
     nextRows.push({ kind: 'use-name', value: 'use-name', name: trimmed })
@@ -309,19 +329,13 @@ export function buildSmartWorkspaceSourceRows({
   }
   const shouldShowBranches = mode === 'branches' || (mode === 'smart' && trimmed.length > 0)
   if (shouldShowBranches) {
-    const branchExactMatch = branches.some(
-      (branch) => branch.refName === trimmed || branch.localBranchName === trimmed
-    )
-    if (trimmed && mode === 'branches' && !branchExactMatch) {
+    if (trimmed && mode === 'branches' && exactBranchMatch === null) {
       nextRows.push({ kind: 'create-branch', value: 'create-branch', name: trimmed })
     }
     nextRows.push(
-      ...branches.map((branch) => ({
-        kind: 'branch' as const,
-        value: `branch-${branch.refName}`,
-        refName: branch.refName,
-        localBranchName: branch.localBranchName
-      }))
+      ...branches
+        .filter((branch) => !leadWithExactBranch || branch !== exactBranchMatch)
+        .map(toBranchSourceRow)
     )
   }
   if (linearAvailable && (mode === 'smart' || mode === 'linear')) {

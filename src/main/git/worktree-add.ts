@@ -21,6 +21,7 @@ import type {
 } from './worktree-operation-options'
 import { gitExecOptions, resolveWorktreeAddTimeoutMs } from './worktree-operation-options'
 import { bumpWorktreeScanGeneration } from './worktree-scan-cache'
+import { resolveWorktreeCompareBase } from './worktree-compare-base'
 import { assertNoPendingWorktreeRemovalConflict } from '../worktree-removal-table'
 
 export type WorktreeAddBaseContext = Pick<AddWorktreeResult, 'localBaseRefUpdateSuggestion'> & {
@@ -250,7 +251,12 @@ async function performAddWorktree(
   }
 
   if (effectiveBase) {
-    await persistWorktreeCreationBase(worktreePath, branch, effectiveBase, options)
+    await persistWorktreeCreationBase(
+      worktreePath,
+      branch,
+      await resolveWorktreeCompareBase(repoPath, branch, effectiveBase, options),
+      options
+    )
   }
 
   // Why: --no-track leaves no upstream until first push; push.autoSetupRemote=true lets a plain

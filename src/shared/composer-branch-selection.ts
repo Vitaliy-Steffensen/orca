@@ -64,17 +64,17 @@ function isLocalBranchSelection(refName: string, localBranchName: string): boole
 }
 
 /**
- * Issue #5181: decide whether a picked branch row is an existing LOCAL branch
- * that can be reused (checked out) instead of branched off, and whether reuse
- * should default ON.
+ * Issue #5181: decide whether a picked branch row names an existing branch that
+ * can be opened (checked out) instead of branched off, and whether that should
+ * default ON.
  *
- * Reuse is only possible for a LOCAL branch that is NOT already checked out in
- * another worktree; namespace-qualified local selectors count too. Git allows
- * a branch in only one worktree at a time. Reuse
- * defaults ON only when the worktree name was auto-derived from the branch (the
- * selection produced a branch-name override); a user who typed a custom
- * worktree name first is branching off the ref, so reuse stays OFF unless they
- * opt in.
+ * A remote row counts too: picking `origin/foo` means "work on foo", which is
+ * adopting the local `foo` when it exists and materializing it from the remote
+ * when it does not. The one hard bar is a branch already checked out in another
+ * worktree — git allows a branch in only one at a time. Reuse defaults ON only
+ * when the worktree name was auto-derived from the branch (the selection
+ * produced a branch-name override); a user who typed a custom worktree name
+ * first is branching off the ref, so reuse stays OFF unless they opt in.
  */
 export function resolveComposerBranchReuse(args: {
   refName: string
@@ -82,10 +82,7 @@ export function resolveComposerBranchReuse(args: {
   selectionProducedOverride: boolean
   branchCheckedOutElsewhere: boolean
 }): { reuseEligibleBranch: string | null; defaultReuse: boolean } {
-  const reuseEligibleBranch =
-    isLocalBranchSelection(args.refName, args.localBranchName) && !args.branchCheckedOutElsewhere
-      ? args.localBranchName
-      : null
+  const reuseEligibleBranch = args.branchCheckedOutElsewhere ? null : args.localBranchName
   return {
     reuseEligibleBranch,
     defaultReuse: reuseEligibleBranch !== null && args.selectionProducedOverride
