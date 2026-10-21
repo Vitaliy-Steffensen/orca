@@ -5,7 +5,7 @@ import { createLspMessageReader, encodeLspMessage, type LspMessage } from './lsp
 export type LspTransport = {
   write: (chunk: Buffer) => void
   onData: (listener: (chunk: Buffer) => void) => void
-  onExit: (listener: () => void) => void
+  onExit: (listener: (reason?: string) => void) => void
   kill: () => void
 }
 
@@ -102,6 +102,7 @@ export function createLspSession({
   const documents = new Map<string, { version: number; text: string }>()
   let nextId = 1
   let closed = false
+  let closedReason: string | null = null
   let initialized: Promise<void> | null = null
 
   const send = (message: LspMessage): void => {
@@ -115,6 +116,7 @@ export function createLspSession({
       return
     }
     closed = true
+    closedReason = reason
     for (const { reject } of pending.values()) {
       reject(new Error(reason))
     }
@@ -123,7 +125,7 @@ export function createLspSession({
 
   const request = (method: string, params: unknown): Promise<unknown> => {
     if (closed) {
-      return Promise.reject(new Error(`${serverName} exited`))
+      return Promise.reject(new Error(closedReason ?? `${serverName} exited`))
     }
     const id = nextId++
     return new Promise((resolve, reject) => {
@@ -166,7 +168,8 @@ export function createLspSession({
       }
     })
   )
-  transport.onExit(() => close(`${serverName} exited`))
+  // Why the transport's reason: "exited" hides the one that matters — the server never started.
+  transport.onExit((reason) => close(reason ?? `${serverName} exited`))
 
   const ensureInitialized = (): Promise<void> => {
     initialized ??= (async () => {

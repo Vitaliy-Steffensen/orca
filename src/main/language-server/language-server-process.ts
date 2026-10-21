@@ -4,6 +4,8 @@ import { forceTerminateProcessTree } from '@orca/process-host/process-tree-termi
 import type { LanguageServerLaunch } from './language-server-launchers'
 import { createLspSession, type LspSession } from './lsp-session'
 
+const STDERR_TAIL_BYTES = 2000
+
 export function languageServerEnvironment(
   { env, pathPrefix }: Pick<LanguageServerLaunch, 'env' | 'pathPrefix'>,
   base: NodeJS.ProcessEnv
@@ -18,6 +20,29 @@ export function languageServerEnvironment(
   }
 }
 
+// Why not the raw spawn error: "spawn tsgo ENOENT" reads as a crash, when the server is simply
+// not installed, which is the one thing the user can act on.
+export function languageServerStartFailure(
+  { serverName, program }: Pick<LanguageServerLaunch, 'serverName' | 'program'>,
+  error: NodeJS.ErrnoException
+): string {
+  if (error.code !== 'ENOENT') {
+    return `${serverName} could not start: ${error.message}`
+  }
+  return /[\\/]/.test(program)
+    ? `${serverName} is not at ${program}`
+    : `${serverName} is not installed in this project, and ${program} is not on PATH`
+}
+
+/** The server's own last words, which say more than its exit code. */
+export function languageServerExitFailure(
+  { serverName }: Pick<LanguageServerLaunch, 'serverName'>,
+  stderr: string
+): string | undefined {
+  const lastLine = stderr.trim().split(/\r?\n/).at(-1)?.trim()
+  return lastLine ? `${serverName} exited: ${lastLine}` : undefined
+}
+
 export function startLanguageServerSession(launch: LanguageServerLaunch): LspSession {
   const child = spawnProcess({
     program: launch.program,
@@ -30,7 +55,10 @@ export function startLanguageServerSession(launch: LanguageServerLaunch): LspSes
   for (const stream of [child.stdin, child.stdout, child.stderr]) {
     stream.on('error', () => {})
   }
-  child.stderr.resume()
+  let stderrTail = ''
+  child.stderr.on('data', (chunk: Buffer) => {
+    stderrTail = (stderrTail + chunk.toString()).slice(-STDERR_TAIL_BYTES)
+  })
   return createLspSession({
     rootPath: launch.projectRoot,
     serverName: launch.serverName,
@@ -42,8 +70,10 @@ export function startLanguageServerSession(launch: LanguageServerLaunch): LspSes
       },
       onData: (listener) => child.stdout.on('data', listener),
       onExit: (listener) => {
-        child.once('error', listener)
-        child.once('close', listener)
+        child.once('error', (error: NodeJS.ErrnoException) =>
+          listener(languageServerStartFailure(launch, error))
+        )
+        child.once('close', () => listener(languageServerExitFailure(launch, stderrTail)))
       },
       kill: () => void forceTerminateProcessTree(child)
     }

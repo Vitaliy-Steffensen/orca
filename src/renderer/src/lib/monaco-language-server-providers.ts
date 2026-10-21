@@ -113,6 +113,11 @@ function installLanguageProviders(
     provideHover: async (model, position) => {
       const request = serverRequest(model, position)
       const result = request ? await window.api.languageServer.hover(request) : null
+      // Why here too: hover is what a reader reaches for first, so a silent fall back to nothing
+      // (Python) or to the open-files-only built-in (TypeScript) is the whole bug report.
+      if (request && result && !result.ok) {
+        reportLanguageServerFailure(request, result.error)
+      }
       if (result?.ok && result.markdown) {
         const word = model.getWordAtPosition(position)
         return {
