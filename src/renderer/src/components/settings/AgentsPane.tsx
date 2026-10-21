@@ -31,6 +31,7 @@ import {
 } from './agent-availability-settings'
 import { AgentAvailabilityControl } from './AgentCatalogRow'
 import { AgentLaunchSettingsSection } from './AgentLaunchSettingsSection'
+import { ValidationHostInstructionSetting } from './ValidationHostInstructionSetting'
 import type { SettingsHostScope } from './settings-host-scope'
 
 export {
@@ -170,6 +171,7 @@ export function AgentsPane({
         {!isPairedWebClientWindow() ? (
           <AgentAwakeSetting settings={settings} updateSettings={updateSettings} />
         ) : null}
+        <ValidationHostInstructionSetting settings={settings} updateSettings={updateSettings} />
         <AgentCacheTimerSection settings={settings} updateSettings={updateSettings} />
       </section>
     </div>

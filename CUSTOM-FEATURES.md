@@ -160,3 +160,4 @@ Taken whole with every mirror; the fork lineage's work on top of upstream.
 84. Typing an existing branch name in the new-workspace box offers to open that branch, and a workspace opened on an existing branch diffs against its real base instead of showing nothing.
 85. Creating a pull request from a workspace renames the workspace to the pull request title, unless you named it yourself.
 86. Switching auto-merge on always re-arms conflict resolution and CI fixing, which you can then switch off individually.
+87. Settings → Agents has a "Where agents run validation" instruction that Orca appends to every conflict-resolution prompt, so heavy checks run on a remote box instead of your machine.
