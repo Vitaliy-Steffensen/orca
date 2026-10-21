@@ -171,7 +171,7 @@ export function ChecksPanelActiveContent({
   if (pendingReviewCount > 0) {
     prSections.push({ id: 'pr-pending-review', node: <PendingReviewPanelSection sectionHeader /> })
   }
-  // Pushed even with no plan: the empty state's Run review button is how the pipeline starts here.
+  // Pushed even with no plan: the empty state explains where the plan comes from.
   prSections.push({ id: 'pr-review-plan', node: <ReviewPlanPanelSection /> })
   prSections.push(...buildCommentSections(model, reviewShortLabel))
   return (

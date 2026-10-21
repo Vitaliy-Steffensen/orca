@@ -103,12 +103,12 @@ describe('review plan tree', () => {
     ])
   })
 
-  it('offers Run review when there is no plan yet', () => {
+  it('points at the header Review action when there is no plan yet, without a button of its own', () => {
     planState.current = { status: 'missing' }
 
     render()
 
     expect(host.textContent).toContain('No review plan yet')
-    expect(host.querySelector('button')?.textContent).toContain('Run review')
+    expect(host.querySelector('button')).toBeNull()
   })
 })
