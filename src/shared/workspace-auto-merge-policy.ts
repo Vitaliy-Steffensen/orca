@@ -73,10 +73,10 @@ export function resolveAutoMergePolicy(
   return normalizeAutoMergePolicy(worktree?.autoMerge) ?? AUTO_MERGE_OFF_POLICY
 }
 
-/** Switching on the first time turns all three on; a sub-toggle the user turned off stays off. */
+/** Switching on turns all three on each time; the user can switch a repair back off afterwards. */
 export function enableAutoMergePolicy(
   worktree: { autoMerge?: unknown } | null | undefined
 ): WorkspaceAutoMergePolicy {
   const stored = normalizeAutoMergePolicy(worktree?.autoMerge)
-  return stored ? { ...stored, enabled: true } : DEFAULT_AUTO_MERGE_POLICY
+  return stored ? { ...stored, ...DEFAULT_AUTO_MERGE_POLICY } : DEFAULT_AUTO_MERGE_POLICY
 }

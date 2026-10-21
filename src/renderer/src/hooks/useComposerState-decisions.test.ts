@@ -5,6 +5,7 @@ import {
   resolveInitialWorkspaceRunSeed,
   resolveSmartGitHubCreateNames
 } from './composer-state/composer-decisions'
+import { getSmartGitHubSubmitResolution } from '@/lib/smart-github-submit'
 
 describe('useComposerState public decisions', () => {
   it('preserves a user name for PR start points only when the fallback is non-empty', () => {
@@ -26,6 +27,24 @@ describe('useComposerState public decisions', () => {
         nameIsAutoManaged: false
       })
     ).toEqual({ workspaceName: 'smart-name', displayName: 'Smart name' })
+  })
+
+  it('titles a workspace opened from a pasted PR link after the pull request', () => {
+    const resolution = getSmartGitHubSubmitResolution({
+      number: 42,
+      title: 'Fix the login redirect',
+      type: 'pr',
+      url: 'https://github.com/orca/orca/pull/42'
+    })
+    expect(
+      resolveSmartGitHubCreateNames({
+        resolutionKind: 'pr-start-point',
+        smartWorkspaceName: resolution.workspaceName,
+        smartDisplayName: resolution.displayName,
+        fallbackWorkspaceName: 'cheerful-orca',
+        nameIsAutoManaged: true
+      })
+    ).toEqual({ workspaceName: 'fix-the-login-redirect', displayName: 'Fix the login redirect' })
   })
 
   it('accepts a nullable repo seed without manufacturing a PR start point', () => {

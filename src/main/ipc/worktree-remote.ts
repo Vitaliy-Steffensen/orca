@@ -138,6 +138,7 @@ import {
 } from '../worktree-name-retirement'
 import { createRetiredNameLookup } from '../../shared/worktree/retired-name-registry'
 import { findPendingWorktreeRemovalConflict } from '../worktree-removal-table'
+import { resolveWorktreeCompareBase } from '../git/worktree-compare-base'
 // Why: bound the fallback `git fetch origin` so a Windows credential-manager GUI hang (STA-1292) can't wedge worktree creation forever.
 const CREATE_BASE_FALLBACK_FETCH_TIMEOUT_MS = 60_000
 // Why (#17828 CodeRabbit follow-up): the deferred materialize fetch runs off the main
@@ -473,7 +474,8 @@ async function canCheckoutExistingLocalBranch(
   repoPath: string,
   branchName: string,
   baseBranch: string,
-  gitOptions: { wslDistro?: string } = {}
+  gitOptions: { wslDistro?: string } = {},
+  reuseExistingBranch = false
 ): Promise<boolean> {
   let localHead = ''
   try {
@@ -488,7 +490,9 @@ async function canCheckoutExistingLocalBranch(
   } catch {
     return false
   }
-  if (normalizeLocalBranchName(baseBranch) !== branchName) {
+  // Why: "open this branch" means as it stands. Requiring it to match the start point
+  // turned any divergence — a stale ref, an unpushed commit — into a suffixed new branch.
+  if (!reuseExistingBranch && normalizeLocalBranchName(baseBranch) !== branchName) {
     if (!localHead) {
       return false
     }
@@ -1182,7 +1186,9 @@ async function performLocalWorktreeCreate(
         repo.path,
         selectedExistingLocalBranchName
           ? selectedExistingLocalBranchName
-          : getBranchNameOverrideCandidate(args.branchNameOverride, suffix),
+          : args.reuseExistingBranch === true
+            ? args.branchNameOverride
+            : getBranchNameOverrideCandidate(args.branchNameOverride, suffix),
         effectiveSanitizedName,
         settings,
         username,
@@ -1193,7 +1199,8 @@ async function performLocalWorktreeCreate(
           repo.path,
           branchName,
           baseBranch,
-          localWorktreeGitOptions
+          localWorktreeGitOptions,
+          args.reuseExistingBranch === true
         )
         return checkoutExistingBranch
       }
@@ -1254,6 +1261,13 @@ async function performLocalWorktreeCreate(
         }
       }
       if (lastBranchConflictKind) {
+        // Why: the user asked for this exact branch; a suffixed one is never the answer, so
+        // report the collision instead of silently creating `<branch>-2`.
+        if (args.reuseExistingBranch === true) {
+          throw new WorktreeCreateCollisionError(
+            `Branch "${branchName}" could not be opened: it already exists ${lastBranchConflictKind === 'local' ? 'in another workspace' : 'on a remote'}.`
+          )
+        }
         continue
       }
 
@@ -1506,7 +1520,12 @@ async function performLocalWorktreeCreate(
   const worktreeId = `${repo.id}::${created.path}`
   const now = Date.now()
   // Why: PR/MR worktrees start from a head ref/SHA but Source Control must compare against the review target branch.
-  const metadataBaseRef = args.compareBaseRef ?? remoteTrackingBase?.ref ?? baseBranch
+  const metadataBaseRef = await resolveWorktreeCompareBase(
+    repo.path,
+    branchName,
+    args.compareBaseRef ?? remoteTrackingBase?.ref ?? baseBranch,
+    localWorktreeGitOptions
+  )
   const metaUpdates: Partial<WorktreeMeta> = {
     // Why: path-derived IDs can be reused after external deletion; rotate instance identity so stale lineage can't attach to the new occupant.
     instanceId: randomUUID(),

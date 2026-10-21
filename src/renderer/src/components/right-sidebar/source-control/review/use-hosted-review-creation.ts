@@ -155,7 +155,8 @@ export function useSourceControlHostedReviewCreation({
             {
               provider: hostedReviewCreateProvider,
               number: result.number,
-              url: result.url
+              url: result.url,
+              title
             },
             context
           )
@@ -214,7 +215,8 @@ export function useSourceControlHostedReviewCreation({
               {
                 provider: hostedReviewCreateProvider,
                 number,
-                url
+                url,
+                title
               },
               createdContext()
             )

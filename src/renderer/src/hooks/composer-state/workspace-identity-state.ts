@@ -19,7 +19,7 @@ import { useState, useMemo } from 'react'
 import { getLinkedWorkItemProvider, isGitLabIssueUrl } from '@/lib/new-workspace'
 import {
   type SmartNameMode,
-  isBlockingJiraUrlIntent
+  isBlockingWorkItemUrlIntent
 } from '../../../../shared/new-workspace/smart-workspace-source-results'
 import type { GitPushTarget } from '../../../../shared/worktree/types'
 import type { TuiAgent } from '../../../../shared/tui-agent'
@@ -129,8 +129,9 @@ export function useWorkspaceIdentityState(input: WorkspaceIdentityStateInput) {
 
   const [smartNameMode, setSmartNameMode] = useState<SmartNameMode>('smart')
 
-  // Why: a pasted Jira URL is not a workspace name yet — block create until it resolves to an issue.
-  const sourceIntentBlocksCreate = !linkedWorkItem && isBlockingJiraUrlIntent(smartNameMode, name)
+  // Why: a pasted work-item URL is not a workspace name yet — block create until it resolves to an item.
+  const sourceIntentBlocksCreate =
+    !linkedWorkItem && isBlockingWorkItemUrlIntent(smartNameMode, name)
 
   // Why (#5181): reuseEligibleBranch = local branch name eligible for checkout-reuse (null if none); reuseSelectedBranch = the checkbox that enacts it.
   const [reuseEligibleBranch, setReuseEligibleBranch] = useState<string | null>(null)

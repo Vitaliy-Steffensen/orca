@@ -583,9 +583,8 @@ describe('Linear issue source input', () => {
       resultLimit: 12
     })
 
-    expect(rows.map((row) => row.kind)).toEqual(['use-name', 'linear'])
-    expect(rows[0]).toMatchObject({ kind: 'use-name', value: 'use-name', name: issueUrl })
-    expect(rows[1]).toMatchObject({ value: 'linear-stably-issue', issue: exactIssue })
+    expect(rows.map((row) => row.kind)).toEqual(['linear'])
+    expect(rows[0]).toMatchObject({ value: 'linear-stably-issue', issue: exactIssue })
   })
 
   it('keeps typed-text available while a Linear URL has not resolved yet', () => {
@@ -759,5 +758,55 @@ describe('Jira issue search', () => {
     })
 
     expect(rows).toEqual([{ kind: 'jira', value: 'jira-site-1-ORCA-123', issue: jiraIssue }])
+  })
+})
+
+describe('Exact branch match in smart mode', () => {
+  const branches = [
+    { refName: 'origin/feature/e-6009-campaign', localBranchName: 'feature/e-6009-campaign' },
+    { refName: 'origin/feature/other', localBranchName: 'feature/other' }
+  ]
+
+  it('leads with the matching branch so Enter opens it instead of naming a workspace after it', () => {
+    const rows = buildSmartWorkspaceSourceRows({
+      mode: 'smart',
+      value: 'feature/e-6009-campaign',
+      branches,
+      githubItems: [],
+      gitlabItems: [],
+      linearIssues: [],
+      gitlabAvailable: false,
+      linearAvailable: false,
+      resultLimit: 12
+    })
+
+    expect(rows[0]).toEqual({
+      kind: 'branch',
+      value: 'branch-origin/feature/e-6009-campaign',
+      refName: 'origin/feature/e-6009-campaign',
+      localBranchName: 'feature/e-6009-campaign'
+    })
+    expect(rows[1]).toEqual({
+      kind: 'use-name',
+      value: 'use-name',
+      name: 'feature/e-6009-campaign'
+    })
+    expect(rows.filter((row) => row.kind === 'branch')).toHaveLength(branches.length)
+  })
+
+  it('keeps use-name first when the text only partially matches a branch', () => {
+    const rows = buildSmartWorkspaceSourceRows({
+      mode: 'smart',
+      value: 'feature/e-6009',
+      branches,
+      githubItems: [],
+      gitlabItems: [],
+      linearIssues: [],
+      gitlabAvailable: false,
+      linearAvailable: false,
+      resultLimit: 12
+    })
+
+    expect(rows[0]).toEqual({ kind: 'use-name', value: 'use-name', name: 'feature/e-6009' })
   })
 })

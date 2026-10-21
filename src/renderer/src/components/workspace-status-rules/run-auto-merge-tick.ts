@@ -9,6 +9,7 @@ import type { GitHubRepositoryIdentity } from '../../../../shared/github/pull-re
 import type { ReviewSnapshotPullRequest } from '../../../../shared/github/review-status-snapshot-types'
 import { decideAutoMergeAction } from '../../../../shared/auto-merge-decision'
 import { buildAutoMergeCheckRepairPrompt } from '../../../../shared/auto-merge-check-repair-prompt'
+import { appendValidationHostInstruction } from '../../../../shared/agent-validation-host-instruction'
 import { renderConflictAgentPrompt } from '../../../../shared/workspace-status-rule-conflict-prompt'
 import { buildReviewPromptVariables } from '../../../../shared/workspace-status-rule-prompt'
 import { resolveAutoMergePolicy } from '../../../../shared/workspace-auto-merge-policy'
@@ -78,11 +79,14 @@ export async function runAutoMergeTick(): Promise<void> {
         await launchAgentBackgroundSession({
           agent: config.reviewInbox.agent,
           worktreeId: worktree.id,
-          prompt: renderConflictAgentPrompt(config.conflictPromptTemplate, {
-            ...buildReviewPromptVariables(pr),
-            baseRef: pr.baseRefName,
-            worktreePath: worktree.path
-          }),
+          prompt: appendValidationHostInstruction(
+            renderConflictAgentPrompt(config.conflictPromptTemplate, {
+              ...buildReviewPromptVariables(pr),
+              baseRef: pr.baseRefName,
+              worktreePath: worktree.path
+            }),
+            state.settings?.validationHostInstruction
+          ),
           launchSource: 'conflict_resolution',
           title: translate(
             'auto.components.workspaceStatusRules.conflictTabTitle',

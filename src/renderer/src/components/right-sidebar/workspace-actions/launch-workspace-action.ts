@@ -3,6 +3,7 @@ import { useAppStore } from '@/store'
 import { launchAgentBackgroundSession } from '@/lib/launch-agent-background-session'
 import { focusTerminalTabSurface } from '@/lib/focus-terminal-tab-surface'
 import { translate } from '@/i18n/i18n'
+import { appendValidationHostInstruction } from '../../../../../shared/agent-validation-host-instruction'
 import {
   buildResolveConflictsPrompt,
   buildResolvePullRequestConflictsPrompt
@@ -64,10 +65,14 @@ function buildConflictPrompt(context: WorkspaceActionContext): string {
     repo: context.repo,
     actionId: 'resolveConflicts'
   })
-  return renderSourceControlActionCommandTemplate(
-    recipe.commandInputTemplate ?? DEFAULT_SOURCE_CONTROL_ACTION_COMMAND_TEMPLATES.resolveConflicts,
-    { basePrompt }
-  ).trim()
+  return appendValidationHostInstruction(
+    renderSourceControlActionCommandTemplate(
+      recipe.commandInputTemplate ??
+        DEFAULT_SOURCE_CONTROL_ACTION_COMMAND_TEMPLATES.resolveConflicts,
+      { basePrompt }
+    ).trim(),
+    state.settings?.validationHostInstruction
+  )
 }
 
 function buildTemplatePrompt(

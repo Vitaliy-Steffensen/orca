@@ -17,6 +17,8 @@ export type CreateWorktreeCallOptions = {
   startupDraft?: string
   /** True only when `name` came from the creature-name generator; gates host-side retirement. */
   nameWasGenerated?: boolean
+  /** The user asked to open `branchNameOverride` as it stands rather than branch off it. */
+  reuseExistingBranch?: boolean
   displayNameKind?: CreateWorktreeArgs['displayNameKind']
   /** Parent picked in the composer. Sets sidebar nesting only; ignored if it no longer exists. */
   parentWorktreeId?: string
@@ -56,6 +58,7 @@ function sharedCreateFields(
     baseBranch: request.baseBranch,
     ...(request.compareBaseRef ? { compareBaseRef: request.compareBaseRef } : {}),
     ...(attempt.branchNameOverride ? { branchNameOverride: attempt.branchNameOverride } : {}),
+    ...(options?.reuseExistingBranch ? { reuseExistingBranch: true } : {}),
     setupDecision: request.setupDecision,
     sparseCheckout: request.sparseCheckout,
     ...(request.displayName ? { displayName: request.displayName } : {}),

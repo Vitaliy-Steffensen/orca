@@ -19,6 +19,11 @@ import {
   getAgentWorkspaceTrustSearchKeywords,
   getAgentWorkspaceTrustTitle
 } from './agent-workspace-trust-copy'
+import {
+  getValidationHostInstructionDescription,
+  getValidationHostInstructionSearchKeywords,
+  getValidationHostInstructionTitle
+} from './validation-host-instruction-copy'
 import { getAgentCacheTimerSearchEntries } from './agent-cache-timer-search'
 import {
   getCodexTerminalServerIsolationDescription,
@@ -133,6 +138,11 @@ const getAllAgentsPaneSearchEntries = createLocalizedCatalog(() => [
     id: CODEX_TERMINAL_SERVER_ISOLATION_SEARCH_ENTRY_ID,
     description: getCodexTerminalServerIsolationDescription(),
     keywords: getCodexTerminalServerIsolationSearchKeywords()
+  },
+  {
+    title: getValidationHostInstructionTitle(),
+    description: getValidationHostInstructionDescription(),
+    keywords: getValidationHostInstructionSearchKeywords()
   },
   {
     title: getAgentGeneratedTabTitlesTitle(),

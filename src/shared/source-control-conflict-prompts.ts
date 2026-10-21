@@ -1,5 +1,8 @@
 import type { GitConflictKind, GitConflictOperation, GitStatusEntry } from './git-status-types'
 
+export const CONFLICT_PROMPT_REPLY_INSTRUCTION =
+  'Reply with decisions by file, validation run, the final git status, and anything left unsafe.'
+
 export const CONFLICT_KIND_LABELS: Record<GitConflictKind, string> = {
   both_modified: 'Both modified',
   both_added: 'Both added',
@@ -126,7 +129,7 @@ export function buildResolveConflictsPrompt({
     '- Run git diff --check before finishing. Run obvious focused tests or typechecks when reasonably scoped.',
     '- Do not push or create unrelated/manual commits. Only let the current git operation create its normal commit(s).',
     '',
-    'Reply with decisions by file, validation run, the final git status, and anything left unsafe.'
+    CONFLICT_PROMPT_REPLY_INSTRUCTION
   ].join('\n')
 }
 
@@ -182,6 +185,6 @@ export function buildResolvePullRequestConflictsPrompt({
     '- Run git diff --check before finishing. Run obvious focused tests or typechecks when reasonably scoped.',
     '- Do not push or create unrelated/manual commits. Only let the merge operation create its normal commit.',
     '',
-    'Reply with decisions by file, validation run, the final git status, and anything left unsafe.'
+    CONFLICT_PROMPT_REPLY_INSTRUCTION
   ].join('\n')
 }

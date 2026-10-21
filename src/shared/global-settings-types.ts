@@ -421,6 +421,9 @@ export type GlobalSettings = ForkBaseSettings & {
   agentDefaultArgs?: Partial<Record<TuiAgent, string>>
   /** Per-agent launch environment defaults used when yolo mode is exposed as env. */
   agentDefaultEnv?: Partial<Record<TuiAgent, Record<string, string>>>
+  /** Appended to agent prompts Orca builds, telling the agent where to run heavy validation.
+   *  Empty or missing means nothing is appended. */
+  validationHostInstruction?: string
   /** One-shot guard for adding yolo-mode default args to untouched agent launch profiles. */
   agentYoloDefaultsMigrated?: boolean
   /** Why: disabling must persist so startup doesn't reinstall global agent hook entries the user just removed. */

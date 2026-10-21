@@ -44,7 +44,8 @@ export async function canCheckoutExistingLocalBranch(
   repoPath: string,
   branchName: string,
   baseBranch: string,
-  gitOptions: { wslDistro?: string; admissionTier?: GitAdmissionTier } = {}
+  gitOptions: { wslDistro?: string; admissionTier?: GitAdmissionTier } = {},
+  reuseExistingBranch = false
 ): Promise<boolean> {
   let localHead = ''
   try {
@@ -56,7 +57,8 @@ export async function canCheckoutExistingLocalBranch(
   } catch {
     return false
   }
-  if (normalizeLocalBranchName(baseBranch) !== branchName) {
+  // Why: "open this branch" means as it stands; divergence from the start point is not a conflict.
+  if (!reuseExistingBranch && normalizeLocalBranchName(baseBranch) !== branchName) {
     if (!localHead) {
       return false
     }

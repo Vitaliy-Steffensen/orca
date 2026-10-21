@@ -208,7 +208,8 @@ export function useSourceControlCreatePrIntentReview({
             {
               provider: eligibility.provider,
               number: result.number,
-              url: result.url
+              url: result.url,
+              title
             },
             {
               repoPath: activeRepo.path,

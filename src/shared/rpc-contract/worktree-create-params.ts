@@ -35,6 +35,8 @@ export const WorktreeCreate = z
     baseBranch: OptionalString,
     compareBaseRef: OptionalString,
     branchNameOverride: OptionalString,
+    /** Optional: older hosts ignore it and keep the branch-off-the-ref behaviour. */
+    reuseExistingBranch: z.boolean().optional(),
     linkedIssue: TriStateLinkedIssue,
     linkedPR: TriStateLinkedIssue,
     linkedLinearIssue: z.string().optional(),

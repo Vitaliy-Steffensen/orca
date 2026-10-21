@@ -70,6 +70,7 @@ export function useComposerSubmitOrchestration(
     branchAutoNameRef: target.asyncComposerState.branchAutoNameRef,
     branchNameOverridePreservesNameEdits:
       target.workspaceIdentityState.branchNameOverridePreservesNameEdits,
+    reuseSelectedBranch: target.workspaceIdentityState.reuseSelectedBranch,
     checkedHooksContextKey: target.asyncComposerState.checkedHooksContextKey,
     commitHookCheckIfCurrent: target.providerRuntimeSync.commitHookCheckIfCurrent,
     enableIssueAutomation: target.composerTargetStore.enableIssueAutomation,

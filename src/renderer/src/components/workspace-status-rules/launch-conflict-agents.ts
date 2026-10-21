@@ -8,6 +8,7 @@ import type {
   WorkspaceStatusRulePlan,
   WorkspaceStatusRuleTarget
 } from '../../../../shared/workspace-status-rule-plan'
+import { appendValidationHostInstruction } from '../../../../shared/agent-validation-host-instruction'
 import { renderConflictAgentPrompt } from '../../../../shared/workspace-status-rule-conflict-prompt'
 import { buildReviewPromptVariables } from '../../../../shared/workspace-status-rule-prompt'
 
@@ -43,11 +44,14 @@ export async function launchConflictAgents(
       await launchAgentBackgroundSession({
         agent: config.reviewInbox.agent,
         worktreeId: worktree.id,
-        prompt: renderConflictAgentPrompt(config.conflictPromptTemplate, {
-          ...buildReviewPromptVariables(pr),
-          baseRef: pr.baseRefName,
-          worktreePath: worktree.path
-        }),
+        prompt: appendValidationHostInstruction(
+          renderConflictAgentPrompt(config.conflictPromptTemplate, {
+            ...buildReviewPromptVariables(pr),
+            baseRef: pr.baseRefName,
+            worktreePath: worktree.path
+          }),
+          useAppStore.getState().settings?.validationHostInstruction
+        ),
         launchSource: 'conflict_resolution',
         title: translate(
           'auto.components.workspaceStatusRules.conflictTabTitle',

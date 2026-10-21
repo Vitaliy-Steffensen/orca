@@ -17,6 +17,7 @@ import type {
   SourceControlTextActionId
 } from '../../../../../../shared/source-control-ai-actions'
 import type { SourceControlAiWriteTarget } from '../../../../../../shared/source-control-ai-recipe-save'
+import { appendValidationHostInstruction } from '../../../../../../shared/agent-validation-host-instruction'
 import { buildResolveConflictsPrompt } from './prompts'
 import {
   saveSourceControlAiActionRecipeForTarget,
@@ -150,12 +151,15 @@ export function useSourceControlAi({
 
   const resolveConflictsPrompt = useMemo(
     () =>
-      buildResolveConflictsPrompt({
-        conflictOperation,
-        entries: unresolvedConflicts,
-        worktreePath
-      }),
-    [conflictOperation, unresolvedConflicts, worktreePath]
+      appendValidationHostInstruction(
+        buildResolveConflictsPrompt({
+          conflictOperation,
+          entries: unresolvedConflicts,
+          worktreePath
+        }),
+        settings?.validationHostInstruction
+      ),
+    [conflictOperation, settings?.validationHostInstruction, unresolvedConflicts, worktreePath]
   )
   const handleResolveConflictsWithAI = useCallback((): void => {
     if (!activeWorktreeId) {
