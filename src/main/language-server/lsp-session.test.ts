@@ -15,7 +15,7 @@ function fakeServer(
 ) {
   const received: Message[] = []
   let deliver: (chunk: Buffer) => void = () => {}
-  let exit: () => void = () => {}
+  let exit: (reason?: string) => void = () => {}
   const reply = (message: LspMessage) => deliver(encodeLspMessage({ jsonrpc: '2.0', ...message }))
   const read = createLspMessageReader((value) => {
     const message = value as Message
@@ -41,7 +41,7 @@ function fakeServer(
     },
     kill: vi.fn()
   }
-  return { transport, received, exit: () => exit() }
+  return { transport, received, exit: (reason?: string) => exit(reason) }
 }
 
 const request = (text: string) => ({
@@ -178,5 +178,19 @@ describe('LSP session', () => {
     server.exit()
     await expect(pending).rejects.toThrow('tsgo exited')
     expect(session.closed).toBe(true)
+  })
+
+  it('keeps the reason the transport gave, for this request and the next', async () => {
+    const server = fakeServer(null)
+    const session = createLspSession({
+      transport: server.transport,
+      rootPath: '/repo',
+      serverName: 'tsgo'
+    })
+
+    const pending = session.definition(request(''))
+    server.exit('tsgo is not at /opt/bin/tsgo')
+    await expect(pending).rejects.toThrow('tsgo is not at /opt/bin/tsgo')
+    await expect(session.hover(request(''))).rejects.toThrow('tsgo is not at /opt/bin/tsgo')
   })
 })

@@ -63,9 +63,28 @@ describe('language server launchers', () => {
     expect(
       resolveLaunch(
         { ...python, server: 'pyright', command: '/opt/pyright/bin/pyright-langserver' },
-        existsIn([...backend, '/repo/apps/backend/.venv/bin/pyright-langserver'])
+        existsIn([
+          ...backend,
+          '/opt/pyright/bin/pyright-langserver',
+          '/repo/apps/backend/.venv/bin/pyright-langserver'
+        ])
       )
     ).toMatchObject({ program: '/opt/pyright/bin/pyright-langserver', args: ['--stdio'] })
+  })
+
+  it('falls back to the usual search for a custom path that names nothing', () => {
+    expect(
+      resolveLaunch(
+        { ...python, command: 'apps/backend/.venv/bin/pyrefly' },
+        existsIn(['/repo/apps/backend/pyproject.toml'])
+      ).program
+    ).toBe('pyrefly')
+    expect(
+      resolveLaunch(
+        { ...typescript, command: '/opt/gone/tsgo' },
+        existsIn(['/repo/apps/frontend/tsconfig.json', '/repo/node_modules/.bin/tsgo'])
+      ).program
+    ).toBe('/repo/node_modules/.bin/tsgo')
   })
 
   it('resolves a relative custom path against the worktree, not the project root', () => {
@@ -104,7 +123,7 @@ describe('language server launchers', () => {
     expect(
       resolveLaunch(
         { ...python, server: 'pyright', command: '~/tools/pyright-langserver' },
-        existsIn(backend),
+        existsIn([...backend, '/Users/me/tools/pyright-langserver']),
         '/Users/me'
       ).program
     ).toBe('/Users/me/tools/pyright-langserver')
