@@ -6,7 +6,8 @@ import type { LinearCollectionResult } from '../linear/workspace-types'
 import type { BaseRefSearchResult } from '../repo-types'
 import { parseJiraIssueUrl } from '../jira-issue-url'
 import { buildJiraTextMatchJql } from '../jira-search-input-jql'
-import type { GitHubIssueOrPRLink } from '../github/links'
+import { type GitHubIssueOrPRLink, parseGitHubIssueOrPRLink } from '../github/links'
+import { parseGitLabIssueOrMRLink } from './gitlab-links'
 import {
   buildSmartWorkspaceUrlSourceRows,
   type SmartWorkspaceGitLabUrlIntent
@@ -55,6 +56,27 @@ export function getJiraIssueSearchQuery(query: string): string | null {
 
 export function isBlockingJiraUrlIntent(mode: SmartNameMode, value: string): boolean {
   return (mode === 'smart' || mode === 'jira') && parseJiraIssueUrl(value) !== null
+}
+
+export function isBlockingGitHubUrlIntent(mode: SmartNameMode, value: string): boolean {
+  return (mode === 'smart' || mode === 'github') && parseGitHubIssueOrPRLink(value) !== null
+}
+
+export function isBlockingGitLabUrlIntent(mode: SmartNameMode, value: string): boolean {
+  return (mode === 'smart' || mode === 'gitlab') && parseGitLabIssueOrMRLink(value) !== null
+}
+
+/**
+ * A pasted work-item URL is a reference to something that already exists, never
+ * a workspace name. Blocking create until it resolves stops Enter from turning
+ * `https://github.com/o/r/pull/7` into a branch of that name off the default base.
+ */
+export function isBlockingWorkItemUrlIntent(mode: SmartNameMode, value: string): boolean {
+  return (
+    isBlockingJiraUrlIntent(mode, value) ||
+    isBlockingGitHubUrlIntent(mode, value) ||
+    isBlockingGitLabUrlIntent(mode, value)
+  )
 }
 
 export function isBlockingTaskUrlResolution({

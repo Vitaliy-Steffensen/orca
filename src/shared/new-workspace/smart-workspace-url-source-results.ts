@@ -30,12 +30,20 @@ function toGitHubSourceRow(item: GitHubWorkItem): SmartWorkspaceUrlSourceRow {
   return { kind: 'github', value: `github-${item.repoId}-${item.type}-${item.number}`, item }
 }
 
+/**
+ * Why: the input here is a recognised work-item URL, so the resolved rows are what
+ * the user meant. Offering "use as name" first let Enter turn a pasted PR link into
+ * a branch named after the URL; keep it only as a last resort when nothing resolved.
+ */
 function withSmartNameFallback(
   mode: SmartWorkspaceUrlSourceMode,
   name: string,
   rows: SmartWorkspaceUrlSourceRow[]
 ): SmartWorkspaceUrlSourceRow[] {
-  return name && mode === 'smart' ? [{ kind: 'use-name', value: 'use-name', name }, ...rows] : rows
+  if (!name || mode !== 'smart') {
+    return rows
+  }
+  return rows.length > 0 ? rows : [{ kind: 'use-name', value: 'use-name', name }]
 }
 
 function isGitHubLinkIntentMatch(intent: GitHubIssueOrPRLink, item: GitHubWorkItem): boolean {

@@ -156,3 +156,4 @@ Taken whole with every mirror; the fork lineage's work on top of upstream.
 80. Workspace cards no longer show a generic chain-link icon for a single linked pull request or task.
 81. Workspace cards hide the repo icon when the sidebar only shows workspaces from a single repo.
 82. Sidebar status bands and the lanes inside them can be dragged into any order, show their workspace count only while collapsed, and reveal their automation icons on hover.
+83. Pasting a GitHub or GitLab issue/PR link into the new-workspace box no longer lets Enter create a branch named after the URL; it waits for the link to resolve.

@@ -52,7 +52,7 @@ describe('smart workspace URL-owned source rows', () => {
     ).toEqual([{ kind: 'use-name', value: 'use-name', name: targetUrl }])
   })
 
-  it('shows only the exact GitHub URL result after lookup settles', () => {
+  it('shows only the resolved GitHub URL result, without a use-as-name row', () => {
     const targetUrl = 'https://github.com/acme/widgets/issues/42'
     const exactItem = {
       id: 'issue-42',
@@ -87,10 +87,7 @@ describe('smart workspace URL-owned source rows', () => {
         linearUrlIntentOwnsResults: true,
         resultLimit: 12
       })
-    ).toEqual([
-      { kind: 'use-name', value: 'use-name', name: targetUrl },
-      { kind: 'github', value: 'github-repo-1-issue-42', item: exactItem }
-    ])
+    ).toEqual([{ kind: 'github', value: 'github-repo-1-issue-42', item: exactItem }])
   })
 
   it('hides unrelated held results while a full GitLab URL resolves', () => {
@@ -144,7 +141,7 @@ describe('smart workspace URL-owned source rows', () => {
     ).toEqual([{ kind: 'use-name', value: 'use-name', name: targetUrl }])
   })
 
-  it('shows only the exact GitLab URL result after lookup settles', () => {
+  it('shows only the resolved GitLab URL result, without a use-as-name row', () => {
     const targetUrl = 'https://gitlab.example.test/acme/widgets/-/issues/42'
     const exactItem = {
       id: 'issue-42',
@@ -184,10 +181,7 @@ describe('smart workspace URL-owned source rows', () => {
         linearUrlIntentOwnsResults: true,
         resultLimit: 12
       })
-    ).toEqual([
-      { kind: 'use-name', value: 'use-name', name: targetUrl },
-      { kind: 'gitlab', value: 'gitlab-repo-1-issue-42', item: exactItem }
-    ])
+    ).toEqual([{ kind: 'gitlab', value: 'gitlab-repo-1-issue-42', item: exactItem }])
   })
 
   it('hides held provider rows when a Linear URL is recognized but disconnected', () => {
