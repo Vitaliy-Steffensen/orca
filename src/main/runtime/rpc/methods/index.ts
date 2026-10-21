@@ -62,6 +62,7 @@ import { AGENT_NOTE_METHODS } from './agent-notes'
 import { REVIEW_DRAFT_METHODS } from './review-drafts'
 import { AGENT_LAUNCH_METHODS } from './agent-launch'
 import { WORKSPACE_LAYOUT_METHODS } from './workspace-layout'
+import { LANGUAGE_SERVER_METHODS } from './language-server'
 
 // Why: a flat manifest keeps registration order explicit and provides one
 // grep-point for "what methods does the RPC server expose?" — useful when
@@ -107,6 +108,7 @@ export const ALL_RPC_METHODS = [
   ...WORKSPACE_LAYOUT_METHODS,
   ...NATIVE_CHAT_METHODS,
   ...FILE_METHODS,
+  ...LANGUAGE_SERVER_METHODS,
   ...GIT_METHODS,
   ...GITHUB_METHODS,
   ...GITLAB_METHODS,

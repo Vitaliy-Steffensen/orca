@@ -332,6 +332,11 @@ import {
   UserSearch
 } from './jira-params'
 import {
+  LanguageServerAsk,
+  LanguageServerStop,
+  LanguageServerStopWorktree
+} from './language-server-params'
+import {
   AgentIssueContext,
   AgentSearchIssues,
   LinearCurrentContext,
@@ -1015,6 +1020,11 @@ export const RPC_PARAMS_BY_METHOD = {
   'jira.status': null,
   'jira.testConnection': SiteSelection,
   'jira.updateIssue': IssueUpdate,
+  'languageServer.definition': LanguageServerAsk,
+  'languageServer.hover': LanguageServerAsk,
+  'languageServer.references': LanguageServerAsk,
+  'languageServer.stop': LanguageServerStop,
+  'languageServer.stopWorktree': LanguageServerStopWorktree,
   'layout.getRemoteSnapshots': null,
   'layout.subscribe': LayoutSubscribeParams,
   'layout.unsubscribe': LayoutUnsubscribeParams,

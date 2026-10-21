@@ -163,3 +163,4 @@ Taken whole with every mirror; the fork lineage's work on top of upstream.
 87. Settings → Agents has a "Where agents run validation" instruction that Orca appends to every conflict-resolution prompt, so heavy checks run on a remote box instead of your machine.
 88. Hovering a symbol says when a language server is missing instead of showing nothing, names where it was looked for, and a saved Path that no longer exists falls back to the one in the project or on PATH.
 89. Copy, paste and select all work in the companion window, by keyboard and by right-click.
+90. Hover, Cmd+click and Find references work in the companion window and the web client, asking the language servers on the Orca that holds the files.

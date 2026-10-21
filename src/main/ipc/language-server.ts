@@ -1,47 +1,14 @@
-import { existsSync, readFileSync, statSync } from 'node:fs'
 import { app, ipcMain } from 'electron'
 import { isLanguageServerLanguage, type LanguageServerRequest } from '../../shared/language-server'
-import { createLanguageServerService } from '../language-server/language-server-service'
-import { startLanguageServerSession } from '../language-server/language-server-process'
+import { LanguageServerAsk } from '../../shared/rpc-contract/language-server-params'
+import {
+  disposeLanguageServerHost,
+  languageServerHost
+} from '../language-server/language-server-host'
 
 function readRequest(value: unknown): LanguageServerRequest | null {
-  if (typeof value !== 'object' || value === null) {
-    return null
-  }
-  const {
-    language,
-    server,
-    command,
-    filePath,
-    worktreeRoot,
-    repoRoot,
-    venvSetting,
-    text,
-    line,
-    character
-  } = value as Record<string, unknown>
-  if (
-    !isLanguageServerLanguage(language) ||
-    typeof filePath !== 'string' ||
-    typeof worktreeRoot !== 'string' ||
-    typeof text !== 'string' ||
-    typeof line !== 'number' ||
-    typeof character !== 'number'
-  ) {
-    return null
-  }
-  return {
-    language,
-    server: typeof server === 'string' ? server : '',
-    command: typeof command === 'string' && command.trim() ? command.trim() : null,
-    filePath,
-    worktreeRoot,
-    repoRoot: typeof repoRoot === 'string' && repoRoot ? repoRoot : null,
-    venvSetting: typeof venvSetting === 'string' ? venvSetting : null,
-    text,
-    line,
-    character
-  }
+  const parsed = LanguageServerAsk.safeParse(value)
+  return parsed.success ? parsed.data : null
 }
 
 function readWorktreeRoot(value: unknown): string | null {
@@ -52,34 +19,9 @@ function readWorktreeRoot(value: unknown): string | null {
   return typeof worktreeRoot === 'string' && worktreeRoot ? worktreeRoot : null
 }
 
-const PREVIEW_LINES = 10
-const MAX_PREVIEW_FILE_BYTES = 5_000_000
-
-function readFile(filePath: string): string | null {
-  try {
-    return statSync(filePath).size > MAX_PREVIEW_FILE_BYTES ? null : readFileSync(filePath, 'utf8')
-  } catch {
-    return null
-  }
-}
-
-function readPreview(filePath: string, line: number): string | null {
-  return (
-    readFile(filePath)
-      ?.split(/\r?\n/)
-      .slice(line, line + PREVIEW_LINES)
-      .join('\n') ?? null
-  )
-}
-
 // Fork: Cmd+click and hover ask a language server (pyrefly for Python, tsgo for TypeScript).
 export function registerLanguageServerHandlers(): void {
-  const service = createLanguageServerService({
-    exists: existsSync,
-    readPreview,
-    readFile,
-    startSession: startLanguageServerSession
-  })
+  const service = languageServerHost()
   ipcMain.handle('languageServer:definition', async (_event, args: unknown) => {
     const request = readRequest(args)
     return request
@@ -110,5 +52,5 @@ export function registerLanguageServerHandlers(): void {
       service.stopWorktree(worktreeRoot)
     }
   })
-  app.once('will-quit', () => service.disposeAll())
+  app.once('will-quit', disposeLanguageServerHost)
 }

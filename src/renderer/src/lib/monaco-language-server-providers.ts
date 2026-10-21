@@ -10,6 +10,7 @@ import {
 } from '../../../shared/language-server'
 import { useAppStore } from '@/store'
 import { definitionOpenTarget, toEditorPosition } from './language-server-editor'
+import { askLanguageServer, stopLanguageServers } from './language-server-client'
 import {
   forgetLanguageServerFailures,
   reportLanguageServerFailure
@@ -85,7 +86,7 @@ function installLanguageProviders(
     provideDefinition: async (model, position) => {
       const request = serverRequest(model, position)
       if (request) {
-        const result = await window.api.languageServer.definition(request)
+        const result = await askLanguageServer(request.target, 'definition', request)
         if (!result.ok) {
           reportLanguageServerFailure(request, result.error)
         }
@@ -112,7 +113,7 @@ function installLanguageProviders(
   monaco.languages.registerHoverProvider(languageId, {
     provideHover: async (model, position) => {
       const request = serverRequest(model, position)
-      const result = request ? await window.api.languageServer.hover(request) : null
+      const result = request ? await askLanguageServer(request.target, 'hover', request) : null
       // Why here too: hover is what a reader reaches for first, so a silent fall back to nothing
       // (Python) or to the open-files-only built-in (TypeScript) is the whole bug report.
       if (request && result && !result.ok) {
@@ -140,7 +141,7 @@ function installLanguageProviders(
     provideReferences: async (model, position) => {
       const request = serverRequest(model, position)
       if (request) {
-        const result = await window.api.languageServer.references(request)
+        const result = await askLanguageServer(request.target, 'references', request)
         if (result.ok) {
           return referenceLocations(monaco, model, request, result.locations, result.files)
         }
@@ -181,7 +182,7 @@ export function installLanguageServerProviders(
       if (keys.get(language) !== next) {
         keys.set(language, next)
         forgetLanguageServerFailures([language])
-        void window.api.languageServer.stop({ language })
+        void stopLanguageServers(language)
       }
     }
   })
