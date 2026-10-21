@@ -32,8 +32,23 @@ describe('workspace auto-merge policy', () => {
     expect(enableAutoMergePolicy({})).toEqual(DEFAULT_AUTO_MERGE_POLICY)
   })
 
-  it('keeps a sub-toggle the user turned off', () => {
-    const stored = { enabled: false, resolveConflicts: true, fixFailingChecks: false }
-    expect(enableAutoMergePolicy({ autoMerge: stored })).toEqual({ ...stored, enabled: true })
+  it('turns the repairs back on every time auto-merge is switched on', () => {
+    const stored = { enabled: false, resolveConflicts: false, fixFailingChecks: false }
+    expect(enableAutoMergePolicy({ autoMerge: stored })).toEqual(DEFAULT_AUTO_MERGE_POLICY)
+  })
+
+  it('keeps merge method and attempt bookkeeping when switching on', () => {
+    const stored = {
+      enabled: false,
+      resolveConflicts: false,
+      fixFailingChecks: false,
+      method: 'squash',
+      attempts: { headOid: 'abc', conflicts: 1, checks: 2 }
+    }
+    expect(enableAutoMergePolicy({ autoMerge: stored })).toEqual({
+      ...DEFAULT_AUTO_MERGE_POLICY,
+      method: 'squash',
+      attempts: { headOid: 'abc', conflicts: 1, checks: 2 }
+    })
   })
 })

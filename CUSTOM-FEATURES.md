@@ -159,3 +159,4 @@ Taken whole with every mirror; the fork lineage's work on top of upstream.
 83. Pasting a GitHub or GitLab issue/PR link into the new-workspace box no longer lets Enter create a branch named after the URL; it waits for the link to resolve.
 84. Typing an existing branch name in the new-workspace box offers to open that branch, and a workspace opened on an existing branch diffs against its real base instead of showing nothing.
 85. Creating a pull request from a workspace renames the workspace to the pull request title, unless you named it yourself.
+86. Switching auto-merge on always re-arms conflict resolution and CI fixing, which you can then switch off individually.
