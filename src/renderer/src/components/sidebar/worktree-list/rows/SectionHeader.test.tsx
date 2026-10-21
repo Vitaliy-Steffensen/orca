@@ -19,11 +19,14 @@ const vItem = {
   lane: 0
 } as VirtualItem
 
-function headerContext(groupBy: WorktreeGroupBy): SectionHeaderRowContext {
+function headerContext(
+  groupBy: WorktreeGroupBy,
+  options: { collapsedKeys?: readonly string[] } = {}
+): SectionHeaderRowContext {
   // oxlint-disable-next-line typescript/consistent-type-assertions -- SAFETY: the header row reads only the fields set here; the rest of the context belongs to row kinds this test never renders.
   return {
     groupBy,
-    collapsedGroups: new Set(),
+    collapsedGroups: new Set(options.collapsedKeys ?? []),
     workspaceStatuses: [{ id: 'review-other', label: 'Review other', section: 'Needs me' }],
     projectGroups: [],
     getRepoSshGate: () => ({
@@ -43,7 +46,28 @@ function headerContext(groupBy: WorktreeGroupBy): SectionHeaderRowContext {
       canReorderProjectGroupHeaders: false,
       sidebarProjectGroupHeaderIdsByBucket: new Map(),
       repoDrag: { state: { draggingRepoId: null } },
-      projectGroupDrag: { state: { draggingGroupId: null } }
+      projectGroupDrag: { state: { draggingGroupId: null } },
+      canReorderStatusHeaders: true,
+      sidebarStatusHeaderKeysByBucket: new Map([
+        [
+          'workspace-status-sections',
+          ['workspace-status-section:Needs%20me', 'workspace-status-section:Autonomous']
+        ],
+        [
+          'workspace-status-section:Needs%20me',
+          ['workspace-status:review-other', 'workspace-status:my-review']
+        ]
+      ]),
+      statusHeaderIndexByKey: new Map([
+        ['workspace-status-section:Needs%20me', 0],
+        ['workspace-status:review-other', 0]
+      ]),
+      statusHeaderBucketByKey: new Map([
+        ['workspace-status-section:Needs%20me', 'workspace-status-sections'],
+        ['workspace-status:review-other', 'workspace-status-section:Needs%20me']
+      ]),
+      statusHeaderSectionEndByKey: new Map(),
+      statusDrag: { state: { draggingHeaderKey: null }, onHandlePointerDown: () => {} }
     },
     getCachedFolderWorkspacePathStatus: () => null,
     toggleGroupWithScrollAnchor: () => {},
@@ -76,7 +100,8 @@ function headerRow(overrides: Partial<GroupHeaderRow>): GroupHeaderRow {
 
 async function renderHeader(
   row: GroupHeaderRow,
-  groupBy: WorktreeGroupBy = 'workspace-status'
+  groupBy: WorktreeGroupBy = 'workspace-status',
+  options: { collapsedKeys?: readonly string[] } = {}
 ): Promise<HTMLDivElement> {
   const container = document.createElement('div')
   document.body.appendChild(container)
@@ -85,7 +110,7 @@ async function renderHeader(
   await act(async () => {
     root.render(
       renderWorktreeSectionHeaderRow({
-        ctx: headerContext(groupBy),
+        ctx: headerContext(groupBy, options),
         row,
         vItem,
         isActiveStickyHeader: false,
@@ -114,15 +139,61 @@ describe('workspace section counts', () => {
     document.body.innerHTML = ''
   })
 
-  it('shows how many workspaces sit in a nested status lane', async () => {
+  it('shows how many workspaces a collapsed nested status lane holds', async () => {
     const container = await renderHeader(
-      headerRow({ parentKey: 'workspace-status-section:Needs%20me' })
+      headerRow({ parentKey: 'workspace-status-section:Needs%20me' }),
+      'workspace-status',
+      { collapsedKeys: ['workspace-status:review-other'] }
     )
 
     expect(countBadge(container)).toBe('4')
   })
 
-  it('shows the total on the outer section band', async () => {
+  it('drops the pill once the lane is open and its workspaces are visible', async () => {
+    const container = await renderHeader(
+      headerRow({ parentKey: 'workspace-status-section:Needs%20me' })
+    )
+
+    expect(countBadge(container)).toBeNull()
+  })
+
+  it('shows the total on a collapsed section band', async () => {
+    const container = await renderHeader(
+      headerRow({
+        key: 'workspace-status-section:Needs%20me',
+        label: 'Needs me',
+        statusSection: 'Needs me',
+        count: 11
+      }),
+      'workspace-status',
+      { collapsedKeys: ['workspace-status-section:Needs%20me'] }
+    )
+
+    expect(countBadge(container)).toBe('11')
+  })
+
+  it('leaves a top-level status lane without a count pill', async () => {
+    const container = await renderHeader(headerRow({}), 'workspace-status', {
+      collapsedKeys: ['workspace-status:review-other']
+    })
+
+    expect(countBadge(container)).toBeNull()
+  })
+})
+
+describe('workspace status header reordering', () => {
+  beforeEach(() => {
+    globalThis.IS_REACT_ACT_ENVIRONMENT = true
+  })
+
+  afterEach(async () => {
+    for (const root of roots.splice(0)) {
+      await act(async () => root.unmount())
+    }
+    document.body.innerHTML = ''
+  })
+
+  it('arms drag on a section band that has a peer', async () => {
     const container = await renderHeader(
       headerRow({
         key: 'workspace-status-section:Needs%20me',
@@ -132,12 +203,38 @@ describe('workspace section counts', () => {
       })
     )
 
-    expect(countBadge(container)).toBe('11')
+    const header = container.querySelector('[data-workspace-status-header-id]')
+    expect(header?.getAttribute('data-workspace-status-header-bucket')).toBe(
+      'workspace-status-sections'
+    )
+    expect(header?.hasAttribute('data-workspace-status-header-drag-handle')).toBe(true)
   })
 
-  it('leaves a top-level status lane without a count pill', async () => {
-    const container = await renderHeader(headerRow({}))
+  it('arms drag on a lane nested in a band with a peer lane', async () => {
+    const container = await renderHeader(
+      headerRow({ parentKey: 'workspace-status-section:Needs%20me' })
+    )
 
-    expect(countBadge(container)).toBeNull()
+    const header = container.querySelector('[data-workspace-status-header-id]')
+    expect(header?.getAttribute('data-workspace-status-header-bucket')).toBe(
+      'workspace-status-section:Needs%20me'
+    )
+    expect(header?.hasAttribute('data-workspace-status-header-drag-handle')).toBe(true)
+  })
+
+  it('leaves a header outside every reorder bucket undraggable', async () => {
+    const container = await renderHeader(
+      headerRow({ key: 'workspace-status:lonely', label: 'Lonely' })
+    )
+
+    expect(container.querySelector('[data-workspace-status-header-id]')).toBeNull()
+  })
+
+  it('keeps the lane header a drop target for workspaces', async () => {
+    const container = await renderHeader(
+      headerRow({ parentKey: 'workspace-status-section:Needs%20me' })
+    )
+
+    expect(container.querySelector('[data-workspace-status-drop-target]')).not.toBeNull()
   })
 })

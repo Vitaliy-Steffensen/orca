@@ -14,6 +14,7 @@ import type {
 import type { UsagePercentageDisplay } from '../../../../../shared/usage-percentage-display'
 import type { AutomationHostFilter } from '../../../../../shared/automation-host-filter'
 import type { WorkspaceStatusDefinition } from '../../../../../shared/worktree/types'
+import type { WorkspaceStatusSidebarOrder } from '../../../../../shared/workspace-status-sidebar-order'
 import type { WorkspaceStatusRuleConfig } from '../../../../../shared/workspace-status-rule-config'
 import type { WorkspacePortScanResult } from '../../../../../shared/workspace-ports'
 import type { CustomPet } from '../../../../../shared/pet-types'
@@ -101,6 +102,11 @@ export type UISlicePreferences = {
   setAgentActivityDisplayMode: (mode: AgentActivityDisplayMode) => void
   workspaceStatuses: WorkspaceStatusDefinition[]
   setWorkspaceStatuses: (statuses: WorkspaceStatusDefinition[]) => void
+  workspaceStatusSidebarOrder: WorkspaceStatusSidebarOrder
+  /** Writes the band order the user dragged the sidebar into. */
+  setWorkspaceStatusSectionOrder: (sections: readonly string[]) => void
+  /** Writes one band's dragged lane order and marks that band as owning its order. */
+  setWorkspaceStatusLaneOrder: (section: string, orderedLaneIds: readonly string[]) => void
   workspaceStatusRules: WorkspaceStatusRuleConfig
   setWorkspaceStatusRules: (rules: WorkspaceStatusRuleConfig) => void
   /** Records `owner/repo#number` keys the review inbox has already acted on. */

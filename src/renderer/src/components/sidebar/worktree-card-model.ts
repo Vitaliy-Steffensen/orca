@@ -23,6 +23,7 @@ export type WorktreeCardProps = {
   revealHighlightTone?: 'default' | 'ai'
   selectedWorktrees?: readonly Worktree[]
   hideRepoBadge?: boolean
+  hidePinnedRepoIcon?: boolean
   hostContextLabel?: string
   inPinnedSection?: boolean
   activationRowKey?: string

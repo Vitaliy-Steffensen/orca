@@ -221,8 +221,11 @@ export function useWorktreeCardSecondaryDetails({
     },
     [linearIssue, openTaskPage]
   )
+  // Why: a lone review attachment has no badge of its own, so only a stack of them counts as detail.
+  const hasStackedReviewAttachments =
+    getWorkspaceAttachments(worktree).filter((item) => item.type !== 'issue').length > 1
   const hasDetails =
-    getWorkspaceAttachments(worktree).length > 0 ||
+    hasStackedReviewAttachments ||
     hasWorktreeCardDetails({
       issue: metaIssue,
       linearIssue: metaLinearIssue,

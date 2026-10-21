@@ -1,5 +1,5 @@
 import React from 'react'
-import { CalendarClock, CircleDot, Link2, SquareTerminal, StickyNote } from 'lucide-react'
+import { CalendarClock, CircleDot, SquareTerminal, StickyNote } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { LinearIcon } from '@/components/icons/LinearIcon'
 import { JiraIcon } from '@/components/icons/JiraIcon'
@@ -17,7 +17,7 @@ function hasComment(comment: string | null): boolean {
 }
 
 export function hasWorktreeCardDetails({
-  linkedItemCount = 0,
+  referenceItems,
   issue,
   linearIssue,
   jiraIssue,
@@ -27,7 +27,7 @@ export function hasWorktreeCardDetails({
   cliProvenance
 }: WorktreeCardMetaBadgesProps): boolean {
   return Boolean(
-    linkedItemCount > 0 ||
+    referenceItems?.length ||
     issue ||
     linearIssue ||
     jiraIssue ||
@@ -43,7 +43,6 @@ export const WorktreeCardMetaBadges = React.forwardRef<
   WorktreeCardMetaBadgesRootProps
 >(function WorktreeCardMetaBadges(
   {
-    linkedItemCount = 0,
     referenceItems,
     referenceDetails,
     issue,
@@ -60,7 +59,7 @@ export const WorktreeCardMetaBadges = React.forwardRef<
 ): React.JSX.Element | null {
   if (
     !hasWorktreeCardDetails({
-      linkedItemCount,
+      referenceItems,
       issue,
       linearIssue,
       jiraIssue,
@@ -93,20 +92,6 @@ export const WorktreeCardMetaBadges = React.forwardRef<
         'Workspace metadata'
       )}
     >
-      {linkedItemCount > 0 &&
-      !referenceItems?.length &&
-      !issue &&
-      !linearIssue &&
-      !jiraIssue &&
-      !review ? (
-        <MetaIconBadge
-          label={translate('workspace.links.show', 'Show {{count}} linked reviews and tasks', {
-            count: linkedItemCount
-          })}
-        >
-          <Link2 />
-        </MetaIconBadge>
-      ) : null}
       {hasComment(comment) && (
         <MetaIconBadge
           label={translate(

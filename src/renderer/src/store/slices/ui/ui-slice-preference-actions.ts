@@ -20,6 +20,12 @@ import {
 } from '../../../../../shared/status-bar-usage-mode'
 import type { WorkspaceHostScope } from '../../../../../shared/ui-chrome-types'
 import {
+  createDefaultWorkspaceStatusSidebarOrder,
+  markWorkspaceStatusLaneSectionManual,
+  normalizeWorkspaceStatusSidebarOrder,
+  reorderWorkspaceStatusLanesInSection
+} from '../../../../../shared/workspace-status-sidebar-order'
+import {
   normalizeExecutionHostOrder,
   normalizeExecutionHostScope,
   normalizeVisibleExecutionHostIds
@@ -200,6 +206,28 @@ export function createUiPreferenceActions(set: UISliceSet, get: UISliceGet): Par
       const normalized = normalizeWorkspaceStatuses(statuses)
       window.api.ui.set({ workspaceStatuses: normalized }).catch(console.error)
       set({ workspaceStatuses: normalized })
+    },
+
+    workspaceStatusSidebarOrder: createDefaultWorkspaceStatusSidebarOrder(),
+    setWorkspaceStatusSectionOrder: (sections) => {
+      const next = normalizeWorkspaceStatusSidebarOrder({
+        ...get().workspaceStatusSidebarOrder,
+        sections: [...sections]
+      })
+      window.api.ui.set({ workspaceStatusSidebarOrder: next }).catch(console.error)
+      set({ workspaceStatusSidebarOrder: next })
+    },
+    setWorkspaceStatusLaneOrder: (section, orderedLaneIds) => {
+      const statuses = normalizeWorkspaceStatuses(
+        reorderWorkspaceStatusLanesInSection(get().workspaceStatuses, section, orderedLaneIds)
+      )
+      const order = markWorkspaceStatusLaneSectionManual(get().workspaceStatusSidebarOrder, section)
+      // Why one write: the lane splice and the band's opt-out from attention rank
+      // only make sense together; split across two writes the sidebar flickers back.
+      window.api.ui
+        .set({ workspaceStatuses: statuses, workspaceStatusSidebarOrder: order })
+        .catch(console.error)
+      set({ workspaceStatuses: statuses, workspaceStatusSidebarOrder: order })
     },
 
     workspaceBoardOpacity: 1,

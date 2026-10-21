@@ -11,13 +11,17 @@ import type { Row, WorktreeGroupBy } from '../grouping/row-types'
 import type { RenderRow } from '../listing/render-row'
 import {
   getProjectGroupHeaderSectionEndByGroupId,
-  getRepoHeaderSectionEndByRepoId
+  getRepoHeaderSectionEndByRepoId,
+  getWorkspaceStatusHeaderSectionEndByKey
 } from '../../worktree-header-section-boundaries'
 import { useHostHeaderDrag } from '../../host-header-drag'
 import { useRepoHeaderDrag } from '../../project-header-drag'
 import { getSidebarOrderedRepoHeaderIdsByBucket } from '../../project-header-drop'
 import { useProjectGroupHeaderDrag } from '../../project-group-header-drag'
 import { getSidebarOrderedProjectGroupHeaderIdsByBucket } from '../../project-group-header-drop'
+import { useWorkspaceStatusHeaderDrag } from '../../workspace-status-header-drag'
+import { getSidebarOrderedWorkspaceStatusHeaderIdsByBucket } from '../../workspace-status-header-drop'
+import { useWorkspaceStatusHeaderOrderCommit } from './use-workspace-status-header-order-commit'
 import { USER_SCROLL_MEASUREMENT_ADJUSTMENT_SUPPRESS_MS } from '../viewport/use-scroll-suppression'
 
 export type WorktreeSidebarHeaderDrag = ReturnType<typeof useWorktreeSidebarHeaderDrag>
@@ -80,6 +84,7 @@ export function useWorktreeSidebarHeaderDrag(args: {
   const hasProjectGroups = projectGroups.length > 0
   const canReorderRepoHeaders = groupBy === 'repo' && projectOrderBy === 'manual'
   const canReorderProjectGroupHeaders = groupBy === 'repo' && hasProjectGroups
+  const canReorderStatusHeaders = groupBy === 'workspace-status'
   const projectGroupByIdForHeaderDrag = useMemo(
     () => new Map(projectGroups.map((group) => [group.id, group])),
     [projectGroups]
@@ -184,6 +189,31 @@ export function useWorktreeSidebarHeaderDrag(args: {
     onCommitProjectGroupOrder: commitProjectGroupOrder,
     getScrollContainer: () => scrollRef.current
   })
+  const sidebarStatusHeaderKeysByBucket = useMemo(
+    () =>
+      canReorderStatusHeaders
+        ? getSidebarOrderedWorkspaceStatusHeaderIdsByBucket(
+            rows.filter((row): row is Row => row.type !== 'host-header')
+          )
+        : new Map<string, string[]>(),
+    [canReorderStatusHeaders, rows]
+  )
+  const statusHeaderIndexByKey = useMemo(
+    () => indexById(sidebarStatusHeaderKeysByBucket),
+    [sidebarStatusHeaderKeysByBucket]
+  )
+  const statusHeaderBucketByKey = useMemo(
+    () => bucketById(sidebarStatusHeaderKeysByBucket),
+    [sidebarStatusHeaderKeysByBucket]
+  )
+  const commitStatusHeaderOrder = useWorkspaceStatusHeaderOrderCommit({
+    beforeCommit: suppressScrollCorrectionForHeaderCommit
+  })
+  const statusDrag = useWorkspaceStatusHeaderDrag({
+    sidebarStatusHeaderKeysByBucket,
+    onCommitStatusHeaderOrder: commitStatusHeaderOrder,
+    getScrollContainer: () => scrollRef.current
+  })
   const projectGroupDrag = useProjectGroupHeaderDrag({
     sidebarProjectGroupHeaderIdsByBucket,
     projectGroupById: projectGroupByIdForHeaderDrag,
@@ -216,9 +246,26 @@ export function useWorktreeSidebarHeaderDrag(args: {
     ]
   )
 
+  const statusHeaderSectionEndByKey = useMemo(
+    () =>
+      getWorkspaceStatusHeaderSectionEndByKey({
+        rows: renderRows,
+        firstHeaderIndex,
+        sidebarStatusHeaderKeysByBucket,
+        statusHeaderBucketByKey
+      }),
+    [firstHeaderIndex, renderRows, sidebarStatusHeaderKeysByBucket, statusHeaderBucketByKey]
+  )
+
   return {
     canReorderRepoHeaders,
     canReorderProjectGroupHeaders,
+    canReorderStatusHeaders,
+    statusDrag,
+    sidebarStatusHeaderKeysByBucket,
+    statusHeaderIndexByKey,
+    statusHeaderBucketByKey,
+    statusHeaderSectionEndByKey,
     orderedHostIds,
     hostDrag,
     repoDrag,

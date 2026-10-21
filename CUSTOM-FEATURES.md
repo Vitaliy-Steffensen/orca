@@ -153,3 +153,6 @@ Taken whole with every mirror; the fork lineage's work on top of upstream.
 77. A review opens with a plain-English summary of what the branch changes, with screenshots of any UI it touched.
 78. Staged review findings now appear on the code in the all-files diff, with Accept and Discard on the line they belong to.
 79. The Review plan appears as a section in the pull request panel, with collapsible groups.
+80. Workspace cards no longer show a generic chain-link icon for a single linked pull request or task.
+81. Workspace cards hide the repo icon when the sidebar only shows workspaces from a single repo.
+82. Sidebar status bands and the lanes inside them can be dragged into any order, show their workspace count only while collapsed, and reveal their automation icons on hover.

@@ -20446,7 +20446,6 @@
       "open": "Open link",
       "unlinkItem": "Unlink {{label}}",
       "unlink": "Unlink from workspace",
-      "show": "Show {{count}} linked reviews and tasks",
       "manage": "Manage links…",
       "details": "Workspace details",
       "description": "Attach reviews and tasks, and keep notes for this workspace.",

@@ -65,7 +65,6 @@ describe('fixed workspace reference stacks', () => {
     ]
     const { container } = render(
       <WorktreeCardMetaBadges
-        linkedItemCount={refs.length}
         referenceItems={refs}
         issue={null}
         linearIssue={null}

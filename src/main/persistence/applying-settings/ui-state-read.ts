@@ -11,6 +11,7 @@ import {
   clampWorkspaceBoardOpacity
 } from '../../../shared/workspace-statuses'
 import { normalizeWorkspaceStatusRuleConfig } from '../../../shared/workspace-status-rule-config'
+import { normalizeWorkspaceStatusSidebarOrder } from '../../../shared/workspace-status-sidebar-order'
 import { normalizeUsagePercentageDisplay } from '../../../shared/usage-percentage-display'
 import { normalizeStatusBarUsageMode } from '../../../shared/status-bar-usage-mode'
 import { clampMarkdownTocPanelWidth } from '../../../shared/markdown-toc-panel-width'
@@ -55,6 +56,9 @@ export function getPersistedUI(
     agentActivityDisplayMode: normalizeAgentActivityDisplayMode(state.ui?.agentActivityDisplayMode),
     workspaceStatuses: normalizeWorkspaceStatuses(state.ui?.workspaceStatuses),
     workspaceStatusRules: normalizeWorkspaceStatusRuleConfig(state.ui?.workspaceStatusRules),
+    workspaceStatusSidebarOrder: normalizeWorkspaceStatusSidebarOrder(
+      state.ui?.workspaceStatusSidebarOrder
+    ),
     workspaceBoardOpacity: clampWorkspaceBoardOpacity(state.ui?.workspaceBoardOpacity),
     workspaceBoardColumnWidth: clampWorkspaceBoardColumnWidth(state.ui?.workspaceBoardColumnWidth),
     syncTaskStatusFromWorkspaceBoard: state.ui?.syncTaskStatusFromWorkspaceBoard === true,

@@ -1,4 +1,5 @@
 import type { WorkspaceStatus, WorkspaceStatusDefinition } from './worktree/types'
+import type { WorkspaceStatusSidebarOrder } from './workspace-status-sidebar-order'
 
 export type WorkspaceStatusSectionAppearance = {
   icon?: string
@@ -259,12 +260,14 @@ function laneAttentionRank(status: Pick<WorkspaceStatusDefinition, 'id' | 'label
 /**
  * Section names in sidebar order.
  *
- * Why derived rather than stored: the lane list is already the user's pipeline,
- * so a second ordered list could disagree with it and leave a section with no
- * lanes. Attention rank picks the order; first appearance breaks ties.
+ * Derived unless the user has dragged: a name `savedSections` lists keeps the slot
+ * they dropped it in. Everything else is ranked by attention, with first appearance
+ * breaking ties, and lands after the dragged names. Deriving the rest is what keeps
+ * a saved list that has gone stale from hiding a section that still has lanes.
  */
 export function getWorkspaceStatusSectionOrder(
-  statuses: readonly WorkspaceStatusDefinition[]
+  statuses: readonly WorkspaceStatusDefinition[],
+  savedSections?: readonly string[]
 ): string[] {
   const sections: string[] = []
   for (const status of statuses) {
@@ -272,13 +275,16 @@ export function getWorkspaceStatusSectionOrder(
       sections.push(status.section)
     }
   }
-  return sections
+  const saved = savedSections?.filter((section) => sections.includes(section)) ?? []
+  const derived = sections
+    .filter((section) => !saved.includes(section))
     .map((section, index) => ({ section, index }))
     .sort(
       (a, b) =>
         sectionAttentionRank(a.section) - sectionAttentionRank(b.section) || a.index - b.index
     )
     .map(({ section }) => section)
+  return [...saved, ...derived]
 }
 
 /**
@@ -286,10 +292,13 @@ export function getWorkspaceStatusSectionOrder(
  * list that answers what to look at first.
  *
  * Sectionless lanes keep the slots they were saved in. Sectioned lanes are
- * rewritten into those slots, so Autonomous saved first still renders last.
+ * rewritten into those slots, so Autonomous saved first still renders last —
+ * unless the user has dragged that band's lanes, which hands the band back its
+ * saved order.
  */
 export function orderWorkspaceStatusesByAttention(
-  statuses: readonly WorkspaceStatusDefinition[]
+  statuses: readonly WorkspaceStatusDefinition[],
+  saved?: WorkspaceStatusSidebarOrder
 ): readonly WorkspaceStatusDefinition[] {
   const sectionedSlots: number[] = []
   for (let index = 0; index < statuses.length; index += 1) {
@@ -301,8 +310,12 @@ export function orderWorkspaceStatusesByAttention(
     return statuses
   }
   const sectionRank = new Map(
-    getWorkspaceStatusSectionOrder(statuses).map((section, index) => [section, index])
+    getWorkspaceStatusSectionOrder(statuses, saved?.sections).map((section, index) => [
+      section,
+      index
+    ])
   )
+  const manualLaneSections = new Set(saved?.manualLaneSections ?? [])
   const ordered = sectionedSlots
     .map((slot) => ({ status: statuses[slot]!, index: slot }))
     .sort((a, b) => {
@@ -311,6 +324,9 @@ export function orderWorkspaceStatusesByAttention(
         (sectionRank.get(b.status.section ?? '') ?? 0)
       if (bySection !== 0) {
         return bySection
+      }
+      if (manualLaneSections.has(a.status.section ?? '')) {
+        return a.index - b.index
       }
       const byLane = laneAttentionRank(a.status) - laneAttentionRank(b.status)
       return byLane !== 0 ? byLane : a.index - b.index

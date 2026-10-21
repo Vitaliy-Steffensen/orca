@@ -24,6 +24,7 @@ import {
   normalizeWorkspaceStatuses
 } from '../../../../../shared/workspace-statuses'
 import { normalizeWorkspaceStatusRuleConfig } from '../../../../../shared/workspace-status-rule-config'
+import { normalizeWorkspaceStatusSidebarOrder } from '../../../../../shared/workspace-status-sidebar-order'
 
 const MIN_SIDEBAR_WIDTH = 220
 const HYDRATE_MAX_AGE_MS = 7 * 24 * 60 * 60 * 1000
@@ -262,6 +263,7 @@ export function hydrateUnexpectedSignoutDismissal(
 /** Every persisted workspace-board value, normalized together. */
 export function hydrateWorkspaceBoardState(ui: {
   workspaceStatuses?: unknown
+  workspaceStatusSidebarOrder?: unknown
   workspaceStatusRules?: unknown
   workspaceBoardOpacity?: unknown
   workspaceBoardColumnWidth?: unknown
@@ -269,6 +271,9 @@ export function hydrateWorkspaceBoardState(ui: {
 }) {
   return {
     workspaceStatuses: normalizeWorkspaceStatuses(ui.workspaceStatuses),
+    workspaceStatusSidebarOrder: normalizeWorkspaceStatusSidebarOrder(
+      ui.workspaceStatusSidebarOrder
+    ),
     workspaceStatusRules: normalizeWorkspaceStatusRuleConfig(ui.workspaceStatusRules),
     workspaceBoardOpacity: clampWorkspaceBoardOpacity(ui.workspaceBoardOpacity),
     workspaceBoardColumnWidth: clampWorkspaceBoardColumnWidth(ui.workspaceBoardColumnWidth),

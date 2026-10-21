@@ -19,6 +19,7 @@ export function buildWorktreeCardPresentation(card: WorktreeCardController) {
     repo,
     inPinnedSection,
     hideRepoBadge,
+    hidePinnedRepoIcon,
     hostContextLabel,
     flushSurface,
     contentIndent,
@@ -62,7 +63,7 @@ export function buildWorktreeCardPresentation(card: WorktreeCardController) {
   } = card
 
   // Why: pinned trees mix repos, so the repo icon shows regardless of groupBy's hideRepoBadge.
-  const showPinnedRepoIcon = inPinnedSection && !!repo
+  const showPinnedRepoIcon = inPinnedSection && !!repo && !hidePinnedRepoIcon
   const showInlineRepoBadge = !!repo && !hideRepoBadge && !isFolder && !showPinnedRepoIcon
   const showHostContextBadge = !!hostContextLabel && cardProps.includes('host')
   const showDetachedHeadInMetaRow = !isFolder && detachedHeadDisplay !== null
@@ -146,7 +147,6 @@ export function buildWorktreeCardPresentation(card: WorktreeCardController) {
         {hasPorts && <WorktreeCardPortsTrigger ports={workspacePorts} />}
         {hasDetails && (
           <WorktreeCardMetaBadges
-            linkedItemCount={allReferenceItems.length}
             referenceItems={referenceItems}
             referenceDetails={referenceDetails}
             issue={metaIssue}

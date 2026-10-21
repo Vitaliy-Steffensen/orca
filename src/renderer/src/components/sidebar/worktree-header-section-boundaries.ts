@@ -1,6 +1,7 @@
 import { estimateRenderRowSize } from './worktree-list/viewport/virtual-rows'
 import type { RenderRow } from './worktree-list/listing/render-row'
 import type { GroupHeaderRow } from './worktree-list/grouping/row-types'
+import { WORKSPACE_STATUS_SECTION_BUCKET } from './workspace-status-header-drop'
 
 function getEstimatedRenderRowStarts(
   rows: readonly RenderRow[],
@@ -151,4 +152,72 @@ export function getProjectGroupHeaderSectionEndByGroupId(args: {
     )
   }
   return sectionEndByGroupId
+}
+
+export function getWorkspaceStatusHeaderSectionEndByKey(args: {
+  rows: readonly RenderRow[]
+  firstHeaderIndex: number
+  sidebarStatusHeaderKeysByBucket: ReadonlyMap<string, readonly string[]>
+  statusHeaderBucketByKey: ReadonlyMap<string, string>
+}): Map<string, number> {
+  const rowStarts = getEstimatedRenderRowStarts(args.rows, args.firstHeaderIndex)
+  const headerIndexByKey = indexHeaderRenderRows(args.rows, (row) =>
+    args.statusHeaderBucketByKey.has(row.key) ? row.key : undefined
+  )
+  const successorsByBucket = indexBucketSuccessors(args.sidebarStatusHeaderKeysByBucket)
+  const sectionEndByKey = new Map<string, number>()
+  for (let index = 0; index < args.rows.length; index++) {
+    const row = args.rows[index]
+    const bucketKey = row?.type === 'header' ? args.statusHeaderBucketByKey.get(row.key) : undefined
+    if (row?.type !== 'header' || bucketKey === undefined) {
+      continue
+    }
+    const nextKey = successorsByBucket.get(bucketKey)?.get(row.key)
+    const endIndex = nextKey
+      ? (headerIndexByKey.get(nextKey) ?? -1)
+      : findStatusHeaderSectionEndIndex(
+          args.rows,
+          index + 1,
+          bucketKey,
+          args.statusHeaderBucketByKey
+        )
+    sectionEndByKey.set(
+      row.key,
+      rowStarts[endIndex >= 0 ? endIndex : args.rows.length] ?? rowStarts[args.rows.length] ?? 0
+    )
+  }
+  return sectionEndByKey
+}
+
+/**
+ * Where the last header of a bucket stops owning rows.
+ *
+ * A band runs past the lanes nested under it, so only a header outside the status
+ * tiers ends it. A lane ends at the first header that belongs to another bucket —
+ * the next band, or the next band's lanes.
+ */
+function findStatusHeaderSectionEndIndex(
+  rows: readonly RenderRow[],
+  startIndex: number,
+  bucketKey: string,
+  statusHeaderBucketByKey: ReadonlyMap<string, string>
+): number {
+  const isSectionBand = bucketKey === WORKSPACE_STATUS_SECTION_BUCKET
+  for (let index = startIndex; index < rows.length; index++) {
+    const row = rows[index]
+    if (row?.type === 'host-header') {
+      return index
+    }
+    if (row?.type !== 'header') {
+      continue
+    }
+    const rowBucketKey = statusHeaderBucketByKey.get(row.key)
+    if (rowBucketKey === undefined) {
+      return index
+    }
+    if (!isSectionBand && rowBucketKey !== bucketKey) {
+      return index
+    }
+  }
+  return rows.length
 }
