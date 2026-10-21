@@ -68,6 +68,20 @@ export function getPullRequestStatusRuleCopy(): Record<
         'Every reviewer still to respond belongs to the team below.'
       )
     },
+    approved: {
+      label: translate('auto.components.settings.prRules.approved', 'Approved and mergeable'),
+      description: translate(
+        'auto.components.settings.prRules.approvedDescription',
+        'Everyone you asked has approved, nobody is still pending, and GitHub reports no conflict.'
+      )
+    },
+    'awaiting-review': {
+      label: translate('auto.components.settings.prRules.awaitingReview', 'Reviewers requested'),
+      description: translate(
+        'auto.components.settings.prRules.awaitingReviewDescription',
+        'Your own open pull request with reviewers still to answer, so the ball is in their court.'
+      )
+    },
     review: {
       label: translate('auto.components.settings.prRules.review', 'Ready for review'),
       description: translate(
@@ -91,7 +105,12 @@ export function getPullRequestStatusRuleTabLabels(): Record<WorkspaceStatusRuleC
       'Changes requested'
     ),
     merging: translate('auto.components.settings.prRules.tabMerging', 'Merge gate'),
+    approved: translate('auto.components.settings.prRules.tabApproved', 'Approved'),
     'pm-approval': translate('auto.components.settings.prRules.tabPmApproval', 'PM approval'),
+    'awaiting-review': translate(
+      'auto.components.settings.prRules.tabAwaitingReview',
+      'Waiting for review'
+    ),
     review: translate('auto.components.settings.prRules.tabReview', 'Review')
   }
 }

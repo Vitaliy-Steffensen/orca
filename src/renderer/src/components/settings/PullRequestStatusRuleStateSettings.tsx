@@ -88,6 +88,9 @@ export function ConditionSettings({
   patch
 }: StateSettingsProps & { condition: WorkspaceStatusRuleCondition }): React.JSX.Element | null {
   switch (condition) {
+    case 'approved':
+    case 'awaiting-review':
+      return null
     case 'merged':
     case 'closed':
       return <DeleteOnResolvedRow config={config} patch={patch} />

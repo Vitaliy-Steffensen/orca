@@ -88,7 +88,9 @@ export async function createReviewWorkspace(
       undefined,
       undefined,
       startPoint.branchNameOverride,
-      config.statusByCondition.reviewing,
+      // Why the start lane first: the run belongs in one place while it lasts, and the
+      // holding lane hands it back to the pull request rules once it ends.
+      config.automationStartStatus ?? config.statusByCondition.reviewing,
       undefined,
       undefined,
       undefined,

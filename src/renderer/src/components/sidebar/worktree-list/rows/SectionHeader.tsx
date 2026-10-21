@@ -4,6 +4,7 @@ import type { VirtualItem } from '@tanstack/react-virtual'
 import { cn } from '@/lib/utils'
 import type { RepoSshGateResolver } from '@/hooks/use-repo-ssh-gate-resolver'
 import { RepoIconGlyph } from '@/components/repo/repo-icon'
+import { WorkspaceStatusAutomationBadge } from '../../WorkspaceStatusAutomationBadge'
 import { RepoForkIndicator } from '@/components/repo/repo-fork-indicator'
 import type { FolderWorkspacePathStatus } from '../../../../../../shared/folder-workspace-path-status'
 import { isConfirmedStaleFolderPathStatus } from '../../../../../../shared/folder-workspace-path-status'
@@ -341,6 +342,12 @@ export function renderWorktreeSectionHeaderRow(args: {
                 <span className="shrink-0 rounded-full bg-worktree-sidebar-accent px-1.5 text-[10px] font-medium leading-4 text-muted-foreground tabular-nums">
                   {row.count}
                 </span>
+              ) : null}
+              {row.statusAutomation ? (
+                <WorkspaceStatusAutomationBadge
+                  status={row.statusAutomation}
+                  className="shrink-0"
+                />
               ) : null}
               <RepoForkIndicator upstream={row.repo?.upstream} />
               <FolderPathStatusIndicator status={projectGroupPathStatus} />

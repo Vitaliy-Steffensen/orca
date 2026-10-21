@@ -143,3 +143,4 @@ Taken whole with every mirror; the fork lineage's work on top of upstream.
 68. A merged pull request offers Archive Workspace next to Delete Workspace, until the workspace is archived.
 69. One header button offers only the actions this branch can take right now — resolve, open a PR, commit, review — with the rest behind its chevron.
 70. When you have reviewed a pull request before, the Review section has a Full PR / Since review N switch for the diff.
+71. Board lanes can be marked automation-owned, held while agents run, and auto-pulled; new "Approved" and "Waiting for review" pull request rules can fill them.
