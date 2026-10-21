@@ -5,6 +5,7 @@ import type {
   WorkspaceStatusRuleCondition,
   WorkspaceStatusRuleConfig
 } from '../../../../shared/workspace-status-rule-config'
+import { applyAutomationHoldLane } from '../../../../shared/workspace-automation-lane'
 import { SettingsRow } from './SettingsFormControls'
 import { PullRequestStatusRuleTabs } from './PullRequestStatusRuleTabs'
 
@@ -13,6 +14,7 @@ export function PullRequestStatusRulesSection(): React.JSX.Element {
   const statuses = useAppStore((state) => state.workspaceStatuses)
   const repos = useAppStore((state) => state.repos)
   const setWorkspaceStatusRules = useAppStore((state) => state.setWorkspaceStatusRules)
+  const setWorkspaceStatuses = useAppStore((state) => state.setWorkspaceStatuses)
   const openAutomationsPage = useAppStore((state) => state.openAutomationsPage)
 
   const patch = (updates: Partial<WorkspaceStatusRuleConfig>): void => {
@@ -29,6 +31,12 @@ export function PullRequestStatusRulesSection(): React.JSX.Element {
       delete next[condition]
     }
     patch({ statusByCondition: next })
+  }
+  // Why both writes: the column only holds a run because of the flag on its definition, so the
+  // choice has to reach the board's columns as well as the rules.
+  const setAutomationStartStatus = (status: string | null): void => {
+    patch({ automationStartStatus: status })
+    setWorkspaceStatuses(applyAutomationHoldLane(statuses, status))
   }
 
   return (
@@ -54,6 +62,7 @@ export function PullRequestStatusRulesSection(): React.JSX.Element {
         repos={repos}
         patch={patch}
         setCondition={setCondition}
+        setAutomationStartStatus={setAutomationStartStatus}
       />
     </section>
   )

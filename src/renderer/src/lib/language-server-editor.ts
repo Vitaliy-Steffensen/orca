@@ -1,5 +1,6 @@
 import type { LanguageServerLocation } from '../../../shared/language-server'
-import { getRepoExecutionHostId, LOCAL_EXECUTION_HOST_ID } from '../../../shared/execution-host'
+import { getRepoExecutionHostId, parseExecutionHostId } from '../../../shared/execution-host'
+import type { RuntimeClientTarget } from '../../../shared/runtime-client-target'
 
 type DefinitionState = {
   openFiles: readonly { filePath: string; worktreeId: string }[]
@@ -18,24 +19,43 @@ type DefinitionContext = {
   worktreeRoot: string
   repoRoot: string
   venvSetting: string | null
+  /** The Orca whose disk holds the checkout, and so the one that can run a server over it. */
+  target: RuntimeClientTarget
 }
 
-function localWorktree(state: DefinitionState, worktreeId: string): DefinitionContext | null {
+// Why not this machine only: a companion window and the web client see every row as its runtime's,
+// and that runtime reads the checkout. An `ssh:` row has no route of its own, so it has no server.
+function hostTarget(repo: { connectionId?: string | null; executionHostId?: string | null }) {
+  const host = parseExecutionHostId(getRepoExecutionHostId(repo))
+  if (host?.kind === 'local') {
+    return { kind: 'local' } as const
+  }
+  return host?.kind === 'runtime'
+    ? ({ kind: 'environment', environmentId: host.environmentId } as const)
+    : null
+}
+
+/** The checkout a worktree names, and the Orca that can run a language server over it. */
+export function worktreeHostContext(
+  state: DefinitionState,
+  worktreeId: string
+): DefinitionContext | null {
   for (const worktrees of Object.values(state.worktreesByRepo)) {
     const worktree = worktrees.find((candidate) => candidate.id === worktreeId)
     if (!worktree) {
       continue
     }
     const repo = state.repos.find((candidate) => candidate.id === worktree.repoId)
-    // Why local only: the language server runs on this machine and reads the checkout from disk.
-    if (!repo || getRepoExecutionHostId(repo) !== LOCAL_EXECUTION_HOST_ID) {
+    const target = repo ? hostTarget(repo) : null
+    if (!repo || !target) {
       return null
     }
     return {
       worktreeId,
       worktreeRoot: worktree.path.replace(/\/+$/, ''),
       repoRoot: repo.path.replace(/\/+$/, ''),
-      venvSetting: repo.pythonVenvPath ?? null
+      venvSetting: repo.pythonVenvPath ?? null,
+      target
     }
   }
   return null
@@ -46,7 +66,7 @@ export function openFileContext(
   filePath: string
 ): DefinitionContext | null {
   const file = state.openFiles.find((candidate) => candidate.filePath === filePath)
-  return file ? localWorktree(state, file.worktreeId) : null
+  return file ? worktreeHostContext(state, file.worktreeId) : null
 }
 
 const ABSOLUTE_PATH = /^([a-zA-Z]:)?[\\/]/
@@ -55,7 +75,7 @@ export function trackedFileContext(
   state: DefinitionState,
   file: { worktreeId: string; relativePath: string }
 ): (DefinitionContext & { filePath: string }) | null {
-  const context = localWorktree(state, file.worktreeId)
+  const context = worktreeHostContext(state, file.worktreeId)
   // Why: Orca names a file outside the worktree by a relative path equal to its absolute one.
   const filePath = ABSOLUTE_PATH.test(file.relativePath)
     ? file.relativePath
@@ -68,7 +88,7 @@ export function definitionOpenTarget(
   worktreeId: string,
   targetFilePath: string
 ): { worktreeId: string; filePath: string; relativePath: string } | null {
-  const context = localWorktree(state, worktreeId)
+  const context = worktreeHostContext(state, worktreeId)
   if (!context) {
     return null
   }

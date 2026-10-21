@@ -6,6 +6,8 @@ import {
 } from '@/lib/worktree-sleep-intent'
 import { translate } from '@/i18n/i18n'
 import { preserveSidebarWorktreePosition } from './sidebar-worktree-row-position'
+import { worktreeHostContext } from '@/lib/language-server-editor'
+import { stopWorktreeLanguageServers as stopWorktreeServers } from '@/lib/language-server-client'
 
 export type WorkspaceRuntimeTeardownOptions = {
   /**
@@ -59,17 +61,13 @@ function closeStructuredAgentSessionTabs(worktreeId: string): void {
 }
 
 async function stopWorktreeLanguageServers(worktreeId: string): Promise<void> {
-  const worktreePath = useAppStore
-    .getState()
-    .allWorktrees?.()
-    .find((worktree) => worktree.id === worktreeId)?.path
-  if (!worktreePath || !window.api?.languageServer?.stopWorktree) {
-    return
-  }
   // Why swallowed: a language server that never started is the common case, and
   // a stop that fails must not keep a workspace awake.
   try {
-    await window.api.languageServer.stopWorktree({ worktreeRoot: worktreePath })
+    const context = worktreeHostContext(useAppStore.getState(), worktreeId)
+    if (context) {
+      await stopWorktreeServers(context.target, context.worktreeRoot)
+    }
   } catch (error) {
     console.error('[workspace-teardown] language server stop failed', { worktreeId, error })
   }

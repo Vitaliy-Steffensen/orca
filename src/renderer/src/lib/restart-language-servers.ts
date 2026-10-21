@@ -6,6 +6,7 @@ import {
   type LanguageServerLanguage
 } from '../../../shared/language-server'
 import { forgetLanguageServerFailures } from './language-server-failure-toast'
+import { stopLanguageServers } from './language-server-client'
 
 export type RestartLanguageServersDeps = {
   stop: (args: { language: LanguageServerLanguage }) => Promise<void>
@@ -13,7 +14,7 @@ export type RestartLanguageServersDeps = {
 }
 
 const defaultDeps: RestartLanguageServersDeps = {
-  stop: (args) => window.api.languageServer.stop(args),
+  stop: ({ language }) => stopLanguageServers(language),
   notify: { success: (message) => toast.success(message), error: (message) => toast.error(message) }
 }
 

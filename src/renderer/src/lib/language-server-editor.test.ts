@@ -13,11 +13,13 @@ const state = {
   openFiles: [{ filePath: '/wt/e-4974/apps/backend/a.py', worktreeId: 'wt-1' }],
   worktreesByRepo: {
     'repo-1': [{ id: 'wt-1', path: '/wt/e-4974', repoId: 'repo-1' }],
-    'repo-ssh': [{ id: 'wt-ssh', path: '/remote/wt', repoId: 'repo-ssh' }]
+    'repo-ssh': [{ id: 'wt-ssh', path: '/remote/wt', repoId: 'repo-ssh' }],
+    'repo-runtime': [{ id: 'wt-runtime', path: '/host/wt', repoId: 'repo-runtime' }]
   },
   repos: [
     { id: 'repo-1', path: '/repo', connectionId: null, pythonVenvPath: 'apps/backend/.venv' },
-    { id: 'repo-ssh', path: '/remote/repo', connectionId: 'ssh-target' }
+    { id: 'repo-ssh', path: '/remote/repo', connectionId: 'ssh-target' },
+    { id: 'repo-runtime', path: '/host/repo', executionHostId: 'runtime:env-7' }
   ]
 }
 
@@ -27,11 +29,24 @@ describe('openFileContext', () => {
       worktreeId: 'wt-1',
       worktreeRoot: '/wt/e-4974',
       repoRoot: '/repo',
-      venvSetting: 'apps/backend/.venv'
+      venvSetting: 'apps/backend/.venv',
+      target: { kind: 'local' }
     })
   })
 
-  it('has nothing for remote worktrees or files that are not open', () => {
+  it("sends a paired runtime's checkout to that runtime, which is where the files are", () => {
+    const paired = {
+      ...state,
+      openFiles: [{ filePath: '/host/wt/a.py', worktreeId: 'wt-runtime' }]
+    }
+    expect(openFileContext(paired, '/host/wt/a.py')).toMatchObject({
+      worktreeRoot: '/host/wt',
+      repoRoot: '/host/repo',
+      target: { kind: 'environment', environmentId: 'env-7' }
+    })
+  })
+
+  it('has nothing for SSH worktrees or files that are not open', () => {
     const remote = {
       ...state,
       openFiles: [{ filePath: '/remote/wt/a.py', worktreeId: 'wt-ssh' }]
@@ -74,7 +89,8 @@ describe('trackedFileContext', () => {
       worktreeId: 'wt-1',
       worktreeRoot: '/wt/e-4974',
       repoRoot: '/repo',
-      venvSetting: 'apps/backend/.venv'
+      venvSetting: 'apps/backend/.venv',
+      target: { kind: 'local' }
     })
   })
 

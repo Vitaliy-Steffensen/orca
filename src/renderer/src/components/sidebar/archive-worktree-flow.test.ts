@@ -8,6 +8,9 @@ type ArchiveFlowStoreMock = {
   closeUnifiedTab: ReturnType<typeof vi.fn>
   updateWorktreeMeta: ReturnType<typeof vi.fn>
   allWorktrees: () => { id: string; path: string; hostId: string }[]
+  worktreesByRepo: Record<string, { id: string; path: string; repoId: string }[]>
+  repos: { id: string; path: string; connectionId: string | null }[]
+  openFiles: never[]
   unifiedTabsByWorktree: Record<string, { id: string; contentType: string }[]>
   tabsByWorktree: Record<string, never>
   ptyIdsByTabId: Record<string, never>
@@ -27,6 +30,14 @@ const mocks = vi.hoisted(() => {
       { id: 'wt-1', path: '/checkouts/wt-1', hostId: 'local' },
       { id: 'wt-2', path: '/checkouts/wt-2', hostId: 'ssh-box' }
     ],
+    worktreesByRepo: {
+      'repo-1': [
+        { id: 'wt-1', path: '/checkouts/wt-1', repoId: 'repo-1' },
+        { id: 'wt-2', path: '/checkouts/wt-2', repoId: 'repo-1' }
+      ]
+    },
+    repos: [{ id: 'repo-1', path: '/checkouts', connectionId: null }],
+    openFiles: [],
     unifiedTabsByWorktree: {},
     tabsByWorktree: {},
     ptyIdsByTabId: {}

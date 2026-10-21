@@ -7,7 +7,13 @@ import {
   type WorkspaceStatusRuleCondition,
   type WorkspaceStatusRuleConfig
 } from '../../../../shared/workspace-status-rule-config'
-import { ConditionRow, NewWorkspaceStatusRow, ProjectScopeRow } from './PullRequestStatusRuleRows'
+import {
+  AutomationReleaseStatusRow,
+  AutomationStartStatusRow,
+  ConditionRow,
+  NewWorkspaceStatusRow,
+  ProjectScopeRow
+} from './PullRequestStatusRuleRows'
 import { ConditionSettings } from './PullRequestStatusRuleStateSettings'
 import { getPullRequestStatusRuleTabLabels } from './pull-request-status-rule-copy'
 import { WorkspaceActionPromptsSection } from './WorkspaceActionPromptsSection'
@@ -20,13 +26,15 @@ export function PullRequestStatusRuleTabs({
   statuses,
   repos,
   patch,
-  setCondition
+  setCondition,
+  setAutomationStartStatus
 }: {
   config: WorkspaceStatusRuleConfig
   statuses: readonly WorkspaceStatusDefinition[]
   repos: readonly Repo[]
   patch: (updates: Partial<WorkspaceStatusRuleConfig>) => void
   setCondition: (condition: WorkspaceStatusRuleCondition, status: string | undefined) => void
+  setAutomationStartStatus: (status: string | null) => void
 }): React.JSX.Element {
   const tabLabels = getPullRequestStatusRuleTabLabels()
   return (
@@ -65,6 +73,16 @@ export function PullRequestStatusRuleTabs({
               newWorkspaceStatusSince: status ? Date.now() : null
             })
           }
+        />
+        <AutomationStartStatusRow
+          value={config.automationStartStatus}
+          statuses={statuses}
+          onChange={(status) => setAutomationStartStatus(status ?? null)}
+        />
+        <AutomationReleaseStatusRow
+          value={config.automationReleaseStatus}
+          statuses={statuses}
+          onChange={(status) => patch({ automationReleaseStatus: status ?? null })}
         />
         <WorkspaceActionPromptsSection />
       </TabsContent>

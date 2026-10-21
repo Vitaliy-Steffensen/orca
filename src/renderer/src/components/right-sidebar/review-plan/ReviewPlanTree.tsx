@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react'
-import { ChevronDown, ChevronRight, FileText, ScanSearch, ScanEye } from 'lucide-react'
+import { ChevronDown, ChevronRight, FileText, ScanSearch } from 'lucide-react'
 import { useAppStore } from '@/store'
 import { Button } from '@/components/ui/button'
 import {
@@ -199,9 +199,9 @@ export function ReviewPlanTree({
     return () => clearSourceControlReviewOrder(worktreeId)
   }, [publishOrder, sections, worktreeId])
 
-  const run = (kind: 'review' | 'regroup'): void => {
+  const regroup = (): void => {
     setLaunching(true)
-    void launchWorkspaceAction(kind).finally(() => setLaunching(false))
+    void launchWorkspaceAction('regroup').finally(() => setLaunching(false))
   }
   const toggleDirectory = (key: string): void =>
     setCollapsed((current) => {
@@ -268,15 +268,9 @@ export function ReviewPlanTree({
                 )
               : translate(
                   'auto.components.reviewPlan.empty',
-                  'No review plan yet. Run a review to group and rate the changed files.'
+                  'No review plan yet. Run the Review action from the workspace header to group and rate the changed files.'
                 )}
         </p>
-        {planState.status !== 'loading' ? (
-          <Button size="sm" disabled={launching} onClick={() => run('review')}>
-            <ScanEye className="size-3.5" />
-            {translate('auto.components.reviewPlan.runReview', 'Run review')}
-          </Button>
-        ) : null}
       </div>
     )
   }
@@ -318,7 +312,7 @@ export function ReviewPlanTree({
               { commit: shortSha(plan.commit) }
             )}
           </span>
-          <Button size="xs" variant="ghost" disabled={launching} onClick={() => run('regroup')}>
+          <Button size="xs" variant="ghost" disabled={launching} onClick={regroup}>
             <ScanSearch className="size-3" />
             {translate('auto.components.reviewPlan.regroup', 'Regroup')}
           </Button>

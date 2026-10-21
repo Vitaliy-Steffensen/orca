@@ -12,6 +12,7 @@ import {
 const mocks = vi.hoisted(() => ({
   config: null as WorkspaceStatusRuleConfig | null,
   setWorkspaceStatusRules: vi.fn(),
+  setWorkspaceStatuses: vi.fn(),
   openAutomationsPage: vi.fn()
 }))
 
@@ -22,9 +23,13 @@ vi.mock('@/store', () => ({
   useAppStore: (selector: (state: unknown) => unknown) =>
     selector({
       workspaceStatusRules: mocks.config,
-      workspaceStatuses: [{ id: 'review', label: 'Review' }],
+      workspaceStatuses: [
+        { id: 'automations', label: 'Automations' },
+        { id: 'review', label: 'Review' }
+      ],
       repos: [],
       setWorkspaceStatusRules: mocks.setWorkspaceStatusRules,
+      setWorkspaceStatuses: mocks.setWorkspaceStatuses,
       openAutomationsPage: mocks.openAutomationsPage
     })
 }))
@@ -38,6 +43,7 @@ describe('PR rules settings', () => {
   beforeEach(() => {
     mocks.config = cloneDefaultWorkspaceStatusRuleConfig()
     mocks.setWorkspaceStatusRules.mockReset()
+    mocks.setWorkspaceStatuses.mockReset()
     mocks.openAutomationsPage.mockReset()
   })
 
@@ -79,6 +85,21 @@ describe('PR rules settings', () => {
     expect(mocks.setWorkspaceStatusRules).toHaveBeenLastCalledWith(
       expect.objectContaining({ conflictPromptTemplate: expect.stringContaining('t') })
     )
+  })
+
+  it('makes the picked holding column hold, on the board as well as in the rules', async () => {
+    render(<PullRequestStatusRulesSection />)
+
+    await userEvent.click(screen.getByRole('combobox', { name: 'Automation runs wait in' }))
+    await userEvent.click(screen.getByRole('option', { name: 'Automations' }))
+
+    expect(mocks.setWorkspaceStatusRules).toHaveBeenCalledWith(
+      expect.objectContaining({ automationStartStatus: 'automations' })
+    )
+    expect(mocks.setWorkspaceStatuses).toHaveBeenCalledWith([
+      { id: 'automations', label: 'Automations', holdsAutomation: true },
+      { id: 'review', label: 'Review' }
+    ])
   })
 
   it('lets the reviewing view be picked', async () => {

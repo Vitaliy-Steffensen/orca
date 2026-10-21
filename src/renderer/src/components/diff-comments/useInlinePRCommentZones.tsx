@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react'
+import React, { useEffect, useRef } from 'react'
 import type { editor as monacoEditor } from 'monaco-editor'
 import { createRoot, type Root } from 'react-dom/client'
 import {
@@ -7,6 +7,7 @@ import {
 } from './diff-comment-zone-mouse-events'
 import { resizeDiffCommentZone, type ZoneEntry } from './diff-comment-view-zone-entry'
 import { selectInlinePRCommentPlacements } from './inline-pr-comment-placement'
+import { TooltipProvider } from '@/components/ui/tooltip'
 import { PendingReviewCommentCard } from '@/components/pending-review/PendingReviewCommentCard'
 import type { PendingReviewQueue } from '@/components/pending-review/use-pending-review-queue'
 import { InlinePRCommentCard } from './InlinePRCommentCard'
@@ -19,6 +20,14 @@ import type { RightPanelCommentSubmitResult } from '@/components/right-sidebar/r
 const INITIAL_ZONE_PX = 132
 const RESOLVED_ZONE_PX = 34
 const PENDING_ZONE_PX = 108
+
+/**
+ * A view zone's React root is detached from the app tree, so it inherits none of its context.
+ * Without the tooltip provider the proposal row's tooltips throw and the zone renders blank.
+ */
+function ZoneProviders({ children }: { children: React.ReactNode }): React.JSX.Element {
+  return <TooltipProvider delayDuration={400}>{children}</TooltipProvider>
+}
 
 export type InlinePRCommentZoneHandlers = {
   onResolve: (threadId: string, resolve: boolean) => boolean | Promise<boolean>
@@ -90,34 +99,38 @@ export function useInlinePRCommentZones({
       }
       if (placement.kind === 'pending') {
         entry.root.render(
-          <PendingReviewCommentCard
-            comment={placement.comment}
-            inDiff
-            onContentResize={() => resizeDiffCommentZone(editor, entry)}
-            onChangeBody={(body) => pendingRef.current.updateBody(placement.comment.id, body)}
-            onRemove={() => pendingRef.current.remove(placement.comment.id)}
-            onAccept={() => pendingRef.current.accept(placement.comment.id)}
-          />
+          <ZoneProviders>
+            <PendingReviewCommentCard
+              comment={placement.comment}
+              inDiff
+              onContentResize={() => resizeDiffCommentZone(editor, entry)}
+              onChangeBody={(body) => pendingRef.current.updateBody(placement.comment.id, body)}
+              onRemove={() => pendingRef.current.remove(placement.comment.id)}
+              onAccept={() => pendingRef.current.accept(placement.comment.id)}
+            />
+          </ZoneProviders>
         )
         return
       }
       entry.root.render(
-        <InlinePRCommentCard
-          group={placement.group}
-          resolved={placement.resolved}
-          outdated={placement.outdated}
-          relativePath={relativePath}
-          worktreeId={worktreeId}
-          now={Date.now()}
-          onContentResize={() => resizeDiffCommentZone(editor, entry)}
-          onResolve={(threadId, resolve) => handlersRef.current.onResolve(threadId, resolve)}
-          onReply={(comment, body) => handlersRef.current.onReply(comment, body)}
-          onEditComment={(comment, body) => handlersRef.current.onEditComment(comment, body)}
-          onDeleteComment={(comment) => handlersRef.current.onDeleteComment(comment)}
-          onSetReaction={(comment, content, reacted) =>
-            handlersRef.current.onSetReaction(comment, content, reacted)
-          }
-        />
+        <ZoneProviders>
+          <InlinePRCommentCard
+            group={placement.group}
+            resolved={placement.resolved}
+            outdated={placement.outdated}
+            relativePath={relativePath}
+            worktreeId={worktreeId}
+            now={Date.now()}
+            onContentResize={() => resizeDiffCommentZone(editor, entry)}
+            onResolve={(threadId, resolve) => handlersRef.current.onResolve(threadId, resolve)}
+            onReply={(comment, body) => handlersRef.current.onReply(comment, body)}
+            onEditComment={(comment, body) => handlersRef.current.onEditComment(comment, body)}
+            onDeleteComment={(comment) => handlersRef.current.onDeleteComment(comment)}
+            onSetReaction={(comment, content, reacted) =>
+              handlersRef.current.onSetReaction(comment, content, reacted)
+            }
+          />
+        </ZoneProviders>
       )
     }
 

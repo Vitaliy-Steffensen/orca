@@ -71,14 +71,15 @@ function blameTarget(model: Monaco.editor.ITextModel) {
     const context = isModifiedDiffSide(uri.toString())
       ? trackedFileContext(useAppStore.getState(), tracked)
       : null
-    return context
+    // Why this machine only: blame runs over IPC against a checkout on this disk.
+    return context?.target.kind === 'local' ? context : null
   }
   // Why: a remote/runtime-owned model has no local file to blame.
   if (uri.scheme !== 'file' || uri.fragment) {
     return null
   }
   const context = openFileContext(useAppStore.getState(), uri.fsPath)
-  return context ? { ...context, filePath: uri.fsPath } : null
+  return context?.target.kind === 'local' ? { ...context, filePath: uri.fsPath } : null
 }
 
 function attachBlame(monaco: typeof Monaco, editor: Monaco.editor.ICodeEditor): () => void {
